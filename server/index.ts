@@ -59,44 +59,62 @@ app.use((req, res, next) => {
   next();
 });
 
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Rejection:", err);
+});
+
 (async () => {
-  const port = parseInt(process.env.PORT || "5000", 10);
+  try {
+    const port = parseInt(process.env.PORT || "5000", 10);
 
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  }
+    console.log("Starting server...");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("PORT:", port);
+    console.log("DATABASE_URL:", process.env.DATABASE_URL ? "SET" : "NOT SET");
+    console.log("SESSION_SECRET:", process.env.SESSION_SECRET ? "SET" : "NOT SET");
 
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      log(`serving on port ${port}`);
-    },
-  );
-
-  const { seedDatabase } = await import("./seed");
-  await seedDatabase().catch(console.error);
-
-  await registerRoutes(httpServer, app);
-
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    console.error("Internal Server Error:", err);
-
-    if (res.headersSent) {
-      return next(err);
+    if (process.env.NODE_ENV === "production") {
+      try {
+        serveStatic(app);
+        console.log("Static files configured");
+      } catch (e: any) {
+        console.error("Static files error:", e.message);
+      }
     }
 
-    return res.status(status).json({ message });
-  });
+    httpServer.listen(port, "0.0.0.0", () => {
+      log(`serving on port ${port}`);
+    });
 
-  if (process.env.NODE_ENV !== "production") {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
+    const { seedDatabase } = await import("./seed");
+    await seedDatabase().catch((e: any) => console.error("Seed error:", e.message));
+
+    await registerRoutes(httpServer, app);
+    console.log("Routes registered");
+
+    app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+
+      console.error("Internal Server Error:", err);
+
+      if (res.headersSent) {
+        return next(err);
+      }
+
+      return res.status(status).json({ message });
+    });
+
+    if (process.env.NODE_ENV !== "production") {
+      const { setupVite } = await import("./vite");
+      await setupVite(httpServer, app);
+    }
+  } catch (err) {
+    console.error("FATAL STARTUP ERROR:", err);
+    process.exit(1);
   }
 })();
