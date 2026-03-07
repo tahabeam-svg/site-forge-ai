@@ -104,11 +104,19 @@ export default function TemplatesPage() {
                 key={template.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: Math.min(i * 0.03, 0.5) }}
               >
                 <Card className="hover-elevate group" data-testid={`card-template-${template.id}`}>
                   <div className="relative h-48 bg-muted rounded-t-lg overflow-hidden">
-                    {template.previewHtml && (
+                    {template.thumbnail ? (
+                      <img
+                        src={template.thumbnail}
+                        alt={lang === "ar" && template.nameAr ? template.nameAr : template.name}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                        data-testid={`img-template-${template.id}`}
+                      />
+                    ) : template.previewHtml ? (
                       <div className="absolute inset-0 p-2 overflow-hidden pointer-events-none">
                         <iframe
                           srcDoc={template.previewHtml?.startsWith('<!DOCTYPE')
@@ -120,9 +128,9 @@ export default function TemplatesPage() {
                           title="Template preview"
                         />
                       </div>
-                    )}
+                    ) : null}
                     {template.isPremium && (
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 z-10">
                         <Badge className="bg-amber-500/90 text-white">
                           <Crown className="w-3 h-3 me-1" />
                           {t("premium", lang)}
