@@ -15,27 +15,37 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Landing page with bilingual support (Arabic default, English toggle) and Saudi market marketing
 - Google authentication via Replit Auth (no custom login forms)
 - Dashboard with project management
-- AI website generation from text descriptions
-- AI-powered editing via chat commands
+- AI website generation from text descriptions with stock images (Unsplash)
+- AI-powered editing via chat commands with conversation history
 - Live preview with responsive viewport switching (desktop/tablet/mobile)
 - Template marketplace (6 templates)
+- File upload system (images, logos, SVG, PDF)
+- Media embedding (YouTube/Vimeo) via AI chat
+- Enhanced editor with 4 tabs: Chat, Sections, Media, Style
+- Section management (add Hero, About, Services, Gallery, Contact, FAQ, Team, Pricing)
+- Font system: Cairo, Tajawal, IBM Plex Arabic (Arabic) + Inter, Poppins, Montserrat (English)
+- Color scheme picker with presets
+- Quick style commands
+- Billing & subscription page with pricing plans
+- Admin dashboard with user/project management and stats
 - Publish system
 - Green/teal brand color scheme
 
 ## File Structure
 
 ### Shared
-- `shared/schema.ts` - Drizzle schemas for projects, templates (re-exports users from models/auth)
+- `shared/schema.ts` - Drizzle schemas for projects, templates, chatMessages (re-exports users from models/auth)
 - `shared/models/auth.ts` - Replit Auth users and sessions tables
 
 ### Server
 - `server/index.ts` - Express server entry point
-- `server/routes.ts` - API routes for projects, templates (uses Replit Auth middleware)
+- `server/routes.ts` - API routes for projects, templates, file upload, admin (uses Replit Auth middleware)
 - `server/storage.ts` - Database storage layer (IStorage interface)
 - `server/ai.ts` - OpenAI integration for website generation and editing
 - `server/seed.ts` - Database seeding with template data
 - `server/db.ts` - Database connection
 - `server/replit_integrations/auth/` - Replit Auth module (OIDC, sessions, user storage)
+- `uploads/` - File upload directory for user-uploaded images/logos
 
 ### Client
 - `client/src/App.tsx` - Main app with routing and ProtectedRoute
@@ -45,9 +55,11 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `client/src/lib/i18n.ts` - Translation system (EN/AR) with Saudi marketing copy
 - `client/src/pages/landing.tsx` - Landing page with Saudi market focus
 - `client/src/pages/dashboard.tsx` - Project management dashboard
-- `client/src/pages/editor.tsx` - Website editor with AI generation
+- `client/src/pages/editor.tsx` - Website editor with AI generation, chat, sections, media, style tabs
 - `client/src/pages/preview.tsx` - Full-screen website preview
 - `client/src/pages/templates.tsx` - Template marketplace
+- `client/src/pages/billing.tsx` - Billing & subscription management
+- `client/src/pages/admin.tsx` - Admin dashboard with stats, users, projects
 - `client/src/components/dashboard-layout.tsx` - Sidebar layout for dashboard
 - `client/src/components/language-toggle.tsx` - EN/AR language toggle
 
@@ -57,6 +69,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `sessions` - sid (varchar PK), sess (jsonb), expire (timestamp)
 - `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), createdAt, updatedAt
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
+- `chat_messages` - id (serial), projectId (integer), role (text), content (text), createdAt
 
 ## API Routes
 
@@ -72,8 +85,13 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `POST /api/projects/:id/generate` - Generate website with AI
 - `POST /api/projects/:id/edit` - Edit website with AI command
 - `POST /api/projects/:id/publish` - Publish project
+- `GET /api/projects/:id/messages` - Get chat history for project
+- `POST /api/upload` - Upload files (images/logos)
 - `GET /api/templates` - List templates
 - `GET /api/templates/:id` - Get template
+- `GET /api/admin/stats` - Get admin statistics
+- `GET /api/admin/users` - List all users
+- `GET /api/admin/projects` - List all projects
 
 ## Pricing (Saudi Riyals)
 

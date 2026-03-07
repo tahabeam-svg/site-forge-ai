@@ -1,0 +1,369 @@
+Build a complete production-ready SaaS platform for AI-powered website creation.
+
+The platform should be inspired by the concept of Replit but simplified for non-technical users.
+
+Users should be able to create, edit, preview, and publish websites using natural language without coding.
+
+The platform must support Arabic as the primary interface language (RTL) and English as the secondary language (LTR).
+
+The entire experience should allow users to build a professional website in less than two minutes.
+
+Core Concept
+
+Users type a description such as:
+
+Create a website for a perfume exhibition in Riyadh.
+
+or
+
+أنشئ موقع شركة عطور في الرياض
+
+The AI automatically generates:
+
+• homepage
+• about section
+• services section
+• gallery
+• contact page
+• responsive layout
+• SEO metadata
+• color palette
+• icons
+• images
+
+No coding knowledge is required.
+
+AI Chat Website Builder
+
+The platform must include a conversational AI builder using:
+
+OpenAI
+
+Users can build and edit the website through chat commands.
+
+Examples:
+
+اجعل الموقع أكثر فخامة
+أضف معرض صور
+غير الألوان إلى الأسود والذهبي
+
+or
+
+Add a booking section
+Add a testimonial section
+Replace hero image
+
+The AI should update the website instantly.
+
+File Upload & External Content
+
+Users must be able to upload external assets.
+
+Supported inputs:
+
+Files
+
+Users can upload:
+
+• images
+• logos
+• PDFs
+• documents
+
+Media links
+
+Users can paste links such as:
+
+• YouTube
+• Vimeo
+• social media posts
+
+Example:
+
+استخدم هذا الفيديو من يوتيوب في الصفحة الرئيسية
+
+The system should automatically embed the content.
+
+Visual Website Editor
+
+Provide a drag-and-drop editor.
+
+Users can:
+
+• edit text
+• change colors
+• replace images
+• move sections
+• add new sections
+
+Editor layout:
+
+Sections | Editor | Live Preview
+
+Preview updates instantly.
+
+Beautiful Fonts System
+
+The platform must use professional fonts for both Arabic and English.
+
+Recommended Arabic fonts:
+
+Cairo
+Tajawal
+IBM Plex Arabic
+
+Recommended English fonts:
+
+Inter
+Poppins
+Montserrat
+
+Fonts should automatically match the design style of the template.
+
+Icons System
+
+Use modern icon libraries.
+
+Recommended icon set:
+
+Lucide
+
+Icons must be used across templates including:
+
+• services icons
+• feature icons
+• navigation icons
+• contact icons
+
+Icons should automatically match the color palette.
+
+Image System
+
+The platform must automatically provide beautiful images for websites.
+
+Images should come from:
+
+Unsplash
+
+Pexels
+
+Images must automatically match the website topic.
+
+Example:
+
+If the user creates a perfume website, automatically load:
+
+• luxury perfume images
+• fragrance bottle photos
+• elegant lifestyle images
+
+Users can also upload their own images.
+
+Template System
+
+Provide a professional template library.
+
+Templates must include:
+
+• modern layouts
+• beautiful typography
+• icons
+• professional images
+• animations
+
+Categories:
+
+Corporate
+Restaurants
+Exhibitions
+Startups
+Portfolios
+Landing pages
+E-commerce
+
+Templates must look premium and modern.
+
+Live Preview System
+
+Each project must generate a preview link.
+
+Example:
+
+project-name.preview.platform.com
+
+Preview updates instantly.
+
+Execution must run inside isolated containers using:
+
+Docker
+
+Routing handled by:
+
+NGINX
+
+User Dashboard
+
+Create a modern SaaS dashboard.
+
+Sections:
+
+Dashboard
+Projects
+Templates
+Domains
+Analytics
+Billing
+Invoices
+Settings
+
+Projects appear as cards with:
+
+Preview
+Edit
+Publish
+Archive
+Delete
+
+Billing System
+
+Include a full SaaS billing system.
+
+Users can see:
+
+• subscription plan
+• billing history
+• invoices
+• payment status
+
+Invoices must include:
+
+invoice number
+plan name
+amount
+payment date
+
+Allow PDF download.
+
+Payment Gateway
+
+Integrate payments with:
+
+Paymob
+
+Support:
+
+• credit cards
+• mobile wallets
+• regional payments
+
+Subscriptions update automatically after payment.
+
+Pricing Plans
+
+Free
+
+• 1 website
+• platform domain
+• limited AI usage
+
+Pro ($12)
+
+• 10 websites
+• custom domain
+• analytics
+
+Business ($29)
+
+• unlimited websites
+• premium templates
+• team collaboration
+
+Admin Dashboard
+
+Create a powerful admin panel.
+
+Sections:
+
+Users
+Websites
+Templates
+Payments
+Analytics
+Archive
+Moderation
+Settings
+
+Admin can:
+
+• manage users
+• monitor websites
+• approve templates
+• review free plan websites
+
+Template Discovery System
+
+Websites created by free users should be stored in an archive.
+
+Admin can:
+
+• review designs
+• convert designs into templates
+• publish templates
+
+Infrastructure
+
+Use scalable cloud infrastructure.
+
+CDN:
+
+Cloudflare
+
+Storage:
+
+Cloudflare R2
+or
+
+Amazon S3
+
+Database:
+
+PostgreSQL
+
+Cache:
+
+Redis
+
+User Flow
+Signup
+↓
+Create project
+↓
+Describe website
+↓
+AI generates website
+↓
+User uploads files or links
+↓
+User edits visually
+↓
+Preview
+↓
+Publish
+
+Total time: under two minutes.
+
+Final Goal
+
+Build a powerful AI SaaS platform that combines:
+
+AI generation
+chat-based editing
+drag-and-drop editing
+media uploads
+live preview
+instant publishing
+beautiful templates
+professional typography
+icons and images
+
+into a seamless website creation platform.

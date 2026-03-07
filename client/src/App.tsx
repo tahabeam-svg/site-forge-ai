@@ -11,6 +11,8 @@ import DashboardPage from "@/pages/dashboard";
 import EditorPage from "@/pages/editor";
 import PreviewPage from "@/pages/preview";
 import TemplatesPage from "@/pages/templates";
+import BillingPage from "@/pages/billing";
+import AdminPage from "@/pages/admin";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -48,6 +50,8 @@ function Router() {
       <Route path="/editor/:id">{() => <ProtectedRoute component={EditorPage} />}</Route>
       <Route path="/preview/:id">{() => <ProtectedRoute component={PreviewPage} />}</Route>
       <Route path="/templates">{() => <ProtectedRoute component={TemplatesPage} />}</Route>
+      <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
+      <Route path="/admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
       <Route component={NotFound} />
     </Switch>
   );

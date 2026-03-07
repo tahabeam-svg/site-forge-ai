@@ -1,7 +1,7 @@
 import { db } from "./db";
-import { projects, templates } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { projects, templates, chatMessages, users } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage } from "@shared/schema";
+import { eq, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
   getProjectsByUser(userId: string): Promise<Project[]>;
@@ -13,6 +13,13 @@ export interface IStorage {
   getTemplates(): Promise<Template[]>;
   getTemplate(id: number): Promise<Template | undefined>;
   createTemplate(template: InsertTemplate): Promise<Template>;
+
+  getChatMessages(projectId: number): Promise<ChatMessage[]>;
+  addChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+
+  getAllProjects(): Promise<Project[]>;
+  getAllUsers(): Promise<any[]>;
+  getStats(): Promise<{ totalUsers: number; totalProjects: number; publishedProjects: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -36,6 +43,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProject(id: number): Promise<void> {
+    await db.delete(chatMessages).where(eq(chatMessages.projectId, id));
     await db.delete(projects).where(eq(projects.id, id));
   }
 
@@ -51,6 +59,34 @@ export class DatabaseStorage implements IStorage {
   async createTemplate(template: InsertTemplate): Promise<Template> {
     const [newTemplate] = await db.insert(templates).values(template).returning();
     return newTemplate;
+  }
+
+  async getChatMessages(projectId: number): Promise<ChatMessage[]> {
+    return db.select().from(chatMessages).where(eq(chatMessages.projectId, projectId)).orderBy(chatMessages.createdAt);
+  }
+
+  async addChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [newMessage] = await db.insert(chatMessages).values(message).returning();
+    return newMessage;
+  }
+
+  async getAllProjects(): Promise<Project[]> {
+    return db.select().from(projects).orderBy(desc(projects.createdAt));
+  }
+
+  async getAllUsers(): Promise<any[]> {
+    return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getStats(): Promise<{ totalUsers: number; totalProjects: number; publishedProjects: number }> {
+    const [userCount] = await db.select({ value: count() }).from(users);
+    const [projectCount] = await db.select({ value: count() }).from(projects);
+    const [publishedCount] = await db.select({ value: count() }).from(projects).where(eq(projects.status, "published"));
+    return {
+      totalUsers: userCount?.value || 0,
+      totalProjects: projectCount?.value || 0,
+      publishedProjects: publishedCount?.value || 0,
+    };
   }
 }
 
