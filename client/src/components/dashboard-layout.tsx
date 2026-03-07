@@ -48,7 +48,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
       <SidebarProvider style={sidebarStyle}>
         <div className="flex h-screen w-full">
-          <Sidebar>
+          <Sidebar side={lang === "ar" ? "right" : "left"}>
             <SidebarHeader className="p-4">
               <button onClick={() => navigate("/")} className="flex items-center gap-2" data-testid="link-brand-sidebar">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
