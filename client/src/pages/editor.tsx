@@ -287,6 +287,9 @@ export default function EditorPage() {
 
   const getPreviewHtml = () => {
     if (!project?.generatedHtml) return "";
+    if (project.generatedHtml.trimStart().startsWith('<!DOCTYPE')) {
+      return project.generatedHtml;
+    }
     return `<!DOCTYPE html>
 <html lang="${lang}" dir="${lang === "ar" ? "rtl" : "ltr"}">
 <head>

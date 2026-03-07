@@ -13,7 +13,11 @@ import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/dashboard-layout";
 import { Crown, Sparkles, Loader2 } from "lucide-react";
 
-const categories = ["all", "corporate", "exhibition", "restaurant", "startup", "portfolio", "landing"] as const;
+const categories = [
+  "all", "corporate", "ecommerce", "exhibition", "restaurant", "startup", "portfolio",
+  "medical", "realestate", "marketing", "consulting", "education", "construction",
+  "logistics", "beauty", "fitness", "travel", "automotive", "legal", "nonprofit", "localservices"
+] as const;
 
 export default function TemplatesPage() {
   const { language } = useAuth();
@@ -107,7 +111,10 @@ export default function TemplatesPage() {
                     {template.previewHtml && (
                       <div className="absolute inset-0 p-2 overflow-hidden pointer-events-none">
                         <iframe
-                          srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.35);transform-origin:top left;width:285%;height:285%}${template.previewCss||""}</style></head><body>${template.previewHtml}</body></html>`}
+                          srcDoc={template.previewHtml?.startsWith('<!DOCTYPE')
+                            ? template.previewHtml.replace('</head>', `<style>body{transform:scale(0.25);transform-origin:top left;width:400%;height:400%;}</style></head>`)
+                            : `<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.35);transform-origin:top left;width:285%;height:285%}${template.previewCss||""}</style></head><body>${template.previewHtml}</body></html>`
+                          }
                           className="w-full h-full rounded bg-white border-0"
                           sandbox="allow-same-origin"
                           title="Template preview"

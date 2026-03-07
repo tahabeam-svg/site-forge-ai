@@ -497,7 +497,8 @@ export async function registerRoutes(
       const archive = archiver("zip", { zlib: { level: 9 } });
       archive.pipe(res);
 
-      const fullHtml = `<!DOCTYPE html>
+      const isFullDoc = project.generatedHtml!.trimStart().startsWith('<!DOCTYPE');
+      const fullHtml = isFullDoc ? project.generatedHtml! : `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
