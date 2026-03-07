@@ -36,6 +36,8 @@ import {
   Bot,
   User,
   X,
+  Paperclip,
+  ImagePlus,
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
@@ -98,9 +100,12 @@ export default function EditorPage() {
   const [generateDesc, setGenerateDesc] = useState("");
   const [activeTab, setActiveTab] = useState("chat");
   const [mediaUrl, setMediaUrl] = useState("");
+  const [chatImagePreview, setChatImagePreview] = useState<string | null>(null);
+  const [chatImageFile, setChatImageFile] = useState<File | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const chatFileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -200,6 +205,56 @@ export default function EditorPage() {
     },
   });
 
+  const chatUploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("files", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
+      if (!res.ok) throw new Error("Upload failed");
+      return res.json();
+    },
+    onSuccess: (data: { urls: string[] }) => {
+      const url = data.urls[0];
+      const userCmd = editCommand.trim();
+      let cmd: string;
+      if (userCmd) {
+        cmd = lang === "ar"
+          ? `${userCmd} - استخدم هذه الصورة: ${url}`
+          : `${userCmd} - Use this image: ${url}`;
+      } else {
+        cmd = lang === "ar"
+          ? `أضف هذا الشعار/الصورة في الموقع: ${url}`
+          : `Add this logo/image to the website: ${url}`;
+      }
+      setEditCommand("");
+      setChatImagePreview(null);
+      setChatImageFile(null);
+      editMutation.mutate(cmd);
+    },
+    onError: (err: Error) => {
+      toast({ title: t("error", lang), description: err.message, variant: "destructive" });
+    },
+  });
+
+  const handleChatImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setChatImageFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setChatImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+    if (chatFileInputRef.current) chatFileInputRef.current.value = "";
+  };
+
+  const handleSendWithImage = () => {
+    if (chatImageFile) {
+      chatUploadMutation.mutate(chatImageFile);
+    } else if (editCommand.trim()) {
+      editMutation.mutate(editCommand);
+      setEditCommand("");
+    }
+  };
+
   const handleFileUpload = () => {
     fileInputRef.current?.click();
   };
@@ -282,6 +337,13 @@ ${project.generatedHtml}
         accept="image/*,.svg"
         multiple
         onChange={handleFilesSelected}
+      />
+      <input
+        ref={chatFileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/*,.svg"
+        onChange={handleChatImageSelect}
       />
 
       <header className="flex items-center justify-between gap-2 px-4 py-2 border-b bg-background shrink-0">
@@ -421,6 +483,14 @@ ${project.generatedHtml}
                             ? "bg-emerald-50 dark:bg-emerald-950/30 text-foreground"
                             : "bg-muted text-muted-foreground"
                         }`}>
+                          {msg.role === "user" && msg.content.match(/\/uploads\/[^\s]+\.(jpg|jpeg|png|svg|webp|gif)/i) && (
+                            <img
+                              src={msg.content.match(/\/uploads\/[^\s]+\.(jpg|jpeg|png|svg|webp|gif)/i)?.[0]}
+                              alt=""
+                              className="h-12 w-auto rounded mb-1.5 object-cover"
+                              data-testid={`img-chat-uploaded-${msg.id}`}
+                            />
+                          )}
                           {msg.content}
                         </div>
                       </div>
@@ -456,13 +526,48 @@ ${project.generatedHtml}
                       </Button>
                     ))}
                   </div>
-                  <div className="flex gap-2">
+                  {chatImagePreview && (
+                    <div className="relative inline-block">
+                      <img
+                        src={chatImagePreview}
+                        alt="Preview"
+                        className="h-16 w-auto rounded-lg border object-cover"
+                        data-testid="img-chat-preview"
+                      />
+                      <button
+                        onClick={() => { setChatImagePreview(null); setChatImageFile(null); }}
+                        className="absolute -top-1.5 -end-1.5 w-5 h-5 rounded-full bg-destructive text-white flex items-center justify-center text-xs"
+                        data-testid="button-remove-chat-image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => chatFileInputRef.current?.click()}
+                      disabled={editMutation.isPending || chatUploadMutation.isPending}
+                      title={lang === "ar" ? "ارفع شعار أو صورة" : "Upload logo or image"}
+                      data-testid="button-chat-attach"
+                    >
+                      {chatUploadMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <ImagePlus className="w-4 h-4" />
+                      )}
+                    </Button>
                     <Input
                       value={editCommand}
                       onChange={(e) => setEditCommand(e.target.value)}
-                      placeholder={t("editCommandPlaceholder", lang)}
+                      placeholder={chatImageFile
+                        ? (lang === "ar" ? "أضف تعليمات للصورة (اختياري)..." : "Add instructions for the image (optional)...")
+                        : t("editCommandPlaceholder", lang)
+                      }
                       onKeyDown={(e) => {
-                        if (e.key === "Enter" && editCommand) editMutation.mutate(editCommand);
+                        if (e.key === "Enter") handleSendWithImage();
                       }}
                       className="text-sm"
                       data-testid="input-edit-command"
@@ -470,11 +575,11 @@ ${project.generatedHtml}
                     <Button
                       size="icon"
                       className="shrink-0 bg-gradient-to-r from-emerald-500 to-teal-600"
-                      onClick={() => editMutation.mutate(editCommand)}
-                      disabled={!editCommand || editMutation.isPending}
+                      onClick={handleSendWithImage}
+                      disabled={(!editCommand && !chatImageFile) || editMutation.isPending || chatUploadMutation.isPending}
                       data-testid="button-apply-edit"
                     >
-                      {editMutation.isPending ? (
+                      {(editMutation.isPending || chatUploadMutation.isPending) ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
                         <Send className="w-4 h-4" />
