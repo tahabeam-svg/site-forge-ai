@@ -1,15 +1,156 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, User, ArrowRight, Globe, Sparkles, Zap, Shield, Layers, Code2, Palette } from "lucide-react";
+import { Loader2, Mail, Lock, User, ArrowRight, Globe, Sparkles, Zap, Code2, Palette, CheckCircle2, Play } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 
 function FloatingOrb({ className }: { className: string }) {
   return <div className={`absolute rounded-full blur-3xl animate-pulse ${className}`} />;
+}
+
+function LiveCodeDemo({ isAr }: { isAr: boolean }) {
+  const [lines, setLines] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const codeSteps = [
+    { text: '> arabyweb build --template "business"', color: "text-emerald-300" },
+    { text: isAr ? "  تحليل الطلب..." : "  Analyzing request...", color: "text-gray-400" },
+    { text: isAr ? "  إنشاء هيكل HTML..." : "  Generating HTML structure...", color: "text-cyan-300" },
+    { text: '  <header class="hero-section">', color: "text-blue-300" },
+    { text: '    <nav class="navbar">...</nav>', color: "text-blue-300/70" },
+    { text: '    <h1>Welcome</h1>', color: "text-blue-300/70" },
+    { text: "  </header>", color: "text-blue-300" },
+    { text: isAr ? "  تطبيق الأنماط CSS..." : "  Applying CSS styles...", color: "text-cyan-300" },
+    { text: "  .hero { background: linear-gradient(...) }", color: "text-purple-300" },
+    { text: isAr ? "  إضافة التجاوب responsive..." : "  Adding responsive design...", color: "text-cyan-300" },
+    { text: isAr ? "  تحسين SEO..." : "  Optimizing SEO...", color: "text-cyan-300" },
+    { text: "", color: "" },
+    { text: isAr ? "  موقعك جاهز للنشر!" : "  Your website is ready to deploy!", color: "text-emerald-400" },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentStep(prev => {
+        if (prev < codeSteps.length) {
+          setLines(l => [...l, codeSteps[prev].text]);
+          if (prev === codeSteps.length - 1) {
+            setTimeout(() => setShowPreview(true), 400);
+          }
+          return prev + 1;
+        }
+        setLines([]);
+        setShowPreview(false);
+        return 0;
+      });
+    }, 600);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
+  }, [lines]);
+
+  return (
+    <div className="mt-8 bg-[#0d1117] rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.03] border-b border-white/[0.06]">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-red-500/80" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+          <div className="w-3 h-3 rounded-full bg-green-500/80" />
+        </div>
+        <div className="flex-1 text-center">
+          <span className="text-[10px] text-white/30 font-mono">terminal</span>
+        </div>
+        <Play className="w-3 h-3 text-emerald-400/60" />
+      </div>
+
+      <div ref={containerRef} className="p-4 h-[180px] overflow-y-auto font-mono text-xs leading-relaxed" dir="ltr">
+        {lines.map((line, i) => {
+          const step = codeSteps[i];
+          return (
+            <div
+              key={i}
+              className={`${step?.color || "text-gray-400"} transition-opacity duration-300`}
+              style={{ opacity: 1 }}
+            >
+              {line === "" ? "\u00A0" : line}
+              {i === lines.length - 1 && currentStep < codeSteps.length && (
+                <span className="inline-block w-2 h-4 bg-emerald-400 ms-0.5 animate-pulse" />
+              )}
+            </div>
+          );
+        })}
+        {lines.length === 0 && (
+          <div className="text-gray-500">
+            <span className="text-emerald-400">$</span> <span className="inline-block w-2 h-4 bg-emerald-400 animate-pulse" />
+          </div>
+        )}
+      </div>
+
+      {showPreview && (
+        <div className="border-t border-white/[0.06] px-4 py-3 bg-emerald-500/[0.05] flex items-center gap-3">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+          <span className="text-emerald-300 text-xs font-medium">
+            {isAr ? "تم بناء الموقع بنجاح في 1.8 ثانية" : "Website built successfully in 1.8s"}
+          </span>
+          <div className="ms-auto flex gap-1">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            <span className="text-emerald-400/60 text-[10px]">LIVE</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SpeedCounter({ isAr }: { isAr: boolean }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const target = 2847;
+    const duration = 2000;
+    const step = target / (duration / 16);
+    const interval = setInterval(() => {
+      setCount(prev => {
+        if (prev >= target) { clearInterval(interval); return target; }
+        return Math.min(prev + step, target);
+      });
+    }, 16);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex items-center gap-6 mt-6">
+      <div className="text-center">
+        <div className="text-2xl font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
+          {Math.floor(count).toLocaleString()}+
+        </div>
+        <div className="text-[10px] text-white/50 mt-0.5">{isAr ? "موقع تم بناؤه" : "Sites Built"}</div>
+      </div>
+      <div className="w-px h-8 bg-white/10" />
+      <div className="text-center">
+        <div className="text-2xl font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
+          {"<"} 2{isAr ? " دقيقة" : " min"}
+        </div>
+        <div className="text-[10px] text-white/50 mt-0.5">{isAr ? "متوسط وقت البناء" : "Avg. Build Time"}</div>
+      </div>
+      <div className="w-px h-8 bg-white/10" />
+      <div className="text-center">
+        <div className="text-2xl font-bold text-white" style={{ fontFamily: "'Cairo', sans-serif" }}>
+          400+
+        </div>
+        <div className="text-[10px] text-white/50 mt-0.5">{isAr ? "قالب جاهز" : "Templates"}</div>
+      </div>
+    </div>
+  );
 }
 
 export default function AuthPage() {
@@ -69,16 +210,16 @@ export default function AuthPage() {
 
   const features = isAr
     ? [
-        { icon: Sparkles, text: "بناء مواقع بالذكاء الاصطناعي", desc: "صِف موقعك واحصل عليه جاهزاً" },
-        { icon: Zap, text: "نشر فوري بضغطة واحدة", desc: "انشر موقعك على الإنترنت فوراً" },
-        { icon: Palette, text: "قوالب احترافية جاهزة", desc: "أكثر من 400 قالب عربي مميز" },
-        { icon: Code2, text: "تحكم كامل بالكود", desc: "صدّر موقعك وعدّل عليه بحرية" },
+        { icon: Sparkles, text: "ذكاء اصطناعي متقدم" },
+        { icon: Zap, text: "نشر فوري" },
+        { icon: Palette, text: "400+ قالب" },
+        { icon: Code2, text: "تحكم كامل" },
       ]
     : [
-        { icon: Sparkles, text: "AI-Powered Builder", desc: "Describe your site and get it ready" },
-        { icon: Zap, text: "One-Click Deploy", desc: "Publish instantly to the web" },
-        { icon: Palette, text: "400+ Templates", desc: "Professional Arabic-ready templates" },
-        { icon: Code2, text: "Full Code Control", desc: "Export and customize freely" },
+        { icon: Sparkles, text: "Advanced AI" },
+        { icon: Zap, text: "Instant Deploy" },
+        { icon: Palette, text: "400+ Templates" },
+        { icon: Code2, text: "Full Control" },
       ];
 
   return (
@@ -103,78 +244,56 @@ export default function AuthPage() {
           }}
         />
 
-        <div className={`relative z-10 px-16 max-w-xl transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <div className="mb-10">
-            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 mb-8">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                <Globe className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-white/90 text-sm font-medium tracking-wide">ArabyWeb.net</span>
+        <div className={`relative z-10 px-12 xl:px-16 max-w-2xl w-full transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+          <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-5 py-2.5 mb-6">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <Globe className="w-4 h-4 text-white" />
             </div>
-
-            <h2 className="text-5xl font-bold text-white mb-5 leading-tight" style={{ fontFamily: "'Cairo', sans-serif" }}>
-              {isAr ? (
-                <>
-                  ابنِ موقعك
-                  <br />
-                  <span className="bg-gradient-to-l from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
-                    بقوة الذكاء الاصطناعي
-                  </span>
-                </>
-              ) : (
-                <>
-                  Build Your Website
-                  <br />
-                  <span className="bg-gradient-to-r from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
-                    Powered by AI
-                  </span>
-                </>
-              )}
-            </h2>
-            <p className="text-lg text-emerald-100/80 leading-relaxed max-w-md">
-              {isAr
-                ? "المنصة الأولى عربياً لبناء المواقع الاحترافية بالذكاء الاصطناعي في ثوانٍ معدودة."
-                : "The leading Arabic platform for building professional websites with AI in seconds."}
-            </p>
+            <span className="text-white/90 text-sm font-medium tracking-wide">ArabyWeb.net</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {features.map((feature, i) => (
+          <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight" style={{ fontFamily: "'Cairo', sans-serif" }}>
+            {isAr ? (
+              <>
+                ابنِ موقعك
+                <br />
+                <span className="bg-gradient-to-l from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+                  بسرعة البرق
+                </span>
+              </>
+            ) : (
+              <>
+                Build Websites
+                <br />
+                <span className="bg-gradient-to-r from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+                  Lightning Fast
+                </span>
+              </>
+            )}
+          </h2>
+
+          <p className="text-base text-emerald-100/70 leading-relaxed max-w-md mb-6">
+            {isAr
+              ? "صِف موقعك بكلماتك، ودع الذكاء الاصطناعي يبنيه لك بكود احترافي في ثوانٍ."
+              : "Describe your website in words, and let AI build it with professional code in seconds."}
+          </p>
+
+          <div className="flex flex-wrap gap-2 mb-2">
+            {features.map((f, i) => (
               <div
                 key={i}
-                className={`group bg-white/[0.07] hover:bg-white/[0.12] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
-                style={{ transitionDelay: `${(i + 1) * 150}ms` }}
+                className={`inline-flex items-center gap-2 bg-white/[0.08] backdrop-blur-sm border border-white/[0.1] rounded-full px-4 py-2 transition-all duration-300 hover:bg-white/[0.15] ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+                style={{ transitionDelay: `${(i + 1) * 100}ms` }}
               >
-                <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center mb-3 group-hover:bg-white/25 transition-colors">
-                  <feature.icon className="w-5 h-5 text-emerald-200" />
-                </div>
-                <h3 className="text-white font-semibold text-sm mb-1" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                  {feature.text}
-                </h3>
-                <p className="text-white/50 text-xs leading-relaxed">{feature.desc}</p>
+                <f.icon className="w-4 h-4 text-emerald-300" />
+                <span className="text-white/90 text-sm font-medium" style={{ fontFamily: "'Cairo', sans-serif" }}>{f.text}</span>
               </div>
             ))}
           </div>
 
-          <div className="mt-10 flex items-center gap-4">
-            <div className="flex -space-x-2 rtl:space-x-reverse">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="w-8 h-8 rounded-full border-2 border-emerald-700 bg-gradient-to-br from-emerald-300 to-teal-400" />
-              ))}
-            </div>
-            <div>
-              <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-3.5 h-3.5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-white/60 text-xs mt-0.5">
-                {isAr ? "موثوق من آلاف المستخدمين" : "Trusted by thousands of users"}
-              </p>
-            </div>
-          </div>
+          <LiveCodeDemo isAr={isAr} />
+
+          <SpeedCounter isAr={isAr} />
         </div>
       </div>
 
@@ -203,7 +322,7 @@ export default function AuthPage() {
               ArabyWeb.net
             </h1>
             <p className="text-muted-foreground mt-1 text-sm">
-              {isAr ? "ابنِ موقعك الاحترافي بالذكاء الاصطناعي" : "Build your professional website with AI"}
+              {isAr ? "ابنِ موقعك الاحترافي بسرعة البرق" : "Build your website lightning fast"}
             </p>
           </div>
 
