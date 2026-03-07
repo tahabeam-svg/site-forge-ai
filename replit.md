@@ -18,7 +18,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - AI website generation from text descriptions with stock images (Unsplash)
 - AI-powered editing via chat commands with conversation history
 - Live preview with responsive viewport switching (desktop/tablet/mobile)
-- Template marketplace (19 templates across 7 categories: corporate, exhibition, restaurant, startup, portfolio, landing, ecommerce)
+- Template marketplace (140 templates — 20 per category across 7 categories: corporate, exhibition, restaurant, startup, portfolio, landing, ecommerce; Arabic-first with Cairo/Tajawal fonts, Unsplash hero images, gradient backgrounds, encouraging CTAs)
 - File upload system (images, logos, SVG)
 - Media embedding (YouTube/Vimeo) via AI chat
 - Enhanced editor with 4 tabs: Chat, Sections, Media, Style

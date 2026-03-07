@@ -1,0 +1,86 @@
+Create a large professional template library for the AI Website Builder platform.
+
+The platform must generate 20 templates for each business category and all templates must be designed primarily in Arabic with RTL layout.
+
+Use beautiful Arabic fonts such as:
+
+Cairo
+Tajawal
+IBM Plex Arabic
+
+Templates must look modern and attractive like premium agency websites.
+
+Each template must include:
+
+• responsive layout  
+• hero section with high quality image  
+• modern typography  
+• icons  
+• gallery  
+• services section  
+• testimonials  
+• call to action  
+• contact form  
+• Google maps section  
+
+Images must be automatically loaded from high quality stock sources such as:
+
+Unsplash
+Pexels
+
+Icons must come from Lucide icon library.
+
+--------------------------------------------------
+
+BUSINESS CATEGORIES
+
+Generate 20 templates for each of the following categories:
+
+1 Corporate companies  
+2 E-commerce stores  
+3 Restaurants and cafes  
+4 Medical clinics  
+5 Real estate agencies  
+6 Exhibitions and events  
+7 Marketing agencies  
+8 Consulting firms  
+9 Educational platforms  
+10 Personal portfolio  
+11 Construction companies  
+12 Logistics and shipping companies  
+13 Beauty salons and spas  
+14 Fitness gyms  
+15 Travel and tourism agencies  
+16 Car dealerships  
+17 Law firms  
+18 Technology startups  
+19 Non-profit organizations  
+20 Local services businesses  
+
+--------------------------------------------------
+
+TEMPLATE EXPERIENCE
+
+Users must be able to:
+
+Preview template
+Select template
+Start building website immediately from the template.
+
+--------------------------------------------------
+
+DESIGN QUALITY
+
+Templates must look premium and visually impressive.
+
+Use:
+
+large hero images
+smooth animations
+modern layout grids
+clear typography
+beautiful color palettes
+
+The goal is to make users feel confident launching their website immediately.
+
+Generate at least 20 design variations per category with different layouts and image styles.

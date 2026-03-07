@@ -396,7 +396,7 @@ ${project.generatedHtml}
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-96 shrink-0 border-e bg-background flex flex-col overflow-hidden">
+        <div className="w-[480px] shrink-0 border-e bg-background flex flex-col overflow-hidden">
           {!project.generatedHtml ? (
             <div className="p-4">
               <Card className="p-5">
@@ -462,23 +462,23 @@ ${project.generatedHtml}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0 px-3 pb-3">
-                <ScrollArea className="flex-1 mt-2">
-                  <div className="space-y-3 pe-2">
+              <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0 px-4 pb-3">
+                <ScrollArea className="flex-1 mt-3">
+                  <div className="space-y-4 pe-2">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
                         className={`flex gap-2 ${msg.role === "user" ? "" : ""}`}
                         data-testid={`chat-message-${msg.id}`}
                       >
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                           msg.role === "user"
                             ? "bg-emerald-100 text-emerald-700"
                             : "bg-violet-100 text-violet-700"
                         }`}>
-                          {msg.role === "user" ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                          {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                         </div>
-                        <div className={`text-sm rounded-lg px-3 py-2 max-w-[85%] ${
+                        <div className={`text-[0.9rem] leading-relaxed rounded-xl px-4 py-2.5 max-w-[88%] ${
                           msg.role === "user"
                             ? "bg-emerald-50 dark:bg-emerald-950/30 text-foreground"
                             : "bg-muted text-muted-foreground"
@@ -497,11 +497,11 @@ ${project.generatedHtml}
                     ))}
                     {editMutation.isPending && (
                       <div className="flex gap-2">
-                        <div className="w-7 h-7 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
-                          <Bot className="w-3.5 h-3.5" />
+                        <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
+                          <Bot className="w-4 h-4" />
                         </div>
-                        <div className="text-sm bg-muted rounded-lg px-3 py-2 flex items-center gap-2">
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <div className="text-[0.9rem] bg-muted rounded-xl px-4 py-2.5 flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
                           {lang === "ar" ? "جاري التعديل..." : "Applying changes..."}
                         </div>
                       </div>
