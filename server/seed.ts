@@ -1,9 +1,20 @@
 import { db } from "./db";
+import { sql } from "drizzle-orm";
 import { templates } from "@shared/schema";
 import { generateFullTemplate } from "./template-generator";
 import { allCategories, gradients, accents } from "./seed-data";
 
 export async function seedDatabase() {
+  try {
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 5`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR DEFAULT 'free'`);
+    await db.execute(sql`UPDATE users SET credits = 5 WHERE credits IS NULL`);
+    await db.execute(sql`UPDATE users SET plan = 'free' WHERE plan IS NULL`);
+    console.log("Migration: credits & plan columns ensured");
+  } catch (e: any) {
+    console.error("Migration warning:", e.message);
+  }
+
   const existing = await db.select().from(templates);
   if (existing.length > 0) return;
 
