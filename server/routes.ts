@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { generateWebsite, editWebsiteWithAI, generateSocialContent } from "./ai";
+import { getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -409,6 +410,74 @@ export async function registerRoutes(
     } catch (err) {
       console.error("Marketing generation error:", err);
       res.status(500).json({ message: "Failed to generate content" });
+    }
+  });
+
+  app.get("/api/github/user", isAuthenticated, async (req: any, res) => {
+    try {
+      const user = await getGitHubUser();
+      res.json(user);
+    } catch (err) {
+      console.error("GitHub user error:", err);
+      res.status(500).json({ message: "Failed to get GitHub user" });
+    }
+  });
+
+  app.get("/api/github/repos", isAuthenticated, async (req: any, res) => {
+    try {
+      const repos = await listUserRepos();
+      res.json(repos);
+    } catch (err) {
+      console.error("GitHub repos error:", err);
+      res.status(500).json({ message: "Failed to list repositories" });
+    }
+  });
+
+  app.post("/api/github/repos", isAuthenticated, async (req: any, res) => {
+    try {
+      const { name, description, isPrivate } = req.body;
+      if (!name) return res.status(400).json({ message: "Repository name is required" });
+      const repo = await createRepo(name, description || "", isPrivate || false);
+      res.json(repo);
+    } catch (err) {
+      console.error("GitHub create repo error:", err);
+      res.status(500).json({ message: "Failed to create repository" });
+    }
+  });
+
+  app.post("/api/github/deploy/:projectId", isAuthenticated, async (req: any, res) => {
+    try {
+      const project = await storage.getProject(parseInt(req.params.projectId));
+      if (!project) return res.status(404).json({ message: "Project not found" });
+      const userId = req.user.claims.sub;
+      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      if (!project.generatedHtml) return res.status(400).json({ message: "Project has no generated content" });
+
+      const deploySchema = z.object({
+        owner: z.string().min(1).max(100).regex(/^[a-zA-Z0-9_-]+$/),
+        repo: z.string().min(1).max(100).regex(/^[a-zA-Z0-9._-]+$/),
+      });
+      const parsed = deploySchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid owner or repo name" });
+
+      const ghUser = await getGitHubUser();
+      if (parsed.data.owner !== ghUser.login) {
+        return res.status(403).json({ message: "You can only deploy to your own repositories" });
+      }
+
+      const result = await pushWebsiteToRepo(
+        parsed.data.owner,
+        parsed.data.repo,
+        project.generatedHtml,
+        project.generatedCss || "",
+        project.name,
+        project.seoTitle || undefined,
+        project.seoDescription || undefined
+      );
+      res.json(result);
+    } catch (err) {
+      console.error("GitHub deploy error:", err);
+      res.status(500).json({ message: "Failed to deploy to GitHub" });
     }
   });
 

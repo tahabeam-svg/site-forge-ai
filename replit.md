@@ -35,6 +35,8 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Domains page (custom domain management, DNS instructions)
 - Payment Methods page (add/remove cards, set default, Mada/Apple Pay support)
 - Website export/download as ZIP (static HTML/CSS with bilingual README)
+- GitHub deployment integration (push to GitHub repo, with Hostinger connection guide)
+- Image/logo upload directly in AI chat conversation (with preview and instructions)
 - Publish system
 - Hidden admin panel (accessible only via direct URL /admin or /secure-admin, not in sidebar)
 - Marketing services section on landing page with tiered pricing
@@ -75,6 +77,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `client/src/pages/domains.tsx` - Domain management
 - `client/src/pages/payment-methods.tsx` - Payment methods management
 - `client/src/components/dashboard-layout.tsx` - Sidebar layout for dashboard
+- `client/src/pages/github-deploy.tsx` - GitHub deployment and Hostinger guide
 - `client/src/components/language-toggle.tsx` - EN/AR language toggle
 
 ## Database Tables
@@ -114,6 +117,10 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `PATCH /api/admin/users/:id/suspend` - Suspend user
 - `POST /api/marketing/generate` - Generate social media content with AI
 - `GET /api/projects/:id/export` - Export/download project as ZIP file
+- `GET /api/github/user` - Get connected GitHub user info
+- `GET /api/github/repos` - List user's GitHub repositories
+- `POST /api/github/repos` - Create new GitHub repository
+- `POST /api/github/deploy/:projectId` - Push project website to GitHub repo
 
 ## Pricing (Saudi Riyals)
 

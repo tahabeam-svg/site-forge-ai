@@ -15,7 +15,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FolderOpen, LayoutTemplate, Settings, LogOut, Globe2, CreditCard, Shield, Sparkles, BarChart3, Globe, Wallet } from "lucide-react";
+import { LayoutDashboard, FolderOpen, LayoutTemplate, Settings, LogOut, Globe2, CreditCard, Shield, Sparkles, BarChart3, Globe, Wallet, Github } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
 
 const sidebarStyle = {
@@ -36,6 +36,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: t("billing", lang), url: "/billing", icon: CreditCard },
     { title: lang === "ar" ? "طرق الدفع" : "Payment Methods", url: "/payment-methods", icon: Wallet },
     { title: lang === "ar" ? "التسويق بالذكاء الاصطناعي" : "AI Marketing", url: "/marketing", icon: Sparkles },
+    { title: lang === "ar" ? "نشر GitHub" : "GitHub Deploy", url: "/github-deploy", icon: Github },
     { title: t("settings", lang), url: "/settings", icon: Settings },
   ];
 
