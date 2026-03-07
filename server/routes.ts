@@ -448,10 +448,26 @@ export async function registerRoutes(
   app.get("/api/subscription", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
       const sub = await storage.getSubscriptionByUser(userId);
-      res.json(sub || { plan: "free", status: "active" });
+      res.json({
+        plan: user?.plan || "free",
+        status: sub?.status || "active",
+        credits: user?.credits ?? 5,
+        endDate: sub?.endDate || null,
+      });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch subscription" });
+    }
+  });
+
+  app.get("/api/credits", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      res.json({ credits: user?.credits ?? 5, plan: user?.plan || "free" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch credits" });
     }
   });
 
@@ -540,6 +556,9 @@ export async function registerRoutes(
           startDate: now,
           endDate,
         });
+        const planCredits: Record<string, number> = { pro: 50, business: 9999 };
+        const newCredits = planCredits[sub.plan] || 5;
+        await db.update(users).set({ plan: sub.plan, credits: newCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
       } else {
         await storage.updateSubscription(sub.id, {
           status: "failed",

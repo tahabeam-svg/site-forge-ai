@@ -84,7 +84,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 ## Database Tables
 
-- `users` - id (varchar, UUID), email, password (bcrypt hash), firstName, lastName, profileImageUrl, googleId, isAdmin, githubToken, githubUsername, createdAt, updatedAt
+- `users` - id (varchar, UUID), email, password (bcrypt hash), firstName, lastName, profileImageUrl, googleId, isAdmin, credits (integer, default 5), plan (varchar, default 'free'), githubToken, githubUsername, createdAt, updatedAt
 - `sessions` - sid (varchar PK), sess (jsonb), expire (timestamp)
 - `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), createdAt, updatedAt
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
@@ -138,17 +138,13 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `POST /api/github/repos` - Create new GitHub repository (per-user token)
 - `POST /api/github/deploy/:projectId` - Push project website to GitHub repo (per-user token)
 
-## Pricing (Saudi Riyals)
+## Pricing (Credits System)
 
-- Free: مجاناً (1 website)
-- Pro: ٤٩ ر.س/month (10 websites)
-- Business: ٩٩ ر.س/month (unlimited)
+- Free: 5 credits/month (1 website)
+- Pro: 49 SAR/month — 50 credits/month (10 websites)
+- Business: 99 SAR/month — Unlimited credits (unlimited websites)
 
-## AI Marketing Pricing (USD)
-
-- Starter: $9/month (20 posts)
-- Growth: $19/month (60 posts)
-- Pro Marketing: $39/month (unlimited)
+Credits usage: 1 credit per AI generation, 1 per AI edit, 1 per AI marketing post
 
 ## Language Default
 

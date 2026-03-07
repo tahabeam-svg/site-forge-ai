@@ -15,6 +15,7 @@ import {
   Building2,
   Loader2,
   ExternalLink,
+  Coins,
 } from "lucide-react";
 
 export default function BillingPage() {
@@ -23,7 +24,7 @@ export default function BillingPage() {
   const { toast } = useToast();
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
 
-  const { data: subscription } = useQuery<{ plan: string; status: string; endDate?: string }>({
+  const { data: subscription } = useQuery<{ plan: string; status: string; credits: number; endDate?: string }>({
     queryKey: ["/api/subscription"],
   });
 
@@ -74,9 +75,10 @@ export default function BillingPage() {
       price: lang === "ar" ? "مجاناً" : "Free",
       priceNum: "0",
       icon: Zap,
+      credits: 5,
       features: lang === "ar"
-        ? ["موقع واحد", "نطاق فرعي مجاني", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع"]
-        : ["1 website", "Platform subdomain", "Basic AI generation", "Community support"],
+        ? ["5 نقاط/شهرياً", "موقع واحد", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع"]
+        : ["5 credits/month", "1 website", "Basic AI generation", "Community support"],
     },
     {
       id: "pro",
@@ -84,9 +86,10 @@ export default function BillingPage() {
       price: lang === "ar" ? "49 ر.س" : "49 SAR",
       priceNum: "49",
       icon: Crown,
+      credits: 50,
       features: lang === "ar"
-        ? ["حتى 10 مواقع", "نطاق مخصص (.sa)", "لوحة تحليلات", "تعديل متقدم بالذكاء الاصطناعي"]
-        : ["Up to 10 websites", "Custom domain (.sa)", "Analytics dashboard", "Advanced AI editing"],
+        ? ["50 نقطة/شهرياً", "حتى 10 مواقع", "لوحة تحليلات متقدمة", "تعديل متقدم بالذكاء الاصطناعي"]
+        : ["50 credits/month", "Up to 10 websites", "Analytics dashboard", "Advanced AI editing"],
     },
     {
       id: "business",
@@ -94,9 +97,10 @@ export default function BillingPage() {
       price: lang === "ar" ? "99 ر.س" : "99 SAR",
       priceNum: "99",
       icon: Building2,
+      credits: -1,
       features: lang === "ar"
-        ? ["مواقع غير محدودة", "قوالب حصرية", "تعاون الفريق", "علامة بيضاء"]
-        : ["Unlimited websites", "Premium templates", "Team collaboration", "White-label"],
+        ? ["نقاط غير محدودة", "مواقع غير محدودة", "قوالب حصرية ومتميزة", "تعاون الفريق"]
+        : ["Unlimited credits", "Unlimited websites", "Premium templates", "Team collaboration"],
     },
   ];
 
@@ -108,12 +112,12 @@ export default function BillingPage() {
             {lang === "ar" ? "الفوترة والاشتراك" : "Billing & Subscription"}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {lang === "ar" ? "إدارة خطتك وفواتيرك" : "Manage your plan and invoices"}
+            {lang === "ar" ? "إدارة خطتك ونقاطك" : "Manage your plan and credits"}
           </p>
         </div>
 
-        <Card className="p-5">
-          <div className="flex items-center justify-between">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <Card className="p-5">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-white" />
@@ -125,15 +129,56 @@ export default function BillingPage() {
                 <p className="text-sm text-muted-foreground">
                   {subscription?.endDate
                     ? (lang === "ar" ? `ينتهي في ${new Date(subscription.endDate).toLocaleDateString("ar")}` : `Expires on ${new Date(subscription.endDate).toLocaleDateString()}`)
-                    : (lang === "ar" ? "اشتراك مجاني بدون تاريخ انتهاء" : "Free plan — no expiry")}
+                    : (lang === "ar" ? "اشتراك مجاني" : "Free plan")}
                 </p>
               </div>
             </div>
-            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700" data-testid="badge-plan-status">
+          </Card>
+
+          <Card className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+                <Coins className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold" data-testid="text-credits-balance">
+                  {lang === "ar" ? "رصيد النقاط" : "Credits Balance"}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {currentPlan === "business"
+                    ? (lang === "ar" ? "غير محدود" : "Unlimited")
+                    : (lang === "ar"
+                      ? `${subscription?.credits ?? 5} نقطة متاحة`
+                      : `${subscription?.credits ?? 5} credits available`)}
+                </p>
+              </div>
+            </div>
+            <Badge variant="secondary" className="mt-2 bg-emerald-100 text-emerald-700" data-testid="badge-plan-status">
               {subscription?.status === "active" ? (lang === "ar" ? "نشط" : "Active") : (lang === "ar" ? "غير نشط" : "Inactive")}
             </Badge>
+          </Card>
+        </div>
+
+        <div className="p-4 rounded-lg bg-muted/50 border">
+          <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
+            <Coins className="w-4 h-4 text-amber-500" />
+            {lang === "ar" ? "كيف تعمل النقاط؟" : "How do credits work?"}
+          </h3>
+          <div className="grid sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
+            <div>
+              <p className="font-medium text-foreground">{lang === "ar" ? "إنشاء موقع" : "Generate website"}</p>
+              <p>{lang === "ar" ? "1 نقطة لكل إنشاء" : "1 credit per generation"}</p>
+            </div>
+            <div>
+              <p className="font-medium text-foreground">{lang === "ar" ? "تعديل بالذكاء الاصطناعي" : "AI editing"}</p>
+              <p>{lang === "ar" ? "1 نقطة لكل تعديل" : "1 credit per edit"}</p>
+            </div>
+            <div>
+              <p className="font-medium text-foreground">{lang === "ar" ? "تسويق بالذكاء الاصطناعي" : "AI marketing"}</p>
+              <p>{lang === "ar" ? "1 نقطة لكل منشور" : "1 credit per post"}</p>
+            </div>
           </div>
-        </Card>
+        </div>
 
         <div>
           <h2 className="text-lg font-semibold mb-4" data-testid="text-plans-title">
@@ -161,6 +206,14 @@ export default function BillingPage() {
                           {lang === "ar" ? "/شهرياً" : "/month"}
                         </span>
                       )}
+                    </div>
+                    <div className="mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        <Coins className="w-3 h-3 me-1" />
+                        {plan.credits === -1
+                          ? (lang === "ar" ? "نقاط غير محدودة" : "Unlimited credits")
+                          : (lang === "ar" ? `${plan.credits} نقطة/شهرياً` : `${plan.credits} credits/month`)}
+                      </Badge>
                     </div>
                   </div>
                   <ul className="space-y-2 mb-4">
