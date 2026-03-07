@@ -77,19 +77,6 @@ process.on("unhandledRejection", (err) => {
     console.log("DATABASE_URL:", process.env.DATABASE_URL ? "SET" : "NOT SET");
     console.log("SESSION_SECRET:", process.env.SESSION_SECRET ? "SET" : "NOT SET");
 
-    if (process.env.NODE_ENV === "production") {
-      try {
-        serveStatic(app);
-        console.log("Static files configured");
-      } catch (e: any) {
-        console.error("Static files error:", e.message);
-      }
-    }
-
-    httpServer.listen(port, "0.0.0.0", () => {
-      log(`serving on port ${port}`);
-    });
-
     const { seedDatabase } = await import("./seed");
     await seedDatabase().catch((e: any) => console.error("Seed error:", e.message));
 
@@ -109,10 +96,21 @@ process.on("unhandledRejection", (err) => {
       return res.status(status).json({ message });
     });
 
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV === "production") {
+      try {
+        serveStatic(app);
+        console.log("Static files configured");
+      } catch (e: any) {
+        console.error("Static files error:", e.message);
+      }
+    } else {
       const { setupVite } = await import("./vite");
       await setupVite(httpServer, app);
     }
+
+    httpServer.listen(port, "0.0.0.0", () => {
+      log(`serving on port ${port}`);
+    });
   } catch (err) {
     console.error("FATAL STARTUP ERROR:", err);
     process.exit(1);
