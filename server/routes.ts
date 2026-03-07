@@ -556,7 +556,7 @@ export async function registerRoutes(
           startDate: now,
           endDate,
         });
-        const planCredits: Record<string, number> = { pro: 50, business: 9999 };
+        const planCredits: Record<string, number> = { pro: 50, business: 200 };
         const newCredits = planCredits[sub.plan] || 5;
         await db.update(users).set({ plan: sub.plan, credits: newCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
       } else {

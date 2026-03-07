@@ -16,6 +16,8 @@ import {
   Loader2,
   ExternalLink,
   Coins,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 
 export default function BillingPage() {
@@ -23,6 +25,7 @@ export default function BillingPage() {
   const lang = language;
   const { toast } = useToast();
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   const { data: subscription } = useQuery<{ plan: string; status: string; credits: number; endDate?: string }>({
     queryKey: ["/api/subscription"],
@@ -36,7 +39,7 @@ export default function BillingPage() {
 
   const upgradeMutation = useMutation({
     mutationFn: async (plan: string) => {
-      const res = await apiRequest("POST", "/api/payments/initiate", { plan });
+      const res = await apiRequest("POST", "/api/payments/initiate", { plan, billingCycle });
       return res.json();
     },
     onSuccess: (data: { iframeUrl: string }) => {
@@ -68,12 +71,23 @@ export default function BillingPage() {
     upgradeMutation.mutate(plan);
   };
 
+  const isYearly = billingCycle === "yearly";
+  const discount = 0.8;
+
+  const proMonthly = 49;
+  const businessMonthly = 99;
+  const proYearly = Math.round(proMonthly * 12 * discount);
+  const businessYearly = Math.round(businessMonthly * 12 * discount);
+  const proYearlyPerMonth = Math.round(proYearly / 12);
+  const businessYearlyPerMonth = Math.round(businessYearly / 12);
+
   const plans = [
     {
       id: "free",
       name: lang === "ar" ? "مجاني" : "Free",
       price: lang === "ar" ? "مجاناً" : "Free",
-      priceNum: "0",
+      priceNum: 0,
+      yearlyTotal: 0,
       icon: Zap,
       credits: 5,
       features: lang === "ar"
@@ -83,24 +97,30 @@ export default function BillingPage() {
     {
       id: "pro",
       name: lang === "ar" ? "احترافي" : "Pro",
-      price: lang === "ar" ? "49 ر.س" : "49 SAR",
-      priceNum: "49",
+      price: isYearly
+        ? (lang === "ar" ? `${proYearlyPerMonth} ر.س` : `${proYearlyPerMonth} SAR`)
+        : (lang === "ar" ? `${proMonthly} ر.س` : `${proMonthly} SAR`),
+      priceNum: isYearly ? proYearlyPerMonth : proMonthly,
+      yearlyTotal: proYearly,
       icon: Crown,
       credits: 50,
       features: lang === "ar"
-        ? ["50 نقطة/شهرياً", "حتى 10 مواقع", "لوحة تحليلات متقدمة", "تعديل متقدم بالذكاء الاصطناعي"]
-        : ["50 credits/month", "Up to 10 websites", "Analytics dashboard", "Advanced AI editing"],
+        ? ["50 نقطة/شهرياً", "حتى 10 مواقع", "حتى 50 منشور تسويقي", "لوحة تحليلات متقدمة", "تعديل متقدم بالذكاء الاصطناعي"]
+        : ["50 credits/month", "Up to 10 websites", "Up to 50 marketing posts", "Analytics dashboard", "Advanced AI editing"],
     },
     {
       id: "business",
       name: lang === "ar" ? "أعمال" : "Business",
-      price: lang === "ar" ? "99 ر.س" : "99 SAR",
-      priceNum: "99",
+      price: isYearly
+        ? (lang === "ar" ? `${businessYearlyPerMonth} ر.س` : `${businessYearlyPerMonth} SAR`)
+        : (lang === "ar" ? `${businessMonthly} ر.س` : `${businessMonthly} SAR`),
+      priceNum: isYearly ? businessYearlyPerMonth : businessMonthly,
+      yearlyTotal: businessYearly,
       icon: Building2,
-      credits: -1,
+      credits: 200,
       features: lang === "ar"
-        ? ["نقاط غير محدودة", "مواقع غير محدودة", "قوالب حصرية ومتميزة", "تعاون الفريق"]
-        : ["Unlimited credits", "Unlimited websites", "Premium templates", "Team collaboration"],
+        ? ["200 نقطة/شهرياً", "حتى 50 موقع", "حتى 100 منشور تسويقي", "قوالب حصرية ومتميزة", "تعاون الفريق"]
+        : ["200 credits/month", "Up to 50 websites", "Up to 100 marketing posts", "Premium templates", "Team collaboration"],
     },
   ];
 
@@ -145,11 +165,9 @@ export default function BillingPage() {
                   {lang === "ar" ? "رصيد النقاط" : "Credits Balance"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {currentPlan === "business"
-                    ? (lang === "ar" ? "غير محدود" : "Unlimited")
-                    : (lang === "ar"
-                      ? `${subscription?.credits ?? 5} نقطة متاحة`
-                      : `${subscription?.credits ?? 5} credits available`)}
+                  {lang === "ar"
+                    ? `${subscription?.credits ?? 5} نقطة متاحة`
+                    : `${subscription?.credits ?? 5} credits available`}
                 </p>
               </div>
             </div>
@@ -181,9 +199,39 @@ export default function BillingPage() {
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-4" data-testid="text-plans-title">
-            {lang === "ar" ? "خطط الاشتراك" : "Subscription Plans"}
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold" data-testid="text-plans-title">
+              {lang === "ar" ? "خطط الاشتراك" : "Subscription Plans"}
+            </h2>
+            <div className="flex items-center gap-2 bg-muted rounded-full p-1">
+              <button
+                onClick={() => setBillingCycle("monthly")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                  billingCycle === "monthly"
+                    ? "bg-white dark:bg-zinc-800 shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="button-billing-monthly"
+              >
+                {lang === "ar" ? "شهري" : "Monthly"}
+              </button>
+              <button
+                onClick={() => setBillingCycle("yearly")}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all flex items-center gap-1.5 ${
+                  billingCycle === "yearly"
+                    ? "bg-white dark:bg-zinc-800 shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="button-billing-yearly"
+              >
+                {lang === "ar" ? "سنوي" : "Yearly"}
+                <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0">
+                  -20%
+                </Badge>
+              </button>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-3 gap-4">
             {plans.map((plan, i) => {
               const isCurrent = currentPlan === plan.id;
@@ -194,6 +242,11 @@ export default function BillingPage() {
                       {lang === "ar" ? "الحالية" : "Current"}
                     </Badge>
                   )}
+                  {isYearly && plan.id !== "free" && (
+                    <Badge className="absolute -top-2.5 end-4 bg-amber-500">
+                      {lang === "ar" ? "وفّر 20%" : "Save 20%"}
+                    </Badge>
+                  )}
                   <div className="text-center mb-4">
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-3">
                       <plan.icon className="w-6 h-6 text-white" />
@@ -201,18 +254,28 @@ export default function BillingPage() {
                     <h3 className="font-bold text-lg">{plan.name}</h3>
                     <div className="mt-1">
                       <span className="text-2xl font-bold">{plan.price}</span>
-                      {plan.priceNum !== "0" && (
+                      {plan.priceNum !== 0 && (
                         <span className="text-sm text-muted-foreground">
                           {lang === "ar" ? "/شهرياً" : "/month"}
                         </span>
                       )}
                     </div>
-                    <div className="mt-1">
+                    {isYearly && plan.priceNum !== 0 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {lang === "ar"
+                          ? `${plan.yearlyTotal} ر.س/سنوياً`
+                          : `${plan.yearlyTotal} SAR/year`}
+                        <span className="line-through ms-1.5 text-red-400">
+                          {lang === "ar"
+                            ? `${plan.id === "pro" ? proMonthly * 12 : businessMonthly * 12} ر.س`
+                            : `${plan.id === "pro" ? proMonthly * 12 : businessMonthly * 12} SAR`}
+                        </span>
+                      </p>
+                    )}
+                    <div className="mt-2">
                       <Badge variant="outline" className="text-xs">
                         <Coins className="w-3 h-3 me-1" />
-                        {plan.credits === -1
-                          ? (lang === "ar" ? "نقاط غير محدودة" : "Unlimited credits")
-                          : (lang === "ar" ? `${plan.credits} نقطة/شهرياً` : `${plan.credits} credits/month`)}
+                        {lang === "ar" ? `${plan.credits} نقطة/شهرياً` : `${plan.credits} credits/month`}
                       </Badge>
                     </div>
                   </div>

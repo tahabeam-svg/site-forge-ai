@@ -141,8 +141,9 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 ## Pricing (Credits System)
 
 - Free: 5 credits/month (1 website)
-- Pro: 49 SAR/month — 50 credits/month (10 websites)
-- Business: 99 SAR/month — Unlimited credits (unlimited websites)
+- Pro: 49 SAR/month — 50 credits/month (up to 10 websites, up to 50 marketing posts)
+- Business: 99 SAR/month — 200 credits/month (up to 50 websites, up to 100 marketing posts)
+- Yearly billing: 20% discount (Pro: 470 SAR/year, Business: 950 SAR/year)
 
 Credits usage: 1 credit per AI generation, 1 per AI edit, 1 per AI marketing post
 
