@@ -163,10 +163,15 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text"
+            className="font-extrabold tracking-tight mb-6"
             data-testid="text-hero-title"
           >
-            {t("tagline", lang)}
+            <span className="block text-4xl sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+              {t("tagline", lang)}
+            </span>
+            <span className="block text-xl sm:text-2xl lg:text-4xl mt-3 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              {t("taglineSub", lang)}
+            </span>
           </motion.h1>
 
           <motion.p
