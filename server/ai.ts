@@ -158,6 +158,70 @@ section { animation: fadeIn 0.6s ease-out; }`,
   }
 }
 
+export interface SocialContent {
+  post: string;
+  caption: string;
+  hashtags: string[];
+  callToAction: string;
+  bestTimeToPost: string;
+  contentType: string;
+}
+
+export async function generateSocialContent(topic: string, platform: string, language: string = "ar", tone: string = "professional"): Promise<SocialContent> {
+  const isArabic = language === "ar";
+
+  const platformGuidelines: Record<string, string> = {
+    instagram: "Max 2200 chars, visual-first, use emojis, 20-30 hashtags",
+    facebook: "Longer form OK, engaging questions, 3-5 hashtags",
+    linkedin: "Professional tone, industry insights, 3-5 hashtags",
+    twitter: "Max 280 chars, concise, 2-3 hashtags, punchy",
+    tiktok: "Trendy, Gen-Z friendly, viral hooks, 5-10 hashtags",
+    youtube: "SEO-optimized title/description, compelling hook",
+  };
+
+  const prompt = `You are an expert social media marketer for the Saudi/Arab market.
+
+Generate a ${platform} post about: "${topic}"
+
+Language: ${isArabic ? "Arabic" : "English"}
+Tone: ${tone}
+Platform guidelines: ${platformGuidelines[platform] || "Standard social media post"}
+
+Return a JSON object with:
+{
+  "post": "The main post text with emojis",
+  "caption": "Extended caption/description",
+  "hashtags": ["hashtag1", "hashtag2", ...],
+  "callToAction": "A compelling call to action",
+  "bestTimeToPost": "Recommended posting time for Saudi audience",
+  "contentType": "carousel/reel/story/post/video"
+}
+
+IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-5.2",
+    messages: [{ role: "user", content: prompt }],
+    max_completion_tokens: 2048,
+    temperature: 0.8,
+  });
+
+  const content = response.choices[0]?.message?.content || "";
+  try {
+    const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return {
+      post: isArabic ? "محتوى تسويقي رائع قادم قريباً! 🚀" : "Amazing marketing content coming soon! 🚀",
+      caption: topic,
+      hashtags: isArabic ? ["#تسويق", "#السعودية", "#أعمال"] : ["#marketing", "#SaudiArabia", "#business"],
+      callToAction: isArabic ? "تابعنا للمزيد!" : "Follow us for more!",
+      bestTimeToPost: isArabic ? "٧-٩ مساءً بتوقيت السعودية" : "7-9 PM Saudi time",
+      contentType: "post",
+    };
+  }
+}
+
 export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar"): Promise<{ html: string; css: string }> {
   const isArabic = language === "ar";
 

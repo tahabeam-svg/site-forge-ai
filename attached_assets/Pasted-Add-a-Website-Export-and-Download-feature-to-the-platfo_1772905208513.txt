@@ -1,0 +1,153 @@
+Add a Website Export and Download feature to the platform.
+
+Users must be able to download the full source code of their generated website as a complete project package.
+
+--------------------------------------------------
+
+EXPORT FEATURE
+
+Add a button inside each project dashboard:
+
+Download Website
+
+When clicked, the system should:
+
+1. Build the website
+2. Prepare all files
+3. Compress the website into a ZIP file
+4. Allow the user to download the package
+
+--------------------------------------------------
+
+EXPORT CONTENT
+
+The exported ZIP file must include:
+
+/website
+
+index.html
+about.html
+services.html
+contact.html
+
+/assets
+/images
+/css
+/js
+/fonts
+
+All links must be relative so the website works immediately after upload.
+
+--------------------------------------------------
+
+STATIC WEBSITE VERSION
+
+When exporting the site, the system should generate a static version of the website.
+
+This ensures the website works on any hosting service.
+
+Convert dynamic components into static HTML where possible.
+
+--------------------------------------------------
+
+HOSTING COMPATIBILITY
+
+Ensure exported websites work on common hosting providers such as:
+
+shared hosting
+cPanel hosting
+Hostinger
+Netlify
+Vercel
+static hosting servers
+
+--------------------------------------------------
+
+EXPORT OPTIONS
+
+Provide two export options:
+
+1) Static Website (HTML + CSS + JS)
+
+2) Full Project Source Code
+
+Full project export should include:
+
+Next.js project files
+package.json
+components
+pages
+styles
+assets
+
+--------------------------------------------------
+
+DEPLOYMENT GUIDE
+
+Include a file inside the ZIP package:
+
+README.txt
+
+This file must contain clear instructions in both Arabic and English explaining:
+
+how to upload the website
+how to run the project
+how to configure domain
+
+--------------------------------------------------
+
+ARABIC DEPLOYMENT GUIDE
+
+Include instructions such as:
+
+1. قم بتحميل ملف الموقع المضغوط.
+2. فك الضغط عن الملف.
+3. ادخل إلى لوحة تحكم الاستضافة (مثل Hostinger).
+4. افتح File Manager.
+5. ارفع الملفات إلى مجلد public_html.
+6. تأكد أن ملف index.html موجود في المجلد الرئيسي.
+7. افتح الدومين في المتصفح وسيعمل الموقع.
+
+--------------------------------------------------
+
+ENGLISH DEPLOYMENT GUIDE
+
+Include instructions such as:
+
+1. Download the website ZIP file.
+2. Extract the files.
+3. Log in to your hosting control panel.
+4. Open File Manager.
+5. Upload the files into the public_html folder.
+6. Make sure index.html is in the root directory.
+7. Open your domain and the website will work.
+
+--------------------------------------------------
+
+EXPORT SETTINGS
+
+Allow users to choose:
+
+include images
+include fonts
+include scripts
+include SEO metadata
+
+--------------------------------------------------
+
+ADMIN SETTINGS
+
+Admin should be able to enable or disable export feature.
+
+Admin can also:
+
+limit exports for free users
+allow unlimited exports for premium plans
+
+--------------------------------------------------
+
+GOAL
+
+Allow users to fully download and own their website.
+
+The downloaded website must work immediately after upload without additional configuration.

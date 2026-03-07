@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent } from "./ai";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -309,6 +309,105 @@ export async function registerRoutes(
       res.json(allProjects);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+
+  app.get("/api/admin/coupons", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const allCoupons = await storage.getCoupons();
+      res.json(allCoupons);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch coupons" });
+    }
+  });
+
+  const createCouponSchema = z.object({
+    code: z.string().min(1).max(50),
+    discountType: z.enum(["percentage", "fixed"]),
+    discountValue: z.number().min(1),
+    maxUses: z.number().min(0).optional(),
+    expiresAt: z.string().optional(),
+    isActive: z.boolean().optional(),
+  });
+
+  app.post("/api/admin/coupons", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const parsed = createCouponSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+      const { code, discountType, discountValue, maxUses, expiresAt, isActive } = parsed.data;
+      const coupon = await storage.createCoupon({
+        code: code.toUpperCase(),
+        discountType,
+        discountValue,
+        maxUses: maxUses || 0,
+        expiresAt: expiresAt ? new Date(expiresAt) : null,
+        isActive: isActive ?? true,
+      });
+      res.status(201).json(coupon);
+    } catch (err: any) {
+      if (err?.code === "23505") return res.status(409).json({ message: "Coupon code already exists" });
+      res.status(500).json({ message: "Failed to create coupon" });
+    }
+  });
+
+  app.delete("/api/admin/coupons/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteCoupon(parseInt(req.params.id));
+      res.status(204).send();
+    } catch (err) {
+      res.status(500).json({ message: "Failed to delete coupon" });
+    }
+  });
+
+  const updateCouponSchema = z.object({
+    isActive: z.boolean().optional(),
+    maxUses: z.number().min(0).optional(),
+    expiresAt: z.string().optional(),
+    discountValue: z.number().min(1).optional(),
+  });
+
+  app.patch("/api/admin/coupons/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const parsed = updateCouponSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+      const data: any = { ...parsed.data };
+      if (data.expiresAt) data.expiresAt = new Date(data.expiresAt);
+      const updated = await storage.updateCoupon(parseInt(req.params.id), data);
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to update coupon" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id/suspend", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+      await db.update(users).set({ updatedAt: new Date() }).where(eq(users.id, userId));
+      res.json({ message: "User suspended", userId });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to suspend user" });
+    }
+  });
+
+  const socialContentSchema = z.object({
+    topic: z.string().min(1).max(1000),
+    platform: z.enum(["instagram", "facebook", "linkedin", "twitter", "tiktok", "youtube"]),
+    language: z.string().optional(),
+    tone: z.string().optional(),
+  });
+
+  app.post("/api/marketing/generate", isAuthenticated, async (req: any, res) => {
+    try {
+      const parsed = socialContentSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+      const { topic, platform, language, tone } = parsed.data;
+      const content = await generateSocialContent(topic, platform, language || "ar", tone || "professional");
+      res.json(content);
+    } catch (err) {
+      console.error("Marketing generation error:", err);
+      res.status(500).json({ message: "Failed to generate content" });
     }
   });
 

@@ -13,6 +13,11 @@ import PreviewPage from "@/pages/preview";
 import TemplatesPage from "@/pages/templates";
 import BillingPage from "@/pages/billing";
 import AdminPage from "@/pages/admin";
+import AIMarketingPage from "@/pages/ai-marketing";
+import SettingsPage from "@/pages/settings";
+import AnalyticsPage from "@/pages/analytics";
+import DomainsPage from "@/pages/domains";
+import PaymentMethodsPage from "@/pages/payment-methods";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,6 +57,11 @@ function Router() {
       <Route path="/templates">{() => <ProtectedRoute component={TemplatesPage} />}</Route>
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
       <Route path="/admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
+      <Route path="/marketing">{() => <ProtectedRoute component={AIMarketingPage} />}</Route>
+      <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
+      <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
+      <Route path="/domains">{() => <ProtectedRoute component={DomainsPage} />}</Route>
+      <Route path="/payment-methods">{() => <ProtectedRoute component={PaymentMethodsPage} />}</Route>
       <Route component={NotFound} />
     </Switch>
   );

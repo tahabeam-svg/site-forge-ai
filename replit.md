@@ -19,7 +19,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - AI-powered editing via chat commands with conversation history
 - Live preview with responsive viewport switching (desktop/tablet/mobile)
 - Template marketplace (6 templates)
-- File upload system (images, logos, SVG, PDF)
+- File upload system (images, logos, SVG)
 - Media embedding (YouTube/Vimeo) via AI chat
 - Enhanced editor with 4 tabs: Chat, Sections, Media, Style
 - Section management (add Hero, About, Services, Gallery, Contact, FAQ, Team, Pricing)
@@ -27,21 +27,27 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Color scheme picker with presets
 - Quick style commands
 - Billing & subscription page with pricing plans
-- Admin dashboard with user/project management and stats
+- Admin dashboard with user/project management, stats, and coupon system
+- AI Social Media Marketing tool (generate posts for Instagram, Facebook, LinkedIn, Twitter, TikTok, YouTube)
+- Coupon system (admin creates discount codes with percentage/fixed, expiry, usage limits)
+- Settings page (profile, language, preferences)
+- Analytics page (project stats, traffic overview, activity)
+- Domains page (custom domain management, DNS instructions)
+- Payment Methods page (add/remove cards, set default, Mada/Apple Pay support)
 - Publish system
 - Green/teal brand color scheme
 
 ## File Structure
 
 ### Shared
-- `shared/schema.ts` - Drizzle schemas for projects, templates, chatMessages (re-exports users from models/auth)
+- `shared/schema.ts` - Drizzle schemas for projects, templates, chatMessages, coupons (re-exports users from models/auth)
 - `shared/models/auth.ts` - Replit Auth users and sessions tables
 
 ### Server
 - `server/index.ts` - Express server entry point
-- `server/routes.ts` - API routes for projects, templates, file upload, admin (uses Replit Auth middleware)
-- `server/storage.ts` - Database storage layer (IStorage interface)
-- `server/ai.ts` - OpenAI integration for website generation and editing
+- `server/routes.ts` - API routes for projects, templates, file upload, admin, coupons, AI marketing
+- `server/storage.ts` - Database storage layer (IStorage interface with coupon CRUD)
+- `server/ai.ts` - OpenAI integration for website generation, editing, and social media content
 - `server/seed.ts` - Database seeding with template data
 - `server/db.ts` - Database connection
 - `server/replit_integrations/auth/` - Replit Auth module (OIDC, sessions, user storage)
@@ -59,17 +65,23 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `client/src/pages/preview.tsx` - Full-screen website preview
 - `client/src/pages/templates.tsx` - Template marketplace
 - `client/src/pages/billing.tsx` - Billing & subscription management
-- `client/src/pages/admin.tsx` - Admin dashboard with stats, users, projects
+- `client/src/pages/admin.tsx` - Admin dashboard with stats, users, projects, coupons
+- `client/src/pages/ai-marketing.tsx` - AI social media marketing tool
+- `client/src/pages/settings.tsx` - User settings and preferences
+- `client/src/pages/analytics.tsx` - Analytics and usage metrics
+- `client/src/pages/domains.tsx` - Domain management
+- `client/src/pages/payment-methods.tsx` - Payment methods management
 - `client/src/components/dashboard-layout.tsx` - Sidebar layout for dashboard
 - `client/src/components/language-toggle.tsx` - EN/AR language toggle
 
 ## Database Tables
 
-- `users` - id (varchar, OIDC sub), email, firstName, lastName, profileImageUrl, createdAt, updatedAt
+- `users` - id (varchar, OIDC sub), email, firstName, lastName, profileImageUrl, isAdmin, createdAt, updatedAt
 - `sessions` - sid (varchar PK), sess (jsonb), expire (timestamp)
 - `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), createdAt, updatedAt
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
 - `chat_messages` - id (serial), projectId (integer), role (text), content (text), createdAt
+- `coupons` - id (serial), code (text, unique), discountType (text), discountValue (integer), maxUses (integer), usedCount (integer), expiresAt (timestamp), isActive (boolean), createdAt
 
 ## API Routes
 
@@ -92,12 +104,24 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `GET /api/admin/stats` - Get admin statistics
 - `GET /api/admin/users` - List all users
 - `GET /api/admin/projects` - List all projects
+- `GET /api/admin/coupons` - List all coupons
+- `POST /api/admin/coupons` - Create coupon
+- `DELETE /api/admin/coupons/:id` - Delete coupon
+- `PATCH /api/admin/coupons/:id` - Update coupon
+- `PATCH /api/admin/users/:id/suspend` - Suspend user
+- `POST /api/marketing/generate` - Generate social media content with AI
 
 ## Pricing (Saudi Riyals)
 
 - Free: مجاناً (1 website)
 - Pro: ٤٩ ر.س/month (10 websites)
 - Business: ٩٩ ر.س/month (unlimited)
+
+## AI Marketing Pricing (USD)
+
+- Starter: $9/month (20 posts)
+- Growth: $19/month (60 posts)
+- Pro Marketing: $39/month (unlimited)
 
 ## Language Default
 

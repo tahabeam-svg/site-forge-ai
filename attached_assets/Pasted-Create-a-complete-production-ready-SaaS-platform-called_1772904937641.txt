@@ -1,0 +1,388 @@
+Create a complete production-ready SaaS platform called "SiteForge AI".
+
+This platform is an AI-powered website builder similar in concept to Replit but designed for non-technical users.
+
+The platform must allow users to create websites using AI chat, templates, or visual editing without any coding knowledge.
+
+Arabic must be the primary interface language (RTL) and English must be supported as a secondary language.
+
+The system must be built with a modern scalable architecture.
+
+--------------------------------------------------
+
+TECH STACK
+
+Frontend:
+Next.js 14
+React
+Tailwind CSS
+Framer Motion
+
+Backend:
+Node.js
+Express
+TypeScript
+
+Database:
+PostgreSQL
+
+Cache:
+Redis
+
+Infrastructure:
+Docker
+NGINX
+
+Storage:
+Cloudflare R2 or Amazon S3
+
+--------------------------------------------------
+
+PROJECT STRUCTURE
+
+Generate a full project structure including:
+
+/frontend
+/backend
+/database
+/docker
+/templates
+/components
+/services
+/utils
+
+--------------------------------------------------
+
+FRONTEND FEATURES
+
+Create a modern SaaS UI.
+
+Pages:
+
+Home
+Login
+Signup
+Dashboard
+Projects
+Templates
+Billing
+Invoices
+Payment Methods
+AI Marketing
+Admin Panel
+
+Use Tailwind UI components.
+
+Support RTL layout for Arabic.
+
+Use modern fonts:
+
+Arabic fonts:
+Cairo
+Tajawal
+
+English fonts:
+Inter
+Poppins
+
+--------------------------------------------------
+
+TEMPLATE SYSTEM
+
+Create a template library.
+
+Each template must include:
+
+- responsive layout
+- high-quality images
+- icons
+- modern typography
+
+Use images automatically from:
+
+Unsplash API
+Pexels API
+
+Icons from Lucide icon library.
+
+Template categories:
+
+Corporate
+Restaurants
+Exhibitions
+Startups
+Landing pages
+Portfolios
+E-commerce
+
+Each category must include multiple templates.
+
+--------------------------------------------------
+
+AI WEBSITE BUILDER
+
+Integrate OpenAI API.
+
+The AI must generate:
+
+- website layout
+- sections
+- content
+- color palette
+- SEO metadata
+
+Example prompts:
+
+"Create a website for a perfume exhibition in Riyadh"
+
+"أنشئ موقع شركة عطور في الرياض"
+
+The AI should output ready-to-render sections.
+
+--------------------------------------------------
+
+VISUAL EDITOR
+
+Create drag and drop editor.
+
+Users can:
+
+- edit text
+- change images
+- move sections
+- change colors
+- add sections
+
+Editor layout:
+
+Sections | Editor | Live Preview
+
+--------------------------------------------------
+
+FILE UPLOAD
+
+Users can upload:
+
+images
+logos
+documents
+PDFs
+
+Users can also add:
+
+YouTube links
+Google Maps
+embed links
+
+--------------------------------------------------
+
+LIVE PREVIEW
+
+Each project must generate preview URL.
+
+Example:
+
+project-name.preview.platform.com
+
+Projects run in isolated Docker containers.
+
+Use NGINX reverse proxy to route preview domains.
+
+--------------------------------------------------
+
+USER DASHBOARD
+
+Create dashboard sections:
+
+Dashboard
+Projects
+Templates
+Domains
+Analytics
+Billing
+Invoices
+Payment Methods
+AI Marketing
+Settings
+
+Project cards include:
+
+Preview
+Edit
+Publish
+Archive
+Delete
+
+--------------------------------------------------
+
+BILLING SYSTEM
+
+Create subscription billing.
+
+Plans:
+
+FREE PLAN
+
+1 website
+platform domain
+
+PRO PLAN
+
+Monthly $12
+Yearly $120 (20% discount)
+
+10 websites
+custom domain
+
+BUSINESS PLAN
+
+Monthly $29
+Yearly $290
+
+Unlimited websites
+premium templates
+
+--------------------------------------------------
+
+PAYMENT SYSTEM
+
+Integrate Paymob payment gateway.
+
+Users can:
+
+add card
+add another card
+remove card
+set default card
+
+Store payment history.
+
+Generate invoices automatically.
+
+Allow PDF invoice download.
+
+--------------------------------------------------
+
+AI SOCIAL MEDIA GENERATOR
+
+Add premium AI marketing tool using OpenAI.
+
+Generate:
+
+social media posts
+captions
+hashtags
+campaigns
+monthly content calendar
+
+Platforms:
+
+Instagram
+Facebook
+LinkedIn
+Twitter/X
+TikTok
+YouTube Shorts
+
+--------------------------------------------------
+
+AI MARKETING PRICING
+
+Starter
+
+Monthly $9
+Yearly $90
+
+20 posts per month.
+
+Growth
+
+Monthly $19
+Yearly $190
+
+60 posts per month.
+
+Pro Marketing
+
+Monthly $39
+Yearly $390
+
+Unlimited posts.
+
+--------------------------------------------------
+
+ADMIN PANEL
+
+Create full admin dashboard.
+
+Sections:
+
+Users
+Websites
+Templates
+Subscriptions
+Payments
+Coupons
+Analytics
+Archive
+Moderation
+Settings
+
+Admin can:
+
+edit plans
+edit prices
+create coupons
+delete users
+suspend users
+review websites
+approve templates
+
+--------------------------------------------------
+
+COUPON SYSTEM
+
+Allow admin to create discount codes.
+
+Features:
+
+percentage discount
+fixed discount
+expiration date
+usage limits
+
+Example code:
+
+WELCOME20
+
+--------------------------------------------------
+
+INFRASTRUCTURE
+
+Use scalable architecture.
+
+Docker containers for execution.
+
+NGINX for routing.
+
+PostgreSQL for database.
+
+Redis for caching.
+
+Cloudflare CDN.
+
+Cloudflare R2 or Amazon S3 for storage.
+
+--------------------------------------------------
+
+GOAL
+
+Create a powerful AI SaaS platform that allows users to:
+
+build websites with AI
+customize with templates
+upload media
+preview instantly
+publish instantly
+
+All within a clean modern SaaS interface.

@@ -55,8 +55,26 @@ export const insertTemplateSchema = createInsertSchema(templates).omit({
   createdAt: true,
 });
 
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  discountType: text("discount_type").notNull(),
+  discountValue: integer("discount_value").notNull(),
+  maxUses: integer("max_uses").default(0),
+  usedCount: integer("used_count").default(0),
+  expiresAt: timestamp("expires_at"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
 export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   id: true,
+  createdAt: true,
+});
+
+export const insertCouponSchema = createInsertSchema(coupons).omit({
+  id: true,
+  usedCount: true,
   createdAt: true,
 });
 
@@ -66,3 +84,5 @@ export type Template = typeof templates.$inferSelect;
 export type InsertTemplate = z.infer<typeof insertTemplateSchema>;
 export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type Coupon = typeof coupons.$inferSelect;
+export type InsertCoupon = z.infer<typeof insertCouponSchema>;

@@ -15,7 +15,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FolderOpen, LayoutTemplate, Settings, LogOut, Globe2, CreditCard, Shield } from "lucide-react";
+import { LayoutDashboard, FolderOpen, LayoutTemplate, Settings, LogOut, Globe2, CreditCard, Shield, Sparkles, BarChart3, Globe, Wallet } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
 
 const sidebarStyle = {
@@ -30,11 +30,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const menuItems = [
     { title: t("dashboard", lang), url: "/dashboard", icon: LayoutDashboard },
-    { title: t("projects", lang), url: "/dashboard", icon: FolderOpen },
     { title: t("templates", lang), url: "/templates", icon: LayoutTemplate },
+    { title: lang === "ar" ? "النطاقات" : "Domains", url: "/domains", icon: Globe },
+    { title: lang === "ar" ? "التحليلات" : "Analytics", url: "/analytics", icon: BarChart3 },
     { title: t("billing", lang), url: "/billing", icon: CreditCard },
+    { title: lang === "ar" ? "طرق الدفع" : "Payment Methods", url: "/payment-methods", icon: Wallet },
+    { title: lang === "ar" ? "التسويق بالذكاء الاصطناعي" : "AI Marketing", url: "/marketing", icon: Sparkles },
+    { title: t("settings", lang), url: "/settings", icon: Settings },
     { title: lang === "ar" ? "الإدارة" : "Admin", url: "/admin", icon: Shield },
-    { title: t("settings", lang), url: "/dashboard", icon: Settings },
   ];
 
   const handleLogout = () => {
@@ -59,7 +62,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <SidebarGroupContent>
                   <SidebarMenu>
                     {menuItems.map((item) => (
-                      <SidebarMenuItem key={item.title}>
+                      <SidebarMenuItem key={item.url}>
                         <SidebarMenuButton
                           asChild
                           isActive={location === item.url}

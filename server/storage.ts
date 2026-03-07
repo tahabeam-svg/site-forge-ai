@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage } from "@shared/schema";
+import { projects, templates, chatMessages, users, coupons } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon } from "@shared/schema";
 import { eq, desc, sql, count } from "drizzle-orm";
 
 export interface IStorage {
@@ -16,6 +16,13 @@ export interface IStorage {
 
   getChatMessages(projectId: number): Promise<ChatMessage[]>;
   addChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+
+  getCoupons(): Promise<Coupon[]>;
+  getCoupon(id: number): Promise<Coupon | undefined>;
+  getCouponByCode(code: string): Promise<Coupon | undefined>;
+  createCoupon(coupon: InsertCoupon): Promise<Coupon>;
+  updateCoupon(id: number, data: Partial<Coupon>): Promise<Coupon | undefined>;
+  deleteCoupon(id: number): Promise<void>;
 
   getAllProjects(): Promise<Project[]>;
   getAllUsers(): Promise<any[]>;
@@ -87,6 +94,34 @@ export class DatabaseStorage implements IStorage {
       totalProjects: projectCount?.value || 0,
       publishedProjects: publishedCount?.value || 0,
     };
+  }
+
+  async getCoupons(): Promise<Coupon[]> {
+    return db.select().from(coupons).orderBy(desc(coupons.createdAt));
+  }
+
+  async getCoupon(id: number): Promise<Coupon | undefined> {
+    const [coupon] = await db.select().from(coupons).where(eq(coupons.id, id));
+    return coupon;
+  }
+
+  async getCouponByCode(code: string): Promise<Coupon | undefined> {
+    const [coupon] = await db.select().from(coupons).where(eq(coupons.code, code));
+    return coupon;
+  }
+
+  async createCoupon(coupon: InsertCoupon): Promise<Coupon> {
+    const [newCoupon] = await db.insert(coupons).values(coupon).returning();
+    return newCoupon;
+  }
+
+  async updateCoupon(id: number, data: Partial<Coupon>): Promise<Coupon | undefined> {
+    const [updated] = await db.update(coupons).set(data).where(eq(coupons.id, id)).returning();
+    return updated;
+  }
+
+  async deleteCoupon(id: number): Promise<void> {
+    await db.delete(coupons).where(eq(coupons.id, id));
   }
 }
 
