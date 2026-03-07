@@ -73,10 +73,11 @@ export default function GitHubDeployPage() {
     queryKey: ["/api/github/user"],
   });
 
-  const { data: repos = [], isLoading: reposLoading } = useQuery<GitHubRepo[]>({
+  const { data: reposData, isLoading: reposLoading } = useQuery<GitHubRepo[]>({
     queryKey: ["/api/github/repos"],
     enabled: !!ghUser,
   });
+  const repos = Array.isArray(reposData) ? reposData : [];
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],

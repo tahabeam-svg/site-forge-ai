@@ -416,6 +416,9 @@ export async function registerRoutes(
   app.get("/api/github/user", isAuthenticated, async (req: any, res) => {
     try {
       const user = await getGitHubUser();
+      if (user?.error) {
+        return res.status(401).json({ message: user.error.message || "GitHub connection expired. Please reconnect." });
+      }
       res.json(user);
     } catch (err) {
       console.error("GitHub user error:", err);
@@ -426,6 +429,12 @@ export async function registerRoutes(
   app.get("/api/github/repos", isAuthenticated, async (req: any, res) => {
     try {
       const repos = await listUserRepos();
+      if (!Array.isArray(repos)) {
+        if (repos?.error) {
+          return res.status(401).json({ message: repos.error.message || "GitHub connection expired. Please reconnect." });
+        }
+        return res.json([]);
+      }
       res.json(repos);
     } catch (err) {
       console.error("GitHub repos error:", err);
