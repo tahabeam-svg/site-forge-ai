@@ -48,7 +48,7 @@ function Router() {
       <Route path="/dashboard">{() => <ProtectedRoute component={DashboardPage} />}</Route>
       <Route path="/editor/:id">{() => <ProtectedRoute component={EditorPage} />}</Route>
       <Route path="/preview/:id">{() => <ProtectedRoute component={PreviewPage} />}</Route>
-      <Route path="/templates">{() => <ProtectedRoute component={TemplatesPage} />}</Route>
+      <Route path="/templates" component={TemplatesPage} />
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
       <Route path="/admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
       <Route path="/secure-admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
