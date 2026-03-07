@@ -1,7 +1,7 @@
 const translations = {
   en: {
     brand: "ArabyWeb.net",
-    tagline: "Build Professional Websites Instantly with AI",
+    tagline: "Build Your Website for Free & Launch Social Media Content with AI",
     subtitle: "The leading AI-powered website builder in the Arab world. Create stunning, responsive websites in under 2 minutes. Just describe your vision — no coding required.",
     getStarted: "Get Started Free",
     watchDemo: "Watch Demo",
@@ -130,7 +130,7 @@ const translations = {
   },
   ar: {
     brand: "ArabyWeb.net",
-    tagline: "أنشئ موقعك الاحترافي فوراً بقوة الذكاء الاصطناعي",
+    tagline: "أنشئ موقعك مجاناً وأطلق محتوى السوشيال ميديا بالذكاء الاصطناعي",
     subtitle: "المنصة الأولى لبناء المواقع بالذكاء الاصطناعي في العالم العربي. أنشئ موقعاً مذهلاً ومتجاوباً في أقل من دقيقتين. فقط صِف رؤيتك — بدون أي برمجة.",
     getStarted: "ابدأ مجاناً",
     watchDemo: "شاهد العرض",
