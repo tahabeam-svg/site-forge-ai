@@ -199,7 +199,7 @@ export default function BillingPage() {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-semibold" data-testid="text-plans-title">
               {lang === "ar" ? "خطط الاشتراك" : "Subscription Plans"}
             </h2>

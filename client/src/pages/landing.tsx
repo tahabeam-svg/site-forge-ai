@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
@@ -23,6 +24,8 @@ import {
   Calendar,
   Hash,
   Target,
+  Menu,
+  X,
 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { Button } from "@/components/ui/button";
@@ -52,6 +55,7 @@ export default function LandingPage() {
   const { isAuthenticated, language } = useAuth();
   const [, navigate] = useLocation();
   const lang = language;
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const features = [
     { icon: Sparkles, title: t("aiGeneration", lang), desc: t("aiGenerationDesc", lang), gradient: "from-violet-500 to-purple-600" },
@@ -85,14 +89,14 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b" data-testid="nav-landing">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 h-16">
-            <div className="flex items-center gap-2.5">
+            <button onClick={() => { navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5 cursor-pointer" data-testid="link-brand-home">
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                 <Globe2 className="w-5 h-5 text-white" />
               </div>
               <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" data-testid="text-brand">
                 {t("brand", lang)}
               </span>
-            </div>
+            </button>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
               <a href="#marketing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-marketing">{lang === "ar" ? "التسويق" : "Marketing"}</a>
@@ -101,18 +105,44 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center gap-2">
               <LanguageToggle />
+              <button
+                className="md:hidden p-2 rounded-lg hover:bg-muted transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                data-testid="button-mobile-menu"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
               {isAuthenticated ? (
-                <Button onClick={() => navigate("/dashboard")} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-dashboard">
+                <Button onClick={() => navigate("/dashboard")} className="hidden sm:flex bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-dashboard">
                   {t("dashboard", lang)}
                 </Button>
               ) : (
-                <Button onClick={() => navigate("/auth")} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-login">
+                <Button onClick={() => navigate("/auth")} className="hidden sm:flex bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-login">
                   {t("login", lang)}
                 </Button>
               )}
             </div>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t bg-background/95 backdrop-blur-xl px-4 py-4 space-y-3" data-testid="mobile-menu">
+            <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("features", lang)}</a>
+            <a href="#marketing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{lang === "ar" ? "التسويق" : "Marketing"}</a>
+            <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("pricing", lang)}</a>
+            <a href="/templates" onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); navigate("/templates"); }} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("templates", lang)}</a>
+            <div className="pt-2 border-t">
+              {isAuthenticated ? (
+                <Button onClick={() => { setMobileMenuOpen(false); navigate("/dashboard"); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600" data-testid="button-dashboard-mobile">
+                  {t("dashboard", lang)}
+                </Button>
+              ) : (
+                <Button onClick={() => { setMobileMenuOpen(false); navigate("/auth"); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600" data-testid="button-login-mobile">
+                  {t("login", lang)}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
       </nav>
 
       <section className="relative pt-32 pb-20 overflow-hidden">
