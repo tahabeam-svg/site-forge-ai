@@ -18,7 +18,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - AI website generation from text descriptions with stock images (Unsplash)
 - AI-powered editing via chat commands with conversation history
 - Live preview with responsive viewport switching (desktop/tablet/mobile)
-- Template marketplace (6 templates)
+- Template marketplace (19 templates across 7 categories: corporate, exhibition, restaurant, startup, portfolio, landing, ecommerce)
 - File upload system (images, logos, SVG)
 - Media embedding (YouTube/Vimeo) via AI chat
 - Enhanced editor with 4 tabs: Chat, Sections, Media, Style
@@ -34,7 +34,10 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Analytics page (project stats, traffic overview, activity)
 - Domains page (custom domain management, DNS instructions)
 - Payment Methods page (add/remove cards, set default, Mada/Apple Pay support)
+- Website export/download as ZIP (static HTML/CSS with bilingual README)
 - Publish system
+- Hidden admin panel (accessible only via direct URL /admin or /secure-admin, not in sidebar)
+- Marketing services section on landing page with tiered pricing
 - Green/teal brand color scheme
 
 ## File Structure
@@ -110,6 +113,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `PATCH /api/admin/coupons/:id` - Update coupon
 - `PATCH /api/admin/users/:id/suspend` - Suspend user
 - `POST /api/marketing/generate` - Generate social media content with AI
+- `GET /api/projects/:id/export` - Export/download project as ZIP file
 
 ## Pricing (Saudi Riyals)
 

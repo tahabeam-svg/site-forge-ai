@@ -57,6 +57,7 @@ function Router() {
       <Route path="/templates">{() => <ProtectedRoute component={TemplatesPage} />}</Route>
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
       <Route path="/admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
+      <Route path="/secure-admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
       <Route path="/marketing">{() => <ProtectedRoute component={AIMarketingPage} />}</Route>
       <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>

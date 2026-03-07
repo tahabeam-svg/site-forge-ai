@@ -39,6 +39,7 @@ import {
   Sparkles,
   Loader2,
   FolderOpen,
+  Download,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -232,6 +233,19 @@ export default function DashboardPage() {
                           >
                             <Rocket className="w-3.5 h-3.5 me-1" />
                             {t("publish", lang)}
+                          </Button>
+                        )}
+                        {project.generatedHtml && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              window.open(`/api/projects/${project.id}/export?type=static`, "_blank");
+                            }}
+                            data-testid={`button-download-${project.id}`}
+                          >
+                            <Download className="w-3.5 h-3.5 me-1" />
+                            {lang === "ar" ? "تحميل" : "Download"}
                           </Button>
                         )}
                         <Button

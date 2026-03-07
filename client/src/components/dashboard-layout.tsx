@@ -37,7 +37,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: lang === "ar" ? "طرق الدفع" : "Payment Methods", url: "/payment-methods", icon: Wallet },
     { title: lang === "ar" ? "التسويق بالذكاء الاصطناعي" : "AI Marketing", url: "/marketing", icon: Sparkles },
     { title: t("settings", lang), url: "/settings", icon: Settings },
-    { title: lang === "ar" ? "الإدارة" : "Admin", url: "/admin", icon: Shield },
   ];
 
   const handleLogout = () => {

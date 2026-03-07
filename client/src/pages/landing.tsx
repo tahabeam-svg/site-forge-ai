@@ -19,6 +19,10 @@ import {
   Building2,
   Gem,
   TrendingUp,
+  Megaphone,
+  Calendar,
+  Hash,
+  Target,
 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { Button } from "@/components/ui/button";
@@ -68,6 +72,14 @@ export default function LandingPage() {
     }
   };
 
+  const handleMarketingCTA = () => {
+    if (isAuthenticated) {
+      navigate("/marketing");
+    } else {
+      window.location.href = "/api/login";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
       <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b" data-testid="nav-landing">
@@ -83,6 +95,7 @@ export default function LandingPage() {
             </div>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
+              <a href="#marketing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-marketing">{lang === "ar" ? "التسويق" : "Marketing"}</a>
               <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-pricing">{t("pricing", lang)}</a>
               <a href="#templates" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-templates">{t("templates", lang)}</a>
             </div>
@@ -233,6 +246,113 @@ export default function LandingPage() {
                 <item.icon className="w-5 h-5 text-emerald-500" />
                 <span className="font-medium">{item.text}</span>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="marketing" className="py-20 bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-cyan-50/50 dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-cyan-950/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-12">
+            <motion.div custom={0} variants={fadeUp}>
+              <Badge variant="secondary" className="mb-4 px-3 py-1 text-sm border-purple-200 bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800">
+                <Sparkles className="w-3.5 h-3.5 me-1.5" />
+                {lang === "ar" ? "جديد" : "NEW"}
+              </Badge>
+            </motion.div>
+            <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4" data-testid="text-marketing-section-title">
+              {lang === "ar" ? "نمِّ أعمالك مع التسويق بالذكاء الاصطناعي" : "Grow Your Business with AI Marketing"}
+            </motion.h2>
+            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              {lang === "ar"
+                ? "أنشئ محتوى تسويقي احترافي لوسائل التواصل الاجتماعي تلقائياً بقوة الذكاء الاصطناعي"
+                : "Generate professional social media marketing content automatically powered by AI"}
+            </motion.p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
+            {[
+              { icon: Megaphone, title: lang === "ar" ? "منشورات ذكية" : "Smart Posts", desc: lang === "ar" ? "محتوى مخصص لكل منصة" : "Content tailored per platform", gradient: "from-pink-500 to-rose-600" },
+              { icon: Hash, title: lang === "ar" ? "هاشتاقات" : "Hashtags", desc: lang === "ar" ? "هاشتاقات رائجة تلقائياً" : "Trending hashtags auto-generated", gradient: "from-blue-500 to-indigo-600" },
+              { icon: Calendar, title: lang === "ar" ? "تقويم محتوى" : "Content Calendar", desc: lang === "ar" ? "خطة نشر شهرية" : "Monthly publishing plan", gradient: "from-amber-500 to-orange-600" },
+              { icon: Target, title: lang === "ar" ? "حملات" : "Campaigns", desc: lang === "ar" ? "حملات تسويقية متكاملة" : "Complete marketing campaigns", gradient: "from-emerald-500 to-teal-600" },
+            ].map((item, i) => (
+              <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
+                <Card className="p-5 text-center h-full hover:shadow-lg hover:-translate-y-1 transition-all" data-testid={`card-marketing-feature-${i}`}>
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.gradient} flex items-center justify-center mx-auto mb-3`}>
+                    <item.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h4 className="font-semibold text-sm mb-1">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            {[
+              {
+                name: lang === "ar" ? "المبتدئ" : "Starter",
+                price: "$9",
+                yearly: "$90",
+                features: lang === "ar"
+                  ? ["٢٠ منشور شهرياً", "تعليقات وهاشتاقات", "أفكار تسويقية أساسية"]
+                  : ["20 posts/month", "Captions & hashtags", "Basic marketing ideas"],
+              },
+              {
+                name: lang === "ar" ? "النمو" : "Growth",
+                price: "$19",
+                yearly: "$190",
+                popular: true,
+                features: lang === "ar"
+                  ? ["٦٠ منشور شهرياً", "تقويم محتوى", "أفكار حملات", "محتوى تفاعلي"]
+                  : ["60 posts/month", "Content calendar", "Campaign ideas", "Engagement content"],
+              },
+              {
+                name: lang === "ar" ? "احترافي" : "Pro Marketing",
+                price: "$39",
+                yearly: "$390",
+                features: lang === "ar"
+                  ? ["منشورات غير محدودة", "نصوص تسويقية متقدمة", "حملات إطلاق منتجات", "استراتيجيات تسويقية"]
+                  : ["Unlimited posts", "Advanced copy", "Product launch campaigns", "Marketing strategies"],
+              },
+            ].map((plan, i) => (
+              <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
+                <Card className={`p-5 h-full relative ${plan.popular ? "border-2 border-purple-500 shadow-lg shadow-purple-500/10" : ""}`} data-testid={`card-marketing-plan-${i}`}>
+                  {plan.popular && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 bg-gradient-to-r from-purple-500 to-indigo-600">
+                      <Star className="w-3 h-3 me-1" />
+                      {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
+                    </Badge>
+                  )}
+                  <div className="text-center mb-4">
+                    <h4 className="font-semibold mb-1">{plan.name}</h4>
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-3xl font-bold">{plan.price}</span>
+                      <span className="text-muted-foreground text-sm">/{lang === "ar" ? "شهر" : "mo"}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {lang === "ar" ? `${plan.yearly}/سنوياً` : `${plan.yearly}/year`}
+                    </p>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    {plan.features.map((f, j) => (
+                      <div key={j} className="flex items-center gap-2 text-sm">
+                        <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                        <span>{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button
+                    variant={plan.popular ? "default" : "outline"}
+                    className={`w-full ${plan.popular ? "bg-gradient-to-r from-purple-500 to-indigo-600" : ""}`}
+                    onClick={handleMarketingCTA}
+                    data-testid={`button-marketing-plan-${i}`}
+                  >
+                    {lang === "ar" ? "ابدأ التسويق" : "Start Marketing"}
+                  </Button>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>

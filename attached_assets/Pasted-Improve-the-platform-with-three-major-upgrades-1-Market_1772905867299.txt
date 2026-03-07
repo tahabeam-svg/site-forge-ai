@@ -1,0 +1,229 @@
+Improve the platform with three major upgrades.
+
+1) Marketing services promotion on the homepage.
+2) A completely separate hidden admin dashboard.
+3) High-quality premium templates that look modern and attractive.
+
+--------------------------------------------------
+
+MARKETING SERVICES SECTION (HOMEPAGE)
+
+Add a new section on the homepage to promote AI Marketing Services.
+
+The section should appear after the hero section.
+
+Title example:
+
+Grow Your Business with AI Marketing
+
+or in Arabic:
+
+خدمات التسويق بالذكاء الاصطناعي
+
+Description should explain that the platform can generate marketing content automatically.
+
+Display the three marketing plans.
+
+--------------------------------------------------
+
+MARKETING PLANS
+
+Starter Marketing
+
+$9 monthly
+$90 yearly
+
+Includes:
+
+20 social media posts
+captions
+hashtags
+basic marketing ideas
+
+--------------------------------------------------
+
+Growth Marketing
+
+$19 monthly
+$190 yearly
+
+Includes:
+
+60 social media posts
+content calendar
+campaign ideas
+engagement content
+
+--------------------------------------------------
+
+Pro Marketing
+
+$39 monthly
+$390 yearly
+
+Includes:
+
+unlimited posts
+advanced marketing copy
+product launch campaigns
+marketing strategy suggestions
+
+--------------------------------------------------
+
+ADD CTA BUTTON
+
+Add button:
+
+Start Marketing
+
+This opens the AI marketing dashboard.
+
+--------------------------------------------------
+
+VISUAL DESIGN
+
+The marketing section must include:
+
+icons
+illustrations
+feature cards
+modern gradient backgrounds
+animations
+
+--------------------------------------------------
+
+HIDDEN ADMIN PANEL
+
+Create a completely separate admin control panel.
+
+The admin panel must not appear in the public website navigation.
+
+Admin access must only be available through a secret URL.
+
+Example:
+
+/super-admin-dashboard
+/admin-control
+/secure-admin
+
+The link must not be visible anywhere on the website.
+
+--------------------------------------------------
+
+ADMIN SECURITY
+
+Require login with admin credentials.
+
+Add extra protection such as:
+
+admin email verification
+rate limiting
+optional two-factor authentication.
+
+--------------------------------------------------
+
+ADMIN CAPABILITIES
+
+Admin dashboard must allow full platform control.
+
+Admin can:
+
+manage users
+delete users
+suspend users
+edit subscription plans
+edit pricing
+create coupons
+approve templates
+review websites
+view payments
+view analytics
+change feature settings.
+
+--------------------------------------------------
+
+TEMPLATE QUALITY IMPROVEMENT
+
+Replace low-quality templates with modern premium designs.
+
+Templates must look similar to modern agency websites.
+
+Use modern UI patterns.
+
+Templates must include:
+
+large hero images
+smooth animations
+section transitions
+clean typography
+icon sets
+professional layouts.
+
+--------------------------------------------------
+
+TEMPLATE DESIGN STYLE
+
+Use design inspiration similar to modern SaaS websites.
+
+Include:
+
+hero sections
+feature grids
+testimonials
+image galleries
+contact forms
+call-to-action sections.
+
+--------------------------------------------------
+
+TEMPLATE IMAGE SYSTEM
+
+Use high quality images automatically from:
+
+Unsplash API
+Pexels API
+
+Images must match the template theme.
+
+--------------------------------------------------
+
+TEMPLATE ICONS
+
+Use Lucide icons.
+
+Icons must be styled consistently with the color palette.
+
+--------------------------------------------------
+
+TEMPLATE COUNT
+
+Generate at least:
+
+50 professional templates.
+
+Each category should include multiple designs.
+
+--------------------------------------------------
+
+TEMPLATE CATEGORIES
+
+Corporate
+Restaurants
+Exhibitions
+Startups
+Landing Pages
+Portfolios
+E-commerce
+Marketing Agencies
+Consultants
+Medical Clinics
+
+--------------------------------------------------
+
+GOAL
+
+The templates must look visually impressive so users feel confident launching a website immediately.
+
+The homepage must promote marketing services clearly.
+
+The admin dashboard must be powerful and hidden from the public.

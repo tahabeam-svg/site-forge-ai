@@ -5,32 +5,27 @@ export async function seedDatabase() {
   const existing = await db.select().from(templates);
   if (existing.length > 0) return;
 
-  await db.insert(templates).values([
+  const templateData = [
     {
       name: "Corporate Pro",
       nameAr: "الشركات المحترف",
       description: "Clean, professional template for corporate businesses and enterprises",
       descriptionAr: "قالب نظيف واحترافي للشركات والمؤسسات",
       category: "corporate",
-      thumbnail: "/templates/corporate.svg",
+      thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=300&fit=crop",
       isPremium: false,
-      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;">
-        <header style="padding: 4rem 2rem; text-align: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; border-radius: 0.5rem;">
-          <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Your Company Name</h1>
-          <p style="opacity: 0.8; font-size: 1.1rem;">Professional solutions for your business needs</p>
-        </header>
-        <section style="padding: 3rem 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-          <div style="padding: 2rem; background: #f8f9fa; border-radius: 0.5rem; text-align: center;">
-            <h3>Consulting</h3><p style="color: #666;">Expert advice for growth</p>
-          </div>
-          <div style="padding: 2rem; background: #f8f9fa; border-radius: 0.5rem; text-align: center;">
-            <h3>Strategy</h3><p style="color: #666;">Strategic planning solutions</p>
-          </div>
-          <div style="padding: 2rem; background: #f8f9fa; border-radius: 0.5rem; text-align: center;">
-            <h3>Innovation</h3><p style="color: #666;">Innovative technology</p>
-          </div>
-        </section>
-      </div>`,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; border-radius: 1rem; position: relative; overflow: hidden;"><div style="position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=600&fit=crop') center/cover; opacity: 0.15;"></div><div style="position: relative;"><h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 800;">Enterprise Solutions</h1><p style="font-size: 1.2rem; opacity: 0.8; max-width: 600px; margin: 0 auto 2rem;">Leading business consulting and technology solutions</p><a style="display: inline-block; padding: 0.875rem 2.5rem; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 2rem; font-weight: 600; text-decoration: none;">Get Started</a></div></header><section style="padding: 4rem 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;"><div style="padding: 2.5rem; background: #f8fafc; border-radius: 1rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05);"><h3 style="color: #0f172a; margin-bottom: 0.5rem;">Consulting</h3><p style="color: #64748b;">Expert business advice</p></div><div style="padding: 2.5rem; background: #f8fafc; border-radius: 1rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05);"><h3 style="color: #0f172a; margin-bottom: 0.5rem;">Strategy</h3><p style="color: #64748b;">Strategic planning</p></div><div style="padding: 2.5rem; background: #f8fafc; border-radius: 1rem; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05);"><h3 style="color: #0f172a; margin-bottom: 0.5rem;">Innovation</h3><p style="color: #64748b;">Digital transformation</p></div></section></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Corporate Elite",
+      nameAr: "شركات النخبة",
+      description: "Premium corporate template with modern glass morphism design",
+      descriptionAr: "قالب شركات فاخر بتصميم زجاجي حديث",
+      category: "corporate",
+      thumbnail: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%); color: white; border-radius: 1.5rem;"><span style="display: inline-block; padding: 0.5rem 1.5rem; background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 2rem; font-size: 0.85rem; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.2);">Award Winning Agency</span><h1 style="font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800; letter-spacing: -0.02em;">We Build Digital Excellence</h1><p style="font-size: 1.2rem; opacity: 0.8; max-width: 600px; margin: 0 auto;">Transforming businesses through innovative digital solutions</p></header></div>`,
       previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
     },
     {
@@ -39,22 +34,20 @@ export async function seedDatabase() {
       description: "Elegant template designed for exhibitions, events, and showcases",
       descriptionAr: "قالب أنيق مصمم للمعارض والفعاليات والعروض",
       category: "exhibition",
-      thumbnail: "/templates/exhibition.svg",
+      thumbnail: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=300&fit=crop",
       isPremium: false,
-      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;">
-        <header style="padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); color: white; border-radius: 0.5rem;">
-          <h1 style="font-size: 3rem; margin-bottom: 1rem; letter-spacing: 0.1em;">EXHIBITION 2026</h1>
-          <p style="font-size: 1.2rem; opacity: 0.8;">Discover Innovation & Excellence</p>
-        </header>
-        <section style="padding: 3rem 2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-          <div style="padding: 2rem; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 0.5rem; color: white;">
-            <h3>Featured Artists</h3><p>World-class creators</p>
-          </div>
-          <div style="padding: 2rem; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 0.5rem; color: white;">
-            <h3>Live Events</h3><p>Interactive experiences</p>
-          </div>
-        </section>
-      </div>`,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); color: white; border-radius: 1rem; position: relative; overflow: hidden;"><div style="position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&h=600&fit=crop') center/cover; opacity: 0.2;"></div><div style="position: relative;"><h1 style="font-size: 3.5rem; margin-bottom: 1rem; letter-spacing: 0.1em; font-weight: 800;">EXHIBITION 2026</h1><p style="font-size: 1.3rem; opacity: 0.8;">Discover Innovation & Excellence</p></div></header><section style="padding: 3rem 2rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;"><div style="padding: 2.5rem; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 1rem; color: white;"><h3 style="font-size: 1.3rem;">Featured Artists</h3><p style="opacity: 0.9;">World-class creators</p></div><div style="padding: 2.5rem; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 1rem; color: white;"><h3 style="font-size: 1.3rem;">Live Events</h3><p style="opacity: 0.9;">Interactive experiences</p></div></section></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Luxury Exhibition",
+      nameAr: "معرض فاخر",
+      description: "Luxury dark exhibition template with gold accents",
+      descriptionAr: "قالب معرض فاخر داكن بلمسات ذهبية",
+      category: "exhibition",
+      thumbnail: "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto; background: #0a0a0a; color: white; border-radius: 1rem;"><header style="padding: 6rem 2rem; text-align: center;"><div style="width: 80px; height: 2px; background: linear-gradient(90deg, #d4a843, #f0c96e); margin: 0 auto 2rem;"></div><h1 style="font-size: 3rem; font-weight: 300; letter-spacing: 0.2em; color: #f0c96e;">ARTISAN</h1><p style="font-size: 1.1rem; color: #888; margin-top: 1rem;">International Art & Design Exhibition</p></header></div>`,
       previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
     },
     {
@@ -63,28 +56,20 @@ export async function seedDatabase() {
       description: "Warm and inviting template for restaurants, cafes, and food businesses",
       descriptionAr: "قالب دافئ وجذاب للمطاعم والمقاهي",
       category: "restaurant",
-      thumbnail: "/templates/restaurant.svg",
+      thumbnail: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
       isPremium: false,
-      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;">
-        <header style="padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, #3c1053 0%, #ad5389 100%); color: white; border-radius: 0.5rem;">
-          <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">La Maison</h1>
-          <p style="font-size: 1.1rem; opacity: 0.9;">Fine Dining Experience</p>
-        </header>
-        <section style="padding: 3rem 2rem; text-align: center;">
-          <h2 style="margin-bottom: 2rem;">Our Menu</h2>
-          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-            <div style="padding: 1.5rem; border: 1px solid #eee; border-radius: 0.5rem;">
-              <h4>Appetizers</h4><p style="color: #666;">From $12</p>
-            </div>
-            <div style="padding: 1.5rem; border: 1px solid #eee; border-radius: 0.5rem;">
-              <h4>Main Course</h4><p style="color: #666;">From $24</p>
-            </div>
-            <div style="padding: 1.5rem; border: 1px solid #eee; border-radius: 0.5rem;">
-              <h4>Desserts</h4><p style="color: #666;">From $8</p>
-            </div>
-          </div>
-        </section>
-      </div>`,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #1a0a00 0%, #3c1053 100%); color: white; border-radius: 1rem; position: relative; overflow: hidden;"><div style="position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200&h=600&fit=crop') center/cover; opacity: 0.25;"></div><div style="position: relative;"><h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 300; letter-spacing: 0.05em;">La Maison</h1><p style="font-size: 1.2rem; opacity: 0.9;">Fine Dining Experience</p></div></header><section style="padding: 4rem 2rem; text-align: center;"><h2 style="margin-bottom: 2rem; font-weight: 600;">Our Menu</h2><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;"><div style="padding: 2rem; border: 1px solid #e5e7eb; border-radius: 1rem;"><h4 style="color: #3c1053;">Appetizers</h4><p style="color: #666;">From $12</p></div><div style="padding: 2rem; border: 1px solid #e5e7eb; border-radius: 1rem;"><h4 style="color: #3c1053;">Main Course</h4><p style="color: #666;">From $24</p></div><div style="padding: 2rem; border: 1px solid #e5e7eb; border-radius: 1rem;"><h4 style="color: #3c1053;">Desserts</h4><p style="color: #666;">From $8</p></div></div></section></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Cafe Modern",
+      nameAr: "مقهى حديث",
+      description: "Modern cafe template with warm tones and cozy design",
+      descriptionAr: "قالب مقهى حديث بألوان دافئة وتصميم مريح",
+      category: "restaurant",
+      thumbnail: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=400&h=300&fit=crop",
+      isPremium: false,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #78350f 0%, #92400e 100%); color: white; border-radius: 1rem;"><h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 800;">BREW & CO</h1><p style="font-size: 1.2rem; opacity: 0.9;">Specialty Coffee & Pastries</p></header></div>`,
       previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
     },
     {
@@ -93,20 +78,20 @@ export async function seedDatabase() {
       description: "Bold and modern template for startups, SaaS products, and tech companies",
       descriptionAr: "قالب جريء وحديث للشركات الناشئة ومنتجات SaaS",
       category: "startup",
-      thumbnail: "/templates/startup.svg",
+      thumbnail: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&h=300&fit=crop",
       isPremium: true,
-      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;">
-        <header style="padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 0.5rem;">
-          <h1 style="font-size: 3rem; margin-bottom: 1rem;">Launch Your Vision</h1>
-          <p style="font-size: 1.2rem; opacity: 0.9; margin-bottom: 2rem;">The platform that scales with you</p>
-          <div style="display: inline-block; padding: 0.75rem 2rem; background: white; color: #667eea; border-radius: 2rem; font-weight: 600;">Get Started Free</div>
-        </header>
-        <section style="padding: 3rem 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-          <div style="padding: 2rem; text-align: center;"><h3 style="color: #667eea;">10x</h3><p>Faster Development</p></div>
-          <div style="padding: 2rem; text-align: center;"><h3 style="color: #667eea;">99.9%</h3><p>Uptime Guaranteed</p></div>
-          <div style="padding: 2rem; text-align: center;"><h3 style="color: #667eea;">24/7</h3><p>Support Available</p></div>
-        </section>
-      </div>`,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border-radius: 1rem;"><span style="display: inline-block; padding: 0.5rem 1.5rem; background: rgba(255,255,255,0.15); border-radius: 2rem; font-size: 0.85rem; margin-bottom: 1.5rem;">Now in Beta</span><h1 style="font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800;">Launch Your Vision</h1><p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 2rem;">The platform that scales with you</p><div style="display: flex; gap: 1rem; justify-content: center;"><span style="padding: 0.875rem 2rem; background: white; color: #4f46e5; border-radius: 2rem; font-weight: 600;">Get Started Free</span><span style="padding: 0.875rem 2rem; border: 2px solid rgba(255,255,255,0.3); color: white; border-radius: 2rem;">Watch Demo</span></div></header><section style="padding: 4rem 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;"><div style="padding: 2rem; text-align: center;"><h3 style="font-size: 2.5rem; color: #4f46e5; font-weight: 800;">10x</h3><p style="color: #64748b;">Faster Development</p></div><div style="padding: 2rem; text-align: center;"><h3 style="font-size: 2.5rem; color: #4f46e5; font-weight: 800;">99.9%</h3><p style="color: #64748b;">Uptime Guaranteed</p></div><div style="padding: 2rem; text-align: center;"><h3 style="font-size: 2.5rem; color: #4f46e5; font-weight: 800;">24/7</h3><p style="color: #64748b;">Support Available</p></div></section></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Tech Innovator",
+      nameAr: "المبتكر التقني",
+      description: "Futuristic startup template with neon accents and dark theme",
+      descriptionAr: "قالب شركة ناشئة مستقبلي بلمسات نيون وتصميم داكن",
+      category: "startup",
+      thumbnail: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto; background: #0a0a0a; color: white; border-radius: 1rem;"><header style="padding: 6rem 2rem; text-align: center;"><h1 style="font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800; background: linear-gradient(135deg, #06b6d4, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">NEXUS AI</h1><p style="font-size: 1.2rem; color: #a1a1aa;">Next-Generation Intelligence Platform</p></header></div>`,
       previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
     },
     {
@@ -115,46 +100,123 @@ export async function seedDatabase() {
       description: "Stunning portfolio template for designers, photographers, and creatives",
       descriptionAr: "قالب محفظة مذهل للمصممين والمصورين والمبدعين",
       category: "portfolio",
-      thumbnail: "/templates/portfolio.svg",
+      thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=300&fit=crop",
       isPremium: true,
-      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;">
-        <header style="padding: 5rem 2rem; text-align: center; background: #111; color: white; border-radius: 0.5rem;">
-          <h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 300;">John Smith</h1>
-          <p style="font-size: 1.2rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.2em;">Creative Director</p>
-        </header>
-        <section style="padding: 3rem 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-          <div style="aspect-ratio: 1; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 0.25rem;"></div>
-          <div style="aspect-ratio: 1; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 0.25rem;"></div>
-          <div style="aspect-ratio: 1; background: linear-gradient(135deg, #43e97b, #38f9d7); border-radius: 0.25rem;"></div>
-          <div style="aspect-ratio: 1; background: linear-gradient(135deg, #fa709a, #fee140); border-radius: 0.25rem;"></div>
-          <div style="aspect-ratio: 1; background: linear-gradient(135deg, #a18cd1, #fbc2eb); border-radius: 0.25rem;"></div>
-          <div style="aspect-ratio: 1; background: linear-gradient(135deg, #ffecd2, #fcb69f); border-radius: 0.25rem;"></div>
-        </section>
-      </div>`,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: #111; color: white; border-radius: 1rem;"><h1 style="font-size: 3.5rem; margin-bottom: 1rem; font-weight: 300;">Sarah Ahmed</h1><p style="font-size: 1.2rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.3em;">Creative Director</p></header><section style="padding: 2rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;"><div style="aspect-ratio: 1; background: url('https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=400&fit=crop') center/cover; border-radius: 0.5rem;"></div><div style="aspect-ratio: 1; background: url('https://images.unsplash.com/photo-1445205170230-053b83016050?w=400&h=400&fit=crop') center/cover; border-radius: 0.5rem;"></div><div style="aspect-ratio: 1; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 0.5rem;"></div></section></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Minimal Portfolio",
+      nameAr: "معرض بسيط",
+      description: "Clean minimal portfolio for architects and designers",
+      descriptionAr: "معرض أعمال نظيف وبسيط للمعماريين والمصممين",
+      category: "portfolio",
+      thumbnail: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=400&h=300&fit=crop",
+      isPremium: false,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 8rem 2rem 4rem; border-bottom: 1px solid #e5e7eb;"><h1 style="font-size: 4rem; font-weight: 200; letter-spacing: -0.02em;">Portfolio</h1><p style="font-size: 1.1rem; color: #94a3b8; margin-top: 0.5rem;">Architecture & Interior Design</p></header></div>`,
       previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
     },
     {
       name: "Landing Page Pro",
       nameAr: "صفحة هبوط احترافية",
-      description: "High-converting landing page template for marketing campaigns and products",
+      description: "High-converting landing page for marketing campaigns and products",
       descriptionAr: "قالب صفحة هبوط عالي التحويل لحملات التسويق",
       category: "landing",
-      thumbnail: "/templates/landing.svg",
+      thumbnail: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=300&fit=crop",
       isPremium: false,
-      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;">
-        <header style="padding: 5rem 2rem; text-align: center; background: linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 100%); color: white; border-radius: 0.5rem;">
-          <span style="display: inline-block; padding: 0.25rem 1rem; background: rgba(255,255,255,0.1); border-radius: 2rem; font-size: 0.85rem; margin-bottom: 1rem;">NEW RELEASE</span>
-          <h1 style="font-size: 3rem; margin-bottom: 1rem;">Supercharge Your Growth</h1>
-          <p style="font-size: 1.1rem; opacity: 0.8; max-width: 600px; margin: 0 auto 2rem;">The all-in-one platform to accelerate your business</p>
-          <div style="display: flex; gap: 1rem; justify-content: center;">
-            <span style="padding: 0.75rem 2rem; background: #667eea; color: white; border-radius: 0.5rem;">Start Free Trial</span>
-            <span style="padding: 0.75rem 2rem; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 0.5rem;">Watch Demo</span>
-          </div>
-        </header>
-      </div>`,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #0c0c1d 0%, #1a1a3e 100%); color: white; border-radius: 1rem;"><span style="display: inline-block; padding: 0.4rem 1.2rem; background: rgba(255,255,255,0.1); border-radius: 2rem; font-size: 0.85rem; margin-bottom: 1.5rem;">NEW RELEASE</span><h1 style="font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800;">Supercharge Your Growth</h1><p style="font-size: 1.1rem; opacity: 0.8; max-width: 600px; margin: 0 auto 2rem;">The all-in-one platform to accelerate your business</p><div style="display: flex; gap: 1rem; justify-content: center;"><span style="padding: 0.875rem 2rem; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 0.75rem; font-weight: 600;">Start Free Trial</span><span style="padding: 0.875rem 2rem; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 0.75rem;">Watch Demo</span></div></header></div>`,
       previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
     },
-  ]);
+    {
+      name: "SaaS Landing",
+      nameAr: "صفحة هبوط SaaS",
+      description: "Modern SaaS landing page with gradient design and feature grid",
+      descriptionAr: "صفحة هبوط SaaS حديثة بتصميم تدرجي",
+      category: "landing",
+      thumbnail: "https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #0f172a 0%, #020617 100%); color: white; border-radius: 1rem;"><h1 style="font-size: 3.5rem; margin-bottom: 1rem; font-weight: 800; background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Ship Faster</h1><p style="font-size: 1.2rem; color: #94a3b8; max-width: 600px; margin: 0 auto;">Build, deploy, and scale your applications with confidence</p></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "E-Commerce Store",
+      nameAr: "متجر إلكتروني",
+      description: "Professional e-commerce template for online stores",
+      descriptionAr: "قالب متجر إلكتروني احترافي للمتاجر عبر الإنترنت",
+      category: "ecommerce",
+      thumbnail: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 5rem 2rem; background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); border-radius: 1rem;"><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;"><div><span style="display: inline-block; padding: 0.4rem 1rem; background: #ec4899; color: white; border-radius: 2rem; font-size: 0.85rem; margin-bottom: 1rem;">Summer Collection</span><h1 style="font-size: 3rem; font-weight: 800; color: #0f172a; margin-bottom: 1rem;">Discover Your Style</h1><p style="color: #64748b; margin-bottom: 2rem;">Curated fashion for the modern woman</p><a style="display: inline-block; padding: 0.875rem 2rem; background: #0f172a; color: white; border-radius: 2rem; font-weight: 600; text-decoration: none;">Shop Now</a></div><div style="aspect-ratio: 1; background: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=500&h=500&fit=crop') center/cover; border-radius: 1rem;"></div></div></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Fashion Boutique",
+      nameAr: "بوتيك أزياء",
+      description: "Elegant fashion boutique template with luxury feel",
+      descriptionAr: "قالب بوتيك أزياء أنيق بإحساس فاخر",
+      category: "ecommerce",
+      thumbnail: "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto; background: #0a0a0a; color: white; border-radius: 1rem;"><header style="padding: 6rem 2rem; text-align: center;"><h1 style="font-size: 3rem; font-weight: 200; letter-spacing: 0.3em;">MAISON</h1><p style="font-size: 1rem; color: #a1a1aa; letter-spacing: 0.1em; margin-top: 0.5rem;">HAUTE COUTURE</p></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Marketing Agency",
+      nameAr: "وكالة تسويق",
+      description: "Bold marketing agency template with dynamic design",
+      descriptionAr: "قالب وكالة تسويق جريء بتصميم ديناميكي",
+      category: "corporate",
+      thumbnail: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=300&fit=crop",
+      isPremium: false,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%); color: white; border-radius: 1rem;"><h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 1rem;">SPARK</h1><p style="font-size: 1.3rem; opacity: 0.9;">Digital Marketing Agency</p></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Consultant Pro",
+      nameAr: "مستشار محترف",
+      description: "Professional consultant and advisory services template",
+      descriptionAr: "قالب خدمات استشارية واستشاريين محترفين",
+      category: "corporate",
+      thumbnail: "https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&h=300&fit=crop",
+      isPremium: false,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); color: white; border-radius: 1rem; text-align: center;"><h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 1rem;">Advisory Group</h1><p style="font-size: 1.1rem; opacity: 0.8;">Strategic consulting for growth-minded businesses</p></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Medical Clinic",
+      nameAr: "عيادة طبية",
+      description: "Clean medical clinic template with trust-building design",
+      descriptionAr: "قالب عيادة طبية نظيف يبني الثقة",
+      category: "corporate",
+      thumbnail: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=400&h=300&fit=crop",
+      isPremium: false,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; border-radius: 1rem;"><h1 style="font-size: 3rem; font-weight: 700; margin-bottom: 1rem;">HealthCare Plus</h1><p style="font-size: 1.1rem; opacity: 0.9;">Your Health, Our Priority</p></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Real Estate Luxury",
+      nameAr: "عقارات فاخرة",
+      description: "Luxury real estate template with premium property showcase",
+      descriptionAr: "قالب عقارات فاخر لعرض العقارات الراقية",
+      category: "corporate",
+      thumbnail: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto;"><header style="padding: 6rem 2rem; text-align: center; background: linear-gradient(135deg, #1c1917 0%, #292524 100%); color: white; border-radius: 1rem; position: relative; overflow: hidden;"><div style="position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=600&fit=crop') center/cover; opacity: 0.3;"></div><div style="position: relative;"><h1 style="font-size: 3rem; font-weight: 300; letter-spacing: 0.1em; color: #d4a843;">ROYAL PROPERTIES</h1><p style="font-size: 1.1rem; color: #a1a1aa; margin-top: 1rem;">Exclusive Luxury Real Estate</p></div></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+    {
+      name: "Perfume Collection",
+      nameAr: "مجموعة عطور",
+      description: "Luxurious perfume and fragrance collection template",
+      descriptionAr: "قالب مجموعة عطور وروائح فاخرة",
+      category: "ecommerce",
+      thumbnail: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=300&fit=crop",
+      isPremium: true,
+      previewHtml: `<div style="font-family: Inter, sans-serif; max-width: 1200px; margin: 0 auto; background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%); color: white; border-radius: 1rem;"><header style="padding: 6rem 2rem; text-align: center;"><div style="width: 60px; height: 1px; background: linear-gradient(90deg, transparent, #d4a843, transparent); margin: 0 auto 2rem;"></div><h1 style="font-size: 3rem; font-weight: 200; letter-spacing: 0.3em; color: #f0c96e;">ESSENCE</h1><p style="font-size: 1rem; color: #888; letter-spacing: 0.15em; margin-top: 1rem;">PARFUMS DE LUXE</p></header></div>`,
+      previewCss: "* { margin: 0; padding: 0; box-sizing: border-box; }",
+    },
+  ];
 
-  console.log("Database seeded with templates");
+  await db.insert(templates).values(templateData);
+  console.log(`Database seeded with ${templateData.length} templates`);
 }

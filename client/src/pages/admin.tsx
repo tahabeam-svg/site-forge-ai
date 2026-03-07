@@ -26,6 +26,7 @@ import {
   Hash,
   CheckCircle2,
   XCircle,
+  Shield,
 } from "lucide-react";
 
 interface AdminStats {
@@ -76,9 +77,27 @@ export default function AdminPage() {
   const [maxUses, setMaxUses] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
 
-  const { data: stats, isLoading: statsLoading } = useQuery<AdminStats>({
+  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
   });
+
+  if (statsError) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2" data-testid="text-admin-denied">
+              {lang === "ar" ? "غير مصرح بالوصول" : "Access Denied"}
+            </h2>
+            <p className="text-muted-foreground">
+              {lang === "ar" ? "ليس لديك صلاحية الوصول إلى لوحة الإدارة" : "You do not have permission to access the admin panel"}
+            </p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const { data: adminUsers = [], isLoading: usersLoading } = useQuery<AdminUser[]>({
     queryKey: ["/api/admin/users"],
