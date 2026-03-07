@@ -15,7 +15,7 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, FolderOpen, LayoutTemplate, Settings, LogOut, Code2 } from "lucide-react";
+import { LayoutDashboard, FolderOpen, LayoutTemplate, Settings, LogOut, Globe2 } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
 
 const sidebarStyle = {
@@ -35,9 +35,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: t("settings", lang), url: "/dashboard", icon: Settings },
   ];
 
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
+  const handleLogout = () => {
+    window.location.href = "/api/logout";
   };
 
   return (
@@ -47,10 +46,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Sidebar>
             <SidebarHeader className="p-4">
               <button onClick={() => navigate("/")} className="flex items-center gap-2" data-testid="link-brand-sidebar">
-                <div className="w-8 h-8 rounded-md bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                  <Code2 className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md">
+                  <Globe2 className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-bold">{t("brand", lang)}</span>
+                <span className="font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">{t("brand", lang)}</span>
               </button>
             </SidebarHeader>
             <SidebarContent>
@@ -83,8 +82,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </SidebarContent>
             <SidebarFooter className="p-4 space-y-2">
               {user && (
-                <div className="text-sm text-muted-foreground truncate px-2" data-testid="text-sidebar-user">
-                  {user.displayName || user.username}
+                <div className="flex items-center gap-2 px-2">
+                  {user.profileImageUrl && (
+                    <img src={user.profileImageUrl} alt="" className="w-7 h-7 rounded-full" />
+                  )}
+                  <div className="text-sm text-muted-foreground truncate" data-testid="text-sidebar-user">
+                    {user.firstName || user.email || "User"}
+                  </div>
                 </div>
               )}
               <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout} data-testid="button-logout">

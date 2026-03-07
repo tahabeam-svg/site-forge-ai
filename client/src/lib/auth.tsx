@@ -1,33 +1,30 @@
 import { createContext, useContext, useState, useCallback, useEffect } from "react";
-import type { User } from "@shared/schema";
-import { apiRequest, queryClient } from "./queryClient";
+import { useAuth as useReplitAuth } from "@/hooks/use-auth";
 import type { Language } from "./i18n";
 
 interface AuthContextType {
-  user: Omit<User, "password"> | null;
+  user: any;
   isLoading: boolean;
+  isAuthenticated: boolean;
   language: Language;
   setLanguage: (lang: Language) => void;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, displayName?: string) => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Omit<User, "password"> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading, isAuthenticated, logout } = useReplitAuth();
   const [language, setLanguageState] = useState<Language>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("siteforge-lang") as Language) || "en";
+      return (localStorage.getItem("arabyweb-lang") as Language) || "ar";
     }
-    return "en";
+    return "ar";
   });
 
   const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("siteforge-lang", lang);
+    localStorage.setItem("arabyweb-lang", lang);
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
     document.documentElement.lang = lang;
   }, []);
@@ -37,48 +34,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = language;
   }, [language]);
 
-  useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" })
-      .then((res) => {
-        if (res.ok) return res.json();
-        return null;
-      })
-      .then((data) => {
-        setUser(data);
-        if (data?.language) setLanguage(data.language);
-      })
-      .catch(() => setUser(null))
-      .finally(() => setIsLoading(false));
-  }, [setLanguage]);
-
-  const login = useCallback(async (username: string, password: string) => {
-    const res = await apiRequest("POST", "/api/auth/login", { username, password });
-    const data = await res.json();
-    setUser(data);
-    if (data?.language) setLanguageState(data.language);
-    queryClient.invalidateQueries();
-  }, []);
-
-  const register = useCallback(async (username: string, password: string, displayName?: string) => {
-    const res = await apiRequest("POST", "/api/auth/register", {
-      username,
-      password,
-      displayName: displayName || username,
-      language,
-    });
-    const data = await res.json();
-    setUser(data);
-    queryClient.invalidateQueries();
-  }, [language]);
-
-  const logout = useCallback(async () => {
-    await apiRequest("POST", "/api/auth/logout");
-    setUser(null);
-    queryClient.clear();
-  }, []);
-
   return (
-    <AuthContext.Provider value={{ user, isLoading, language, setLanguage, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, isAuthenticated, language, setLanguage, logout }}>
       {children}
     </AuthContext.Provider>
   );
