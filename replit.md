@@ -8,12 +8,12 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - **Backend**: Express.js + TypeScript
 - **Database**: PostgreSQL with Drizzle ORM
 - **AI**: OpenAI via Replit AI Integrations (gpt-5.2)
-- **Auth**: Replit Auth (OpenID Connect — supports Google, GitHub, email)
+- **Auth**: Email/password (bcryptjs) + Google OAuth (passport-google-oauth20), session-based with memorystore
 
 ## Key Features
 
 - Landing page with bilingual support (Arabic default, English toggle) and Saudi market marketing
-- Google authentication via Replit Auth (no custom login forms)
+- Email/password registration and login + Google OAuth
 - Dashboard with project management
 - AI website generation from text descriptions with stock images (Unsplash)
 - AI-powered editing via chat commands with conversation history
@@ -46,7 +46,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 ### Shared
 - `shared/schema.ts` - Drizzle schemas for projects, templates, chatMessages, coupons (re-exports users from models/auth)
-- `shared/models/auth.ts` - Replit Auth users and sessions tables
+- `shared/models/auth.ts` - Users table with password and Google OAuth fields
 
 ### Server
 - `server/index.ts` - Express server entry point
@@ -55,13 +55,14 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `server/ai.ts` - OpenAI integration for website generation, editing, and social media content
 - `server/seed.ts` - Database seeding with template data
 - `server/db.ts` - Database connection
-- `server/replit_integrations/auth/` - Replit Auth module (OIDC, sessions, user storage)
+- `server/replit_integrations/auth/` - Auth module (email/password + Google OAuth, passport.js, session-based)
 - `uploads/` - File upload directory for user-uploaded images/logos
 
 ### Client
 - `client/src/App.tsx` - Main app with routing and ProtectedRoute
-- `client/src/hooks/use-auth.ts` - Replit Auth React hook
-- `client/src/lib/auth.tsx` - Auth context provider with language management (wraps useAuth hook)
+- `client/src/hooks/use-auth.ts` - Auth React hook (session-based)
+- `client/src/lib/auth.tsx` - Auth context provider with language management
+- `client/src/pages/auth.tsx` - Login/register page (email/password + Google OAuth)
 - `client/src/lib/auth-utils.ts` - Auth error utilities
 - `client/src/lib/i18n.ts` - Translation system (EN/AR) with Saudi marketing copy
 - `client/src/pages/landing.tsx` - Landing page with Saudi market focus
@@ -82,7 +83,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 ## Database Tables
 
-- `users` - id (varchar, OIDC sub), email, firstName, lastName, profileImageUrl, isAdmin, githubToken, githubUsername, createdAt, updatedAt
+- `users` - id (varchar, UUID), email, password (bcrypt hash), firstName, lastName, profileImageUrl, googleId, isAdmin, githubToken, githubUsername, createdAt, updatedAt
 - `sessions` - sid (varchar PK), sess (jsonb), expire (timestamp)
 - `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), createdAt, updatedAt
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
@@ -91,10 +92,12 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 ## API Routes
 
-- `GET /api/login` - Begin Replit Auth login flow (Google, etc.)
-- `GET /api/logout` - Logout and end session
-- `GET /api/callback` - OIDC callback
+- `POST /api/auth/register` - Register with email/password
+- `POST /api/auth/login` - Login with email/password
+- `GET /api/auth/google` - Begin Google OAuth flow
+- `GET /api/auth/google/callback` - Google OAuth callback
 - `GET /api/auth/user` - Get current authenticated user
+- `POST /api/auth/logout` - Logout and end session
 - `GET /api/projects` - List user projects
 - `GET /api/projects/:id` - Get project
 - `POST /api/projects` - Create project

@@ -40,8 +40,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: t("settings", lang), url: "/settings", icon: Settings },
   ];
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    window.location.href = "/auth";
   };
 
   return (

@@ -68,7 +68,7 @@ export default function LandingPage() {
     if (isAuthenticated) {
       navigate("/dashboard");
     } else {
-      window.location.href = "/api/login";
+      navigate("/auth");
     }
   };
 
@@ -76,7 +76,7 @@ export default function LandingPage() {
     if (isAuthenticated) {
       navigate("/marketing");
     } else {
-      window.location.href = "/api/login";
+      navigate("/auth");
     }
   };
 
@@ -106,8 +106,7 @@ export default function LandingPage() {
                   {t("dashboard", lang)}
                 </Button>
               ) : (
-                <Button onClick={() => window.location.href = "/api/login"} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-login">
-                  <SiGoogle className="w-4 h-4 me-2" />
+                <Button onClick={() => navigate("/auth")} className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-login">
                   {t("login", lang)}
                 </Button>
               )}

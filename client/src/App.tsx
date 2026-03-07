@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
+import AuthPage from "@/pages/auth";
 import DashboardPage from "@/pages/dashboard";
 import EditorPage from "@/pages/editor";
 import PreviewPage from "@/pages/preview";
@@ -19,19 +20,10 @@ import AnalyticsPage from "@/pages/analytics";
 import DomainsPage from "@/pages/domains";
 import PaymentMethodsPage from "@/pages/payment-methods";
 import GitHubDeployPage from "@/pages/github-deploy";
-import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useAuth();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast({ title: "يرجى تسجيل الدخول", description: "جاري التوجيه...", variant: "destructive" });
-      setTimeout(() => { window.location.href = "/api/login"; }, 500);
-    }
-  }, [isAuthenticated, isLoading]);
+  const [, setLocation] = useLocation();
 
   if (isLoading) {
     return (
@@ -42,6 +34,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }
 
   if (!isAuthenticated) {
+    setLocation("/auth");
     return null;
   }
 
@@ -52,6 +45,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={LandingPage} />
+      <Route path="/auth" component={AuthPage} />
       <Route path="/dashboard">{() => <ProtectedRoute component={DashboardPage} />}</Route>
       <Route path="/editor/:id">{() => <ProtectedRoute component={EditorPage} />}</Route>
       <Route path="/preview/:id">{() => <ProtectedRoute component={PreviewPage} />}</Route>

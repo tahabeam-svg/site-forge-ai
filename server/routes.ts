@@ -37,7 +37,7 @@ function decryptToken(text: string): string {
 
 async function isAdmin(req: any, res: Response, next: NextFunction) {
   try {
-    const userId = req.user?.claims?.sub;
+    const userId = req.user?.id;
     if (!userId) return res.status(401).json({ message: "Not authenticated" });
     const [user] = await db.select().from(users).where(eq(users.id, userId));
     if (!user?.isAdmin) return res.status(403).json({ message: "Admin access required" });
@@ -93,7 +93,7 @@ export async function registerRoutes(
 
   app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const userProjects = await storage.getProjectsByUser(userId);
       res.json(userProjects);
     } catch (err) {
@@ -105,7 +105,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       res.json(project);
     } catch (err) {
@@ -126,7 +126,7 @@ export async function registerRoutes(
 
   app.post("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const parsed = createProjectSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
       const { name, description, templateId } = parsed.data;
@@ -153,7 +153,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
 
       const language = req.body.language || "ar";
@@ -194,7 +194,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
 
       const parsed = editCommandSchema.safeParse(req.body);
@@ -232,7 +232,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       const messages = await storage.getChatMessages(project.id);
       res.json(messages);
@@ -253,7 +253,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       const parsed = updateProjectSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
@@ -268,7 +268,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       await storage.deleteProject(project.id);
       res.status(204).send();
@@ -281,7 +281,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       const updated = await storage.updateProject(project.id, { status: "published" });
       res.json(updated);
@@ -436,7 +436,7 @@ export async function registerRoutes(
   });
 
   async function getUserGitHubToken(req: any): Promise<string | null> {
-    const userId = req.user?.claims?.sub;
+    const userId = req.user?.id;
     if (!userId) return null;
     const [user] = await db.select().from(users).where(eq(users.id, userId));
     if (!user?.githubToken) return null;
@@ -457,7 +457,7 @@ export async function registerRoutes(
       if (!result.valid || !result.user) {
         return res.status(401).json({ message: "Invalid GitHub token. Please check your token and try again." });
       }
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const encryptedToken = encryptToken(token.trim());
       await db.update(users).set({
         githubToken: encryptedToken,
@@ -473,7 +473,7 @@ export async function registerRoutes(
 
   app.post("/api/github/disconnect", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       await db.update(users).set({
         githubToken: null,
         githubUsername: null,
@@ -537,7 +537,7 @@ export async function registerRoutes(
 
       const project = await storage.getProject(parseInt(req.params.projectId));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       if (!project.generatedHtml) return res.status(400).json({ message: "Project has no generated content" });
 
@@ -574,7 +574,7 @@ export async function registerRoutes(
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       if (!project.generatedHtml) return res.status(400).json({ message: "Project has no generated content" });
 
