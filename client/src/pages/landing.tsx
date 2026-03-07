@@ -203,7 +203,7 @@ export default function LandingPage() {
                   <div className="w-3 h-3 rounded-full bg-green-400/80" />
                 </div>
                 <div className="flex-1 text-center">
-                  <div className="text-xs text-muted-foreground bg-muted rounded-md px-3 py-1 inline-block">arabyweb.ai/dashboard</div>
+                  <div className="text-xs text-muted-foreground bg-muted rounded-md px-3 py-1 inline-block">arabyweb.net/dashboard</div>
                 </div>
               </div>
               <div className="p-6 sm:p-10 bg-gradient-to-br from-emerald-500/5 to-teal-500/5">
@@ -532,7 +532,7 @@ export default function LandingPage() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {lang === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"} &copy; 2026 ArabyWeb.ai
+              {lang === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"} &copy; 2026 ArabyWeb.net
             </p>
           </div>
         </div>

@@ -106,8 +106,8 @@ export default function DomainsPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">{lang === "ar" ? "القيمة:" : "Value:"}</span>{" "}
-                    <span className="font-mono font-medium">proxy.arabyweb.ai</span>
-                    <Button variant="ghost" size="sm" className="ms-1 h-6 w-6 p-0" onClick={() => copyText("proxy.arabyweb.ai")}>
+                    <span className="font-mono font-medium">proxy.arabyweb.net</span>
+                    <Button variant="ghost" size="sm" className="ms-1 h-6 w-6 p-0" onClick={() => copyText("proxy.arabyweb.net")}>
                       {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                     </Button>
                   </div>
@@ -163,7 +163,7 @@ export default function DomainsPage() {
                     <div>
                       <p className="text-sm font-medium">{project.name}</p>
                       <p className="text-xs text-muted-foreground font-mono">
-                        {project.name.toLowerCase().replace(/\s+/g, "-")}.arabyweb.ai
+                        {project.name.toLowerCase().replace(/\s+/g, "-")}.arabyweb.net
                       </p>
                     </div>
                   </div>
