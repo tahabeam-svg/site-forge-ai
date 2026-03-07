@@ -82,7 +82,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 ## Database Tables
 
-- `users` - id (varchar, OIDC sub), email, firstName, lastName, profileImageUrl, isAdmin, createdAt, updatedAt
+- `users` - id (varchar, OIDC sub), email, firstName, lastName, profileImageUrl, isAdmin, githubToken, githubUsername, createdAt, updatedAt
 - `sessions` - sid (varchar PK), sess (jsonb), expire (timestamp)
 - `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), createdAt, updatedAt
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
@@ -117,10 +117,12 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `PATCH /api/admin/users/:id/suspend` - Suspend user
 - `POST /api/marketing/generate` - Generate social media content with AI
 - `GET /api/projects/:id/export` - Export/download project as ZIP file
-- `GET /api/github/user` - Get connected GitHub user info
-- `GET /api/github/repos` - List user's GitHub repositories
-- `POST /api/github/repos` - Create new GitHub repository
-- `POST /api/github/deploy/:projectId` - Push project website to GitHub repo
+- `POST /api/github/connect` - Connect GitHub account (with Personal Access Token)
+- `POST /api/github/disconnect` - Disconnect GitHub account
+- `GET /api/github/user` - Get connected GitHub user info (per-user token)
+- `GET /api/github/repos` - List user's GitHub repositories (per-user token)
+- `POST /api/github/repos` - Create new GitHub repository (per-user token)
+- `POST /api/github/deploy/:projectId` - Push project website to GitHub repo (per-user token)
 
 ## Pricing (Saudi Riyals)
 

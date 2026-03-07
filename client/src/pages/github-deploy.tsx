@@ -68,9 +68,46 @@ export default function GitHubDeployPage() {
   const [newRepoDesc, setNewRepoDesc] = useState("");
   const [showNewRepo, setShowNewRepo] = useState(false);
   const [deploySuccess, setDeploySuccess] = useState<string | null>(null);
+  const [ghToken, setGhToken] = useState("");
+  const [showTokenInput, setShowTokenInput] = useState(false);
 
   const { data: ghUser, isLoading: ghUserLoading } = useQuery<GitHubUser>({
     queryKey: ["/api/github/user"],
+    retry: false,
+  });
+
+  const connectMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/github/connect", { token: ghToken });
+      return res.json();
+    },
+    onSuccess: (data: GitHubUser) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/github/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/github/repos"] });
+      setGhToken("");
+      setShowTokenInput(false);
+      toast({
+        title: lang === "ar" ? "تم الربط" : "Connected!",
+        description: lang === "ar" ? `تم ربط حساب ${data.login} بنجاح` : `Account ${data.login} connected successfully`,
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: t("error", lang), description: err.message, variant: "destructive" });
+    },
+  });
+
+  const disconnectMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/github/disconnect");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/github/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/github/repos"] });
+      toast({
+        title: lang === "ar" ? "تم الفصل" : "Disconnected",
+        description: lang === "ar" ? "تم فصل حساب GitHub" : "GitHub account disconnected",
+      });
+    },
   });
 
   const { data: reposData, isLoading: reposLoading } = useQuery<GitHubRepo[]>({
@@ -176,10 +213,19 @@ export default function GitHubDeployPage() {
                   <p className="font-semibold" data-testid="text-github-username">{ghUser.name || ghUser.login}</p>
                   <p className="text-sm text-muted-foreground">@{ghUser.login}</p>
                 </div>
-                <Badge variant="secondary" className="ms-auto">
+                <Badge variant="secondary" className="ms-auto me-2">
                   <CheckCircle2 className="w-3.5 h-3.5 me-1 text-emerald-500" />
                   {lang === "ar" ? "متصل" : "Connected"}
                 </Badge>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => disconnectMutation.mutate()}
+                  disabled={disconnectMutation.isPending}
+                  data-testid="button-disconnect-github"
+                >
+                  {lang === "ar" ? "فصل" : "Disconnect"}
+                </Button>
               </div>
             </Card>
 
@@ -385,14 +431,67 @@ export default function GitHubDeployPage() {
             </Card>
           </>
         ) : (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center space-y-4">
             <Github className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-            <h3 className="font-semibold mb-1">
-              {lang === "ar" ? "لم يتم الاتصال بـ GitHub" : "GitHub Not Connected"}
+            <h3 className="font-semibold text-lg">
+              {lang === "ar" ? "ربط حساب GitHub" : "Connect GitHub Account"}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              {lang === "ar" ? "يرجى ربط حسابك على GitHub أولاً" : "Please connect your GitHub account first"}
+            <p className="text-sm text-muted-foreground max-w-md mx-auto">
+              {lang === "ar"
+                ? "لنشر موقعك على GitHub، تحتاج أولاً لربط حسابك باستخدام رمز الوصول الشخصي (Personal Access Token)."
+                : "To deploy your website to GitHub, connect your account using a Personal Access Token (PAT)."}
             </p>
+
+            {!showTokenInput ? (
+              <Button
+                size="lg"
+                className="gap-2"
+                data-testid="button-show-connect-github"
+                onClick={() => setShowTokenInput(true)}
+              >
+                <Github className="w-5 h-5" />
+                {lang === "ar" ? "ربط حساب GitHub" : "Connect GitHub"}
+              </Button>
+            ) : (
+              <div className="max-w-md mx-auto space-y-3">
+                <Input
+                  type="password"
+                  placeholder={lang === "ar" ? "الصق رمز الوصول الشخصي هنا..." : "Paste your Personal Access Token here..."}
+                  value={ghToken}
+                  onChange={(e) => setGhToken(e.target.value)}
+                  dir="ltr"
+                  data-testid="input-github-token"
+                />
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    onClick={() => connectMutation.mutate()}
+                    disabled={!ghToken.trim() || connectMutation.isPending}
+                    data-testid="button-connect-github"
+                  >
+                    {connectMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin me-1" />
+                    ) : (
+                      <CheckCircle2 className="w-4 h-4 me-1" />
+                    )}
+                    {lang === "ar" ? "ربط" : "Connect"}
+                  </Button>
+                  <Button variant="outline" onClick={() => { setShowTokenInput(false); setGhToken(""); }}>
+                    {lang === "ar" ? "إلغاء" : "Cancel"}
+                  </Button>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1 text-start" dir={lang === "ar" ? "rtl" : "ltr"}>
+                  <p className="font-medium">{lang === "ar" ? "كيف تحصل على رمز الوصول:" : "How to get your token:"}</p>
+                  <p>1. {lang === "ar" ? "اذهب إلى" : "Go to"}{" "}
+                    <a href="https://github.com/settings/tokens/new" target="_blank" rel="noopener noreferrer" className="text-emerald-600 underline" data-testid="link-github-token">
+                      GitHub Settings &gt; Tokens
+                    </a>
+                  </p>
+                  <p>2. {lang === "ar" ? "اختر 'Generate new token (classic)'" : "Select 'Generate new token (classic)'"}</p>
+                  <p>3. {lang === "ar" ? "فعّل صلاحية 'repo' (كاملة)" : "Enable the 'repo' scope (full)"}</p>
+                  <p>4. {lang === "ar" ? "انسخ الرمز والصقه هنا" : "Copy the token and paste it here"}</p>
+                </div>
+              </div>
+            )}
           </Card>
         )}
       </div>

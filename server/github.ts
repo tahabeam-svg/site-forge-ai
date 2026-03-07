@@ -1,37 +1,57 @@
-import { ReplitConnectors } from "@replit/connectors-sdk";
+import { Octokit } from "@octokit/rest";
 
-const connectors = new ReplitConnectors();
-
-export async function getGitHubUser() {
-  const response = await connectors.proxy("github", "/user", { method: "GET" });
-  return response.json();
+function getOctokit(token: string) {
+  return new Octokit({ auth: token });
 }
 
-export async function listUserRepos() {
-  const response = await connectors.proxy("github", "/user/repos?per_page=100&sort=updated", { method: "GET" });
-  return response.json();
+export async function validateToken(token: string) {
+  try {
+    const octokit = getOctokit(token);
+    const { data } = await octokit.users.getAuthenticated();
+    return { valid: true, user: data };
+  } catch {
+    return { valid: false, user: null };
+  }
 }
 
-export async function createRepo(name: string, description: string, isPrivate: boolean = false) {
-  const response = await connectors.proxy("github", "/user/repos", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name,
-      description,
-      private: isPrivate,
-      auto_init: true,
-    }),
+export async function getGitHubUser(token: string) {
+  const octokit = getOctokit(token);
+  const { data } = await octokit.users.getAuthenticated();
+  return data;
+}
+
+export async function listUserRepos(token: string) {
+  const octokit = getOctokit(token);
+  const { data } = await octokit.repos.listForAuthenticatedUser({
+    per_page: 100,
+    sort: "updated",
   });
-  return response.json();
+  return data;
 }
 
-export async function getRepoContents(owner: string, repo: string, path: string = "") {
-  const response = await connectors.proxy("github", `/repos/${owner}/${repo}/contents/${path}`, { method: "GET" });
-  return response.json();
+export async function createRepo(token: string, name: string, description: string, isPrivate: boolean = false) {
+  const octokit = getOctokit(token);
+  const { data } = await octokit.repos.createForAuthenticatedUser({
+    name,
+    description,
+    private: isPrivate,
+    auto_init: true,
+  });
+  return data;
+}
+
+export async function getRepoContents(token: string, owner: string, repo: string, path: string = "") {
+  const octokit = getOctokit(token);
+  try {
+    const { data } = await octokit.repos.getContent({ owner, repo, path });
+    return data;
+  } catch {
+    return null;
+  }
 }
 
 export async function createOrUpdateFile(
+  token: string,
   owner: string,
   repo: string,
   path: string,
@@ -39,36 +59,20 @@ export async function createOrUpdateFile(
   message: string,
   sha?: string
 ) {
-  const body: any = {
+  const octokit = getOctokit(token);
+  const { data } = await octokit.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path,
     message,
     content: Buffer.from(content).toString("base64"),
-  };
-  if (sha) body.sha = sha;
-
-  const response = await connectors.proxy("github", `/repos/${owner}/${repo}/contents/${path}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    sha,
   });
-  return response.json();
-}
-
-export async function deleteFile(
-  owner: string,
-  repo: string,
-  path: string,
-  sha: string,
-  message: string
-) {
-  const response = await connectors.proxy("github", `/repos/${owner}/${repo}/contents/${path}`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message, sha }),
-  });
-  return response.json();
+  return data;
 }
 
 export async function pushWebsiteToRepo(
+  token: string,
   owner: string,
   repo: string,
   html: string,
@@ -77,7 +81,9 @@ export async function pushWebsiteToRepo(
   seoTitle?: string,
   seoDescription?: string
 ) {
-  const fullHtml = `<!DOCTYPE html>
+  const isFullDoc = html.trim().startsWith("<!DOCTYPE") || html.trim().startsWith("<html");
+
+  const fullHtml = isFullDoc ? html : `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -95,32 +101,24 @@ ${html}
 
   let existingSha: string | undefined;
   try {
-    const existing = await getRepoContents(owner, repo, "index.html");
-    if (existing && existing.sha) existingSha = existing.sha;
-  } catch (e) {}
+    const existing: any = await getRepoContents(token, owner, repo, "index.html");
+    if (existing?.sha) existingSha = existing.sha;
+  } catch {}
 
   await createOrUpdateFile(
-    owner,
-    repo,
-    "index.html",
-    fullHtml,
-    `Deploy ${projectName} - updated index.html`,
-    existingSha
+    token, owner, repo, "index.html", fullHtml,
+    `Deploy ${projectName} - updated index.html`, existingSha
   );
 
   let cssSha: string | undefined;
   try {
-    const existing = await getRepoContents(owner, repo, "css/style.css");
-    if (existing && existing.sha) cssSha = existing.sha;
-  } catch (e) {}
+    const existing: any = await getRepoContents(token, owner, repo, "css/style.css");
+    if (existing?.sha) cssSha = existing.sha;
+  } catch {}
 
   await createOrUpdateFile(
-    owner,
-    repo,
-    "css/style.css",
-    css || "",
-    `Deploy ${projectName} - updated style.css`,
-    cssSha
+    token, owner, repo, "css/style.css", css || "",
+    `Deploy ${projectName} - updated style.css`, cssSha
   );
 
   return { success: true, repoUrl: `https://github.com/${owner}/${repo}` };

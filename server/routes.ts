@@ -3,15 +3,37 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { generateWebsite, editWebsiteWithAI, generateSocialContent } from "./ai";
-import { getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
+import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import archiver from "archiver";
+import crypto from "crypto";
 import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
+
+const ENCRYPTION_KEY = crypto.createHash("sha256").update(process.env.SESSION_SECRET || "arabyweb-fallback-key").digest();
+const IV_LENGTH = 16;
+
+function encryptToken(text: string): string {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  return iv.toString("hex") + ":" + encrypted;
+}
+
+function decryptToken(text: string): string {
+  const [ivHex, encrypted] = text.split(":");
+  if (!ivHex || !encrypted) throw new Error("Invalid encrypted token format");
+  const iv = Buffer.from(ivHex, "hex");
+  const decipher = crypto.createDecipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
 
 async function isAdmin(req: any, res: Response, next: NextFunction) {
   try {
@@ -413,40 +435,94 @@ export async function registerRoutes(
     }
   });
 
+  async function getUserGitHubToken(req: any): Promise<string | null> {
+    const userId = req.user?.claims?.sub;
+    if (!userId) return null;
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user?.githubToken) return null;
+    try {
+      return decryptToken(user.githubToken);
+    } catch {
+      return null;
+    }
+  }
+
+  app.post("/api/github/connect", isAuthenticated, async (req: any, res) => {
+    try {
+      const { token } = req.body;
+      if (!token || typeof token !== "string") {
+        return res.status(400).json({ message: "Token is required" });
+      }
+      const result = await validateToken(token.trim());
+      if (!result.valid || !result.user) {
+        return res.status(401).json({ message: "Invalid GitHub token. Please check your token and try again." });
+      }
+      const userId = req.user.claims.sub;
+      const encryptedToken = encryptToken(token.trim());
+      await db.update(users).set({
+        githubToken: encryptedToken,
+        githubUsername: result.user.login,
+        updatedAt: new Date(),
+      }).where(eq(users.id, userId));
+      res.json({ login: result.user.login, avatar_url: result.user.avatar_url, name: result.user.name });
+    } catch (err) {
+      console.error("GitHub connect error:", err);
+      res.status(500).json({ message: "Failed to connect GitHub account" });
+    }
+  });
+
+  app.post("/api/github/disconnect", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await db.update(users).set({
+        githubToken: null,
+        githubUsername: null,
+        updatedAt: new Date(),
+      }).where(eq(users.id, userId));
+      res.json({ success: true });
+    } catch (err) {
+      console.error("GitHub disconnect error:", err);
+      res.status(500).json({ message: "Failed to disconnect GitHub" });
+    }
+  });
+
   app.get("/api/github/user", isAuthenticated, async (req: any, res) => {
     try {
-      const user = await getGitHubUser();
-      if (user?.error) {
-        return res.status(401).json({ message: user.error.message || "GitHub connection expired. Please reconnect." });
-      }
+      const token = await getUserGitHubToken(req);
+      if (!token) return res.status(401).json({ message: "GitHub not connected" });
+      const user = await getGitHubUser(token);
       res.json(user);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GitHub user error:", err);
-      res.status(500).json({ message: "Failed to get GitHub user" });
+      if (err?.status === 401) {
+        return res.status(401).json({ message: "GitHub token expired or invalid. Please reconnect." });
+      }
+      res.status(500).json({ message: "Failed to fetch GitHub user" });
     }
   });
 
   app.get("/api/github/repos", isAuthenticated, async (req: any, res) => {
     try {
-      const repos = await listUserRepos();
-      if (!Array.isArray(repos)) {
-        if (repos?.error) {
-          return res.status(401).json({ message: repos.error.message || "GitHub connection expired. Please reconnect." });
-        }
-        return res.json([]);
-      }
+      const token = await getUserGitHubToken(req);
+      if (!token) return res.status(401).json({ message: "GitHub not connected" });
+      const repos = await listUserRepos(token);
       res.json(repos);
-    } catch (err) {
+    } catch (err: any) {
       console.error("GitHub repos error:", err);
+      if (err?.status === 401) {
+        return res.status(401).json({ message: "GitHub token expired or invalid. Please reconnect." });
+      }
       res.status(500).json({ message: "Failed to list repositories" });
     }
   });
 
   app.post("/api/github/repos", isAuthenticated, async (req: any, res) => {
     try {
+      const token = await getUserGitHubToken(req);
+      if (!token) return res.status(401).json({ message: "GitHub not connected" });
       const { name, description, isPrivate } = req.body;
       if (!name) return res.status(400).json({ message: "Repository name is required" });
-      const repo = await createRepo(name, description || "", isPrivate || false);
+      const repo = await createRepo(token, name, description || "", isPrivate || false);
       res.json(repo);
     } catch (err) {
       console.error("GitHub create repo error:", err);
@@ -456,6 +532,9 @@ export async function registerRoutes(
 
   app.post("/api/github/deploy/:projectId", isAuthenticated, async (req: any, res) => {
     try {
+      const token = await getUserGitHubToken(req);
+      if (!token) return res.status(401).json({ message: "GitHub not connected" });
+
       const project = await storage.getProject(parseInt(req.params.projectId));
       if (!project) return res.status(404).json({ message: "Project not found" });
       const userId = req.user.claims.sub;
@@ -469,12 +548,13 @@ export async function registerRoutes(
       const parsed = deploySchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid owner or repo name" });
 
-      const ghUser = await getGitHubUser();
+      const ghUser = await getGitHubUser(token);
       if (parsed.data.owner !== ghUser.login) {
         return res.status(403).json({ message: "You can only deploy to your own repositories" });
       }
 
       const result = await pushWebsiteToRepo(
+        token,
         parsed.data.owner,
         parsed.data.repo,
         project.generatedHtml,
