@@ -1,0 +1,294 @@
+Build a complete SaaS platform called SiteForge AI (or any modern brand name) that allows users to create professional websites instantly using artificial intelligence without any coding knowledge.
+
+The platform concept is inspired by Replit but simplified for business owners, entrepreneurs, and beginners.
+
+The platform must support Arabic as the primary language (RTL) and English as the secondary language (LTR).
+
+The goal is to allow users to create a fully functional website in less than 2 minutes.
+
+Core Concept
+
+Users should be able to type a simple description such as:
+
+"Create a website for a perfume exhibition in Riyadh."
+
+The system should automatically generate:
+
+a modern homepage
+
+about section
+
+services section
+
+gallery
+
+contact page
+
+responsive layout
+
+SEO metadata
+
+No coding knowledge should be required.
+
+Technology Stack
+
+Frontend
+
+Use modern frameworks:
+
+Next.js
+
+Tailwind CSS
+
+Framer Motion
+
+Design must look like a modern SaaS platform with minimal UI and smooth animations.
+
+Arabic typography should be optimized using Cairo font.
+
+Backend Architecture
+
+Build a scalable backend using Node.js with TypeScript.
+
+Backend responsibilities:
+
+user authentication
+
+project management
+
+AI website generation
+
+preview system
+
+publishing system
+
+domain management
+
+subscription billing
+
+Use PostgreSQL for the database and Redis for caching.
+
+AI Integration
+
+Integrate with the API of OpenAI.
+
+The AI should be able to:
+
+generate website layouts
+
+generate sections and components
+
+generate website text content
+
+edit websites using chat commands
+
+suggest color palettes and design styles
+
+generate SEO titles and descriptions
+
+Example commands inside the platform:
+
+"Make the design more luxurious."
+
+"Add a photo gallery section."
+
+"Change the colors to black and gold."
+
+Visual Website Editor
+
+Provide a visual drag-and-drop editor where users can:
+
+edit text
+
+replace images
+
+change colors
+
+move sections
+
+add new sections
+
+Editor layout should have three panels:
+
+Sections
+Editor
+Live Preview
+
+Users should never need to write code.
+
+Live Preview System
+
+Each project must generate a live preview link automatically.
+
+Example:
+
+project-name.preview.platform.com
+
+Preview must update instantly when the user edits the site.
+
+Use containerized environments to run previews.
+
+Execution Environment
+
+Each website project must run inside an isolated container using:
+
+Docker
+
+Routing of preview domains should be handled using:
+
+NGINX
+
+Image and Icon System
+
+Automatically fetch images from:
+
+Unsplash
+
+Pexels
+
+Icons should come from:
+
+Lucide
+
+Images should automatically match the website topic.
+
+Example:
+
+If the user creates a perfume website, automatically load perfume-related images.
+
+Templates
+
+Provide a template marketplace with professional templates such as:
+
+corporate websites
+
+exhibition websites
+
+restaurants
+
+startups
+
+portfolios
+
+landing pages
+
+Users can start from templates or AI generation.
+
+Dashboard
+
+Create a modern SaaS dashboard with the following sections:
+
+Dashboard
+Projects
+Templates
+Domains
+Analytics
+Billing
+Settings
+
+Projects should appear as cards with options:
+
+Preview
+Edit
+Publish
+Delete
+
+Publishing System
+
+Users can publish websites instantly.
+
+Default domain format:
+
+project-name.platform.app
+
+Users can also connect custom domains.
+
+Deployment must be fast and scalable.
+
+Infrastructure
+
+The system should be scalable to handle thousands of users.
+
+Use a cloud infrastructure with:
+
+CDN layer using Cloudflare
+
+Object storage using:
+
+Cloudflare R2
+or
+
+Amazon S3
+
+Container orchestration can later use Kubernetes if scaling is required.
+
+Pricing Plans
+
+Free Plan
+
+1 website
+
+platform domain
+
+limited AI usage
+
+platform branding
+
+Pro Plan ($12/month)
+
+up to 10 websites
+
+custom domains
+
+analytics
+
+advanced AI generation
+
+Business Plan ($29/month)
+
+unlimited websites
+
+premium templates
+
+team collaboration
+
+white-label option
+
+User Experience Flow
+
+User signs up
+User creates a project
+User describes the website
+AI generates the site
+User edits visually
+User previews
+User publishes
+
+Total time to create a website should be less than 2 minutes.
+
+Target Users
+
+The platform should be designed for:
+
+entrepreneurs
+
+small businesses
+
+marketing agencies
+
+exhibition organizers
+
+beginners with no coding knowledge
+
+Final Goal
+
+Create a powerful AI SaaS platform that combines:
+
+AI generation
+visual editing
+live preview
+instant publishing
+
+into one seamless experience.
+
+The platform must feel modern, fast, and extremely easy to use.
