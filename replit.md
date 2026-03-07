@@ -50,9 +50,10 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 ### Server
 - `server/index.ts` - Express server entry point
-- `server/routes.ts` - API routes for projects, templates, file upload, admin, coupons, AI marketing
-- `server/storage.ts` - Database storage layer (IStorage interface with coupon CRUD)
+- `server/routes.ts` - API routes for projects, templates, file upload, admin, coupons, AI marketing, payments
+- `server/storage.ts` - Database storage layer (IStorage interface with coupon CRUD, settings, subscriptions)
 - `server/ai.ts` - OpenAI integration for website generation, editing, and social media content
+- `server/paymob.ts` - Paymob Accept payment gateway integration (auth, orders, payment keys, HMAC verification)
 - `server/seed.ts` - Database seeding with template data
 - `server/db.ts` - Database connection
 - `server/replit_integrations/auth/` - Auth module (email/password + Google OAuth, passport.js, session-based)
@@ -70,8 +71,8 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `client/src/pages/editor.tsx` - Website editor with AI generation, chat, sections, media, style tabs
 - `client/src/pages/preview.tsx` - Full-screen website preview
 - `client/src/pages/templates.tsx` - Template marketplace
-- `client/src/pages/billing.tsx` - Billing & subscription management
-- `client/src/pages/admin.tsx` - Admin dashboard with stats, users, projects, coupons
+- `client/src/pages/billing.tsx` - Billing & subscription management (connected to Paymob)
+- `client/src/pages/admin.tsx` - Admin dashboard with stats, users, projects, coupons, payments, Paymob settings
 - `client/src/pages/ai-marketing.tsx` - AI social media marketing tool
 - `client/src/pages/settings.tsx` - User settings and preferences
 - `client/src/pages/analytics.tsx` - Analytics and usage metrics
@@ -89,6 +90,8 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
 - `chat_messages` - id (serial), projectId (integer), role (text), content (text), createdAt
 - `coupons` - id (serial), code (text, unique), discountType (text), discountValue (integer), maxUses (integer), usedCount (integer), expiresAt (timestamp), isActive (boolean), createdAt
+- `platform_settings` - id (serial), key (varchar, unique), value (text), updatedAt
+- `subscriptions` - id (serial), userId (varchar), plan (varchar), status (varchar), paymobOrderId, paymobTransactionId, amountCents, currency, startDate, endDate, createdAt
 
 ## API Routes
 
@@ -119,6 +122,14 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `PATCH /api/admin/coupons/:id` - Update coupon
 - `PATCH /api/admin/users/:id/suspend` - Suspend user
 - `POST /api/marketing/generate` - Generate social media content with AI
+- `GET /api/payments/config` - Check if Paymob is configured
+- `GET /api/subscription` - Get current user subscription
+- `POST /api/payments/initiate` - Start payment flow (returns Paymob iframe URL)
+- `POST /api/payments/callback` - Paymob webhook callback
+- `GET /api/payments/status/:orderId` - Check payment status
+- `GET /api/admin/settings/paymob` - Get Paymob settings (masked)
+- `PUT /api/admin/settings/paymob` - Save Paymob settings
+- `GET /api/admin/subscriptions` - List all subscriptions
 - `GET /api/projects/:id/export` - Export/download project as ZIP file
 - `POST /api/github/connect` - Connect GitHub account (with Personal Access Token)
 - `POST /api/github/disconnect` - Disconnect GitHub account

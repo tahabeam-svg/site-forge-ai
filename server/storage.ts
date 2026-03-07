@@ -1,7 +1,7 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users, coupons } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon } from "@shared/schema";
-import { eq, desc, sql, count } from "drizzle-orm";
+import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription } from "@shared/schema";
+import { eq, desc, sql, count, like } from "drizzle-orm";
 
 export interface IStorage {
   getProjectsByUser(userId: string): Promise<Project[]>;
@@ -27,6 +27,16 @@ export interface IStorage {
   getAllProjects(): Promise<Project[]>;
   getAllUsers(): Promise<any[]>;
   getStats(): Promise<{ totalUsers: number; totalProjects: number; publishedProjects: number }>;
+
+  getSetting(key: string): Promise<string | null>;
+  setSetting(key: string, value: string): Promise<void>;
+  getSettingsByPrefix(prefix: string): Promise<PlatformSetting[]>;
+  deleteSetting(key: string): Promise<void>;
+
+  getSubscriptionByUser(userId: string): Promise<Subscription | undefined>;
+  createSubscription(sub: InsertSubscription): Promise<Subscription>;
+  updateSubscription(id: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
+  getSubscriptions(): Promise<Subscription[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -122,6 +132,47 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCoupon(id: number): Promise<void> {
     await db.delete(coupons).where(eq(coupons.id, id));
+  }
+
+  async getSetting(key: string): Promise<string | null> {
+    const [setting] = await db.select().from(platformSettings).where(eq(platformSettings.key, key));
+    return setting?.value ?? null;
+  }
+
+  async setSetting(key: string, value: string): Promise<void> {
+    const existing = await this.getSetting(key);
+    if (existing !== null) {
+      await db.update(platformSettings).set({ value, updatedAt: new Date() }).where(eq(platformSettings.key, key));
+    } else {
+      await db.insert(platformSettings).values({ key, value });
+    }
+  }
+
+  async getSettingsByPrefix(prefix: string): Promise<PlatformSetting[]> {
+    return db.select().from(platformSettings).where(like(platformSettings.key, `${prefix}%`));
+  }
+
+  async deleteSetting(key: string): Promise<void> {
+    await db.delete(platformSettings).where(eq(platformSettings.key, key));
+  }
+
+  async getSubscriptionByUser(userId: string): Promise<Subscription | undefined> {
+    const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).orderBy(desc(subscriptions.createdAt));
+    return sub;
+  }
+
+  async createSubscription(sub: InsertSubscription): Promise<Subscription> {
+    const [newSub] = await db.insert(subscriptions).values(sub).returning();
+    return newSub;
+  }
+
+  async updateSubscription(id: number, data: Partial<Subscription>): Promise<Subscription | undefined> {
+    const [updated] = await db.update(subscriptions).set(data).where(eq(subscriptions.id, id)).returning();
+    return updated;
+  }
+
+  async getSubscriptions(): Promise<Subscription[]> {
+    return db.select().from(subscriptions).orderBy(desc(subscriptions.createdAt));
   }
 }
 

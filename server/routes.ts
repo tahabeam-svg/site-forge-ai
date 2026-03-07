@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { generateWebsite, editWebsiteWithAI, generateSocialContent } from "./ai";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
+import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -432,6 +433,184 @@ export async function registerRoutes(
     } catch (err) {
       console.error("Marketing generation error:", err);
       res.status(500).json({ message: "Failed to generate content" });
+    }
+  });
+
+  app.get("/api/payments/config", isAuthenticated, async (req: any, res) => {
+    try {
+      const configured = await isPaymobConfigured();
+      res.json({ configured });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to check payment config" });
+    }
+  });
+
+  app.get("/api/subscription", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const sub = await storage.getSubscriptionByUser(userId);
+      res.json(sub || { plan: "free", status: "active" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch subscription" });
+    }
+  });
+
+  const initiatePaymentSchema = z.object({
+    plan: z.enum(["pro", "business"]),
+  });
+
+  app.post("/api/payments/initiate", isAuthenticated, async (req: any, res) => {
+    try {
+      const configured = await isPaymobConfigured();
+      if (!configured) return res.status(400).json({ message: "Payment gateway not configured" });
+
+      const parsed = initiatePaymentSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid plan" });
+
+      const { plan } = parsed.data;
+      const amountCents = PLAN_PRICES[plan];
+      if (!amountCents) return res.status(400).json({ message: "Invalid plan" });
+
+      const userId = req.user.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      const merchantOrderId = `ARABYWEB-${userId}-${Date.now()}`;
+      const { orderId, token: authToken } = await createPaymobOrder(amountCents, "SAR", merchantOrderId);
+
+      const paymentToken = await getPaymentKey(authToken, orderId, amountCents, "SAR", {
+        email: user.email || "user@arabyweb.net",
+        firstName: user.firstName || "User",
+        lastName: user.lastName || "ArabyWeb",
+      });
+
+      const sub = await storage.createSubscription({
+        userId,
+        plan,
+        status: "pending",
+        paymobOrderId: String(orderId),
+        amountCents,
+        currency: "SAR",
+        startDate: null,
+        endDate: null,
+        paymobTransactionId: null,
+      });
+
+      const iframeUrl = await getIframeUrl(paymentToken);
+      res.json({ iframeUrl, orderId, subscriptionId: sub.id });
+    } catch (err: any) {
+      console.error("Payment initiation error:", err);
+      res.status(500).json({ message: err.message || "Failed to initiate payment" });
+    }
+  });
+
+  app.post("/api/payments/callback", async (req: any, res) => {
+    try {
+      const data = req.body?.obj;
+      const hmac = req.query.hmac as string;
+
+      if (!data) return res.status(400).json({ message: "Missing data" });
+
+      const hmacConfigured = !!(await storage.getSetting("paymob_hmac_secret"));
+      if (hmacConfigured) {
+        if (!hmac) return res.status(403).json({ message: "Missing HMAC" });
+        const valid = await verifyHmac(data, hmac);
+        if (!valid) return res.status(403).json({ message: "Invalid HMAC" });
+      }
+
+      const orderId = String(data.order?.id ?? data.order ?? "");
+      if (!orderId) return res.status(400).json({ message: "Missing order ID" });
+
+      const subs = await storage.getSubscriptions();
+      const sub = subs.find((s) => s.paymobOrderId === orderId);
+      if (!sub) return res.json({ message: "OK" });
+
+      if (sub.amountCents && data.amount_cents !== sub.amountCents) {
+        console.error("Amount mismatch:", data.amount_cents, "vs", sub.amountCents);
+        return res.status(400).json({ message: "Amount mismatch" });
+      }
+
+      if (data.success === true) {
+        const now = new Date();
+        const endDate = new Date(now);
+        endDate.setMonth(endDate.getMonth() + 1);
+        await storage.updateSubscription(sub.id, {
+          status: "active",
+          paymobTransactionId: String(data.id),
+          startDate: now,
+          endDate,
+        });
+      } else {
+        await storage.updateSubscription(sub.id, {
+          status: "failed",
+          paymobTransactionId: String(data.id || ""),
+        });
+      }
+
+      res.json({ message: "OK" });
+    } catch (err) {
+      console.error("Payment callback error:", err);
+      res.status(500).json({ message: "Callback processing failed" });
+    }
+  });
+
+  app.get("/api/payments/status/:orderId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const sub = await storage.getSubscriptionByUser(userId);
+      if (!sub || sub.paymobOrderId !== req.params.orderId) {
+        return res.status(404).json({ message: "Subscription not found" });
+      }
+      res.json(sub);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to check payment status" });
+    }
+  });
+
+  const paymobSettingsSchema = z.object({
+    apiKey: z.string().optional(),
+    integrationId: z.string().optional(),
+    iframeId: z.string().optional(),
+    hmacSecret: z.string().optional(),
+  });
+
+  app.get("/api/admin/settings/paymob", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSettingsByPrefix("paymob_");
+      const result: Record<string, string> = {};
+      settings.forEach((s) => {
+        const key = s.key.replace("paymob_", "");
+        result[key] = s.value.replace(/./g, (c, i) => (i < 4 ? c : "*"));
+      });
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch settings" });
+    }
+  });
+
+  app.put("/api/admin/settings/paymob", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const parsed = paymobSettingsSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+
+      const { apiKey, integrationId, iframeId, hmacSecret } = parsed.data;
+      if (apiKey) await storage.setSetting("paymob_api_key", apiKey);
+      if (integrationId) await storage.setSetting("paymob_integration_id", integrationId);
+      if (iframeId) await storage.setSetting("paymob_iframe_id", iframeId);
+      if (hmacSecret) await storage.setSetting("paymob_hmac_secret", hmacSecret);
+
+      res.json({ message: "Settings saved" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to save settings" });
+    }
+  });
+
+  app.get("/api/admin/subscriptions", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const subs = await storage.getSubscriptions();
+      res.json(subs);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch subscriptions" });
     }
   });
 

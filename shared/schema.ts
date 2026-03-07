@@ -78,6 +78,37 @@ export const insertCouponSchema = createInsertSchema(coupons).omit({
   createdAt: true,
 });
 
+export const platformSettings = pgTable("platform_settings", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  plan: varchar("plan").notNull().default("free"),
+  status: varchar("status").notNull().default("active"),
+  paymobOrderId: varchar("paymob_order_id"),
+  paymobTransactionId: varchar("paymob_transaction_id"),
+  amountCents: integer("amount_cents"),
+  currency: varchar("currency").default("SAR"),
+  startDate: timestamp("start_date").default(sql`CURRENT_TIMESTAMP`),
+  endDate: timestamp("end_date"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const insertPlatformSettingSchema = createInsertSchema(platformSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Template = typeof templates.$inferSelect;
@@ -86,3 +117,7 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type Coupon = typeof coupons.$inferSelect;
 export type InsertCoupon = z.infer<typeof insertCouponSchema>;
+export type PlatformSetting = typeof platformSettings.$inferSelect;
+export type InsertPlatformSetting = z.infer<typeof insertPlatformSettingSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
