@@ -169,7 +169,7 @@ export default function LandingPage() {
             <span className="block text-4xl sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
               {t("tagline", lang)}
             </span>
-            <span className="block text-xl sm:text-2xl lg:text-4xl mt-3 bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <span className="block text-lg sm:text-xl lg:text-2xl mt-3 font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
               {t("taglineSub", lang)}
             </span>
           </motion.h1>
