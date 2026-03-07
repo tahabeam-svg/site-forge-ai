@@ -197,7 +197,7 @@ ${testimonialsHtml}
 <a href="#contact" style="color:#94a3b8;">تواصل معنا</a>
 </div>
 <div style="border-top:1px solid #1e293b;padding-top:1.5rem;font-size:0.85rem;font-family:'Tajawal',sans-serif;">
-&copy; 2026 جميع الحقوق محفوظة | صُنع بواسطة ArabyWeb.ai
+&copy; 2026 جميع الحقوق محفوظة | صُنع بواسطة ArabyWeb.net
 </div>
 </div>
 </footer>

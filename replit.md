@@ -1,4 +1,4 @@
-# ArabyWeb.ai
+# ArabyWeb.net
 
 AI-powered website builder SaaS platform targeting the Saudi and Arab market. Users describe their website and AI generates professional, responsive websites instantly. Supports bilingual (Arabic RTL + English LTR).
 
