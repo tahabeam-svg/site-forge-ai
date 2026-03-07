@@ -97,7 +97,7 @@ export default function LandingPage() {
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
               <a href="#marketing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-marketing">{lang === "ar" ? "التسويق" : "Marketing"}</a>
               <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-pricing">{t("pricing", lang)}</a>
-              <a href="#templates" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-templates">{t("templates", lang)}</a>
+              <a href="/templates" onClick={(e) => { e.preventDefault(); navigate("/templates"); }} className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-templates">{t("templates", lang)}</a>
             </div>
             <div className="flex items-center gap-2">
               <LanguageToggle />
@@ -296,7 +296,7 @@ export default function LandingPage() {
                 price: "$9",
                 yearly: "$90",
                 features: lang === "ar"
-                  ? ["٢٠ منشور شهرياً", "تعليقات وهاشتاقات", "أفكار تسويقية أساسية"]
+                  ? ["20 منشور شهرياً", "تعليقات وهاشتاقات", "أفكار تسويقية أساسية"]
                   : ["20 posts/month", "Captions & hashtags", "Basic marketing ideas"],
               },
               {
@@ -305,7 +305,7 @@ export default function LandingPage() {
                 yearly: "$190",
                 popular: true,
                 features: lang === "ar"
-                  ? ["٦٠ منشور شهرياً", "تقويم محتوى", "أفكار حملات", "محتوى تفاعلي"]
+                  ? ["60 منشور شهرياً", "تقويم محتوى", "أفكار حملات", "محتوى تفاعلي"]
                   : ["60 posts/month", "Content calendar", "Campaign ideas", "Engagement content"],
               },
               {

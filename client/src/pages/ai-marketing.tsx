@@ -202,12 +202,12 @@ export default function AIMarketingPage() {
                   {
                     name: lang === "ar" ? "المبتدئ" : "Starter",
                     price: "$9",
-                    posts: lang === "ar" ? "٢٠ منشور/شهر" : "20 posts/month",
+                    posts: lang === "ar" ? "20 منشور/شهر" : "20 posts/month",
                   },
                   {
                     name: lang === "ar" ? "النمو" : "Growth",
                     price: "$19",
-                    posts: lang === "ar" ? "٦٠ منشور/شهر" : "60 posts/month",
+                    posts: lang === "ar" ? "60 منشور/شهر" : "60 posts/month",
                     popular: true,
                   },
                   {

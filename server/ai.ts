@@ -216,7 +216,7 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
       caption: topic,
       hashtags: isArabic ? ["#تسويق", "#السعودية", "#أعمال"] : ["#marketing", "#SaudiArabia", "#business"],
       callToAction: isArabic ? "تابعنا للمزيد!" : "Follow us for more!",
-      bestTimeToPost: isArabic ? "٧-٩ مساءً بتوقيت السعودية" : "7-9 PM Saudi time",
+      bestTimeToPost: isArabic ? "7-9 مساءً بتوقيت السعودية" : "7-9 PM Saudi time",
       contentType: "post",
     };
   }

@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 
 const invoices = [
-  { id: "INV-2026-001", date: "2026-03-01", plan: "Pro", amount: "٤٩ ر.س", status: "paid" },
-  { id: "INV-2026-002", date: "2026-02-01", plan: "Pro", amount: "٤٩ ر.س", status: "paid" },
-  { id: "INV-2026-003", date: "2026-01-01", plan: "Pro", amount: "٤٩ ر.س", status: "paid" },
+  { id: "INV-2026-001", date: "2026-03-01", plan: "Pro", amount: "49 ر.س", status: "paid" },
+  { id: "INV-2026-002", date: "2026-02-01", plan: "Pro", amount: "49 ر.س", status: "paid" },
+  { id: "INV-2026-003", date: "2026-01-01", plan: "Pro", amount: "49 ر.س", status: "paid" },
 ];
 
 export default function BillingPage() {
@@ -38,17 +38,17 @@ export default function BillingPage() {
     },
     {
       name: lang === "ar" ? "احترافي" : "Pro",
-      price: lang === "ar" ? "٤٩ ر.س" : "49 SAR",
+      price: lang === "ar" ? "49 ر.س" : "49 SAR",
       priceNum: "49",
       icon: Crown,
       current: false,
       features: lang === "ar"
-        ? ["حتى ١٠ مواقع", "نطاق مخصص (.sa)", "لوحة تحليلات", "تعديل متقدم بالذكاء الاصطناعي"]
+        ? ["حتى 10 مواقع", "نطاق مخصص (.sa)", "لوحة تحليلات", "تعديل متقدم بالذكاء الاصطناعي"]
         : ["Up to 10 websites", "Custom domain (.sa)", "Analytics dashboard", "Advanced AI editing"],
     },
     {
       name: lang === "ar" ? "أعمال" : "Business",
-      price: lang === "ar" ? "٩٩ ر.س" : "99 SAR",
+      price: lang === "ar" ? "99 ر.س" : "99 SAR",
       priceNum: "99",
       icon: Building2,
       current: false,
@@ -81,7 +81,7 @@ export default function BillingPage() {
                   {lang === "ar" ? "الخطة الحالية: مجاني" : "Current Plan: Free"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {lang === "ar" ? "١ من ١ مواقع مستخدمة" : "1 of 1 websites used"}
+                  {lang === "ar" ? "1 من 1 مواقع مستخدمة" : "1 of 1 websites used"}
                 </p>
               </div>
             </div>

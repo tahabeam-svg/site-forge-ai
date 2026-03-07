@@ -131,12 +131,12 @@ export default function GitHubDeployPage() {
   });
 
   const hostingerSteps = lang === "ar" ? [
-    { step: "١", title: "ادخل إلى Hostinger", desc: "سجل دخول إلى حسابك في هوستينجر واذهب إلى لوحة التحكم" },
-    { step: "٢", title: "اختر الاستضافة", desc: "اختر خطة الاستضافة الخاصة بك واذهب إلى إدارة الموقع" },
-    { step: "٣", title: "اربط GitHub", desc: "من القائمة الجانبية اذهب إلى Git ثم اربط حسابك على GitHub" },
-    { step: "٤", title: "اختر المستودع", desc: "اختر المستودع الذي رفعت عليه الموقع والفرع main" },
-    { step: "٥", title: "حدد المجلد", desc: "حدد المجلد الجذر (/) كمجلد النشر" },
-    { step: "٦", title: "انشر", desc: "اضغط على نشر وسيتم تحديث موقعك تلقائياً مع كل تغيير" },
+    { step: "1", title: "ادخل إلى Hostinger", desc: "سجل دخول إلى حسابك في هوستينجر واذهب إلى لوحة التحكم" },
+    { step: "2", title: "اختر الاستضافة", desc: "اختر خطة الاستضافة الخاصة بك واذهب إلى إدارة الموقع" },
+    { step: "3", title: "اربط GitHub", desc: "من القائمة الجانبية اذهب إلى Git ثم اربط حسابك على GitHub" },
+    { step: "4", title: "اختر المستودع", desc: "اختر المستودع الذي رفعت عليه الموقع والفرع main" },
+    { step: "5", title: "حدد المجلد", desc: "حدد المجلد الجذر (/) كمجلد النشر" },
+    { step: "6", title: "انشر", desc: "اضغط على نشر وسيتم تحديث موقعك تلقائياً مع كل تغيير" },
   ] : [
     { step: "1", title: "Login to Hostinger", desc: "Sign in to your Hostinger account and go to the dashboard" },
     { step: "2", title: "Select Hosting", desc: "Choose your hosting plan and go to website management" },
