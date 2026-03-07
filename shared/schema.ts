@@ -11,7 +11,7 @@ export const projects = pgTable("projects", {
   name: text("name").notNull(),
   description: text("description"),
   status: text("status").default("draft").notNull(),
-  templateId: serial("template_id").notNull().default(0),
+  templateId: integer("template_id").default(0),
   generatedHtml: text("generated_html"),
   generatedCss: text("generated_css"),
   seoTitle: text("seo_title"),
