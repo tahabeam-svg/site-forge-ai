@@ -146,13 +146,54 @@ export default function LandingPage() {
       </nav>
 
       <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent" />
-        <div className="absolute top-20 left-1/4 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-40 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-violet-500/5 to-amber-500/5" />
+        <motion.div
+          className="absolute top-16 left-[10%] w-64 h-64 sm:w-80 sm:h-80 bg-emerald-400/15 rounded-full blur-3xl"
+          animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute top-32 right-[10%] w-72 h-72 sm:w-96 sm:h-96 bg-violet-400/12 rounded-full blur-3xl"
+          animate={{ x: [0, -25, 0], y: [0, 25, 0], scale: [1, 1.15, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.div
+          className="absolute bottom-20 left-[30%] w-56 h-56 sm:w-72 sm:h-72 bg-amber-400/10 rounded-full blur-3xl"
+          animate={{ x: [0, 20, 0], y: [0, -15, 0], scale: [1, 1.08, 1] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        />
+
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div
+            className="absolute top-24 left-[15%] w-2 h-2 bg-emerald-400/40 rounded-full"
+            animate={{ y: [0, -80, 0], opacity: [0.4, 0.8, 0.4] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          />
+          <motion.div
+            className="absolute top-40 right-[20%] w-1.5 h-1.5 bg-violet-400/40 rounded-full"
+            animate={{ y: [0, -60, 0], opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          />
+          <motion.div
+            className="absolute top-56 left-[40%] w-1 h-1 bg-amber-400/50 rounded-full"
+            animate={{ y: [0, -70, 0], opacity: [0.5, 0.9, 0.5] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          />
+          <motion.div
+            className="absolute top-36 right-[35%] w-2.5 h-2.5 bg-teal-400/30 rounded-full"
+            animate={{ y: [0, -90, 0], opacity: [0.2, 0.6, 0.2] }}
+            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          />
+          <motion.div
+            className="absolute top-48 left-[60%] w-1.5 h-1.5 bg-pink-400/30 rounded-full"
+            animate={{ y: [0, -50, 0], opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+          />
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
           <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp}>
-            <Badge variant="secondary" className="mb-5 sm:mb-6 px-3 sm:px-4 py-1.5 text-xs sm:text-sm border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 max-w-[90vw] text-center" data-testid="badge-new">
+            <Badge variant="secondary" className="mb-5 sm:mb-6 px-3 sm:px-4 py-1.5 text-xs sm:text-sm border-emerald-200/60 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm text-emerald-700 dark:text-emerald-300 dark:border-emerald-800 max-w-[90vw] text-center shadow-sm" data-testid="badge-new">
               <Zap className="w-3.5 h-3.5 me-1 sm:me-1.5 shrink-0" />
               {t("heroBadge", lang)}
             </Badge>
@@ -169,7 +210,7 @@ export default function LandingPage() {
             <span className="block text-[2.2rem] leading-[1.2] sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent sm:leading-tight">
               {t("tagline", lang)}
             </span>
-            <span className="block text-lg sm:text-xl lg:text-2xl mt-3 sm:mt-3 font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-relaxed" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
+            <span className="block text-lg sm:text-xl lg:text-2xl mt-3 font-medium bg-gradient-to-r from-emerald-600 via-teal-500 to-violet-600 bg-clip-text text-transparent leading-relaxed" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
               {t("taglineSub", lang)}
             </span>
           </motion.h1>
@@ -189,26 +230,27 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={handleCTA}
-              className="text-base sm:text-base px-8 py-6 sm:py-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 rounded-xl"
+              className="text-base px-8 py-6 sm:py-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 shadow-xl shadow-emerald-500/30 rounded-xl relative overflow-hidden group"
               data-testid="button-hero-cta"
             >
+              <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               {!isAuthenticated && <SiGoogle className="w-4 h-4 me-2" />}
               {t("getStarted", lang)}
               <ArrowRight className="w-4 h-4 ms-2" />
             </Button>
           </motion.div>
 
-          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm sm:text-sm text-muted-foreground">
+          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Check className="w-4 h-4 text-emerald-500" />
               {lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card required"}
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-500" />
+              <Check className="w-4 h-4 text-violet-500" />
               {lang === "ar" ? "مجاني للأبد" : "Free forever plan"}
             </span>
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-500" />
+              <Check className="w-4 h-4 text-amber-500" />
               {lang === "ar" ? "تسجيل دخول بحساب جوجل" : "Sign in with Google"}
             </span>
           </motion.div>
@@ -216,12 +258,12 @@ export default function LandingPage() {
           <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16">
             <div className="grid grid-cols-3 gap-3 sm:gap-8 max-w-md sm:max-w-lg mx-auto">
               {[
-                { value: t("heroStat1", lang), label: t("heroStat1Label", lang) },
-                { value: t("heroStat2", lang), label: t("heroStat2Label", lang) },
-                { value: t("heroStat3", lang), label: t("heroStat3Label", lang) },
+                { value: t("heroStat1", lang), label: t("heroStat1Label", lang), color: "from-emerald-500 to-teal-500" },
+                { value: t("heroStat2", lang), label: t("heroStat2Label", lang), color: "from-violet-500 to-purple-500" },
+                { value: t("heroStat3", lang), label: t("heroStat3Label", lang), color: "from-amber-500 to-orange-500" },
               ].map((stat, i) => (
-                <div key={i} className="text-center bg-card border rounded-xl p-3 sm:p-0 sm:border-0 sm:bg-transparent" data-testid={`stat-${i}`}>
-                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                <div key={i} className="text-center bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border rounded-xl p-3 shadow-sm" data-testid={`stat-${i}`}>
+                  <div className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                     {stat.value}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
@@ -231,8 +273,8 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16 relative max-w-4xl mx-auto hidden sm:block">
-            <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 rounded-2xl blur-2xl" />
-            <Card className="relative rounded-xl border-2 overflow-hidden">
+            <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-violet-500/15 to-amber-500/20 rounded-2xl blur-2xl" />
+            <Card className="relative rounded-xl border-2 overflow-hidden shadow-2xl">
               <div className="bg-card p-3 border-b flex items-center gap-2">
                 <div className="flex gap-1.5">
                   <div className="w-3 h-3 rounded-full bg-red-400/80" />
@@ -243,7 +285,7 @@ export default function LandingPage() {
                   <div className="text-xs text-muted-foreground bg-muted rounded-md px-3 py-1 inline-block">arabyweb.net/dashboard</div>
                 </div>
               </div>
-              <div className="p-6 sm:p-10 bg-gradient-to-br from-emerald-500/5 to-teal-500/5">
+              <div className="p-6 sm:p-10 bg-gradient-to-br from-emerald-500/5 via-violet-500/3 to-amber-500/5">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-background rounded-lg p-4 border">
                     <div className="w-full h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-md mb-3 flex items-center justify-center">
@@ -253,7 +295,7 @@ export default function LandingPage() {
                     <div className="h-2 bg-muted rounded w-1/2" />
                   </div>
                   <div className="bg-background rounded-lg p-4 border">
-                    <div className="w-full h-24 bg-gradient-to-br from-amber-500 to-orange-600 rounded-md mb-3 flex items-center justify-center">
+                    <div className="w-full h-24 bg-gradient-to-br from-violet-500 to-purple-600 rounded-md mb-3 flex items-center justify-center">
                       <Gem className="w-10 h-10 text-white/60" />
                     </div>
                     <div className="h-3 bg-muted rounded w-3/4 mb-2" />
