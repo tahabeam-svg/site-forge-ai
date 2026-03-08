@@ -76,6 +76,18 @@ export default function LandingPage() {
     }
   };
 
+  const handlePlanCTA = (planId: string) => {
+    if (!isAuthenticated) {
+      navigate("/auth");
+      return;
+    }
+    if (planId === "free") {
+      navigate("/dashboard");
+      return;
+    }
+    navigate(`/billing?plan=${planId}`);
+  };
+
   const handleMarketingCTA = () => {
     if (isAuthenticated) {
       navigate("/marketing");
@@ -498,6 +510,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
             {[
               {
+                id: "free",
                 name: t("freePlan", lang),
                 price: t("freePlanPrice", lang),
                 desc: t("freePlanDesc", lang),
@@ -506,6 +519,7 @@ export default function LandingPage() {
                 popular: false,
               },
               {
+                id: "pro",
                 name: t("proPlan", lang),
                 price: t("proPlanPrice", lang),
                 desc: t("proPlanDesc", lang),
@@ -514,11 +528,12 @@ export default function LandingPage() {
                 popular: true,
               },
               {
+                id: "business",
                 name: t("businessPlan", lang),
                 price: t("businessPlanPrice", lang),
                 desc: t("businessPlanDesc", lang),
                 features: [t("business1", lang), t("business2", lang), t("business3", lang), t("business4", lang)],
-                cta: t("contactSales", lang),
+                cta: t("upgrade", lang),
                 popular: false,
               },
             ].map((plan, i) => (
@@ -564,7 +579,7 @@ export default function LandingPage() {
                   <Button
                     variant={plan.popular ? "default" : "outline"}
                     className={`w-full ${plan.popular ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" : ""}`}
-                    onClick={handleCTA}
+                    onClick={() => handlePlanCTA(plan.id)}
                     data-testid={`button-plan-${i}`}
                   >
                     {plan.cta}

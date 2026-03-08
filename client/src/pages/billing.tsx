@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -80,6 +80,21 @@ export default function BillingPage() {
     setUpgradingPlan(plan);
     upgradeMutation.mutate(plan);
   };
+
+  const autoTriggered = useRef(false);
+  useEffect(() => {
+    if (autoTriggered.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const planParam = params.get("plan");
+    if (planParam && (planParam === "pro" || planParam === "business") && paymentConfig?.configured && subscription) {
+      const current = subscription.plan || "free";
+      if (current !== planParam) {
+        autoTriggered.current = true;
+        handleUpgrade(planParam);
+        window.history.replaceState({}, "", "/billing");
+      }
+    }
+  }, [paymentConfig, subscription]);
 
   const isYearly = billingCycle === "yearly";
   const discount = 0.8;
