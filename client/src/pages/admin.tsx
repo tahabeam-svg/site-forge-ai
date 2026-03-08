@@ -205,7 +205,7 @@ export default function AdminPage() {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   return (
-    <div className={`min-h-screen bg-zinc-950 text-zinc-100 ${isRTL ? "font-cairo" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`min-h-screen bg-zinc-950 text-zinc-100 overflow-x-hidden ${isRTL ? "font-cairo" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
       {/* Top Header */}
       <header className="sticky top-0 z-50 bg-zinc-900/90 backdrop-blur-md border-b border-zinc-800">
         <div className="flex items-center justify-between px-4 py-3">
@@ -240,9 +240,9 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex overflow-x-hidden">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:flex flex-col w-56 min-h-[calc(100vh-57px)] bg-zinc-900 border-e border-zinc-800 sticky top-[57px]">
+        <aside className="hidden lg:flex flex-col w-56 shrink-0 min-h-[calc(100vh-57px)] bg-zinc-900 border-e border-zinc-800 sticky top-[57px]">
           <nav className="flex-1 p-3 space-y-1">
             {navItems.map((item) => (
               <button
@@ -299,7 +299,7 @@ export default function AdminPage() {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 min-h-[calc(100vh-57px)]">
+        <main className="flex-1 min-w-0 min-h-[calc(100vh-57px)]">
           {/* Mobile Section Selector */}
           <div className="lg:hidden overflow-x-auto border-b border-zinc-800 bg-zinc-900/50">
             <div className="flex p-2 gap-1.5 min-w-max">
@@ -320,7 +320,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="p-3 sm:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
+          <div className="p-3 sm:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6 overflow-hidden">
 
             {/* OVERVIEW */}
             {activeSection === "overview" && (
