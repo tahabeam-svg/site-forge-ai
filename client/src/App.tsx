@@ -19,6 +19,9 @@ import SettingsPage from "@/pages/settings";
 import AnalyticsPage from "@/pages/analytics";
 import PaymentMethodsPage from "@/pages/payment-methods";
 import GitHubDeployPage from "@/pages/github-deploy";
+import TermsPage from "@/pages/terms";
+import PrivacyPage from "@/pages/privacy";
+import FAQPage from "@/pages/faq";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -57,6 +60,9 @@ function Router() {
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
       <Route path="/github-deploy">{() => <ProtectedRoute component={GitHubDeployPage} />}</Route>
       <Route path="/payment-methods">{() => <ProtectedRoute component={PaymentMethodsPage} />}</Route>
+      <Route path="/terms" component={TermsPage} />
+      <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/faq" component={FAQPage} />
       <Route component={NotFound} />
     </Switch>
   );
