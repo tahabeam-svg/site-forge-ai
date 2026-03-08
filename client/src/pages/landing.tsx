@@ -271,8 +271,8 @@ export default function LandingPage() {
       </section>
 
       <section className="py-12 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-10">
             {[
               { icon: Crown, text: t("saudiTrust1", lang) },
               { icon: Globe2, text: t("saudiTrust2", lang) },
@@ -373,7 +373,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-2 mb-4">
                     {plan.features.map((f, j) => (
-                      <div key={j} className="flex items-center gap-2 text-sm">
+                      <div key={j} className="flex items-center justify-center sm:justify-start gap-2 text-sm">
                         <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />
                         <span>{f}</span>
                       </div>
@@ -417,8 +417,8 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 variants={scaleIn}
               >
-                <Card className="p-4 sm:p-6 h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300" data-testid={`card-feature-${i}`}>
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg`}>
+                <Card className="p-4 sm:p-6 h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-center sm:text-start" data-testid={`card-feature-${i}`}>
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg mx-auto sm:mx-0`}>
                     <feature.icon className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{feature.title}</h3>
@@ -498,7 +498,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-3 mb-6">
                     {plan.features.map((f, j) => (
-                      <div key={j} className="flex items-center gap-2 text-sm">
+                      <div key={j} className="flex items-center justify-center sm:justify-start gap-2 text-sm">
                         <Check className="w-4 h-4 text-emerald-500 shrink-0" />
                         <span>{f}</span>
                       </div>
