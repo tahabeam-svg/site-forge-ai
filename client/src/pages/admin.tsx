@@ -430,7 +430,8 @@ export default function AdminPage() {
         </div>
 
         <Tabs defaultValue="users">
-          <TabsList className="flex-wrap">
+          <div className="overflow-x-auto -mx-1 px-1 pb-2">
+          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
             <TabsTrigger value="users" data-testid="tab-admin-users">
               <Users className="w-4 h-4 me-1" />
               {lang === "ar" ? "المستخدمين" : "Users"}
@@ -460,6 +461,7 @@ export default function AdminPage() {
               {lang === "ar" ? "بوابة الدفع" : "Gateway"}
             </TabsTrigger>
           </TabsList>
+          </div>
 
           {/* Users Tab */}
           <TabsContent value="users">
