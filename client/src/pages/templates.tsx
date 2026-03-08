@@ -20,7 +20,7 @@ const categories = [
 ] as const;
 
 export default function TemplatesPage() {
-  const { language } = useAuth();
+  const { language, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const lang = language;
@@ -152,7 +152,14 @@ export default function TemplatesPage() {
                       <Button
                         size="sm"
                         className="ms-auto"
-                        onClick={() => createFromTemplate.mutate(template)}
+                        onClick={() => {
+                          if (!isAuthenticated) {
+                            toast({ title: lang === "ar" ? "سجّل دخولك أولاً" : "Please login first", description: lang === "ar" ? "يجب تسجيل الدخول لاستخدام القوالب" : "You need to login to use templates", variant: "destructive" });
+                            navigate("/auth");
+                            return;
+                          }
+                          createFromTemplate.mutate(template);
+                        }}
                         disabled={createFromTemplate.isPending}
                         data-testid={`button-use-template-${template.id}`}
                       >
