@@ -454,6 +454,15 @@ export async function registerRoutes(
     try {
       const userId = req.user.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (user?.isAdmin) {
+        return res.json({
+          plan: "business",
+          status: "active",
+          credits: 999999,
+          endDate: null,
+          isAdmin: true,
+        });
+      }
       const sub = await storage.getSubscriptionByUser(userId);
       res.json({
         plan: user?.plan || "free",
@@ -470,6 +479,9 @@ export async function registerRoutes(
     try {
       const userId = req.user.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (user?.isAdmin) {
+        return res.json({ credits: 999999, plan: "business", isAdmin: true });
+      }
       res.json({ credits: user?.credits ?? 5, plan: user?.plan || "free" });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch credits" });
