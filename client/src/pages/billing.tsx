@@ -98,8 +98,8 @@ export default function BillingPage() {
       id: "pro",
       name: lang === "ar" ? "احترافي" : "Pro",
       price: isYearly
-        ? (lang === "ar" ? `${proYearlyPerMonth} ر.س` : `${proYearlyPerMonth} SAR`)
-        : (lang === "ar" ? `${proMonthly} ر.س` : `${proMonthly} SAR`),
+        ? `${proYearlyPerMonth} ر.س`
+        : `${proMonthly} ر.س`,
       priceNum: isYearly ? proYearlyPerMonth : proMonthly,
       yearlyTotal: proYearly,
       icon: Crown,
@@ -112,8 +112,8 @@ export default function BillingPage() {
       id: "business",
       name: lang === "ar" ? "أعمال" : "Business",
       price: isYearly
-        ? (lang === "ar" ? `${businessYearlyPerMonth} ر.س` : `${businessYearlyPerMonth} SAR`)
-        : (lang === "ar" ? `${businessMonthly} ر.س` : `${businessMonthly} SAR`),
+        ? `${businessYearlyPerMonth} ر.س`
+        : `${businessMonthly} ر.س`,
       priceNum: isYearly ? businessYearlyPerMonth : businessMonthly,
       yearlyTotal: businessYearly,
       icon: Building2,
@@ -262,13 +262,9 @@ export default function BillingPage() {
                     </div>
                     {isYearly && plan.priceNum !== 0 && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        {lang === "ar"
-                          ? `${plan.yearlyTotal} ر.س/سنوياً`
-                          : `${plan.yearlyTotal} SAR/year`}
+                        {`${plan.yearlyTotal} ر.س/سنوياً`}
                         <span className="line-through ms-1.5 text-red-400">
-                          {lang === "ar"
-                            ? `${plan.id === "pro" ? proMonthly * 12 : businessMonthly * 12} ر.س`
-                            : `${plan.id === "pro" ? proMonthly * 12 : businessMonthly * 12} SAR`}
+                          {`${plan.id === "pro" ? proMonthly * 12 : businessMonthly * 12} ر.س`}
                         </span>
                       </p>
                     )}
