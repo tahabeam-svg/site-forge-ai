@@ -357,17 +357,17 @@ export default function AdminPage() {
                     <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-center">
                       <p className="text-[10px] sm:text-xs text-zinc-400 mb-1">{lang === "ar" ? "الإجمالي" : "Total"}</p>
                       <p className="text-base sm:text-xl font-bold text-white" dir="ltr">{(totalRevenue / 100).toFixed(0)}</p>
-                      <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ر.س" : "SR"}</p>
+                      <p className="text-[10px] text-zinc-500">SAR</p>
                     </div>
                     <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-center">
                       <p className="text-[10px] sm:text-xs text-zinc-400 mb-1">{lang === "ar" ? "ضريبة 15%" : "VAT 15%"}</p>
                       <p className="text-base sm:text-xl font-bold text-amber-400" dir="ltr">{(vatAmount / 100).toFixed(0)}</p>
-                      <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ر.س" : "SR"}</p>
+                      <p className="text-[10px] text-zinc-500">SAR</p>
                     </div>
                     <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-center">
                       <p className="text-[10px] sm:text-xs text-zinc-400 mb-1">{lang === "ar" ? "الصافي" : "Net"}</p>
                       <p className="text-base sm:text-xl font-bold text-emerald-400" dir="ltr">{((totalRevenue - vatAmount) / 100).toFixed(0)}</p>
-                      <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ر.س" : "SR"}</p>
+                      <p className="text-[10px] text-zinc-500">SAR</p>
                     </div>
                   </div>
                 </Card>
@@ -427,7 +427,7 @@ export default function AdminPage() {
                             </div>
                           </div>
                           <div className="text-end shrink-0 ms-2">
-                            <p className="text-xs sm:text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} {lang === "ar" ? "ر.س" : "SR"}</p>
+                            <p className="text-xs sm:text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} SAR</p>
                             <p className="text-[9px] sm:text-[10px] text-zinc-500" dir="ltr">+{vat.toFixed(0)} {lang === "ar" ? "ضريبة" : "VAT"}</p>
                           </div>
                         </div>
@@ -556,7 +556,7 @@ export default function AdminPage() {
                             <Percent className="w-3 h-3 me-1" />{lang === "ar" ? "نسبة %" : "%"}
                           </Button>
                           <Button variant={discountType === "fixed" ? "default" : "outline"} size="sm" onClick={() => setDiscountType("fixed")} className={discountType === "fixed" ? "bg-purple-600" : "border-zinc-700 text-zinc-300"} data-testid="button-discount-fixed">
-                            <DollarSign className="w-3 h-3 me-1" />{lang === "ar" ? "مبلغ" : "SR"}
+                            <DollarSign className="w-3 h-3 me-1" />{lang === "ar" ? "مبلغ" : "SAR"}
                           </Button>
                         </div>
                       </div>
@@ -602,7 +602,7 @@ export default function AdminPage() {
                               {coupon.isActive ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : <XCircle className="w-3.5 h-3.5 text-red-400" />}
                             </div>
                             <p className="text-xs text-zinc-500">
-                              {coupon.discountType === "percentage" ? `${coupon.discountValue}%` : `${coupon.discountValue} ر.س`}
+                              {coupon.discountType === "percentage" ? `${coupon.discountValue}%` : `${coupon.discountValue} SAR`}
                               {" • "}{lang === "ar" ? "استخدام:" : "Used:"} {coupon.usedCount || 0}/{coupon.maxUses || "∞"}
                               {coupon.expiresAt && <>{" • "}{new Date(coupon.expiresAt).toLocaleDateString()}</>}
                             </p>
@@ -811,7 +811,7 @@ export default function AdminPage() {
                             </div>
                           </div>
                           <div className="text-end shrink-0 ms-2">
-                            <p className="text-xs sm:text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} {lang === "ar" ? "ر.س" : "SR"}</p>
+                            <p className="text-xs sm:text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} SAR</p>
                             <p className="text-[9px] sm:text-[10px] text-zinc-500" dir="ltr">+{vat.toFixed(0)} {lang === "ar" ? "ضريبة" : "VAT"}</p>
                             <Badge variant="secondary" className={`text-[9px] sm:text-[10px] mt-0.5 ${statusColor(sub.status)}`}>
                               {sub.status === "active" ? (lang === "ar" ? "نشط" : "Active") : sub.status === "pending" ? (lang === "ar" ? "معلق" : "Pending") : sub.status}
