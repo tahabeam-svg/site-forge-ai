@@ -574,7 +574,7 @@ export default function LandingPage() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              {lang === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"} &copy; 2026 ArabyWeb.net
+              {lang === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"} &copy; 2026 {t("brand", lang)}
             </p>
           </div>
         </div>
