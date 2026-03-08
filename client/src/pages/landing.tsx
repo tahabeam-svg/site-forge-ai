@@ -145,14 +145,14 @@ export default function LandingPage() {
         )}
       </nav>
 
-      <section className="relative pt-32 pb-20 overflow-hidden">
+      <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 via-transparent to-transparent" />
         <div className="absolute top-20 left-1/4 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute top-40 right-1/4 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
           <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp}>
-            <Badge variant="secondary" className="mb-6 px-3 sm:px-4 py-1.5 text-xs sm:text-sm border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 max-w-[90vw] text-center" data-testid="badge-new">
+            <Badge variant="secondary" className="mb-5 sm:mb-6 px-3 sm:px-4 py-1.5 text-xs sm:text-sm border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 max-w-[90vw] text-center" data-testid="badge-new">
               <Zap className="w-3.5 h-3.5 me-1 sm:me-1.5 shrink-0" />
               {t("heroBadge", lang)}
             </Badge>
@@ -163,13 +163,13 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="font-extrabold tracking-tight mb-6"
+            className="font-extrabold tracking-tight mb-5 sm:mb-6"
             data-testid="text-hero-title"
           >
-            <span className="block text-3xl sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent leading-tight">
+            <span className="block text-[2.2rem] leading-[1.2] sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent sm:leading-tight">
               {t("tagline", lang)}
             </span>
-            <span className="block text-base sm:text-xl lg:text-2xl mt-2 sm:mt-3 font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
+            <span className="block text-lg sm:text-xl lg:text-2xl mt-3 sm:mt-3 font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent leading-relaxed" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
               {t("taglineSub", lang)}
             </span>
           </motion.h1>
@@ -179,7 +179,7 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="text-sm sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2"
+            className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed px-1"
             data-testid="text-hero-subtitle"
           >
             {t("subtitle", lang)}
@@ -189,7 +189,7 @@ export default function LandingPage() {
             <Button
               size="lg"
               onClick={handleCTA}
-              className="text-base px-8 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25"
+              className="text-base sm:text-base px-8 py-6 sm:py-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/25 rounded-xl"
               data-testid="button-hero-cta"
             >
               {!isAuthenticated && <SiGoogle className="w-4 h-4 me-2" />}
@@ -198,7 +198,7 @@ export default function LandingPage() {
             </Button>
           </motion.div>
 
-          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm sm:text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Check className="w-4 h-4 text-emerald-500" />
               {lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card required"}
@@ -213,22 +213,24 @@ export default function LandingPage() {
             </span>
           </motion.div>
 
-          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-12 sm:mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto px-2">
-            {[
-              { value: t("heroStat1", lang), label: t("heroStat1Label", lang) },
-              { value: t("heroStat2", lang), label: t("heroStat2Label", lang) },
-              { value: t("heroStat3", lang), label: t("heroStat3Label", lang) },
-            ].map((stat, i) => (
-              <div key={i} className="text-center" data-testid={`stat-${i}`}>
-                <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
-                  {stat.value}
+          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16">
+            <div className="grid grid-cols-3 gap-3 sm:gap-8 max-w-md sm:max-w-lg mx-auto">
+              {[
+                { value: t("heroStat1", lang), label: t("heroStat1Label", lang) },
+                { value: t("heroStat2", lang), label: t("heroStat2Label", lang) },
+                { value: t("heroStat3", lang), label: t("heroStat3Label", lang) },
+              ].map((stat, i) => (
+                <div key={i} className="text-center bg-card border rounded-xl p-3 sm:p-0 sm:border-0 sm:bg-transparent" data-testid={`stat-${i}`}>
+                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                    {stat.value}
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
                 </div>
-                <div className="text-[10px] sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </motion.div>
 
-          <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp} className="mt-12 sm:mt-16 relative max-w-4xl mx-auto">
+          <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16 relative max-w-4xl mx-auto hidden sm:block">
             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 rounded-2xl blur-2xl" />
             <Card className="relative rounded-xl border-2 overflow-hidden">
               <div className="bg-card p-3 border-b flex items-center gap-2">
@@ -242,7 +244,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="p-6 sm:p-10 bg-gradient-to-br from-emerald-500/5 to-teal-500/5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="bg-background rounded-lg p-4 border">
                     <div className="w-full h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-md mb-3 flex items-center justify-center">
                       <Building2 className="w-10 h-10 text-white/60" />
@@ -262,7 +264,7 @@ export default function LandingPage() {
             </Card>
           </motion.div>
 
-          <motion.p custom={6} initial="hidden" animate="visible" variants={fadeUp} className="mt-8 text-sm text-muted-foreground">
+          <motion.p custom={6} initial="hidden" animate="visible" variants={fadeUp} className="mt-8 text-sm text-muted-foreground hidden sm:block">
             {t("trustedBy", lang)}
           </motion.p>
         </div>
@@ -285,19 +287,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="marketing" className="py-20 bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-cyan-50/50 dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-cyan-950/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-12">
+      <section id="marketing" className="py-14 sm:py-20 bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-cyan-50/50 dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-cyan-950/20">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-12">
             <motion.div custom={0} variants={fadeUp}>
               <Badge variant="secondary" className="mb-4 px-3 py-1 text-sm border-purple-200 bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800">
                 <Sparkles className="w-3.5 h-3.5 me-1.5" />
                 {lang === "ar" ? "جديد" : "NEW"}
               </Badge>
             </motion.div>
-            <motion.h2 custom={0} variants={fadeUp} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" data-testid="text-marketing-section-title">
+            <motion.h2 custom={0} variants={fadeUp} className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" data-testid="text-marketing-section-title">
               {lang === "ar" ? "نمِّ أعمالك مع التسويق بالذكاء الاصطناعي" : "Grow Your Business with AI Marketing"}
             </motion.h2>
-            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
               {lang === "ar"
                 ? "أنشئ محتوى تسويقي احترافي لوسائل التواصل الاجتماعي تلقائياً بقوة الذكاء الاصطناعي"
                 : "Generate professional social media marketing content automatically powered by AI"}
@@ -392,13 +394,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
-            <motion.h2 custom={0} variants={fadeUp} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" data-testid="text-features-title">
+      <section id="features" className="py-14 sm:py-20">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-16">
+            <motion.h2 custom={0} variants={fadeUp} className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" data-testid="text-features-title">
               {t("features", lang)}
             </motion.h2>
-            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
               {lang === "ar"
                 ? "كل ما تحتاجه لإنشاء مواقع ويب احترافية تناسب السوق السعودي والعربي"
                 : "Everything you need to create professional websites for the Saudi and Arab market"}
@@ -416,8 +418,8 @@ export default function LandingPage() {
                 variants={scaleIn}
               >
                 <Card className="p-4 sm:p-6 h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300" data-testid={`card-feature-${i}`}>
-                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg`}>
-                    <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg`}>
+                    <feature.icon className="w-5 h-5 text-white" />
                   </div>
                   <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{feature.title}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
@@ -428,13 +430,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
-            <motion.h2 custom={0} variants={fadeUp} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" data-testid="text-pricing-title">
+      <section id="pricing" className="py-14 sm:py-20 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-16">
+            <motion.h2 custom={0} variants={fadeUp} className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" data-testid="text-pricing-title">
               {t("pricing", lang)}
             </motion.h2>
-            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-xl mx-auto">
+            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto leading-relaxed">
               {lang === "ar"
                 ? "أسعار تنافسية تناسب جميع الأعمال السعودية"
                 : "Competitive pricing for all Saudi businesses"}
@@ -517,15 +519,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-br from-emerald-500 to-teal-600">
-        <div className="max-w-4xl mx-auto px-4 text-center text-white">
+      <section className="py-14 sm:py-20 bg-gradient-to-br from-emerald-500 to-teal-600">
+        <div className="max-w-4xl mx-auto px-5 text-center text-white">
           <motion.h2
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
             custom={0}
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
+            className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4"
           >
             {t("ctaTitle", lang)}
           </motion.h2>
@@ -535,7 +537,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             variants={fadeUp}
             custom={1}
-            className="text-lg opacity-90 mb-8"
+            className="text-base sm:text-lg opacity-90 mb-6 sm:mb-8 leading-relaxed"
           >
             {t("ctaSubtitle", lang)}
           </motion.p>
