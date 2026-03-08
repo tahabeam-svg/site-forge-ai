@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
+type MobileView = "panel" | "preview";
 
 const SECTION_TYPES_AR = [
   { name: "قسم رئيسي (Hero)", command: "أضف قسم رئيسي جديد مع عنوان جذاب وزر دعوة" },
@@ -97,6 +98,7 @@ export default function EditorPage() {
   const lang = language;
   const [editCommand, setEditCommand] = useState("");
   const [viewport, setViewport] = useState<ViewportSize>("desktop");
+  const [mobileView, setMobileView] = useState<MobileView>("panel");
   const [generateDesc, setGenerateDesc] = useState("");
   const [activeTab, setActiveTab] = useState("chat");
   const [mediaUrl, setMediaUrl] = useState("");
@@ -349,18 +351,42 @@ ${project.generatedHtml}
         onChange={handleChatImageSelect}
       />
 
-      <header className="flex items-center justify-between gap-2 px-4 py-2 border-b bg-background shrink-0">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} data-testid="button-back">
+      <header className="flex items-center justify-between gap-2 px-3 md:px-4 py-2 border-b bg-background shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate("/dashboard")} data-testid="button-back">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <Separator orientation="vertical" className="h-6" />
-          <div>
-            <h1 className="text-sm font-semibold" data-testid="text-project-name">{project.name}</h1>
-            <p className="text-xs text-muted-foreground">{project.description || ""}</p>
+          <Separator orientation="vertical" className="h-6 hidden sm:block" />
+          <div className="min-w-0">
+            <h1 className="text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
+            <p className="text-xs text-muted-foreground truncate hidden sm:block">{project.description || ""}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {project.generatedHtml && (
+            <div className="flex md:hidden items-center gap-1 bg-muted rounded-md p-0.5">
+              <Button
+                variant={mobileView === "panel" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setMobileView("panel")}
+                className="text-xs px-2 h-7"
+                data-testid="button-mobile-panel"
+              >
+                <Wand2 className="w-3.5 h-3.5 me-1" />
+                {lang === "ar" ? "تعديل" : "Edit"}
+              </Button>
+              <Button
+                variant={mobileView === "preview" ? "secondary" : "ghost"}
+                size="sm"
+                onClick={() => setMobileView("preview")}
+                className="text-xs px-2 h-7"
+                data-testid="button-mobile-preview"
+              >
+                <Eye className="w-3.5 h-3.5 me-1" />
+                {lang === "ar" ? "معاينة" : "Preview"}
+              </Button>
+            </div>
+          )}
           <div className="hidden sm:flex items-center gap-1 bg-muted rounded-md p-0.5">
             {[
               { size: "desktop" as const, icon: Monitor },
@@ -380,14 +406,14 @@ ${project.generatedHtml}
           </div>
           {project.generatedHtml && (
             <>
-              <Button variant="outline" size="sm" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview">
+              <Button variant="outline" size="sm" className="hidden sm:flex" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview">
                 <Eye className="w-4 h-4 me-1" />
                 {t("preview", lang)}
               </Button>
               {project.status !== "published" && (
                 <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} data-testid="button-publish">
                   <Rocket className="w-4 h-4 me-1" />
-                  {t("publish", lang)}
+                  <span className="hidden sm:inline">{t("publish", lang)}</span>
                 </Button>
               )}
             </>
@@ -399,7 +425,7 @@ ${project.generatedHtml}
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className="w-[480px] shrink-0 border-e bg-background flex flex-col overflow-hidden">
+        <div className={`w-full md:w-[480px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
           {!project.generatedHtml ? (
             <div className="p-4">
               <Card className="p-5">
@@ -887,7 +913,7 @@ ${project.generatedHtml}
           )}
         </div>
 
-        <div className="flex-1 bg-muted/30 flex items-start justify-center p-4 overflow-auto">
+        <div className={`flex-1 bg-muted/30 flex items-start justify-center p-4 overflow-auto ${mobileView === "panel" ? "hidden md:flex" : "flex"}`}>
           {project.generatedHtml ? (
             <div
               className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300"
