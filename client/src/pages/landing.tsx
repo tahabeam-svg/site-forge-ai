@@ -495,6 +495,11 @@ export default function LandingPage() {
                       <span className="text-4xl font-bold">{plan.price}</span>
                       {plan.price !== "مجاناً" && <span className="text-muted-foreground">{t("perMonth", lang)}</span>}
                     </div>
+                    {plan.price !== "مجاناً" && (
+                      <p className="text-[10px] text-muted-foreground">
+                        {lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة" : "* Excl. VAT"}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-3 mb-6">
                     {plan.features.map((f, j) => (

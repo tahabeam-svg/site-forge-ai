@@ -276,6 +276,11 @@ export default function BillingPage() {
                         </span>
                       </p>
                     )}
+                    {plan.priceNum !== 0 && (
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة" : "* Excl. VAT"}
+                      </p>
+                    )}
                     <div className="mt-2">
                       <Badge variant="outline" className="text-xs">
                         <Coins className="w-3 h-3 me-1" />
@@ -421,8 +426,8 @@ export default function BillingPage() {
 
             <p className="text-xs text-muted-foreground mt-4">
               {lang === "ar"
-                ? "جميع الأسعار تشمل ضريبة القيمة المضافة 15% وفقاً لنظام هيئة الزكاة والضريبة والجمارك في المملكة العربية السعودية."
-                : "All prices include 15% VAT in accordance with ZATCA regulations in the Kingdom of Saudi Arabia."}
+                ? "الأسعار المعروضة لا تشمل ضريبة القيمة المضافة. تُضاف الضريبة (15%) عند الدفع وفقاً لنظام هيئة الزكاة والضريبة والجمارك في المملكة العربية السعودية."
+                : "Prices shown are exclusive of VAT. VAT (15%) is added at checkout in accordance with ZATCA regulations in the Kingdom of Saudi Arabia."}
             </p>
           </Card>
         ) : null}
