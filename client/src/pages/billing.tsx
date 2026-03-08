@@ -6,6 +6,9 @@ import DashboardLayout from "@/components/dashboard-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
   CreditCard,
@@ -18,6 +21,8 @@ import {
   Coins,
   ToggleLeft,
   ToggleRight,
+  Receipt,
+  FileText,
 } from "lucide-react";
 
 export default function BillingPage() {
@@ -26,6 +31,11 @@ export default function BillingPage() {
   const { toast } = useToast();
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
+  const [isCompany, setIsCompany] = useState(false);
+  const [taxNumber, setTaxNumber] = useState("");
+  const [companyName, setCompanyName] = useState("");
+
+  const VAT_RATE = 0.15;
 
   const { data: subscription } = useQuery<{ plan: string; status: string; credits: number; endDate?: string }>({
     queryKey: ["/api/subscription"],
@@ -255,9 +265,7 @@ export default function BillingPage() {
                     <div className="mt-1">
                       <span className="text-2xl font-bold">{plan.price}</span>
                       {plan.priceNum !== 0 && (
-                        <span className="text-sm text-muted-foreground">
-                          {lang === "ar" ? "/شهرياً" : "/month"}
-                        </span>
+                        <span className="text-sm text-muted-foreground">/شهرياً</span>
                       )}
                     </div>
                     {isYearly && plan.priceNum !== 0 && (
@@ -305,6 +313,119 @@ export default function BillingPage() {
             })}
           </div>
         </div>
+
+        {currentPlan !== "free" || true ? (
+          <Card className="p-5" data-testid="card-invoice-details">
+            <div className="flex items-center gap-2 mb-4">
+              <Receipt className="w-5 h-5 text-emerald-600" />
+              <h3 className="font-semibold text-lg">
+                {lang === "ar" ? "تفاصيل الفاتورة" : "Invoice Details"}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                onClick={() => setIsCompany(false)}
+                className={`flex-1 py-2.5 px-4 rounded-lg border-2 text-sm font-medium transition-all ${
+                  !isCompany
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                    : "border-muted hover:border-foreground/20"
+                }`}
+                data-testid="button-individual"
+              >
+                {lang === "ar" ? "فرد" : "Individual"}
+              </button>
+              <button
+                onClick={() => setIsCompany(true)}
+                className={`flex-1 py-2.5 px-4 rounded-lg border-2 text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                  isCompany
+                    ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300"
+                    : "border-muted hover:border-foreground/20"
+                }`}
+                data-testid="button-company"
+              >
+                <Building2 className="w-4 h-4" />
+                {lang === "ar" ? "شركة / مؤسسة" : "Company"}
+              </button>
+            </div>
+
+            {isCompany && (
+              <div className="space-y-3 mb-4 p-4 rounded-lg bg-muted/50 border">
+                <div>
+                  <Label className="text-sm mb-1.5 block">
+                    {lang === "ar" ? "اسم الشركة / المؤسسة" : "Company Name"}
+                  </Label>
+                  <Input
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder={lang === "ar" ? "مثال: شركة التقنية المتقدمة" : "e.g. Advanced Tech Co."}
+                    data-testid="input-company-name"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm mb-1.5 block">
+                    <FileText className="w-3.5 h-3.5 inline me-1" />
+                    {lang === "ar" ? "الرقم الضريبي (VAT Number)" : "Tax Registration Number (VAT)"}
+                  </Label>
+                  <Input
+                    value={taxNumber}
+                    onChange={(e) => setTaxNumber(e.target.value)}
+                    placeholder={lang === "ar" ? "مثال: 300000000000003" : "e.g. 300000000000003"}
+                    className="font-mono"
+                    maxLength={15}
+                    data-testid="input-tax-number"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {lang === "ar"
+                      ? "الرقم الضريبي المكون من 15 رقم الصادر من هيئة الزكاة والضريبة والجمارك"
+                      : "15-digit VAT number issued by ZATCA (Zakat, Tax and Customs Authority)"}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <Separator className="my-4" />
+
+            {(() => {
+              const selectedPlan = plans.find(p => p.id === (currentPlan !== "free" ? currentPlan : "pro"));
+              if (!selectedPlan || selectedPlan.priceNum === 0) return null;
+              const subtotal = isYearly ? selectedPlan.yearlyTotal : selectedPlan.priceNum;
+              const period = isYearly
+                ? (lang === "ar" ? "سنوياً" : "yearly")
+                : (lang === "ar" ? "شهرياً" : "monthly");
+              const vatAmount = Math.round(subtotal * VAT_RATE * 100) / 100;
+              const total = subtotal + vatAmount;
+
+              return (
+                <div className="space-y-2 text-sm" data-testid="invoice-breakdown">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      {lang === "ar" ? `خطة ${selectedPlan.name} (${period})` : `${selectedPlan.name} Plan (${period})`}
+                    </span>
+                    <span className="font-medium">{subtotal} ر.س</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      {lang === "ar" ? "ضريبة القيمة المضافة (15%)" : "VAT (15%)"}
+                    </span>
+                    <span className="font-medium">{vatAmount.toFixed(2)} ر.س</span>
+                  </div>
+                  <Separator className="my-2" />
+                  <div className="flex items-center justify-between text-base font-bold">
+                    <span>{lang === "ar" ? "الإجمالي شامل الضريبة" : "Total (incl. VAT)"}</span>
+                    <span className="text-emerald-600">{total.toFixed(2)} ر.س</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            <p className="text-xs text-muted-foreground mt-4">
+              {lang === "ar"
+                ? "جميع الأسعار تشمل ضريبة القيمة المضافة 15% وفقاً لنظام هيئة الزكاة والضريبة والجمارك في المملكة العربية السعودية."
+                : "All prices include 15% VAT in accordance with ZATCA regulations in the Kingdom of Saudi Arabia."}
+            </p>
+          </Card>
+        ) : null}
 
         {!paymentConfig?.configured && (
           <Card className="p-4 border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800">
