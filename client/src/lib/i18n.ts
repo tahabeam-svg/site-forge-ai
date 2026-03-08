@@ -1,6 +1,6 @@
 const translations = {
   en: {
-    brand: "ArabyWeb.net",
+    brand: "ArabyWeb",
     tagline: "Build Your Website for Free",
     taglineSub: "& Launch Social Media Content with AI",
     subtitle: "The leading AI-powered website builder in the Arab world. Create stunning, responsive websites in under 2 minutes. Just describe your vision — no coding required.",
