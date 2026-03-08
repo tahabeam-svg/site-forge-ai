@@ -83,6 +83,10 @@ process.on("unhandledRejection", (err) => {
     await registerRoutes(httpServer, app);
     console.log("Routes registered");
 
+    const { initPricesFromDB } = await import("./paymob");
+    const { storage } = await import("./storage");
+    await initPricesFromDB(storage).catch(() => {});
+
     app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";

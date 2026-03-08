@@ -148,3 +148,12 @@ export const PLAN_PRICES: Record<string, number> = {
   pro: 4900,
   business: 9900,
 };
+
+export async function initPricesFromDB(storage: any) {
+  try {
+    const proPrice = await storage.getSetting("price_pro");
+    const businessPrice = await storage.getSetting("price_business");
+    if (proPrice) PLAN_PRICES.pro = parseInt(proPrice.value);
+    if (businessPrice) PLAN_PRICES.business = parseInt(businessPrice.value);
+  } catch {}
+}

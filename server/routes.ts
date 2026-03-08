@@ -638,6 +638,88 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/admin/pricing", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const proPrice = await storage.getSetting("price_pro");
+      const businessPrice = await storage.getSetting("price_business");
+      const proCredits = await storage.getSetting("credits_pro");
+      const businessCredits = await storage.getSetting("credits_business");
+      const freeCredits = await storage.getSetting("credits_free");
+      res.json({
+        pro: { price: proPrice ? parseInt(proPrice.value) : 4900, credits: proCredits ? parseInt(proCredits.value) : 50 },
+        business: { price: businessPrice ? parseInt(businessPrice.value) : 9900, credits: businessCredits ? parseInt(businessCredits.value) : 200 },
+        free: { credits: freeCredits ? parseInt(freeCredits.value) : 5 },
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch pricing" });
+    }
+  });
+
+  app.put("/api/admin/pricing", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { proPrice, businessPrice, proCredits, businessCredits, freeCredits } = req.body;
+      if (proPrice !== undefined) {
+        await storage.setSetting("price_pro", String(proPrice));
+        PLAN_PRICES.pro = proPrice;
+      }
+      if (businessPrice !== undefined) {
+        await storage.setSetting("price_business", String(businessPrice));
+        PLAN_PRICES.business = businessPrice;
+      }
+      if (proCredits !== undefined) await storage.setSetting("credits_pro", String(proCredits));
+      if (businessCredits !== undefined) await storage.setSetting("credits_business", String(businessCredits));
+      if (freeCredits !== undefined) await storage.setSetting("credits_free", String(freeCredits));
+      res.json({ message: "Pricing updated" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to update pricing" });
+    }
+  });
+
+  app.get("/api/admin/promotions", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const promoData = await storage.getSetting("active_promotions");
+      res.json(promoData ? JSON.parse(promoData.value) : []);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch promotions" });
+    }
+  });
+
+  app.put("/api/admin/promotions", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { promotions } = req.body;
+      await storage.setSetting("active_promotions", JSON.stringify(promotions || []));
+      res.json({ message: "Promotions updated" });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to update promotions" });
+    }
+  });
+
+  app.get("/api/public/pricing", async (req, res) => {
+    try {
+      const proPrice = await storage.getSetting("price_pro");
+      const businessPrice = await storage.getSetting("price_business");
+      const proCredits = await storage.getSetting("credits_pro");
+      const businessCredits = await storage.getSetting("credits_business");
+      const freeCredits = await storage.getSetting("credits_free");
+      const promoData = await storage.getSetting("active_promotions");
+      const promotions = promoData ? JSON.parse(promoData.value) : [];
+      const now = new Date();
+      const activePromos = promotions.filter((p: any) => {
+        if (!p.isActive) return false;
+        if (p.expiresAt && new Date(p.expiresAt) < now) return false;
+        return true;
+      });
+      res.json({
+        pro: { price: proPrice ? parseInt(proPrice.value) : 4900, credits: proCredits ? parseInt(proCredits.value) : 50 },
+        business: { price: businessPrice ? parseInt(businessPrice.value) : 9900, credits: businessCredits ? parseInt(businessCredits.value) : 200 },
+        free: { credits: freeCredits ? parseInt(freeCredits.value) : 5 },
+        promotions: activePromos,
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch pricing" });
+    }
+  });
+
   async function getUserGitHubToken(req: any): Promise<string | null> {
     const userId = req.user?.id;
     if (!userId) return null;

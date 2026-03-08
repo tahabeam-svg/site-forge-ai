@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -32,6 +32,12 @@ import {
   Save,
   Eye,
   EyeOff,
+  Tag,
+  Zap,
+  Crown,
+  Sparkles,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 
 interface AdminStats {
@@ -90,6 +96,23 @@ interface AdminSubscription {
   createdAt: string;
 }
 
+interface PricingData {
+  pro: { price: number; credits: number };
+  business: { price: number; credits: number };
+  free: { credits: number };
+}
+
+interface Promotion {
+  id: string;
+  name: string;
+  nameAr: string;
+  discountPercent: number;
+  appliesTo: "all" | "pro" | "business";
+  isActive: boolean;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
 export default function AdminPage() {
   const { language } = useAuth();
   const lang = language;
@@ -108,6 +131,19 @@ export default function AdminPage() {
   const [paymobHmacSecret, setPaymobHmacSecret] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [showHmac, setShowHmac] = useState(false);
+
+  const [proPrice, setProPrice] = useState("");
+  const [businessPrice, setBusinessPrice] = useState("");
+  const [proCredits, setProCredits] = useState("");
+  const [businessCredits, setBusinessCredits] = useState("");
+  const [freeCredits, setFreeCredits] = useState("");
+
+  const [showAddPromo, setShowAddPromo] = useState(false);
+  const [promoName, setPromoName] = useState("");
+  const [promoNameAr, setPromoNameAr] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState("");
+  const [promoAppliesTo, setPromoAppliesTo] = useState<"all" | "pro" | "business">("all");
+  const [promoExpiry, setPromoExpiry] = useState("");
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
@@ -137,6 +173,26 @@ export default function AdminPage() {
     queryKey: ["/api/admin/subscriptions"],
     enabled: !statsError,
   });
+
+  const { data: pricingData } = useQuery<PricingData>({
+    queryKey: ["/api/admin/pricing"],
+    enabled: !statsError,
+  });
+
+  const { data: promotions = [] } = useQuery<Promotion[]>({
+    queryKey: ["/api/admin/promotions"],
+    enabled: !statsError,
+  });
+
+  useEffect(() => {
+    if (pricingData) {
+      setProPrice(String(pricingData.pro.price / 100));
+      setBusinessPrice(String(pricingData.business.price / 100));
+      setProCredits(String(pricingData.pro.credits));
+      setBusinessCredits(String(pricingData.business.credits));
+      setFreeCredits(String(pricingData.free.credits));
+    }
+  }, [pricingData]);
 
   const createCouponMutation = useMutation({
     mutationFn: async () => {
@@ -172,6 +228,16 @@ export default function AdminPage() {
     },
   });
 
+  const toggleCouponMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
+      await apiRequest("PATCH", `/api/admin/coupons/${id}`, { isActive });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/coupons"] });
+      toast({ title: lang === "ar" ? "تم تحديث الكوبون" : "Coupon updated" });
+    },
+  });
+
   const suspendUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       await apiRequest("PATCH", `/api/admin/users/${userId}/suspend`);
@@ -202,6 +268,66 @@ export default function AdminPage() {
       toast({ title: lang === "ar" ? "فشل حفظ الإعدادات" : "Failed to save settings", variant: "destructive" });
     },
   });
+
+  const savePricingMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PUT", "/api/admin/pricing", {
+        proPrice: Math.round(parseFloat(proPrice) * 100),
+        businessPrice: Math.round(parseFloat(businessPrice) * 100),
+        proCredits: parseInt(proCredits),
+        businessCredits: parseInt(businessCredits),
+        freeCredits: parseInt(freeCredits),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/pricing"] });
+      toast({ title: lang === "ar" ? "تم تحديث الأسعار" : "Pricing updated" });
+    },
+    onError: () => {
+      toast({ title: lang === "ar" ? "فشل تحديث الأسعار" : "Failed to update pricing", variant: "destructive" });
+    },
+  });
+
+  const savePromoMutation = useMutation({
+    mutationFn: async (updatedPromos: Promotion[]) => {
+      await apiRequest("PUT", "/api/admin/promotions", { promotions: updatedPromos });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/promotions"] });
+      toast({ title: lang === "ar" ? "تم تحديث العروض" : "Promotions updated" });
+    },
+    onError: () => {
+      toast({ title: lang === "ar" ? "فشل تحديث العروض" : "Failed to update promotions", variant: "destructive" });
+    },
+  });
+
+  const addPromotion = () => {
+    const newPromo: Promotion = {
+      id: Date.now().toString(),
+      name: promoName,
+      nameAr: promoNameAr,
+      discountPercent: parseInt(promoDiscount),
+      appliesTo: promoAppliesTo,
+      isActive: true,
+      expiresAt: promoExpiry || null,
+      createdAt: new Date().toISOString(),
+    };
+    savePromoMutation.mutate([...promotions, newPromo]);
+    setShowAddPromo(false);
+    setPromoName("");
+    setPromoNameAr("");
+    setPromoDiscount("");
+    setPromoExpiry("");
+  };
+
+  const togglePromotion = (id: string) => {
+    const updated = promotions.map((p) => p.id === id ? { ...p, isActive: !p.isActive } : p);
+    savePromoMutation.mutate(updated);
+  };
+
+  const deletePromotion = (id: string) => {
+    savePromoMutation.mutate(promotions.filter((p) => p.id !== id));
+  };
 
   if (statsError) {
     return (
@@ -252,6 +378,17 @@ export default function AdminPage() {
       case "pending": return "bg-yellow-100 text-yellow-700";
       default: return "bg-gray-100 text-gray-700";
     }
+  };
+
+  const appliesToLabel = (v: string) => {
+    if (lang === "ar") {
+      if (v === "all") return "جميع الخطط";
+      if (v === "pro") return "الاحترافية فقط";
+      return "الأعمال فقط";
+    }
+    if (v === "all") return "All Plans";
+    if (v === "pro") return "Pro Only";
+    return "Business Only";
   };
 
   if (statsLoading) {
@@ -306,16 +443,25 @@ export default function AdminPage() {
               <Ticket className="w-4 h-4 me-1" />
               {lang === "ar" ? "الكوبونات" : "Coupons"}
             </TabsTrigger>
+            <TabsTrigger value="pricing" data-testid="tab-admin-pricing">
+              <Tag className="w-4 h-4 me-1" />
+              {lang === "ar" ? "الأسعار" : "Pricing"}
+            </TabsTrigger>
+            <TabsTrigger value="promotions" data-testid="tab-admin-promotions">
+              <Sparkles className="w-4 h-4 me-1" />
+              {lang === "ar" ? "العروض" : "Offers"}
+            </TabsTrigger>
             <TabsTrigger value="payments" data-testid="tab-admin-payments">
               <CreditCard className="w-4 h-4 me-1" />
               {lang === "ar" ? "المدفوعات" : "Payments"}
             </TabsTrigger>
             <TabsTrigger value="settings" data-testid="tab-admin-settings">
               <Settings className="w-4 h-4 me-1" />
-              {lang === "ar" ? "الإعدادات" : "Settings"}
+              {lang === "ar" ? "بوابة الدفع" : "Gateway"}
             </TabsTrigger>
           </TabsList>
 
+          {/* Users Tab */}
           <TabsContent value="users">
             <Card>
               <ScrollArea className="h-[400px]">
@@ -366,6 +512,7 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
+          {/* Projects Tab */}
           <TabsContent value="projects">
             <Card>
               <ScrollArea className="h-[400px]">
@@ -404,6 +551,7 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
+          {/* Coupons Tab */}
           <TabsContent value="coupons">
             <Card>
               <div className="p-4 border-b flex items-center justify-between">
@@ -442,7 +590,7 @@ export default function AdminPage() {
                           data-testid="button-discount-percentage"
                         >
                           <Percent className="w-3 h-3 me-1" />
-                          {lang === "ar" ? "نسبة" : "Percentage"}
+                          {lang === "ar" ? "نسبة %" : "Percentage"}
                         </Button>
                         <Button
                           variant={discountType === "fixed" ? "default" : "outline"}
@@ -459,12 +607,12 @@ export default function AdminPage() {
                   <div className="grid sm:grid-cols-3 gap-3">
                     <div>
                       <label className="text-xs font-medium mb-1 block">
-                        {lang === "ar" ? "قيمة الخصم" : "Discount Value"}
+                        {lang === "ar" ? (discountType === "percentage" ? "نسبة الخصم (%)" : "قيمة الخصم (ر.س)") : (discountType === "percentage" ? "Discount (%)" : "Discount (SAR)")}
                       </label>
                       <Input
                         value={discountValue}
                         onChange={(e) => setDiscountValue(e.target.value)}
-                        placeholder="20"
+                        placeholder={discountType === "percentage" ? "20" : "10"}
                         type="number"
                         data-testid="input-coupon-value"
                       />
@@ -472,12 +620,12 @@ export default function AdminPage() {
                     <div>
                       <label className="text-xs font-medium mb-1 block flex items-center gap-1">
                         <Hash className="w-3 h-3" />
-                        {lang === "ar" ? "الحد الأقصى" : "Max Uses"}
+                        {lang === "ar" ? "الحد الأقصى للاستخدام" : "Max Uses"}
                       </label>
                       <Input
                         value={maxUses}
                         onChange={(e) => setMaxUses(e.target.value)}
-                        placeholder="100"
+                        placeholder={lang === "ar" ? "0 = غير محدود" : "0 = unlimited"}
                         type="number"
                         data-testid="input-coupon-max-uses"
                       />
@@ -504,19 +652,19 @@ export default function AdminPage() {
                     {createCouponMutation.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      lang === "ar" ? "إنشاء" : "Create"
+                      lang === "ar" ? "إنشاء الكوبون" : "Create Coupon"
                     )}
                   </Button>
                 </div>
               )}
 
-              <ScrollArea className="h-[300px]">
+              <ScrollArea className="h-[350px]">
                 <div className="divide-y">
                   {couponsLoading ? (
                     <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>
                   ) : couponsData.length === 0 ? (
                     <div className="p-8 text-center text-muted-foreground">
-                      {lang === "ar" ? "لا توجد كوبونات" : "No coupons found"}
+                      {lang === "ar" ? "لا توجد كوبونات. أنشئ كوبون خصم أول!" : "No coupons yet. Create your first discount coupon!"}
                     </div>
                   ) : (
                     couponsData.map((coupon) => (
@@ -547,15 +695,29 @@ export default function AdminPage() {
                             </p>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => deleteCouponMutation.mutate(coupon.id)}
-                          data-testid={`button-delete-coupon-${coupon.id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleCouponMutation.mutate({ id: coupon.id, isActive: !coupon.isActive })}
+                            data-testid={`button-toggle-coupon-${coupon.id}`}
+                          >
+                            {coupon.isActive ? (
+                              <ToggleRight className="w-5 h-5 text-emerald-500" />
+                            ) : (
+                              <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => deleteCouponMutation.mutate(coupon.id)}
+                            data-testid={`button-delete-coupon-${coupon.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))
                   )}
@@ -564,6 +726,307 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
+          {/* Pricing Tab */}
+          <TabsContent value="pricing">
+            <Card>
+              <div className="p-4 border-b">
+                <h3 className="font-medium flex items-center gap-2">
+                  <Tag className="w-4 h-4" />
+                  {lang === "ar" ? "إدارة الأسعار والأرصدة" : "Pricing & Credits Management"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {lang === "ar" ? "غيّر أسعار الخطط وعدد الأرصدة لكل خطة" : "Change plan prices and credit allocations"}
+                </p>
+              </div>
+
+              <div className="p-4 space-y-6">
+                <div className="grid sm:grid-cols-3 gap-4">
+                  <Card className="p-4 border-2 border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Zap className="w-5 h-5 text-gray-500" />
+                      <h4 className="font-semibold">{lang === "ar" ? "المجانية" : "Free"}</h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium mb-1 block text-muted-foreground">
+                          {lang === "ar" ? "السعر" : "Price"}
+                        </label>
+                        <div className="text-lg font-bold text-muted-foreground">{lang === "ar" ? "مجاناً" : "Free"}</div>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium mb-1 block">
+                          {lang === "ar" ? "عدد الأرصدة / شهر" : "Credits / month"}
+                        </label>
+                        <Input
+                          value={freeCredits}
+                          onChange={(e) => setFreeCredits(e.target.value)}
+                          type="number"
+                          data-testid="input-free-credits"
+                        />
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4 border-2 border-emerald-300 dark:border-emerald-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Crown className="w-5 h-5 text-emerald-500" />
+                      <h4 className="font-semibold text-emerald-600">{lang === "ar" ? "الاحترافية" : "Pro"}</h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium mb-1 block">
+                          {lang === "ar" ? "السعر (ر.س / شهر)" : "Price (SAR / month)"}
+                        </label>
+                        <Input
+                          value={proPrice}
+                          onChange={(e) => setProPrice(e.target.value)}
+                          type="number"
+                          data-testid="input-pro-price"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium mb-1 block">
+                          {lang === "ar" ? "عدد الأرصدة / شهر" : "Credits / month"}
+                        </label>
+                        <Input
+                          value={proCredits}
+                          onChange={(e) => setProCredits(e.target.value)}
+                          type="number"
+                          data-testid="input-pro-credits"
+                        />
+                      </div>
+                    </div>
+                  </Card>
+
+                  <Card className="p-4 border-2 border-violet-300 dark:border-violet-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Sparkles className="w-5 h-5 text-violet-500" />
+                      <h4 className="font-semibold text-violet-600">{lang === "ar" ? "الأعمال" : "Business"}</h4>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs font-medium mb-1 block">
+                          {lang === "ar" ? "السعر (ر.س / شهر)" : "Price (SAR / month)"}
+                        </label>
+                        <Input
+                          value={businessPrice}
+                          onChange={(e) => setBusinessPrice(e.target.value)}
+                          type="number"
+                          data-testid="input-business-price"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium mb-1 block">
+                          {lang === "ar" ? "عدد الأرصدة / شهر" : "Credits / month"}
+                        </label>
+                        <Input
+                          value={businessCredits}
+                          onChange={(e) => setBusinessCredits(e.target.value)}
+                          type="number"
+                          data-testid="input-business-credits"
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Button
+                    onClick={() => savePricingMutation.mutate()}
+                    disabled={savePricingMutation.isPending}
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                    data-testid="button-save-pricing"
+                  >
+                    {savePricingMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin me-1" />
+                    ) : (
+                      <Save className="w-4 h-4 me-1" />
+                    )}
+                    {lang === "ar" ? "حفظ الأسعار" : "Save Pricing"}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">
+                    {lang === "ar" ? "الأسعار لا تشمل ضريبة القيمة المضافة 15%" : "Prices are exclusive of 15% VAT"}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Promotions Tab */}
+          <TabsContent value="promotions">
+            <Card>
+              <div className="p-4 border-b flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    {lang === "ar" ? "العروض والخصومات" : "Promotions & Offers"}
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {lang === "ar" ? "أنشئ عروض خصم بنسبة مئوية على الخطط" : "Create percentage-based discount offers on plans"}
+                  </p>
+                </div>
+                <Button size="sm" onClick={() => setShowAddPromo(!showAddPromo)} data-testid="button-add-promo">
+                  <Plus className="w-4 h-4 me-1" />
+                  {lang === "ar" ? "إنشاء عرض" : "New Offer"}
+                </Button>
+              </div>
+
+              {showAddPromo && (
+                <div className="p-4 border-b bg-muted/50 space-y-3">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">
+                        {lang === "ar" ? "اسم العرض (إنجليزي)" : "Offer Name (English)"}
+                      </label>
+                      <Input
+                        value={promoName}
+                        onChange={(e) => setPromoName(e.target.value)}
+                        placeholder="Summer Sale"
+                        data-testid="input-promo-name"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">
+                        {lang === "ar" ? "اسم العرض (عربي)" : "Offer Name (Arabic)"}
+                      </label>
+                      <Input
+                        value={promoNameAr}
+                        onChange={(e) => setPromoNameAr(e.target.value)}
+                        placeholder="عرض الصيف"
+                        data-testid="input-promo-name-ar"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">
+                        {lang === "ar" ? "نسبة الخصم (%)" : "Discount (%)"}
+                      </label>
+                      <Input
+                        value={promoDiscount}
+                        onChange={(e) => setPromoDiscount(e.target.value)}
+                        placeholder="30"
+                        type="number"
+                        min="1"
+                        max="100"
+                        data-testid="input-promo-discount"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium mb-1 block">
+                        {lang === "ar" ? "يُطبّق على" : "Applies To"}
+                      </label>
+                      <div className="flex gap-1.5">
+                        {(["all", "pro", "business"] as const).map((v) => (
+                          <Button
+                            key={v}
+                            variant={promoAppliesTo === v ? "default" : "outline"}
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => setPromoAppliesTo(v)}
+                            data-testid={`button-promo-applies-${v}`}
+                          >
+                            {v === "all" ? (lang === "ar" ? "الكل" : "All") : v === "pro" ? (lang === "ar" ? "احترافية" : "Pro") : (lang === "ar" ? "أعمال" : "Business")}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium mb-1 block flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {lang === "ar" ? "ينتهي في" : "Expires"}
+                      </label>
+                      <Input
+                        value={promoExpiry}
+                        onChange={(e) => setPromoExpiry(e.target.value)}
+                        type="date"
+                        data-testid="input-promo-expiry"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    onClick={addPromotion}
+                    disabled={!promoName || !promoDiscount || savePromoMutation.isPending}
+                    className="bg-violet-600 hover:bg-violet-700"
+                    data-testid="button-save-promo"
+                  >
+                    {savePromoMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      lang === "ar" ? "إنشاء العرض" : "Create Offer"
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              <ScrollArea className="h-[350px]">
+                <div className="divide-y">
+                  {promotions.length === 0 ? (
+                    <div className="p-8 text-center text-muted-foreground">
+                      <Sparkles className="w-10 h-10 mx-auto mb-3 text-muted-foreground/50" />
+                      <p>{lang === "ar" ? "لا توجد عروض نشطة" : "No active promotions"}</p>
+                      <p className="text-xs mt-1">{lang === "ar" ? "أنشئ عرض خصم لجذب المزيد من العملاء" : "Create a discount offer to attract more customers"}</p>
+                    </div>
+                  ) : (
+                    promotions.map((promo) => (
+                      <div key={promo.id} className="flex items-center justify-between p-4" data-testid={`row-promo-${promo.id}`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${promo.isActive ? "bg-violet-100 dark:bg-violet-900" : "bg-gray-100 dark:bg-gray-800"}`}>
+                            <Percent className={`w-5 h-5 ${promo.isActive ? "text-violet-600 dark:text-violet-300" : "text-gray-400"}`} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-sm">
+                                {lang === "ar" ? promo.nameAr || promo.name : promo.name}
+                              </span>
+                              <Badge variant="secondary" className={`text-xs ${promo.isActive ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+                                {promo.isActive ? (lang === "ar" ? "نشط" : "Active") : (lang === "ar" ? "متوقف" : "Inactive")}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              <span className="font-semibold text-violet-600">{promo.discountPercent}%</span>
+                              {" "}{lang === "ar" ? "خصم" : "off"}
+                              {" • "}{appliesToLabel(promo.appliesTo)}
+                              {promo.expiresAt && (
+                                <>
+                                  {" • "}{lang === "ar" ? "ينتهي:" : "Expires:"} {new Date(promo.expiresAt).toLocaleDateString()}
+                                </>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => togglePromotion(promo.id)}
+                            data-testid={`button-toggle-promo-${promo.id}`}
+                          >
+                            {promo.isActive ? (
+                              <ToggleRight className="w-5 h-5 text-emerald-500" />
+                            ) : (
+                              <ToggleLeft className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() => deletePromotion(promo.id)}
+                            data-testid={`button-delete-promo-${promo.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
+            </Card>
+          </TabsContent>
+
+          {/* Payments Tab */}
           <TabsContent value="payments">
             <Card>
               <div className="p-4 border-b">
@@ -614,6 +1077,7 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
+          {/* Settings Tab - Payment Gateway */}
           <TabsContent value="settings">
             <Card>
               <div className="p-4 border-b">
@@ -637,7 +1101,7 @@ export default function AdminPage() {
                     </p>
                     <div className="mt-2 space-y-1">
                       {paymobSettings.api_key && (
-                        <p className="text-xs text-muted-foreground">API Key: {paymobSettings.api_key}</p>
+                        <p className="text-xs text-muted-foreground">API Key: ••••{paymobSettings.api_key.slice(-4)}</p>
                       )}
                       {paymobSettings.integration_id && (
                         <p className="text-xs text-muted-foreground">Integration ID: {paymobSettings.integration_id}</p>
