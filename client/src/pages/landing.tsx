@@ -396,9 +396,9 @@ export default function LandingPage() {
               },
             ].map((plan, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
-                <Card className={`p-5 h-full relative ${plan.popular ? "border-2 border-purple-500 shadow-lg shadow-purple-500/10" : ""}`} data-testid={`card-marketing-plan-${i}`}>
+                <Card className={`p-5 h-full relative overflow-visible ${plan.popular ? "border-2 border-purple-500 shadow-lg shadow-purple-500/10 mt-4" : ""}`} data-testid={`card-marketing-plan-${i}`}>
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 bg-gradient-to-r from-purple-500 to-indigo-600">
+                    <Badge className="absolute -top-3 start-3 sm:start-auto sm:left-1/2 sm:-translate-x-1/2 px-3 bg-gradient-to-r from-purple-500 to-indigo-600 whitespace-nowrap">
                       <Star className="w-3 h-3 me-1" />
                       {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
                     </Badge>
@@ -521,11 +521,11 @@ export default function LandingPage() {
                 variants={scaleIn}
               >
                 <Card
-                  className={`p-6 h-full relative hover:shadow-lg transition-shadow ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10" : ""}`}
+                  className={`p-6 h-full relative overflow-visible hover:shadow-lg transition-shadow ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 mt-4" : ""}`}
                   data-testid={`card-plan-${i}`}
                 >
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 bg-gradient-to-r from-emerald-500 to-teal-600">
+                    <Badge className="absolute -top-3 start-3 sm:start-auto sm:left-1/2 sm:-translate-x-1/2 px-3 bg-gradient-to-r from-emerald-500 to-teal-600 whitespace-nowrap">
                       <Star className="w-3 h-3 me-1" />
                       {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
                     </Badge>
