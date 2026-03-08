@@ -183,11 +183,12 @@ export async function registerRoutes(
       });
 
       res.json(updated);
-    } catch (err) {
-      console.error("Generation error:", err);
+    } catch (err: any) {
+      console.error("Generation error:", err?.message || err);
       const project = await storage.getProject(parseInt(req.params.id));
       if (project) await storage.updateProject(project.id, { status: "error" });
-      res.status(500).json({ message: "Failed to generate website" });
+      const errorMsg = err?.message || "Unknown error";
+      res.status(500).json({ message: "Failed to generate website", detail: errorMsg });
     }
   });
 

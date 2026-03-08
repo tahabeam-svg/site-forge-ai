@@ -102,10 +102,12 @@ Return a JSON object with exactly these fields:
 
 IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanation.`;
 
+  const model = getModel();
+  console.log("Using AI model:", model);
   const response = await openai.chat.completions.create({
-    model: getModel(),
+    model,
     messages: [{ role: "user", content: prompt }],
-    max_completion_tokens: 16384,
+    max_tokens: 16384,
     temperature: 0.7,
   });
 
@@ -219,7 +221,7 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
   const response = await openai.chat.completions.create({
     model: getModel(),
     messages: [{ role: "user", content: prompt }],
-    max_completion_tokens: 2048,
+    max_tokens: 2048,
     temperature: 0.8,
   });
 
@@ -267,7 +269,7 @@ Return ONLY a JSON object with 'html' and 'css' fields. No markdown, no explanat
         content: `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`,
       },
     ],
-    max_completion_tokens: 16384,
+    max_tokens: 16384,
     temperature: 0.5,
   });
 
