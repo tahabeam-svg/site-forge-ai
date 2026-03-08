@@ -5,9 +5,10 @@ function getOpenAI(): OpenAI {
   if (!_openai) {
     const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
     if (!apiKey) throw new Error("OpenAI API key not configured");
+    const baseURL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL;
     _openai = new OpenAI({
       apiKey,
-      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+      ...(baseURL ? { baseURL } : {}),
     });
   }
   return _openai;
@@ -15,6 +16,11 @@ function getOpenAI(): OpenAI {
 const openai = new Proxy({} as OpenAI, {
   get: (_target, prop) => (getOpenAI() as any)[prop],
 });
+
+function getModel(): string {
+  if (process.env.AI_INTEGRATIONS_OPENAI_BASE_URL) return "gpt-5.2";
+  return "gpt-4o";
+}
 
 export interface GeneratedWebsite {
   html: string;
@@ -97,7 +103,7 @@ Return a JSON object with exactly these fields:
 IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanation.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: getModel(),
     messages: [{ role: "user", content: prompt }],
     max_completion_tokens: 16384,
     temperature: 0.7,
@@ -211,7 +217,7 @@ Return a JSON object with:
 IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: getModel(),
     messages: [{ role: "user", content: prompt }],
     max_completion_tokens: 2048,
     temperature: 0.8,
@@ -237,7 +243,7 @@ export async function editWebsiteWithAI(currentHtml: string, currentCss: string,
   const isArabic = language === "ar";
 
   const response = await openai.chat.completions.create({
-    model: "gpt-5.2",
+    model: getModel(),
     messages: [
       {
         role: "system",
