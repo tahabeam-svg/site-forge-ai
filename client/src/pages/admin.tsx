@@ -320,52 +320,60 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6">
+          <div className="p-3 sm:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
 
             {/* OVERVIEW */}
             {activeSection === "overview" && (
               <>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                {/* Stats Grid - 2x2 on mobile */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                   {[
-                    { label: lang === "ar" ? "المستخدمين" : "Users", value: stats?.totalUsers || 0, icon: Users, gradient: "from-blue-600 to-blue-800", bg: "bg-blue-500/10" },
-                    { label: lang === "ar" ? "المشاريع" : "Projects", value: stats?.totalProjects || 0, icon: Globe2, gradient: "from-emerald-600 to-emerald-800", bg: "bg-emerald-500/10" },
-                    { label: lang === "ar" ? "المنشورة" : "Published", value: stats?.publishedProjects || 0, icon: TrendingUp, gradient: "from-violet-600 to-violet-800", bg: "bg-violet-500/10" },
-                    { label: lang === "ar" ? "الاشتراكات" : "Subscriptions", value: activeSubsCount, icon: Crown, gradient: "from-amber-600 to-amber-800", bg: "bg-amber-500/10" },
+                    { label: lang === "ar" ? "المستخدمين" : "Users", value: stats?.totalUsers || 0, icon: Users, gradient: "from-blue-600 to-blue-800" },
+                    { label: lang === "ar" ? "المشاريع" : "Projects", value: stats?.totalProjects || 0, icon: Globe2, gradient: "from-emerald-600 to-emerald-800" },
+                    { label: lang === "ar" ? "المنشورة" : "Published", value: stats?.publishedProjects || 0, icon: TrendingUp, gradient: "from-violet-600 to-violet-800" },
+                    { label: lang === "ar" ? "الاشتراكات" : "Subs", value: activeSubsCount, icon: Crown, gradient: "from-amber-600 to-amber-800" },
                   ].map((stat, i) => (
-                    <Card key={i} className="bg-zinc-900 border-zinc-800 p-4" data-testid={`card-stat-${i}`}>
-                      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center mb-3`}>
-                        <stat.icon className="w-5 h-5 text-white" />
+                    <Card key={i} className="bg-zinc-900 border-zinc-800 p-3 sm:p-4" data-testid={`card-stat-${i}`}>
+                      <div className="flex items-center gap-2 sm:block">
+                        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gradient-to-br ${stat.gradient} flex items-center justify-center sm:mb-3 shrink-0`}>
+                          <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="text-xl sm:text-2xl font-bold text-white leading-tight">{stat.value}</p>
+                          <p className="text-[11px] text-zinc-400 mt-0.5">{stat.label}</p>
+                        </div>
                       </div>
-                      <p className="text-2xl font-bold text-white">{stat.value}</p>
-                      <p className="text-xs text-zinc-500 mt-1">{stat.label}</p>
                     </Card>
                   ))}
                 </div>
 
-                {/* Revenue Summary */}
-                <Card className="bg-zinc-900 border-zinc-800 p-5">
-                  <h3 className="font-semibold text-white flex items-center gap-2 mb-4">
-                    <Receipt className="w-5 h-5 text-emerald-400" />
+                {/* Revenue Summary - stacked on mobile */}
+                <Card className="bg-zinc-900 border-zinc-800 p-3 sm:p-5">
+                  <h3 className="font-semibold text-white flex items-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base">
+                    <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
                     {lang === "ar" ? "ملخص الإيرادات" : "Revenue Summary"}
                   </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
-                      <p className="text-xs text-zinc-500 mb-1">{lang === "ar" ? "إجمالي الإيرادات" : "Total Revenue"}</p>
-                      <p className="text-xl font-bold text-white" dir="ltr">{(totalRevenue / 100).toFixed(0)} <span className="text-sm text-zinc-400">{lang === "ar" ? "ر.س" : "SAR"}</span></p>
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                    <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-center">
+                      <p className="text-[10px] sm:text-xs text-zinc-400 mb-1">{lang === "ar" ? "الإجمالي" : "Total"}</p>
+                      <p className="text-base sm:text-xl font-bold text-white" dir="ltr">{(totalRevenue / 100).toFixed(0)}</p>
+                      <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ر.س" : "SAR"}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
-                      <p className="text-xs text-zinc-500 mb-1">{lang === "ar" ? "ضريبة القيمة المضافة (15%)" : "VAT (15%)"}</p>
-                      <p className="text-xl font-bold text-amber-400" dir="ltr">{(vatAmount / 100).toFixed(0)} <span className="text-sm text-zinc-400">{lang === "ar" ? "ر.س" : "SAR"}</span></p>
+                    <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-center">
+                      <p className="text-[10px] sm:text-xs text-zinc-400 mb-1">{lang === "ar" ? "ضريبة 15%" : "VAT 15%"}</p>
+                      <p className="text-base sm:text-xl font-bold text-amber-400" dir="ltr">{(vatAmount / 100).toFixed(0)}</p>
+                      <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ر.س" : "SAR"}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-zinc-800/50 border border-zinc-700/50">
-                      <p className="text-xs text-zinc-500 mb-1">{lang === "ar" ? "صافي الإيرادات" : "Net Revenue"}</p>
-                      <p className="text-xl font-bold text-emerald-400" dir="ltr">{((totalRevenue - vatAmount) / 100).toFixed(0)} <span className="text-sm text-zinc-400">{lang === "ar" ? "ر.س" : "SAR"}</span></p>
+                    <div className="p-2 sm:p-4 rounded-lg sm:rounded-xl bg-zinc-800/50 border border-zinc-700/50 text-center">
+                      <p className="text-[10px] sm:text-xs text-zinc-400 mb-1">{lang === "ar" ? "الصافي" : "Net"}</p>
+                      <p className="text-base sm:text-xl font-bold text-emerald-400" dir="ltr">{((totalRevenue - vatAmount) / 100).toFixed(0)}</p>
+                      <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ر.س" : "SAR"}</p>
                     </div>
                   </div>
                 </Card>
 
-                {/* Quick Actions */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {/* Quick Actions - 2x2 grid */}
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
                   {[
                     { label: lang === "ar" ? "إنشاء كوبون" : "Create Coupon", icon: Ticket, section: "coupons" as AdminSection, color: "from-purple-600 to-violet-700" },
                     { label: lang === "ar" ? "تعديل الأسعار" : "Edit Pricing", icon: Tag, section: "pricing" as AdminSection, color: "from-emerald-600 to-teal-700" },
@@ -375,52 +383,52 @@ export default function AdminPage() {
                     <button
                       key={i}
                       onClick={() => setActiveSection(action.section)}
-                      className={`p-4 rounded-xl bg-gradient-to-br ${action.color} text-white text-start hover:opacity-90 transition-opacity cursor-pointer`}
+                      className={`p-3 sm:p-4 rounded-xl bg-gradient-to-br ${action.color} text-white text-start hover:opacity-90 transition-opacity cursor-pointer`}
                       data-testid={`button-quick-${action.section}`}
                     >
-                      <action.icon className="w-6 h-6 mb-2" />
-                      <p className="text-sm font-medium">{action.label}</p>
+                      <action.icon className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
+                      <p className="text-xs sm:text-sm font-medium leading-tight">{action.label}</p>
                     </button>
                   ))}
                 </div>
 
                 {/* Recent Subscribers */}
                 <Card className="bg-zinc-900 border-zinc-800">
-                  <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-                    <h3 className="font-semibold text-white flex items-center gap-2">
+                  <div className="p-3 sm:p-4 border-b border-zinc-800 flex items-center justify-between">
+                    <h3 className="font-semibold text-white flex items-center gap-2 text-sm sm:text-base">
                       <Crown className="w-4 h-4 text-amber-400" />
                       {lang === "ar" ? "آخر المشتركين" : "Recent Subscribers"}
                     </h3>
-                    <Button variant="ghost" size="sm" className="text-zinc-400 hover:text-white" onClick={() => setActiveSection("payments")} data-testid="button-view-all-subs">
+                    <Button variant="ghost" size="sm" className="text-zinc-400 text-xs" onClick={() => setActiveSection("payments")} data-testid="button-view-all-subs">
                       {lang === "ar" ? "عرض الكل" : "View All"}
                       <Chevron className="w-3 h-3 ms-1" />
                     </Button>
                   </div>
                   <div className="divide-y divide-zinc-800">
                     {adminSubs.length === 0 ? (
-                      <div className="p-8 text-center text-zinc-500">{lang === "ar" ? "لا توجد اشتراكات بعد" : "No subscriptions yet"}</div>
+                      <div className="p-6 sm:p-8 text-center text-zinc-500 text-sm">{lang === "ar" ? "لا توجد اشتراكات بعد" : "No subscriptions yet"}</div>
                     ) : adminSubs.slice(0, 5).map((sub, i) => {
                       const amount = sub.amountCents ? (sub.amountCents / 100) : 0;
                       const vat = Math.round(amount * 0.15);
                       return (
-                        <div key={sub.id} className="flex items-center justify-between p-4" data-testid={`row-recent-sub-${i}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-full flex items-center justify-center ${sub.plan === "business" ? "bg-violet-500/20" : "bg-emerald-500/20"}`}>
-                              {sub.plan === "business" ? <Building2 className="w-4 h-4 text-violet-400" /> : <Crown className="w-4 h-4 text-emerald-400" />}
+                        <div key={sub.id} className="flex items-center justify-between p-3 sm:p-4" data-testid={`row-recent-sub-${i}`}>
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center shrink-0 ${sub.plan === "business" ? "bg-violet-500/20" : "bg-emerald-500/20"}`}>
+                              {sub.plan === "business" ? <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-400" /> : <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />}
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-zinc-200">{sub.userId.slice(0, 12)}...</p>
-                              <p className="text-xs text-zinc-500">
-                                <Badge variant="secondary" className={`text-[10px] me-1 ${sub.plan === "business" ? "bg-violet-500/20 text-violet-400" : "bg-emerald-500/20 text-emerald-400"}`}>
-                                  {sub.plan === "business" ? (lang === "ar" ? "أعمال" : "Business") : (lang === "ar" ? "احترافية" : "Pro")}
+                            <div className="min-w-0">
+                              <p className="text-xs sm:text-sm font-medium text-zinc-200 truncate">{sub.userId.slice(0, 10)}...</p>
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <Badge variant="secondary" className={`text-[9px] sm:text-[10px] ${sub.plan === "business" ? "bg-violet-500/20 text-violet-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+                                  {sub.plan === "business" ? (lang === "ar" ? "أعمال" : "Biz") : "Pro"}
                                 </Badge>
-                                {new Date(sub.createdAt).toLocaleDateString()}
-                              </p>
+                                <span className="text-[10px] text-zinc-600">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-end">
-                            <p className="text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} {lang === "ar" ? "ر.س" : "SAR"}</p>
-                            <p className="text-[10px] text-zinc-500" dir="ltr">+{vat.toFixed(0)} {lang === "ar" ? "ضريبة" : "VAT"}</p>
+                          <div className="text-end shrink-0 ms-2">
+                            <p className="text-xs sm:text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} {lang === "ar" ? "ر.س" : "SAR"}</p>
+                            <p className="text-[9px] sm:text-[10px] text-zinc-500" dir="ltr">+{vat.toFixed(0)} {lang === "ar" ? "ضريبة" : "VAT"}</p>
                           </div>
                         </div>
                       );
@@ -433,43 +441,43 @@ export default function AdminPage() {
             {/* USERS */}
             {activeSection === "users" && (
               <Card className="bg-zinc-900 border-zinc-800">
-                <div className="p-4 border-b border-zinc-800">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <Users className="w-5 h-5 text-blue-400" />
+                <div className="p-3 sm:p-4 border-b border-zinc-800">
+                  <h3 className="font-semibold text-white flex items-center gap-2 text-sm sm:text-base">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                     {lang === "ar" ? "إدارة المستخدمين" : "User Management"}
-                    <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 ms-2">{adminUsers.length}</Badge>
+                    <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 ms-2 text-[10px] sm:text-xs">{adminUsers.length}</Badge>
                   </h3>
                 </div>
-                <ScrollArea className="h-[500px]">
+                <ScrollArea className="h-[calc(100vh-200px)] sm:h-[500px]">
                   <div className="divide-y divide-zinc-800">
                     {usersLoading ? (
                       <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-zinc-500" /></div>
                     ) : adminUsers.length === 0 ? (
-                      <div className="p-8 text-center text-zinc-500">
-                        <Users className="w-10 h-10 mx-auto mb-3 text-zinc-700" />
-                        <p>{lang === "ar" ? "لا يوجد مستخدمين بعد" : "No users yet"}</p>
+                      <div className="p-6 text-center text-zinc-500">
+                        <Users className="w-8 h-8 mx-auto mb-2 text-zinc-700" />
+                        <p className="text-sm">{lang === "ar" ? "لا يوجد مستخدمين بعد" : "No users yet"}</p>
                       </div>
                     ) : adminUsers.map((user, i) => (
-                      <div key={user.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors" data-testid={`row-user-${i}`}>
-                        <div className="flex items-center gap-3">
+                      <div key={user.id} className="flex items-center justify-between p-3 sm:p-4 hover:bg-zinc-800/50 transition-colors" data-testid={`row-user-${i}`}>
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                           {user.profileImageUrl ? (
-                            <img src={user.profileImageUrl} alt="" className="w-10 h-10 rounded-full" />
+                            <img src={user.profileImageUrl} alt="" className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shrink-0" />
                           ) : (
-                            <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">
-                              <Users className="w-4 h-4 text-zinc-500" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zinc-800 flex items-center justify-center shrink-0">
+                              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-500" />
                             </div>
                           )}
-                          <div>
-                            <p className="text-sm font-medium text-zinc-200">
+                          <div className="min-w-0">
+                            <p className="text-xs sm:text-sm font-medium text-zinc-200 truncate">
                               {user.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : (user.email || user.id.slice(0, 8))}
                             </p>
-                            <p className="text-xs text-zinc-500">{user.email || "—"}</p>
+                            <p className="text-[10px] sm:text-xs text-zinc-500 truncate">{user.email || "—"}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-zinc-500">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</span>
-                          <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => suspendUserMutation.mutate(user.id)} data-testid={`button-suspend-user-${i}`}>
-                            <Ban className="w-4 h-4" />
+                        <div className="flex items-center gap-1 sm:gap-3 shrink-0 ms-2">
+                          <span className="text-[10px] sm:text-xs text-zinc-500 hidden sm:inline">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</span>
+                          <Button variant="ghost" size="sm" className="text-red-400 h-7 w-7 sm:h-8 sm:w-8 p-0" onClick={() => suspendUserMutation.mutate(user.id)} data-testid={`button-suspend-user-${i}`}>
+                            <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </Button>
                         </div>
                       </div>
@@ -756,56 +764,56 @@ export default function AdminPage() {
             {/* PAYMENTS */}
             {activeSection === "payments" && (
               <Card className="bg-zinc-900 border-zinc-800">
-                <div className="p-4 border-b border-zinc-800">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <Receipt className="w-5 h-5 text-blue-400" />
-                    {lang === "ar" ? "سجل المدفوعات والاشتراكات" : "Payments & Subscriptions"}
-                    <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 ms-2">{adminSubs.length}</Badge>
+                <div className="p-3 sm:p-4 border-b border-zinc-800">
+                  <h3 className="font-semibold text-white flex items-center gap-2 text-sm sm:text-base">
+                    <Receipt className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                    {lang === "ar" ? "المدفوعات" : "Payments"}
+                    <Badge variant="secondary" className="bg-zinc-800 text-zinc-300 ms-2 text-[10px]">{adminSubs.length}</Badge>
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 p-4 border-b border-zinc-800">
-                  <div className="text-center p-3 rounded-lg bg-zinc-800/50">
-                    <p className="text-lg font-bold text-white" dir="ltr">{(totalRevenue / 100).toFixed(0)}</p>
-                    <p className="text-[10px] text-zinc-500">{lang === "ar" ? "إجمالي (ر.س)" : "Total (SAR)"}</p>
+                <div className="grid grid-cols-3 gap-2 p-3 sm:p-4 border-b border-zinc-800">
+                  <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-800/50">
+                    <p className="text-base sm:text-lg font-bold text-white" dir="ltr">{(totalRevenue / 100).toFixed(0)}</p>
+                    <p className="text-[9px] sm:text-[10px] text-zinc-500">{lang === "ar" ? "إجمالي (ر.س)" : "Total (SAR)"}</p>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-zinc-800/50">
-                    <p className="text-lg font-bold text-amber-400" dir="ltr">{(vatAmount / 100).toFixed(0)}</p>
-                    <p className="text-[10px] text-zinc-500">{lang === "ar" ? "ضريبة 15%" : "VAT 15%"}</p>
+                  <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-800/50">
+                    <p className="text-base sm:text-lg font-bold text-amber-400" dir="ltr">{(vatAmount / 100).toFixed(0)}</p>
+                    <p className="text-[9px] sm:text-[10px] text-zinc-500">{lang === "ar" ? "ضريبة 15%" : "VAT 15%"}</p>
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-zinc-800/50">
-                    <p className="text-lg font-bold text-emerald-400" dir="ltr">{activeSubsCount}</p>
-                    <p className="text-[10px] text-zinc-500">{lang === "ar" ? "نشط" : "Active"}</p>
+                  <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-800/50">
+                    <p className="text-base sm:text-lg font-bold text-emerald-400" dir="ltr">{activeSubsCount}</p>
+                    <p className="text-[9px] sm:text-[10px] text-zinc-500">{lang === "ar" ? "نشط" : "Active"}</p>
                   </div>
                 </div>
 
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[calc(100vh-280px)] sm:h-[400px]">
                   <div className="divide-y divide-zinc-800">
                     {adminSubs.length === 0 ? (
-                      <div className="p-8 text-center text-zinc-500">{lang === "ar" ? "لا توجد مدفوعات بعد" : "No payments yet"}</div>
+                      <div className="p-6 text-center text-zinc-500 text-sm">{lang === "ar" ? "لا توجد مدفوعات بعد" : "No payments yet"}</div>
                     ) : adminSubs.map((sub, i) => {
                       const amount = sub.amountCents ? (sub.amountCents / 100) : 0;
                       const vat = Math.round(amount * 0.15);
                       return (
-                        <div key={sub.id} className="flex items-center justify-between p-4 hover:bg-zinc-800/50 transition-colors" data-testid={`row-subscription-${i}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${sub.plan === "business" ? "bg-violet-500/20" : "bg-emerald-500/20"}`}>
-                              {sub.plan === "business" ? <Building2 className="w-4 h-4 text-violet-400" /> : <Crown className="w-4 h-4 text-emerald-400" />}
+                        <div key={sub.id} className="flex items-center justify-between p-3 sm:p-4 hover:bg-zinc-800/50 transition-colors" data-testid={`row-subscription-${i}`}>
+                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${sub.plan === "business" ? "bg-violet-500/20" : "bg-emerald-500/20"}`}>
+                              {sub.plan === "business" ? <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-violet-400" /> : <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />}
                             </div>
-                            <div>
-                              <p className="text-sm font-medium text-zinc-200">{sub.userId.slice(0, 12)}...</p>
-                              <p className="text-xs text-zinc-500">
-                                <Badge variant="secondary" className={`text-[10px] me-1 ${sub.plan === "business" ? "bg-violet-500/20 text-violet-400" : "bg-emerald-500/20 text-emerald-400"}`}>
+                            <div className="min-w-0">
+                              <p className="text-xs sm:text-sm font-medium text-zinc-200 truncate">{sub.userId.slice(0, 10)}...</p>
+                              <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                                <Badge variant="secondary" className={`text-[9px] sm:text-[10px] ${sub.plan === "business" ? "bg-violet-500/20 text-violet-400" : "bg-emerald-500/20 text-emerald-400"}`}>
                                   {sub.plan.toUpperCase()}
                                 </Badge>
-                                {lang === "ar" ? "طلب:" : "Order:"} {sub.paymobOrderId || "—"} • {new Date(sub.createdAt).toLocaleDateString()}
-                              </p>
+                                <span className="text-[10px] text-zinc-600">{new Date(sub.createdAt).toLocaleDateString()}</span>
+                              </div>
                             </div>
                           </div>
-                          <div className="text-end">
-                            <p className="text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} {lang === "ar" ? "ر.س" : "SAR"}</p>
-                            <p className="text-[10px] text-zinc-500" dir="ltr">+{vat.toFixed(0)} {lang === "ar" ? "ضريبة" : "VAT"}</p>
-                            <Badge variant="secondary" className={`text-[10px] mt-0.5 ${statusColor(sub.status)}`}>
+                          <div className="text-end shrink-0 ms-2">
+                            <p className="text-xs sm:text-sm font-semibold text-white" dir="ltr">{amount.toFixed(0)} {lang === "ar" ? "ر.س" : "SAR"}</p>
+                            <p className="text-[9px] sm:text-[10px] text-zinc-500" dir="ltr">+{vat.toFixed(0)} {lang === "ar" ? "ضريبة" : "VAT"}</p>
+                            <Badge variant="secondary" className={`text-[9px] sm:text-[10px] mt-0.5 ${statusColor(sub.status)}`}>
                               {sub.status === "active" ? (lang === "ar" ? "نشط" : "Active") : sub.status === "pending" ? (lang === "ar" ? "معلق" : "Pending") : sub.status}
                             </Badge>
                           </div>
@@ -820,14 +828,14 @@ export default function AdminPage() {
             {/* GATEWAY */}
             {activeSection === "gateway" && (
               <Card className="bg-zinc-900 border-zinc-800">
-                <div className="p-4 border-b border-zinc-800">
-                  <h3 className="font-semibold text-white flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-blue-400" />
-                    {lang === "ar" ? "إعدادات بوابة الدفع Paymob" : "Paymob Payment Gateway"}
+                <div className="p-3 sm:p-4 border-b border-zinc-800">
+                  <h3 className="font-semibold text-white flex items-center gap-2 text-sm sm:text-base">
+                    <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                    {lang === "ar" ? "بوابة الدفع Paymob" : "Paymob Gateway"}
                   </h3>
-                  <p className="text-xs text-zinc-500 mt-1">{lang === "ar" ? "أدخل بيانات Paymob لتفعيل الدفع الإلكتروني" : "Enter Paymob credentials to enable payments"}</p>
+                  <p className="text-[10px] sm:text-xs text-zinc-500 mt-1">{lang === "ar" ? "أدخل بيانات Paymob لتفعيل الدفع" : "Enter Paymob credentials"}</p>
                 </div>
-                <div className="p-4 space-y-4">
+                <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
                   {paymobSettings && Object.keys(paymobSettings).length > 0 && (
                     <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
                       <p className="text-sm text-emerald-400 flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />{lang === "ar" ? "Paymob مُفعّل ومتصل" : "Paymob configured"}</p>
