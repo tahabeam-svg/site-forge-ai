@@ -35,6 +35,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Domains page (custom domain management, DNS instructions)
 - Payment Methods page (add/remove cards, set default, Mada/Apple Pay support)
 - Website export/download as ZIP (static HTML/CSS with bilingual README)
+- Deploy guide page (/deploy-guide/:id) with step-by-step hosting instructions for non-technical users (Netlify, Vercel, GitHub Pages, Hostinger, cPanel, manual)
 - GitHub deployment integration (push to GitHub repo, with Hostinger connection guide)
 - Image/logo upload directly in AI chat conversation (with preview and instructions)
 - Publish system
@@ -80,6 +81,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `client/src/pages/payment-methods.tsx` - Payment methods management
 - `client/src/components/dashboard-layout.tsx` - Sidebar layout for dashboard
 - `client/src/pages/github-deploy.tsx` - GitHub deployment and Hostinger guide
+- `client/src/pages/deploy-guide.tsx` - Step-by-step deployment guide for non-technical users
 - `client/src/components/language-toggle.tsx` - EN/AR language toggle
 
 ## Database Tables

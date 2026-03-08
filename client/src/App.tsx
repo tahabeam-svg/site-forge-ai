@@ -22,6 +22,7 @@ import GitHubDeployPage from "@/pages/github-deploy";
 import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
 import FAQPage from "@/pages/faq";
+import DeployGuidePage from "@/pages/deploy-guide";
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -63,6 +64,8 @@ function Router() {
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/faq" component={FAQPage} />
+      <Route path="/deploy-guide">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
+      <Route path="/deploy-guide/:id">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
       <Route component={NotFound} />
     </Switch>
   );

@@ -40,6 +40,7 @@ import {
   Loader2,
   FolderOpen,
   Download,
+  Upload,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -246,6 +247,18 @@ export default function DashboardPage() {
                           >
                             <Download className="w-3.5 h-3.5 me-1" />
                             {lang === "ar" ? "تحميل" : "Download"}
+                          </Button>
+                        )}
+                        {project.generatedHtml && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/deploy-guide/${project.id}`)}
+                            className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                            data-testid={`button-deploy-guide-${project.id}`}
+                          >
+                            <Upload className="w-3.5 h-3.5 me-1" />
+                            {lang === "ar" ? "انشر موقعك" : "Deploy"}
                           </Button>
                         )}
                         <Button
