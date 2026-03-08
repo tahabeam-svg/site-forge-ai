@@ -227,17 +227,27 @@ export default function LandingPage() {
           </motion.p>
 
           <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center gap-3">
-            <Button
-              size="lg"
+            <button
               onClick={handleCTA}
-              className="text-base px-8 py-6 sm:py-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 shadow-xl shadow-emerald-500/30 rounded-xl relative overflow-hidden group"
+              className="relative text-base font-semibold text-white px-10 py-4 rounded-2xl cursor-pointer border-0 outline-none
+                bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600
+                shadow-[0_6px_0_0_#0d7351,0_8px_20px_rgba(16,185,129,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)]
+                hover:shadow-[0_4px_0_0_#0d7351,0_6px_16px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)]
+                hover:translate-y-[2px]
+                active:shadow-[0_1px_0_0_#0d7351,0_2px_8px_rgba(16,185,129,0.4),inset_0_2px_4px_rgba(0,0,0,0.15)]
+                active:translate-y-[5px]
+                transition-all duration-150 ease-out
+                group overflow-hidden flex items-center justify-center gap-2"
               data-testid="button-hero-cta"
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              {!isAuthenticated && <SiGoogle className="w-4 h-4 me-2" />}
-              {t("getStarted", lang)}
-              <ArrowRight className="w-4 h-4 ms-2" />
-            </Button>
+              <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+              <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+              <span className="relative flex items-center gap-2">
+                {!isAuthenticated && <SiGoogle className="w-5 h-5" />}
+                {t("getStarted", lang)}
+                <ArrowRight className="w-5 h-5" />
+              </span>
+            </button>
           </motion.div>
 
           <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm text-muted-foreground">
