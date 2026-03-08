@@ -36,6 +36,8 @@ function decryptToken(text: string): string {
   return decrypted;
 }
 
+const BUILD_VERSION = Date.now().toString(36);
+
 async function isAdmin(req: any, res: Response, next: NextFunction) {
   try {
     const userId = req.user?.id;
@@ -76,6 +78,10 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok", version: BUILD_VERSION, timestamp: new Date().toISOString() });
+  });
+
   await setupAuth(app);
   registerAuthRoutes(app);
 
