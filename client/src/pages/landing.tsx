@@ -258,12 +258,12 @@ export default function LandingPage() {
           <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16">
             <div className="grid grid-cols-3 gap-3 sm:gap-8 max-w-md sm:max-w-lg mx-auto">
               {[
-                { value: t("heroStat1", lang), label: t("heroStat1Label", lang), color: "from-emerald-500 to-teal-500" },
-                { value: t("heroStat2", lang), label: t("heroStat2Label", lang), color: "from-violet-500 to-purple-500" },
-                { value: t("heroStat3", lang), label: t("heroStat3Label", lang), color: "from-amber-500 to-orange-500" },
+                { value: t("heroStat1", lang), label: t("heroStat1Label", lang), color: "text-emerald-600 dark:text-emerald-400" },
+                { value: t("heroStat2", lang), label: t("heroStat2Label", lang), color: "text-violet-600 dark:text-violet-400" },
+                { value: t("heroStat3", lang), label: t("heroStat3Label", lang), color: "text-amber-600 dark:text-amber-400" },
               ].map((stat, i) => (
                 <div key={i} className="text-center bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border rounded-xl p-3 shadow-sm" data-testid={`stat-${i}`}>
-                  <div className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} dir="ltr">
+                  <div className={`text-2xl sm:text-3xl font-bold ${stat.color}`} dir="ltr">
                     {stat.value}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
