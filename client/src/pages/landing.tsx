@@ -263,7 +263,7 @@ export default function LandingPage() {
                 { value: t("heroStat3", lang), label: t("heroStat3Label", lang), color: "from-amber-500 to-orange-500" },
               ].map((stat, i) => (
                 <div key={i} className="text-center bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border rounded-xl p-3 shadow-sm" data-testid={`stat-${i}`}>
-                  <div className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
+                  <div className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`} dir="ltr">
                     {stat.value}
                   </div>
                   <div className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>

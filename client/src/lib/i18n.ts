@@ -204,7 +204,7 @@ const translations = {
     currentPlan: "الخطة الحالية",
     upgrade: "ترقية",
     contactSales: "تواصل مع المبيعات",
-    heroStat1: "+10,000",
+    heroStat1: "10,000+",
     heroStat1Label: "موقع تم إنشاؤه",
     heroStat2: "< 2 دقيقة",
     heroStat2Label: "متوسط وقت البناء",
