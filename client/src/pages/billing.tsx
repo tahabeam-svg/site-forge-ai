@@ -232,7 +232,7 @@ export default function BillingPage() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {plans.map((plan, i) => {
               const isCurrent = currentPlan === plan.id;
               return (

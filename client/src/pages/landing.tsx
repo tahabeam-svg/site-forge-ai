@@ -152,8 +152,8 @@ export default function LandingPage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp}>
-            <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800" data-testid="badge-new">
-              <Zap className="w-3.5 h-3.5 me-1.5" />
+            <Badge variant="secondary" className="mb-6 px-3 sm:px-4 py-1.5 text-xs sm:text-sm border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 max-w-[90vw] text-center" data-testid="badge-new">
+              <Zap className="w-3.5 h-3.5 me-1 sm:me-1.5 shrink-0" />
               {t("heroBadge", lang)}
             </Badge>
           </motion.div>
@@ -166,10 +166,10 @@ export default function LandingPage() {
             className="font-extrabold tracking-tight mb-6"
             data-testid="text-hero-title"
           >
-            <span className="block text-4xl sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+            <span className="block text-3xl sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent leading-tight">
               {t("tagline", lang)}
             </span>
-            <span className="block text-lg sm:text-xl lg:text-2xl mt-3 font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
+            <span className="block text-base sm:text-xl lg:text-2xl mt-2 sm:mt-3 font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
               {t("taglineSub", lang)}
             </span>
           </motion.h1>
@@ -179,7 +179,7 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 leading-relaxed"
+            className="text-sm sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2"
             data-testid="text-hero-subtitle"
           >
             {t("subtitle", lang)}
@@ -198,7 +198,7 @@ export default function LandingPage() {
             </Button>
           </motion.div>
 
-          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
             <span className="flex items-center gap-1.5">
               <Check className="w-4 h-4 text-emerald-500" />
               {lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card required"}
@@ -213,22 +213,22 @@ export default function LandingPage() {
             </span>
           </motion.div>
 
-          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-16 grid grid-cols-3 gap-8 max-w-lg mx-auto">
+          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-12 sm:mt-16 grid grid-cols-3 gap-4 sm:gap-8 max-w-lg mx-auto px-2">
             {[
               { value: t("heroStat1", lang), label: t("heroStat1Label", lang) },
               { value: t("heroStat2", lang), label: t("heroStat2Label", lang) },
               { value: t("heroStat3", lang), label: t("heroStat3Label", lang) },
             ].map((stat, i) => (
               <div key={i} className="text-center" data-testid={`stat-${i}`}>
-                <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
+                <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 bg-clip-text text-transparent">
                   {stat.value}
                 </div>
-                <div className="text-xs sm:text-sm text-muted-foreground mt-1">{stat.label}</div>
+                <div className="text-[10px] sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
               </div>
             ))}
           </motion.div>
 
-          <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp} className="mt-16 relative max-w-4xl mx-auto">
+          <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp} className="mt-12 sm:mt-16 relative max-w-4xl mx-auto">
             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20 rounded-2xl blur-2xl" />
             <Card className="relative rounded-xl border-2 overflow-hidden">
               <div className="bg-card p-3 border-b flex items-center gap-2">
@@ -294,7 +294,7 @@ export default function LandingPage() {
                 {lang === "ar" ? "جديد" : "NEW"}
               </Badge>
             </motion.div>
-            <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4" data-testid="text-marketing-section-title">
+            <motion.h2 custom={0} variants={fadeUp} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" data-testid="text-marketing-section-title">
               {lang === "ar" ? "نمِّ أعمالك مع التسويق بالذكاء الاصطناعي" : "Grow Your Business with AI Marketing"}
             </motion.h2>
             <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -304,7 +304,7 @@ export default function LandingPage() {
             </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-12 max-w-4xl mx-auto">
             {[
               { icon: Megaphone, title: lang === "ar" ? "منشورات ذكية" : "Smart Posts", desc: lang === "ar" ? "محتوى مخصص لكل منصة" : "Content tailored per platform", gradient: "from-pink-500 to-rose-600" },
               { icon: Hash, title: lang === "ar" ? "هاشتاقات" : "Hashtags", desc: lang === "ar" ? "هاشتاقات رائجة تلقائياً" : "Trending hashtags auto-generated", gradient: "from-blue-500 to-indigo-600" },
@@ -323,7 +323,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-4xl mx-auto">
             {[
               {
                 name: lang === "ar" ? "المبتدئ" : "Starter",
@@ -395,7 +395,7 @@ export default function LandingPage() {
       <section id="features" className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
-            <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4" data-testid="text-features-title">
+            <motion.h2 custom={0} variants={fadeUp} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" data-testid="text-features-title">
               {t("features", lang)}
             </motion.h2>
             <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-2xl mx-auto">
@@ -405,7 +405,7 @@ export default function LandingPage() {
             </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             {features.map((feature, i) => (
               <motion.div
                 key={i}
@@ -415,12 +415,12 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 variants={scaleIn}
               >
-                <Card className="p-6 h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300" data-testid={`card-feature-${i}`}>
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-4 shadow-lg`}>
-                    <feature.icon className="w-5 h-5 text-white" />
+                <Card className="p-4 sm:p-6 h-full hover:shadow-lg hover:-translate-y-1 transition-all duration-300" data-testid={`card-feature-${i}`}>
+                  <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-3 sm:mb-4 shadow-lg`}>
+                    <feature.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
+                  <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{feature.title}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
                 </Card>
               </motion.div>
             ))}
@@ -431,7 +431,7 @@ export default function LandingPage() {
       <section id="pricing" className="py-20 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-16">
-            <motion.h2 custom={0} variants={fadeUp} className="text-3xl sm:text-4xl font-bold mb-4" data-testid="text-pricing-title">
+            <motion.h2 custom={0} variants={fadeUp} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" data-testid="text-pricing-title">
               {t("pricing", lang)}
             </motion.h2>
             <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-lg max-w-xl mx-auto">
@@ -441,7 +441,7 @@ export default function LandingPage() {
             </motion.p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
             {[
               {
                 name: t("freePlan", lang),
@@ -525,7 +525,7 @@ export default function LandingPage() {
             viewport={{ once: true }}
             variants={fadeUp}
             custom={0}
-            className="text-3xl sm:text-4xl font-bold mb-4"
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4"
           >
             {t("ctaTitle", lang)}
           </motion.h2>
