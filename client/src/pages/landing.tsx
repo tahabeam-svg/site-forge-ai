@@ -206,17 +206,17 @@ export default function LandingPage() {
 
           {/* ── Headline ── */}
           <motion.h1 custom={1} initial="hidden" animate="visible" variants={fadeUp}
-            className="font-black tracking-tight text-white mb-4"
-            style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
+            className="font-black tracking-tight text-white mb-10"
+            style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)", lineHeight: 1.18, letterSpacing: "-0.02em" }}
             data-testid="text-hero-title"
           >
             {lang === "ar" ? (
               <>
-                <span className="block">أنشئ موقع</span>
-                <span className="block">
+                <span className="block mb-1">أنشئ موقع</span>
+                <span className="block mb-1">
                   <span className="relative inline-block">
                     <span className="relative bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
-                      style={{ paddingBottom: "0.1em" }}>
+                      style={{ paddingBottom: "0.15em" }}>
                       <AnimatePresence mode="wait">
                         <motion.span key={typeIndex}
                           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
@@ -228,11 +228,11 @@ export default function LandingPage() {
                     </span>
                   </span>
                 </span>
-                <span className="block text-white/95">في 90 ثانية</span>
+                <span className="block text-white/95" style={{ paddingBottom: "0.1em" }}>في 90 ثانية</span>
               </>
             ) : (
               <>
-                <span className="block">Build Your</span>
+                <span className="block mb-1">Build Your</span>
                 <span className="block">
                   <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
                     style={{ paddingBottom: "0.1em" }}>
@@ -246,7 +246,7 @@ export default function LandingPage() {
                     </AnimatePresence>
                   </span>
                 </span>
-                <span className="block text-white/95">in 90 Seconds</span>
+                <span className="block text-white/95" style={{ paddingBottom: "0.1em" }}>in 90 Seconds</span>
               </>
             )}
           </motion.h1>
