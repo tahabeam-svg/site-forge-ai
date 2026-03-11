@@ -72,7 +72,7 @@ export default function LandingPage() {
     if (isAuthenticated) {
       navigate("/dashboard");
     } else {
-      navigate("/auth");
+      window.location.href = "/api/auth/google";
     }
   };
 
@@ -239,21 +239,6 @@ export default function LandingPage() {
                     <ArrowRight className="w-4.5 h-4.5" />
                   </span>
                 </button>
-              </motion.div>
-
-              {/* Trust badges */}
-              <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp}
-                className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-sm text-muted-foreground mb-9 sm:mb-11">
-                {[
-                  { icon: Check, color: "text-emerald-500", text: lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card" },
-                  { icon: Check, color: "text-violet-500", text: lang === "ar" ? "خطة مجانية دائماً" : "Free forever plan" },
-                  { icon: Check, color: "text-amber-500", text: lang === "ar" ? "تسجيل بجوجل" : "Google sign-in" },
-                ].map(({ icon: Icon, color, text }, i) => (
-                  <span key={i} className="flex items-center gap-1.5">
-                    <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${color}`} />
-                    {text}
-                  </span>
-                ))}
               </motion.div>
 
               {/* Stats */}
