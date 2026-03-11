@@ -70,40 +70,49 @@ export function detectLanguageAndDialect(text: string): LanguageInfo {
 
 // ─── Knowledge Base Search ─────────────────────────────────────────────────────
 async function searchKnowledgeBase(question: string, language: string): Promise<string | null> {
-  const lowerQ = question.toLowerCase();
-  const keywords = lowerQ.split(/\s+/).filter(w => w.length > 2);
+  try {
+    const lowerQ = question.toLowerCase();
+    const keywords = lowerQ.split(/\s+/).filter(w => w.length > 2);
 
-  for (const kw of keywords) {
-    const results = await db.select().from(knowledgeBase)
-      .where(ilike(knowledgeBase.question, `%${kw}%`))
-      .limit(3);
+    for (const kw of keywords) {
+      const results = await db.select().from(knowledgeBase)
+        .where(ilike(knowledgeBase.question, `%${kw}%`))
+        .limit(3);
 
-    const match = results.find(r =>
-      r.isApproved &&
-      (r.language === language || r.language === "both")
-    );
-    if (match) return match.answer;
+      const match = results.find(r =>
+        r.isApproved &&
+        (r.language === language || r.language === "both")
+      );
+      if (match) return match.answer;
+    }
+    return null;
+  } catch (err: any) {
+    console.error("searchKnowledgeBase error:", err?.message);
+    return null;
   }
-  return null;
 }
 
 // ─── Auto-Learned Knowledge Search ────────────────────────────────────────────
 async function searchAutoLearned(question: string): Promise<string | null> {
-  const words = question.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
-  for (const word of words) {
-    const [match] = await db.select().from(autoLearnedKnowledge)
-      .where(ilike(autoLearnedKnowledge.questionPattern, `%${word}%`))
-      .orderBy(desc(autoLearnedKnowledge.usageCount))
-      .limit(1);
-    if (match) {
-      // Increment usage count
-      await db.update(autoLearnedKnowledge)
-        .set({ usageCount: (match.usageCount || 1) + 1 })
-        .where(eq(autoLearnedKnowledge.id, match.id));
-      return match.answer;
+  try {
+    const words = question.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
+    for (const word of words) {
+      const [match] = await db.select().from(autoLearnedKnowledge)
+        .where(ilike(autoLearnedKnowledge.questionPattern, `%${word}%`))
+        .orderBy(desc(autoLearnedKnowledge.usageCount))
+        .limit(1);
+      if (match) {
+        await db.update(autoLearnedKnowledge)
+          .set({ usageCount: (match.usageCount || 1) + 1 })
+          .where(eq(autoLearnedKnowledge.id, match.id));
+        return match.answer;
+      }
     }
+    return null;
+  } catch (err: any) {
+    console.error("searchAutoLearned error:", err?.message);
+    return null;
   }
-  return null;
 }
 
 // ─── Fetch Live Pricing ────────────────────────────────────────────────────────
@@ -326,12 +335,17 @@ async function saveInteraction(question: string, langInfo: LanguageInfo, respons
 
 async function ensureConversation(convId: number | undefined, sessionId: string, langInfo: LanguageInfo): Promise<number> {
   if (convId) return convId;
-  const [conv] = await db.insert(chatbotConversations).values({
-    sessionId,
-    detectedLanguage: langInfo.language,
-    detectedDialect: langInfo.dialect,
-  }).returning();
-  return conv.id;
+  try {
+    const [conv] = await db.insert(chatbotConversations).values({
+      sessionId,
+      detectedLanguage: langInfo.language,
+      detectedDialect: langInfo.dialect,
+    }).returning();
+    return conv?.id || 0;
+  } catch (err: any) {
+    console.error("ensureConversation error:", err?.message);
+    return 0;
+  }
 }
 
 async function saveMessages(convId: number, userMsg: string, botMsg: string) {
