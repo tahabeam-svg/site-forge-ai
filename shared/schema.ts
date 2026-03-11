@@ -109,6 +109,81 @@ export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
   createdAt: true,
 });
 
+// ─── Chatbot System Tables ───────────────────────────────────────────────────
+
+export const visitorQuestions = pgTable("visitor_questions", {
+  id: serial("id").primaryKey(),
+  question: text("question").notNull(),
+  detectedLanguage: text("detected_language").default("ar"),
+  detectedDialect: text("detected_dialect").default("msa"),
+  aiResponse: text("ai_response"),
+  sessionId: text("session_id"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const autoLearnedKnowledge = pgTable("auto_learned_knowledge", {
+  id: serial("id").primaryKey(),
+  questionPattern: text("question_pattern").notNull(),
+  answer: text("answer").notNull(),
+  usageCount: integer("usage_count").default(1),
+  language: text("language").default("ar"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: serial("id").primaryKey(),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  category: text("category").default("general"),
+  language: text("language").default("ar"),
+  isApproved: boolean("is_approved").default(true),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const chatbotConversations = pgTable("chatbot_conversations", {
+  id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull(),
+  userId: text("user_id"),
+  detectedLanguage: text("detected_language").default("ar"),
+  detectedDialect: text("detected_dialect").default("msa"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const chatbotMessages = pgTable("chatbot_messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull(),
+  sender: text("sender").notNull(),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const leads = pgTable("leads", {
+  id: serial("id").primaryKey(),
+  name: text("name"),
+  email: text("email"),
+  businessType: text("business_type"),
+  sessionId: text("session_id"),
+  source: text("source").default("chatbot"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+// Insert schemas
+export const insertVisitorQuestionSchema = createInsertSchema(visitorQuestions).omit({ id: true, createdAt: true });
+export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({ id: true, createdAt: true });
+export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, createdAt: true });
+export const insertChatbotMessageSchema = createInsertSchema(chatbotMessages).omit({ id: true, createdAt: true });
+export const insertChatbotConversationSchema = createInsertSchema(chatbotConversations).omit({ id: true, createdAt: true });
+
+// Types
+export type VisitorQuestion = typeof visitorQuestions.$inferSelect;
+export type AutoLearnedKnowledge = typeof autoLearnedKnowledge.$inferSelect;
+export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
+export type ChatbotConversation = typeof chatbotConversations.$inferSelect;
+export type ChatbotMessage = typeof chatbotMessages.$inferSelect;
+export type Lead = typeof leads.$inferSelect;
+export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Template = typeof templates.$inferSelect;

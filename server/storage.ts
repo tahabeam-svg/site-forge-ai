@@ -1,7 +1,7 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription } from "@shared/schema";
-import { eq, desc, sql, count, like } from "drizzle-orm";
+import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge } from "@shared/schema";
+import { eq, desc, sql, count, like, ilike } from "drizzle-orm";
 
 export interface IStorage {
   getProjectsByUser(userId: string): Promise<Project[]>;
@@ -37,6 +37,17 @@ export interface IStorage {
   createSubscription(sub: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
   getSubscriptions(): Promise<Subscription[]>;
+
+  // Chatbot
+  getKnowledgeBase(language?: string): Promise<KnowledgeBase[]>;
+  createKnowledgeEntry(entry: InsertKnowledgeBase): Promise<KnowledgeBase>;
+  updateKnowledgeEntry(id: number, data: Partial<KnowledgeBase>): Promise<KnowledgeBase | undefined>;
+  deleteKnowledgeEntry(id: number): Promise<void>;
+  getVisitorQuestions(limit?: number): Promise<any[]>;
+  getAutoLearnedKnowledge(): Promise<AutoLearnedKnowledge[]>;
+  approveAutoLearned(id: number): Promise<void>;
+  getLeads(): Promise<Lead[]>;
+  createLead(lead: InsertLead): Promise<Lead>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -173,6 +184,59 @@ export class DatabaseStorage implements IStorage {
 
   async getSubscriptions(): Promise<Subscription[]> {
     return db.select().from(subscriptions).orderBy(desc(subscriptions.createdAt));
+  }
+
+  // ─── Chatbot ─────────────────────────────────────────────────────────────
+  async getKnowledgeBase(language?: string): Promise<KnowledgeBase[]> {
+    if (language) {
+      return db.select().from(knowledgeBase)
+        .where(eq(knowledgeBase.language, language))
+        .orderBy(desc(knowledgeBase.createdAt));
+    }
+    return db.select().from(knowledgeBase).orderBy(desc(knowledgeBase.createdAt));
+  }
+
+  async createKnowledgeEntry(entry: InsertKnowledgeBase): Promise<KnowledgeBase> {
+    const [result] = await db.insert(knowledgeBase).values(entry).returning();
+    return result;
+  }
+
+  async updateKnowledgeEntry(id: number, data: Partial<KnowledgeBase>): Promise<KnowledgeBase | undefined> {
+    const [result] = await db.update(knowledgeBase).set(data).where(eq(knowledgeBase.id, id)).returning();
+    return result;
+  }
+
+  async deleteKnowledgeEntry(id: number): Promise<void> {
+    await db.delete(knowledgeBase).where(eq(knowledgeBase.id, id));
+  }
+
+  async getVisitorQuestions(limit = 50): Promise<any[]> {
+    return db.select().from(visitorQuestions).orderBy(desc(visitorQuestions.createdAt)).limit(limit);
+  }
+
+  async getAutoLearnedKnowledge(): Promise<AutoLearnedKnowledge[]> {
+    return db.select().from(autoLearnedKnowledge).orderBy(desc(autoLearnedKnowledge.usageCount));
+  }
+
+  async approveAutoLearned(id: number): Promise<void> {
+    const [item] = await db.select().from(autoLearnedKnowledge).where(eq(autoLearnedKnowledge.id, id));
+    if (!item) return;
+    await db.insert(knowledgeBase).values({
+      question: item.questionPattern,
+      answer: item.answer,
+      category: "auto_learned",
+      language: item.language || "ar",
+      isApproved: true,
+    });
+  }
+
+  async getLeads(): Promise<Lead[]> {
+    return db.select().from(leads).orderBy(desc(leads.createdAt));
+  }
+
+  async createLead(lead: InsertLead): Promise<Lead> {
+    const [result] = await db.insert(leads).values(lead).returning();
+    return result;
   }
 }
 

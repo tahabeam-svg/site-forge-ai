@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
+import ChatWidget from "@/components/chat-widget";
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import AuthPage from "@/pages/auth";
@@ -78,6 +79,7 @@ function App() {
         <AuthProvider>
           <Toaster />
           <Router />
+          <ChatWidget />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

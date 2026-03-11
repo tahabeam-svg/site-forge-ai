@@ -14,6 +14,7 @@ import {
   Globe2,
   LayoutTemplate,
   TrendingUp,
+  Pencil,
   Loader2,
   Ticket,
   Trash2,
@@ -45,6 +46,13 @@ import {
   ChevronRight,
   Receipt,
   Building2,
+  Bot,
+  MessageSquare,
+  Brain,
+  BarChart3,
+  RefreshCw,
+  CheckCircle,
+  ThumbsUp,
 } from "lucide-react";
 
 interface AdminStats { totalUsers: number; totalProjects: number; publishedProjects: number; }
@@ -56,7 +64,7 @@ interface AdminSubscription { id: number; userId: string; plan: string; status: 
 interface PricingData { pro: { price: number; credits: number }; business: { price: number; credits: number }; free: { credits: number }; }
 interface Promotion { id: string; name: string; nameAr: string; discountPercent: number; appliesTo: "all" | "pro" | "business"; isActive: boolean; expiresAt: string | null; createdAt: string; }
 
-type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway";
+type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot";
 
 export default function AdminPage() {
   const { language, logout } = useAuth();
@@ -191,6 +199,7 @@ export default function AdminPage() {
     { key: "promotions", icon: Sparkles, label: "Offers", labelAr: "العروض" },
     { key: "payments", icon: Receipt, label: "Payments", labelAr: "المدفوعات" },
     { key: "gateway", icon: CreditCard, label: "Gateway", labelAr: "بوابة الدفع" },
+    { key: "chatbot", icon: Bot, label: "Chatbot AI", labelAr: "الشاتبوت الذكي" },
   ];
 
   const statusLabel = (s: string) => lang === "ar" ? ({ draft: "مسودة", generating: "قيد الإنشاء", generated: "مُنشأ", published: "منشور", error: "خطأ" }[s] || s) : s;
@@ -892,9 +901,340 @@ export default function AdminPage() {
               </Card>
             )}
 
+            {/* ─── Chatbot Section ──────────────────────────────────────────── */}
+            {activeSection === "chatbot" && (
+              <ChatbotAdminSection lang={lang} toast={toast} />
+            )}
+
           </div>
         </main>
       </div>
+    </div>
+  );
+}
+
+// ─── Chatbot Admin Component ────────────────────────────────────────────────
+function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
+  const isRTL = lang === "ar";
+  const [activeTab, setActiveTab] = useState<"stats" | "questions" | "kb" | "auto" | "leads">("stats");
+  const [newQ, setNewQ] = useState("");
+  const [newA, setNewA] = useState("");
+  const [newCat, setNewCat] = useState("general");
+  const [newLang, setNewLang] = useState("ar");
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editA, setEditA] = useState("");
+
+  const { data: stats } = useQuery({ queryKey: ["/api/admin/chatbot/stats"] });
+  const { data: questions = [] } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/questions"] });
+  const { data: kb = [], refetch: refetchKb } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/knowledge-base"] });
+  const { data: autoLearned = [], refetch: refetchAuto } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/auto-learned"] });
+  const { data: leads = [] } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/leads"] });
+
+  const addKbMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/admin/chatbot/knowledge-base", { question: newQ, answer: newA, category: newCat, language: newLang });
+    },
+    onSuccess: () => { refetchKb(); setNewQ(""); setNewA(""); toast({ title: isRTL ? "تم الإضافة" : "Added" }); },
+  });
+
+  const deleteKbMutation = useMutation({
+    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/admin/chatbot/knowledge-base/${id}`); },
+    onSuccess: () => { refetchKb(); toast({ title: isRTL ? "تم الحذف" : "Deleted" }); },
+  });
+
+  const updateKbMutation = useMutation({
+    mutationFn: async ({ id, answer }: { id: number; answer: string }) => {
+      await apiRequest("PATCH", `/api/admin/chatbot/knowledge-base/${id}`, { answer });
+    },
+    onSuccess: () => { refetchKb(); setEditId(null); toast({ title: isRTL ? "تم التحديث" : "Updated" }); },
+  });
+
+  const approveAutoMutation = useMutation({
+    mutationFn: async (id: number) => { await apiRequest("POST", `/api/admin/chatbot/auto-learned/${id}/approve`); },
+    onSuccess: () => { refetchAuto(); refetchKb(); toast({ title: isRTL ? "تم الاعتماد ونقله للقاعدة" : "Approved & added to KB" }); },
+  });
+
+  const retrainMutation = useMutation({
+    mutationFn: async () => { await apiRequest("POST", "/api/admin/chatbot/retrain"); },
+    onSuccess: () => toast({ title: isRTL ? "بدأ التحسين الذاتي" : "Self-improvement started" }),
+  });
+
+  const tabs = [
+    { key: "stats", icon: BarChart3, label: isRTL ? "الإحصائيات" : "Stats" },
+    { key: "questions", icon: MessageSquare, label: isRTL ? "أسئلة الزوار" : "Visitor Questions" },
+    { key: "kb", icon: Brain, label: isRTL ? "قاعدة المعرفة" : "Knowledge Base" },
+    { key: "auto", icon: Sparkles, label: isRTL ? "التعلم التلقائي" : "Auto-Learned" },
+    { key: "leads", icon: Users, label: isRTL ? "العملاء المحتملون" : "Leads" },
+  ];
+
+  const s = stats as any;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Bot className="w-6 h-6 text-emerald-400" />
+            {isRTL ? "لوحة إدارة الشاتبوت الذكي" : "AI Chatbot Dashboard"}
+          </h2>
+          <p className="text-zinc-400 text-sm mt-1">{isRTL ? "مراقبة وتحسين أداء الشاتبوت" : "Monitor and improve chatbot performance"}</p>
+        </div>
+        <Button onClick={() => retrainMutation.mutate()} disabled={retrainMutation.isPending}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2">
+          <RefreshCw className={`w-4 h-4 ${retrainMutation.isPending ? "animate-spin" : ""}`} />
+          {isRTL ? "تشغيل التحسين الذاتي" : "Run Self-Improvement"}
+        </Button>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-zinc-800/50 p-1 rounded-xl flex-wrap">
+        {tabs.map(tab => (
+          <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              activeTab === tab.key ? "bg-zinc-700 text-white" : "text-zinc-400 hover:text-white"
+            }`}>
+            <tab.icon className="w-4 h-4" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "stats" && s && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: isRTL ? "إجمالي الأسئلة" : "Total Questions", value: s.totalQuestions ?? 0, color: "text-emerald-400" },
+              { label: isRTL ? "المحادثات" : "Conversations", value: s.totalConversations ?? 0, color: "text-blue-400" },
+              { label: isRTL ? "العملاء المحتملون" : "Leads", value: s.totalLeads ?? 0, color: "text-amber-400" },
+              { label: isRTL ? "قاعدة المعرفة" : "Knowledge Entries", value: kb.length, color: "text-violet-400" },
+            ].map((stat, i) => (
+              <Card key={i} className="bg-zinc-800/50 border-zinc-700/50 p-4">
+                <div className={`text-3xl font-extrabold ${stat.color}`}>{stat.value}</div>
+                <div className="text-zinc-400 text-sm mt-1">{stat.label}</div>
+              </Card>
+            ))}
+          </div>
+
+          {s.languageDistribution && s.languageDistribution.length > 0 && (
+            <Card className="bg-zinc-800/50 border-zinc-700/50 p-5">
+              <h3 className="text-white font-semibold mb-3">{isRTL ? "توزيع اللغات" : "Language Distribution"}</h3>
+              <div className="flex gap-3 flex-wrap">
+                {s.languageDistribution.map((d: any) => (
+                  <div key={d.detected_language} className="flex items-center gap-2 bg-zinc-700/50 px-3 py-2 rounded-lg">
+                    <span className="text-2xl">{d.detected_language === "ar" ? "🇸🇦" : "🇬🇧"}</span>
+                    <div>
+                      <div className="text-white font-bold">{d.count}</div>
+                      <div className="text-zinc-400 text-xs">{d.detected_language === "ar" ? "عربي" : "English"}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+
+          {s.dialectDistribution && s.dialectDistribution.length > 0 && (
+            <Card className="bg-zinc-800/50 border-zinc-700/50 p-5">
+              <h3 className="text-white font-semibold mb-3">{isRTL ? "توزيع اللهجات العربية" : "Arabic Dialect Distribution"}</h3>
+              <div className="flex gap-2 flex-wrap">
+                {s.dialectDistribution.map((d: any) => {
+                  const labels: any = { msa: "فصحى", gulf: "خليجي", egyptian: "مصري", levantine: "شامي", maghrebi: "مغاربي" };
+                  return (
+                    <div key={d.detected_dialect} className="bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
+                      <span className="text-emerald-400 font-semibold">{d.count}</span>
+                      <span className="text-zinc-400 text-xs ms-2">{labels[d.detected_dialect] || d.detected_dialect}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {activeTab === "questions" && (
+        <Card className="bg-zinc-800/50 border-zinc-700/50">
+          <div className="p-4 border-b border-zinc-700/50">
+            <h3 className="text-white font-semibold">{isRTL ? `أحدث ${questions.length} سؤال` : `Latest ${questions.length} Questions`}</h3>
+          </div>
+          <ScrollArea className="h-[500px]">
+            <div className="divide-y divide-zinc-700/30">
+              {questions.map((q: any) => (
+                <div key={q.id} className="p-4 hover:bg-zinc-700/20 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-medium">{q.question}</p>
+                      {q.ai_response && (
+                        <p className="text-zinc-500 text-xs mt-1 line-clamp-2">{q.ai_response}</p>
+                      )}
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        {q.detected_language === "ar" ? "عربي" : "EN"}
+                      </span>
+                      {q.detected_dialect && q.detected_dialect !== "none" && (
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                          {q.detected_dialect}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-zinc-600 text-[10px] mt-1">{new Date(q.created_at).toLocaleString(lang === "ar" ? "ar-SA" : "en-US")}</p>
+                </div>
+              ))}
+              {questions.length === 0 && (
+                <div className="p-8 text-center text-zinc-500 text-sm">{isRTL ? "لا توجد أسئلة بعد" : "No questions yet"}</div>
+              )}
+            </div>
+          </ScrollArea>
+        </Card>
+      )}
+
+      {activeTab === "kb" && (
+        <div className="space-y-4">
+          <Card className="bg-zinc-800/50 border-zinc-700/50 p-4">
+            <h3 className="text-white font-semibold mb-3">{isRTL ? "إضافة إجابة جديدة" : "Add New Knowledge Entry"}</h3>
+            <div className="space-y-3">
+              <input value={newQ} onChange={e => setNewQ(e.target.value)}
+                placeholder={isRTL ? "السؤال..." : "Question..."}
+                className="w-full bg-zinc-700/50 text-white placeholder-zinc-500 border border-zinc-600/50 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500/50" />
+              <textarea value={newA} onChange={e => setNewA(e.target.value)} rows={3}
+                placeholder={isRTL ? "الإجابة..." : "Answer..."}
+                className="w-full bg-zinc-700/50 text-white placeholder-zinc-500 border border-zinc-600/50 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500/50 resize-none" />
+              <div className="flex gap-2">
+                <select value={newCat} onChange={e => setNewCat(e.target.value)}
+                  className="bg-zinc-700/50 text-white border border-zinc-600/50 rounded-lg px-3 py-2 text-sm outline-none flex-1">
+                  <option value="general">General</option>
+                  <option value="pricing">Pricing</option>
+                  <option value="technical">Technical</option>
+                  <option value="sales">Sales</option>
+                </select>
+                <select value={newLang} onChange={e => setNewLang(e.target.value)}
+                  className="bg-zinc-700/50 text-white border border-zinc-600/50 rounded-lg px-3 py-2 text-sm outline-none">
+                  <option value="ar">عربي</option>
+                  <option value="en">English</option>
+                </select>
+                <Button onClick={() => addKbMutation.mutate()} disabled={!newQ || !newA || addKbMutation.isPending}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                  {isRTL ? "إضافة" : "Add"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+          <Card className="bg-zinc-800/50 border-zinc-700/50">
+            <ScrollArea className="h-[400px]">
+              <div className="divide-y divide-zinc-700/30">
+                {kb.map((item: any) => (
+                  <div key={item.id} className="p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white text-sm font-medium">{item.question}</p>
+                        {editId === item.id ? (
+                          <div className="mt-2 space-y-2">
+                            <textarea value={editA} onChange={e => setEditA(e.target.value)} rows={3}
+                              className="w-full bg-zinc-700/50 text-white placeholder-zinc-500 border border-zinc-600/50 rounded-lg px-3 py-2 text-sm outline-none focus:border-emerald-500/50 resize-none" />
+                            <div className="flex gap-2">
+                              <Button size="sm" onClick={() => updateKbMutation.mutate({ id: item.id, answer: editA })} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                                {isRTL ? "حفظ" : "Save"}
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => setEditId(null)}>{isRTL ? "إلغاء" : "Cancel"}</Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-zinc-400 text-xs mt-1">{item.answer}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-1 flex-shrink-0">
+                        <button onClick={() => { setEditId(item.id); setEditA(item.answer); }}
+                          className="text-zinc-400 hover:text-white transition-colors p-1">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => deleteKbMutation.mutate(item.id)}
+                          className="text-zinc-400 hover:text-red-400 transition-colors p-1">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex gap-1 mt-2">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-400">{item.category}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-700 text-zinc-400">{item.language}</span>
+                    </div>
+                  </div>
+                ))}
+                {kb.length === 0 && (
+                  <div className="p-8 text-center text-zinc-500 text-sm">{isRTL ? "قاعدة المعرفة فارغة" : "Knowledge base is empty"}</div>
+                )}
+              </div>
+            </ScrollArea>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "auto" && (
+        <Card className="bg-zinc-800/50 border-zinc-700/50">
+          <div className="p-4 border-b border-zinc-700/50">
+            <h3 className="text-white font-semibold">{isRTL ? "إجابات تعلّمها الذكاء الاصطناعي تلقائياً" : "AI Auto-Learned Answers"}</h3>
+            <p className="text-zinc-500 text-xs mt-1">{isRTL ? "راجع هذه الإجابات واعتمدها لإضافتها لقاعدة المعرفة" : "Review these answers and approve to add to Knowledge Base"}</p>
+          </div>
+          <ScrollArea className="h-[450px]">
+            <div className="divide-y divide-zinc-700/30">
+              {autoLearned.map((item: any) => (
+                <div key={item.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20">
+                          {item.usage_count}× {isRTL ? "مرات" : "times"}
+                        </span>
+                      </div>
+                      <p className="text-white text-sm font-medium">{item.question_pattern}</p>
+                      <p className="text-zinc-400 text-xs mt-1">{item.answer}</p>
+                    </div>
+                    <Button size="sm" onClick={() => approveAutoMutation.mutate(item.id)}
+                      disabled={approveAutoMutation.isPending}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 flex-shrink-0">
+                      <ThumbsUp className="w-3 h-3" />
+                      {isRTL ? "اعتماد" : "Approve"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              {autoLearned.length === 0 && (
+                <div className="p-8 text-center text-zinc-500 text-sm">
+                  {isRTL ? "لا توجد إجابات تلقائية بعد. شغّل التحسين الذاتي لإنشاء إجابات" : "No auto-learned answers yet. Run self-improvement to generate some."}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </Card>
+      )}
+
+      {activeTab === "leads" && (
+        <Card className="bg-zinc-800/50 border-zinc-700/50">
+          <div className="p-4 border-b border-zinc-700/50">
+            <h3 className="text-white font-semibold">{isRTL ? `${leads.length} عميل محتمل` : `${leads.length} Leads`}</h3>
+          </div>
+          <ScrollArea className="h-[450px]">
+            <div className="divide-y divide-zinc-700/30">
+              {leads.map((lead: any) => (
+                <div key={lead.id} className="p-4 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    {(lead.name || lead.email || "?")[0].toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium">{lead.name || isRTL ? "غير محدد" : "Unknown"}</p>
+                    <p className="text-zinc-400 text-xs" dir="ltr">{lead.email}</p>
+                    {lead.business_type && <p className="text-zinc-500 text-xs">{lead.business_type}</p>}
+                  </div>
+                  <p className="text-zinc-600 text-xs flex-shrink-0">{new Date(lead.created_at).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US")}</p>
+                </div>
+              ))}
+              {leads.length === 0 && (
+                <div className="p-8 text-center text-zinc-500 text-sm">{isRTL ? "لا يوجد عملاء محتملون بعد" : "No leads yet"}</div>
+              )}
+            </div>
+          </ScrollArea>
+        </Card>
+      )}
     </div>
   );
 }

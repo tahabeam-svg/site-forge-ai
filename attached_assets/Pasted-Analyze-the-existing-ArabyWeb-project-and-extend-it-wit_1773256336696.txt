@@ -1,0 +1,245 @@
+Analyze the existing **ArabyWeb** project and extend it with a complete **AI Sales and Support Chatbot System with Self-Learning Capabilities**.
+
+Do NOT rebuild the project.
+Integrate the chatbot into the existing architecture.
+
+Goal:
+Create an intelligent chatbot that acts as a sales assistant and technical support agent for ArabyWeb.
+The chatbot must learn from visitors, understand their language or dialect, and continuously improve its responses.
+
+Tech stack:
+
+* Next.js frontend
+* Node.js API
+* PostgreSQL database
+* Tailwind CSS
+* OpenAI API (model: gpt-4.1-mini)
+
+MAIN FEATURES
+
+1. Website Chat Widget
+   Create a floating chatbot widget visible on all pages.
+
+Features:
+
+* Arabic interface
+* open / close chat
+* typing animation
+* message history
+* mobile friendly
+
+2. AI Sales Assistant
+   The chatbot must guide visitors to:
+
+* understand ArabyWeb
+* create their website
+* subscribe to a plan
+
+Example tasks:
+Explain platform features.
+Guide the user to generate their first website.
+Suggest upgrading to subscription when needed.
+
+3. Technical Support Assistant
+   The chatbot should help users with:
+
+* creating websites
+* editing pages
+* publishing websites
+* solving common platform issues
+
+4. Automatic Website Knowledge Learning (RAG System)
+
+Create a crawler that scans ArabyWeb pages:
+
+* homepage
+* features
+* pricing
+* help pages
+* documentation
+
+Extract content and split it into sections.
+
+Convert sections into vector embeddings using OpenAI.
+
+Database table:
+
+KnowledgeEmbeddings
+
+* id
+* page_title
+* page_url
+* content
+* embedding_vector
+* created_at
+
+When a user asks a question:
+
+Step 1:
+Convert the question to an embedding.
+
+Step 2:
+Search for similar content.
+
+Step 3:
+Send retrieved content to OpenAI to generate the final answer.
+
+5. Visitor Question Learning System
+
+Store all visitor questions.
+
+Table:
+
+VisitorQuestions
+
+* id
+* question
+* detected_language
+* detected_dialect
+* ai_response
+* created_at
+
+Analyze frequently repeated questions.
+
+Create automatic knowledge entries from them.
+
+Table:
+
+AutoLearnedKnowledge
+
+* id
+* question_pattern
+* answer
+* usage_count
+* created_at
+
+6. Language and Dialect Detection
+
+Detect language automatically:
+
+Arabic
+English
+
+If Arabic is detected, classify dialect:
+
+Modern Standard Arabic
+Gulf Arabic
+Egyptian Arabic
+Levantine Arabic
+Maghrebi Arabic
+
+The chatbot must respond using the same language or dialect as the user.
+
+7. Conversation Memory
+
+Store chat history.
+
+Tables:
+
+Conversations
+
+* id
+* user_id
+* created_at
+
+Messages
+
+* id
+* conversation_id
+* sender
+* message
+* created_at
+
+Allow contextual responses.
+
+8. Lead Capture System
+
+If a visitor shows interest, the chatbot should collect:
+
+Name
+Email
+Business type
+
+Table:
+
+Leads
+
+* id
+* name
+* email
+* business_type
+* created_at
+
+9. Knowledge Base System
+
+Create editable knowledge base.
+
+Table:
+
+KnowledgeBase
+
+* id
+* question
+* answer
+* category
+
+The chatbot must search KnowledgeBase before calling OpenAI.
+
+10. Hybrid Response Engine
+
+Response order:
+
+1. search KnowledgeBase
+2. search vector knowledge
+3. if no match → call OpenAI API
+
+This reduces API cost.
+
+11. Admin Dashboard
+
+Create chatbot admin panel with:
+
+* conversation viewer
+* leads viewer
+* knowledge base editor
+* visitor question analytics
+* language distribution
+* API usage monitor
+* retrain chatbot button
+
+12. Self Improvement System
+
+Create background job that:
+
+* analyzes stored visitor questions
+* detects most frequent topics
+* generates improved answers using AI
+* adds them to KnowledgeBase
+
+13. Performance Optimization
+
+Implement:
+
+* caching for repeated questions
+* rate limiting
+* indexed database queries
+
+14. System Prompt
+
+Define chatbot personality:
+
+"You are the official ArabyWeb assistant.
+Your job is to help visitors create websites easily and guide them toward subscribing to the platform.
+Respond in the same language or dialect used by the visitor."
+
+15. Output Requirements
+
+Generate:
+
+* database schema
+* API routes
+* chatbot widget component
+* crawler service
+* embedding generator
+* admin dashboard pages
+* integration with existing ArabyWeb project

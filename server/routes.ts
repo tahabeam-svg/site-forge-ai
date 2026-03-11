@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite } from "./ai";
+import { processChat, getChatbotStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { z } from "zod";
@@ -1012,6 +1013,114 @@ For Netlify/Vercel:
       }
     }
   });
+
+  // ─── Chatbot Routes ─────────────────────────────────────────────────────────
+
+  // Main chat endpoint (public — for landing page widget)
+  app.post("/api/chatbot/message", async (req, res) => {
+    try {
+      const { message, sessionId, conversationId, history } = req.body;
+      if (!message || !sessionId) return res.status(400).json({ message: "message and sessionId required" });
+
+      const result = await processChat({ message, sessionId, conversationId, history });
+      res.json(result);
+    } catch (err: any) {
+      console.error("Chatbot error:", err?.message);
+      res.json({
+        reply: "عذراً، حدث خطأ مؤقت. يرجى المحاولة مرة أخرى.",
+        conversationId: 0,
+        source: "error",
+      });
+    }
+  });
+
+  // Save lead
+  app.post("/api/chatbot/lead", async (req, res) => {
+    try {
+      const { name, email, businessType, sessionId } = req.body;
+      const lead = await storage.createLead({ name, email, businessType, sessionId, source: "chatbot" });
+      res.json(lead);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // Get conversation history
+  app.get("/api/chatbot/conversation/:id", async (req, res) => {
+    try {
+      const messages = await getConversationHistory(parseInt(req.params.id));
+      res.json(messages);
+    } catch {
+      res.json([]);
+    }
+  });
+
+  // ─── Admin Chatbot Routes ────────────────────────────────────────────────────
+  app.get("/api/admin/chatbot/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const stats = await getChatbotStats();
+      res.json(stats);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin/chatbot/questions", isAuthenticated, async (req: any, res) => {
+    const limit = parseInt(req.query.limit as string) || 50;
+    const questions = await storage.getVisitorQuestions(limit);
+    res.json(questions);
+  });
+
+  app.get("/api/admin/chatbot/knowledge-base", isAuthenticated, async (req: any, res) => {
+    const entries = await storage.getKnowledgeBase();
+    res.json(entries);
+  });
+
+  app.post("/api/admin/chatbot/knowledge-base", isAuthenticated, async (req: any, res) => {
+    try {
+      const entry = await storage.createKnowledgeEntry(req.body);
+      res.json(entry);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.patch("/api/admin/chatbot/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const entry = await storage.updateKnowledgeEntry(parseInt(req.params.id), req.body);
+      res.json(entry);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/admin/chatbot/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
+    await storage.deleteKnowledgeEntry(parseInt(req.params.id));
+    res.json({ ok: true });
+  });
+
+  app.get("/api/admin/chatbot/auto-learned", isAuthenticated, async (req: any, res) => {
+    const items = await storage.getAutoLearnedKnowledge();
+    res.json(items);
+  });
+
+  app.post("/api/admin/chatbot/auto-learned/:id/approve", isAuthenticated, async (req: any, res) => {
+    await storage.approveAutoLearned(parseInt(req.params.id));
+    res.json({ ok: true });
+  });
+
+  app.get("/api/admin/chatbot/leads", isAuthenticated, async (req: any, res) => {
+    const leads = await storage.getLeads();
+    res.json(leads);
+  });
+
+  app.post("/api/admin/chatbot/retrain", isAuthenticated, async (req: any, res) => {
+    res.json({ ok: true, message: "Self-improvement cycle started" });
+    runSelfImprovementCycle().catch(console.error);
+  });
+
+  // Run self-improvement every 6 hours
+  setInterval(() => runSelfImprovementCycle().catch(console.error), 6 * 60 * 60 * 1000);
 
   return httpServer;
 }

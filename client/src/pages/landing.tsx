@@ -216,13 +216,19 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="font-extrabold tracking-tight mb-5 sm:mb-6"
+            className="font-extrabold tracking-tight mb-6 sm:mb-8"
             data-testid="text-hero-title"
           >
-            <span className="block text-[2.2rem] leading-[1.2] sm:text-5xl lg:text-7xl bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent sm:leading-tight">
+            <span
+              className="block pb-3 bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent"
+              style={{ fontSize: "clamp(2.4rem, 7vw, 5.5rem)", lineHeight: 1.18 }}
+            >
               {t("tagline", lang)}
             </span>
-            <span className="block text-lg sm:text-xl lg:text-2xl mt-3 font-medium bg-gradient-to-r from-emerald-600 via-teal-500 to-violet-600 bg-clip-text text-transparent leading-relaxed" style={{ fontFamily: "'Inter', 'Tajawal', sans-serif" }}>
+            <span
+              className="block mt-2 font-semibold bg-gradient-to-r from-emerald-500 via-teal-500 to-violet-500 bg-clip-text text-transparent pb-1"
+              style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)", lineHeight: 1.5 }}
+            >
               {t("taglineSub", lang)}
             </span>
           </motion.h1>
@@ -232,13 +238,13 @@ export default function LandingPage() {
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-8 sm:mb-10 leading-relaxed px-1"
+            className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 leading-[1.85]"
             data-testid="text-hero-subtitle"
           >
             {t("subtitle", lang)}
           </motion.p>
 
-          <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center gap-3">
+          <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center gap-3 mb-6">
             <button
               onClick={handleCTA}
               className="relative text-base font-semibold text-white px-10 py-4 rounded-2xl cursor-pointer border-0 outline-none
@@ -262,33 +268,35 @@ export default function LandingPage() {
             </button>
           </motion.div>
 
-          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="mt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-4 text-sm text-muted-foreground">
+          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-12 sm:mb-16">
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-500" />
+              <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
               {lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card required"}
             </span>
+            <span className="hidden sm:block text-border">|</span>
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-violet-500" />
+              <Check className="w-4 h-4 text-violet-500 flex-shrink-0" />
               {lang === "ar" ? "مجاني للأبد" : "Free forever plan"}
             </span>
+            <span className="hidden sm:block text-border">|</span>
             <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-amber-500" />
-              {lang === "ar" ? "تسجيل دخول بحساب جوجل" : "Sign in with Google"}
+              <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              {lang === "ar" ? "تسجيل بحساب جوجل" : "Sign in with Google"}
             </span>
           </motion.div>
 
-          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16">
-            <div className="grid grid-cols-3 gap-3 sm:gap-8 max-w-md sm:max-w-lg mx-auto">
+          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp}>
+            <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-lg mx-auto">
               {[
                 { value: t("heroStat1", lang), label: t("heroStat1Label", lang), color: "text-emerald-600 dark:text-emerald-400" },
                 { value: t("heroStat2", lang), label: t("heroStat2Label", lang), color: "text-violet-600 dark:text-violet-400" },
                 { value: t("heroStat3", lang), label: t("heroStat3Label", lang), color: "text-amber-600 dark:text-amber-400" },
               ].map((stat, i) => (
-                <div key={i} className="text-center bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm border rounded-xl p-3 shadow-sm" data-testid={`stat-${i}`}>
-                  <div className={`text-2xl sm:text-3xl font-bold ${stat.color}`} dir="ltr">
+                <div key={i} className="text-center bg-white/70 dark:bg-zinc-900/70 backdrop-blur-sm border border-border/50 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow" data-testid={`stat-${i}`}>
+                  <div className={`font-extrabold ${stat.color} pb-0.5`} style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)" }} dir="ltr">
                     {stat.value}
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground mt-1 leading-tight">{stat.label}</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-snug font-medium">{stat.label}</div>
                 </div>
               ))}
             </div>
