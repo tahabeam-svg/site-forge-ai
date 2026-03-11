@@ -280,15 +280,10 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
   }
 }
 
-export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar"): Promise<{ html: string; css: string; summary: string }> {
+export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar", imageDataUrl?: string): Promise<{ html: string; css: string; summary: string }> {
   const isArabic = language === "ar";
 
-  const response = await openai.chat.completions.create({
-    model: getModel(),
-    messages: [
-      {
-        role: "system",
-        content: `You are a professional web designer assistant for the Saudi/Arab market. The user will give you their current website HTML and CSS, along with an edit instruction. Apply the changes and return the updated HTML and CSS.
+  const systemPrompt = `You are a professional web designer assistant for the Saudi/Arab market. The user will give you their current website HTML and CSS, along with an edit instruction. Apply the changes and return the updated HTML and CSS.
 
 GUIDELINES:
 - Maintain the existing design quality
@@ -300,18 +295,33 @@ GUIDELINES:
 - Support both Arabic and English content
 - If asked to embed a YouTube video, use an iframe with the embed URL
 - If asked to embed media from a URL, create an appropriate embed
+${imageDataUrl ? `- An image has been provided by the user. Embed it directly using its data URL (src="${imageDataUrl}") in the appropriate place (logo in navbar, hero image, etc. based on the instruction).` : ""}
 
 Return ONLY a JSON object with 3 fields:
 - 'html': the updated full HTML
 - 'css': the updated full CSS
-- 'summary': a short ${isArabic ? "Arabic" : "English"} message (1-2 sentences) describing exactly what was changed/added/removed. Be specific and friendly. ${isArabic ? "مثال: 'تم تغيير لون الخلفية إلى أسود وإضافة تأثيرات ذهبية على العناوين ✅'" : "Example: 'Background color changed to black and golden effects added to headings ✅'"}
+- 'summary': a short ${isArabic ? "Arabic" : "English"} message (1-2 sentences) describing exactly what was changed/added/removed. Be specific and friendly. ${isArabic ? "مثال: 'تم إضافة الشعار في شريط التنقل ✅'" : "Example: 'Logo added to the navigation bar ✅'"}
 
-No markdown, no extra explanation outside the JSON.`,
-      },
-      {
-        role: "user",
-        content: `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`,
-      },
+No markdown, no extra explanation outside the JSON.`;
+
+  const userContent = imageDataUrl
+    ? ([
+        {
+          type: "text" as const,
+          text: `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nEmbed the provided image (data URL) in the appropriate place.`,
+        },
+        {
+          type: "image_url" as const,
+          image_url: { url: imageDataUrl, detail: "low" as const },
+        },
+      ])
+    : `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`;
+
+  const response = await openai.chat.completions.create({
+    model: getModel(),
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userContent as any },
     ],
     max_completion_tokens: 16384,
     temperature: 0.5,

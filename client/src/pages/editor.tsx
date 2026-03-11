@@ -151,11 +151,19 @@ export default function EditorPage() {
   });
 
   const editMutation = useMutation({
-    mutationFn: async (command?: string) => {
-      const cmd = command || editCommand;
+    mutationFn: async (input?: string | { cmd: string; imageDataUrl?: string }) => {
+      let command: string;
+      let imageDataUrl: string | undefined;
+      if (typeof input === "object" && input !== null) {
+        command = input.cmd;
+        imageDataUrl = input.imageDataUrl;
+      } else {
+        command = input || editCommand;
+      }
       const res = await apiRequest("POST", `/api/projects/${projectId}/edit`, {
-        command: cmd,
+        command,
         language: lang,
+        ...(imageDataUrl ? { imageDataUrl } : {}),
       });
       if (res.status === 402) {
         const data = await res.json();
@@ -219,29 +227,27 @@ export default function EditorPage() {
 
   const chatUploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      const formData = new FormData();
-      formData.append("files", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData, credentials: "include" });
-      if (!res.ok) throw new Error("Upload failed");
-      return res.json();
+      // Convert image to base64 data URL client-side (no server round-trip needed)
+      return new Promise<{ dataUrl: string }>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ dataUrl: reader.result as string });
+        reader.onerror = () => reject(new Error("Failed to read image"));
+        reader.readAsDataURL(file);
+      });
     },
-    onSuccess: (data: { urls: string[] }) => {
-      const url = data.urls[0];
+    onSuccess: (data: { dataUrl: string }) => {
+      const dataUrl = data.dataUrl;
       const userCmd = editCommand.trim();
-      let cmd: string;
-      if (userCmd) {
-        cmd = lang === "ar"
-          ? `${userCmd} - استخدم هذه الصورة: ${url}`
-          : `${userCmd} - Use this image: ${url}`;
-      } else {
-        cmd = lang === "ar"
-          ? `أضف هذا الشعار/الصورة في الموقع: ${url}`
-          : `Add this logo/image to the website: ${url}`;
-      }
-      setEditCommand("");
+      const cmd = userCmd
+        ? (lang === "ar" ? `${userCmd} - أضف/استخدم الصورة المرفقة` : `${userCmd} - Add/use the attached image`)
+        : (lang === "ar" ? "أضف هذا الشعار في الموقع في الموضع المناسب" : "Add this logo/image to the website in the appropriate place");
+
       setChatImagePreview(null);
       setChatImageFile(null);
-      editMutation.mutate(cmd);
+      setEditCommand("");
+
+      // Pass image as separate imageDataUrl field — not embedded in the command text
+      editMutation.mutate({ cmd, imageDataUrl: dataUrl } as any);
     },
     onError: (err: Error) => {
       toast({ title: t("error", lang), description: err.message, variant: "destructive" });

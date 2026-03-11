@@ -135,8 +135,9 @@ export async function registerRoutes(
   });
 
   const editCommandSchema = z.object({
-    command: z.string().min(1).max(2000),
+    command: z.string().min(1).max(5000),
     language: z.string().optional(),
+    imageDataUrl: z.string().optional(), // base64 image for logo/image uploads
   });
 
   app.post("/api/projects", isAuthenticated, async (req: any, res) => {
@@ -280,7 +281,7 @@ export async function registerRoutes(
 
       const parsed = editCommandSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Edit command is required" });
-      const { command, language } = parsed.data;
+      const { command, language, imageDataUrl } = parsed.data;
       const lang = language || "ar";
 
       // Check free plan message limit
@@ -307,7 +308,8 @@ export async function registerRoutes(
         project.generatedHtml || "",
         project.generatedCss || "",
         command,
-        lang
+        lang,
+        imageDataUrl
       );
 
       // Maintain free-plan watermark in edited HTML
