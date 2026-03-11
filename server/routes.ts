@@ -999,7 +999,16 @@ export async function registerRoutes(
       res.setHeader("Content-Type", "application/zip");
       res.setHeader("Content-Disposition", `attachment; filename="${project.name.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "_")}_website.zip"`);
 
-      const archive = archiver("zip", { zlib: { level: 9 } });
+      const archive = archiver("zip", { zlib: { level: 6 } });
+
+      // Handle archiver errors before piping
+      archive.on("error", (err) => {
+        console.error("Archive error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: "Failed to create archive" });
+        }
+      });
+
       archive.pipe(res);
 
       const isFullDoc = project.generatedHtml!.trimStart().startsWith('<!DOCTYPE');

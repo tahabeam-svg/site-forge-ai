@@ -29,6 +29,7 @@ import {
   Image,
   Code2,
   Github,
+  Loader2,
 } from "lucide-react";
 import type { Project } from "@shared/schema";
 
@@ -92,6 +93,7 @@ export default function DeployGuidePage() {
 
   const [selectedProvider, setSelectedProvider] = useState<HostingProvider | null>(null);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
   const { data: project } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -100,17 +102,35 @@ export default function DeployGuidePage() {
 
   const BackArrow = isRTL ? ArrowRight : ArrowLeft;
 
-  const downloadProject = () => {
-    if (projectId) {
-      window.open(`/api/projects/${projectId}/export?type=static`, "_blank");
+  const triggerDownload = async (type: "static" | "full") => {
+    if (!projectId || downloading) return;
+    setDownloading(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/export?type=${type}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Download failed" }));
+        throw new Error(err.message || "Download failed");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${project?.name || "website"}_${type}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(isRTL ? `خطأ في التحميل: ${err.message}` : `Download error: ${err.message}`);
+    } finally {
+      setDownloading(false);
     }
   };
 
-  const downloadFull = () => {
-    if (projectId) {
-      window.open(`/api/projects/${projectId}/export?type=full`, "_blank");
-    }
-  };
+  const downloadProject = () => triggerDownload("static");
+  const downloadFull = () => triggerDownload("full");
 
   const faqs = [
     {
@@ -340,12 +360,31 @@ export default function DeployGuidePage() {
                 </div>
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
-                <Button onClick={downloadProject} className="flex-1 sm:flex-none" data-testid="button-download-static">
-                  <Download className="w-4 h-4 me-1" />
-                  {lang === "ar" ? "تحميل الملفات" : "Download Files"}
+                <Button
+                  onClick={downloadProject}
+                  disabled={downloading}
+                  className="flex-1 sm:flex-none bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                  data-testid="button-download-static"
+                >
+                  {downloading ? (
+                    <Loader2 className="w-4 h-4 me-1 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 me-1" />
+                  )}
+                  {lang === "ar" ? (downloading ? "جارٍ التحميل..." : "تحميل الملفات") : (downloading ? "Downloading..." : "Download Files")}
                 </Button>
-                <Button onClick={downloadFull} variant="outline" className="flex-1 sm:flex-none" data-testid="button-download-full">
-                  <FileArchive className="w-4 h-4 me-1" />
+                <Button
+                  onClick={downloadFull}
+                  disabled={downloading}
+                  variant="outline"
+                  className="flex-1 sm:flex-none"
+                  data-testid="button-download-full"
+                >
+                  {downloading ? (
+                    <Loader2 className="w-4 h-4 me-1 animate-spin" />
+                  ) : (
+                    <FileArchive className="w-4 h-4 me-1" />
+                  )}
                   {lang === "ar" ? "نسخة كاملة" : "Full Package"}
                 </Button>
               </div>
