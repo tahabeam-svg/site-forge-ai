@@ -2,23 +2,29 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 import type { Express, RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import { db } from "../../db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
-import memorystore from "memorystore";
 
-const MemoryStore = memorystore(session);
+const PgSession = connectPgSimple(session);
 
 export function getSession() {
   if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET environment variable is required");
   }
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000;
+  const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   return session({
     secret: process.env.SESSION_SECRET,
-    store: new MemoryStore({ checkPeriod: sessionTtl }),
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: "user_sessions",
+      createTableIfMissing: true,
+      ttl: sessionTtl / 1000,
+      pruneSessionInterval: 60 * 60, // prune expired sessions every hour
+    }),
     resave: false,
     saveUninitialized: false,
     cookie: {

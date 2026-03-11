@@ -308,17 +308,48 @@ No markdown, no extra explanation outside the JSON.`;
     ? `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nIMAGE_DATA_URL: ${imageDataUrl}`
     : `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`;
 
-  const response = await openai.chat.completions.create({
-    model: getModel(),
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userContent as any },
-    ],
-    max_completion_tokens: 16384,
-    temperature: 0.5,
-  });
+  // Try primary model, fall back to gpt-4o on failure
+  let rawContent = "";
+  const primaryModel = getModel();
+  const fallbackModels = primaryModel !== "gpt-4o" ? ["gpt-4o", "gpt-4o-mini"] : ["gpt-4o-mini"];
 
-  const content = response.choices[0]?.message?.content || "";
+  try {
+    const response = await openai.chat.completions.create({
+      model: primaryModel,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userContent as any },
+      ],
+      max_completion_tokens: 16384,
+      temperature: 0.5,
+    });
+    rawContent = response.choices[0]?.message?.content || "";
+  } catch (primaryErr: any) {
+    console.warn(`Primary model (${primaryModel}) failed: ${primaryErr?.message}. Trying fallback...`);
+    let lastErr = primaryErr;
+    for (const fallback of fallbackModels) {
+      try {
+        const resp = await openai.chat.completions.create({
+          model: fallback,
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userContent as any },
+          ],
+          max_completion_tokens: 16384,
+          temperature: 0.5,
+        });
+        rawContent = resp.choices[0]?.message?.content || "";
+        lastErr = null;
+        break;
+      } catch (fbErr: any) {
+        console.warn(`Fallback model (${fallback}) also failed: ${fbErr?.message}`);
+        lastErr = fbErr;
+      }
+    }
+    if (lastErr) throw lastErr;
+  }
+
+  const content = rawContent;
   try {
     const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
