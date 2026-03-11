@@ -200,8 +200,8 @@ export default function ChatWidget() {
       setLeadCaptured(true);
       setShowLeadForm(false);
       addBotMessage(uiLang === "ar"
-        ? "✅ شكراً! سيتواصل معك فريقنا خلال 24 ساعة.\n\nفي انتظار ذلك، يمكنك التسجيل مجاناً الآن وتجربة المنصة بنفسك 🚀"
-        : "✅ Thank you! Our team will reach out within 24 hours.\n\nMeanwhile, sign up free and explore the platform yourself 🚀");
+        ? "✅ تم الحفظ! الآن ابدأ تجربتك المجانية فوراً — أنشئ موقعك في أقل من 90 ثانية بدون أي برمجة 🚀\n\nاضغط على \"ابدأ مجاناً\" أعلى الصفحة الآن!"
+        : "✅ Saved! Start your free trial now — build your website in under 90 seconds with zero coding 🚀\n\nClick 'Start Free' at the top of the page!");
     } catch {}
   }
 
@@ -358,26 +358,20 @@ export default function ChatWidget() {
                         <Sparkles className="w-3 h-3 text-white" />
                       </div>
                       <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
-                        {isRTL ? "احجز استشارتك المجانية! 🎯" : "Get your free consultation! 🎯"}
+                        {isRTL ? "ابدأ تجربتك المجانية الآن! 🚀" : "Start your free trial now! 🚀"}
                       </p>
                     </div>
                     <p className="text-[11px] text-muted-foreground">
-                      {isRTL ? "خبراؤنا يساعدونك تختار الحل المناسب لنشاطك" : "Our experts will help you choose the right plan"}
+                      {isRTL ? "موقعك جاهز في 90 ثانية — بدون أي برمجة · بدون بطاقة بنكية" : "Your website ready in 90 seconds — zero coding · no credit card"}
                     </p>
-                    <input value={leadName} onChange={e => setLeadName(e.target.value)}
-                      placeholder={isRTL ? "اسمك الكريم" : "Your name"}
-                      className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-emerald-400 transition-colors" />
                     <input value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
                       type="email" placeholder={isRTL ? "بريدك الإلكتروني" : "Email address"}
                       className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-emerald-400 transition-colors" dir="ltr" />
-                    <input value={leadBusiness} onChange={e => setLeadBusiness(e.target.value)}
-                      placeholder={isRTL ? "نوع نشاطك (مطعم، متجر...)" : "Business type (restaurant, store...)"}
-                      className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-emerald-400 transition-colors" />
                     <div className="flex gap-2 pt-1">
-                      <button onClick={saveLead} disabled={!leadEmail}
-                        className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs py-2 rounded-lg font-semibold disabled:opacity-50 transition-all">
-                        {isRTL ? "✅ احجز استشارة مجانية" : "✅ Get Free Consultation"}
-                      </button>
+                      <a href="/auth" onClick={() => { if (leadEmail) saveLead(); }}
+                        className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs py-2.5 rounded-lg font-bold text-center transition-all shadow-sm">
+                        {isRTL ? "🚀 ابدأ مجاناً الآن" : "🚀 Start Free Now"}
+                      </a>
                       <button onClick={() => setShowLeadForm(false)}
                         className="text-xs text-muted-foreground px-2 py-2 rounded-lg hover:bg-muted transition-colors">
                         {isRTL ? "لاحقاً" : "Later"}
