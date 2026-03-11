@@ -997,8 +997,10 @@ export async function registerRoutes(
 
       const exportType = req.query.type || "static";
 
+      // Filename must be ASCII-only for HTTP headers — strip non-ASCII chars
+      const safeFilename = (project.name.replace(/[^a-zA-Z0-9\-_]/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "") || "website") + "_website.zip";
       res.setHeader("Content-Type", "application/zip");
-      res.setHeader("Content-Disposition", `attachment; filename="${project.name.replace(/[^a-zA-Z0-9\u0600-\u06FF]/g, "_")}_website.zip"`);
+      res.setHeader("Content-Disposition", `attachment; filename="${safeFilename}"; filename*=UTF-8''${encodeURIComponent(project.name + "_website.zip")}`);
 
       const archive = archiver("zip", { zlib: { level: 6 } });
 
