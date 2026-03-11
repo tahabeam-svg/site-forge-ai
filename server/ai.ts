@@ -295,7 +295,7 @@ GUIDELINES:
 - Support both Arabic and English content
 - If asked to embed a YouTube video, use an iframe with the embed URL
 - If asked to embed media from a URL, create an appropriate embed
-${imageDataUrl ? `- An image has been provided by the user. Embed it directly using its data URL (src="${imageDataUrl}") in the appropriate place (logo in navbar, hero image, etc. based on the instruction).` : ""}
+${imageDataUrl ? `- The user has attached an image. Its data URL is provided at the end of the user message under "IMAGE_DATA_URL:". Embed THAT EXACT data URL as the src in the appropriate HTML element (logo in navbar <img>, hero image, gallery, etc.) based on the instruction. Do NOT use a placeholder — use the exact data URL string provided.` : ""}
 
 Return ONLY a JSON object with 3 fields:
 - 'html': the updated full HTML
@@ -305,16 +305,7 @@ Return ONLY a JSON object with 3 fields:
 No markdown, no extra explanation outside the JSON.`;
 
   const userContent = imageDataUrl
-    ? ([
-        {
-          type: "text" as const,
-          text: `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nEmbed the provided image (data URL) in the appropriate place.`,
-        },
-        {
-          type: "image_url" as const,
-          image_url: { url: imageDataUrl, detail: "low" as const },
-        },
-      ])
+    ? `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nIMAGE_DATA_URL: ${imageDataUrl}`
     : `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`;
 
   const response = await openai.chat.completions.create({

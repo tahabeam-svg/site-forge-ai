@@ -347,9 +347,10 @@ export async function registerRoutes(
       });
 
       res.json(updated);
-    } catch (err) {
-      console.error("Edit error:", err);
-      res.status(500).json({ message: "Failed to edit website" });
+    } catch (err: any) {
+      console.error("Edit error:", err?.message || err, err?.status, err?.code);
+      const errMsg = err?.message || "Failed to edit website";
+      res.status(500).json({ message: errMsg.includes("token") || errMsg.includes("limit") ? "الرسالة طويلة جداً، جرب تقصير الأمر" : "Failed to edit website" });
     }
   });
 

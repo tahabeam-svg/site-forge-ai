@@ -248,15 +248,37 @@ export default function EditorPage() {
     },
   });
 
+  // Compress image to max 600px wide, JPEG quality 0.75 — reduces base64 size drastically
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX = 600;
+          const ratio = Math.min(1, MAX / Math.max(img.width, img.height));
+          const w = Math.round(img.width * ratio);
+          const h = Math.round(img.height * ratio);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return reject(new Error("Canvas not available"));
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", 0.75));
+        };
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error("Failed to read image"));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const chatUploadMutation = useMutation({
     mutationFn: async (file: File) => {
-      // Convert image to base64 data URL client-side (no server round-trip needed)
-      return new Promise<{ dataUrl: string }>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve({ dataUrl: reader.result as string });
-        reader.onerror = () => reject(new Error("Failed to read image"));
-        reader.readAsDataURL(file);
-      });
+      const dataUrl = await compressImage(file);
+      return { dataUrl };
     },
     onSuccess: (data: { dataUrl: string }) => {
       const dataUrl = data.dataUrl;
