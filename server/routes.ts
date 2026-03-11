@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI, generateSocialContent } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite } from "./ai";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { z } from "zod";
@@ -199,6 +199,45 @@ export async function registerRoutes(
       if (project) await storage.updateProject(project.id, { status: "error" });
       const errorMsg = err?.message || "Unknown error";
       res.status(500).json({ message: "Failed to generate website", detail: errorMsg });
+    }
+  });
+
+  app.post("/api/projects/:id/generate-instant", isAuthenticated, async (req: any, res) => {
+    try {
+      const project = await storage.getProject(parseInt(req.params.id));
+      if (!project) return res.status(404).json({ message: "Project not found" });
+      if (project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+
+      const language = req.body.language || "ar";
+      const description = req.body.description || project.description || project.name;
+
+      await storage.updateProject(project.id, { status: "generating" });
+      await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
+
+      const generated = await generateInstantWebsite(description, language);
+
+      await storage.addChatMessage({
+        projectId: project.id,
+        role: "assistant",
+        content: language === "ar" ? "تم إنشاء الموقع فورياً ✨" : "Website generated instantly ✨",
+      });
+
+      const updated = await storage.updateProject(project.id, {
+        generatedHtml: generated.html,
+        generatedCss: generated.css,
+        seoTitle: generated.seoTitle,
+        seoDescription: generated.seoDescription,
+        colorPalette: generated.colorPalette,
+        sections: generated.sections,
+        status: "generated",
+      });
+
+      res.json(updated);
+    } catch (err: any) {
+      console.error("Instant generation error:", err?.message || err);
+      const project = await storage.getProject(parseInt(req.params.id));
+      if (project) await storage.updateProject(project.id, { status: "error" });
+      res.status(500).json({ message: "Failed to generate website instantly", detail: err?.message || "Unknown error" });
     }
   });
 

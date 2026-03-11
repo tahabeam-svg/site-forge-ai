@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useLocation } from "wouter";
@@ -11,6 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +42,31 @@ import {
   FolderOpen,
   Download,
   Upload,
+  Zap,
 } from "lucide-react";
+
+const INSTANT_STEPS = {
+  ar: [
+    "جاري تحليل وصف موقعك...",
+    "اخترنا تصميماً مناسباً لنشاطك...",
+    "نكتب محتوى الصفحة الرئيسية...",
+    "نبني قسم الخدمات والمميزات...",
+    "نصيغ معلومات الاتصال...",
+    "نضبط الألوان والخطوط...",
+    "نراجع الكود النهائي...",
+    "الموقع جاهز! 🎉",
+  ],
+  en: [
+    "Analyzing your website description...",
+    "Picking the perfect design for you...",
+    "Writing the hero section content...",
+    "Building services & features section...",
+    "Formatting contact information...",
+    "Fine-tuning colors & typography...",
+    "Reviewing the final code...",
+    "Your website is ready! 🎉",
+  ],
+};
 
 export default function DashboardPage() {
   const { language } = useAuth();
@@ -52,6 +77,13 @@ export default function DashboardPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+
+  const [instantDialogOpen, setInstantDialogOpen] = useState(false);
+  const [instantPrompt, setInstantPrompt] = useState("");
+  const [instantProgress, setInstantProgress] = useState(0);
+  const [instantStep, setInstantStep] = useState(0);
+  const [isInstantGenerating, setIsInstantGenerating] = useState(false);
+  const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -96,6 +128,91 @@ export default function DashboardPage() {
     },
   });
 
+  function startProgressAnimation() {
+    setInstantProgress(5);
+    setInstantStep(0);
+    let progress = 5;
+    let step = 0;
+    const steps = INSTANT_STEPS[lang as "ar" | "en"] || INSTANT_STEPS.ar;
+
+    progressInterval.current = setInterval(() => {
+      progress += Math.random() * 3 + 1.5;
+      if (progress >= 90) progress = 89;
+      setInstantProgress(Math.min(progress, 89));
+
+      const newStep = Math.floor((progress / 100) * (steps.length - 1));
+      if (newStep !== step && newStep < steps.length - 1) {
+        step = newStep;
+        setInstantStep(step);
+      }
+    }, 400);
+  }
+
+  function stopProgressAnimation(success: boolean) {
+    if (progressInterval.current) {
+      clearInterval(progressInterval.current);
+      progressInterval.current = null;
+    }
+    const steps = INSTANT_STEPS[lang as "ar" | "en"] || INSTANT_STEPS.ar;
+    setInstantProgress(100);
+    setInstantStep(steps.length - 1);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current);
+    };
+  }, []);
+
+  async function handleInstantGenerate() {
+    if (!instantPrompt.trim()) return;
+
+    setIsInstantGenerating(true);
+    startProgressAnimation();
+
+    try {
+      const projectName = instantPrompt.trim().slice(0, 50);
+      const createRes = await apiRequest("POST", "/api/projects", {
+        name: projectName,
+        description: instantPrompt.trim(),
+      });
+      const project: Project = await createRes.json();
+
+      const genRes = await apiRequest("POST", `/api/projects/${project.id}/generate-instant`, {
+        description: instantPrompt.trim(),
+        language: lang,
+      });
+      if (!genRes.ok) {
+        const errData = await genRes.json();
+        throw new Error(errData.message || "Generation failed");
+      }
+
+      stopProgressAnimation(true);
+
+      await new Promise((r) => setTimeout(r, 700));
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+
+      setIsInstantGenerating(false);
+      setInstantDialogOpen(false);
+      setInstantPrompt("");
+      setInstantProgress(0);
+
+      navigate(`/editor/${project.id}`);
+      toast({
+        title: lang === "ar" ? "تم إنشاء الموقع ✨" : "Website Created ✨",
+        description: lang === "ar" ? "موقعك جاهز للتعديل والنشر" : "Your website is ready to edit and publish",
+      });
+    } catch (err: any) {
+      stopProgressAnimation(false);
+      setIsInstantGenerating(false);
+      toast({
+        title: t("error", lang),
+        description: err.message || (lang === "ar" ? "حدث خطأ في الإنشاء" : "Generation failed"),
+        variant: "destructive",
+      });
+    }
+  }
+
   const statusColor = (status: string) => {
     switch (status) {
       case "published": return "default";
@@ -113,6 +230,8 @@ export default function DashboardPage() {
     return labels[lang]?.[status] || status;
   };
 
+  const instantSteps = INSTANT_STEPS[lang as "ar" | "en"] || INSTANT_STEPS.ar;
+
   return (
     <DashboardLayout>
       <div className="p-6 lg:p-8 max-w-7xl mx-auto">
@@ -127,10 +246,21 @@ export default function DashboardPage() {
                 : `${projects.length} project${projects.length !== 1 ? "s" : ""}`}
             </p>
           </div>
-          <Button onClick={() => setShowNewProject(true)} data-testid="button-new-project">
-            <Plus className="w-4 h-4 me-2" />
-            {t("newProject", lang)}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              className="gap-2 border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10"
+              onClick={() => setInstantDialogOpen(true)}
+              data-testid="button-instant-generate"
+            >
+              <Zap className="w-4 h-4" />
+              {lang === "ar" ? "إنشاء فوري" : "Instant Generate"}
+            </Button>
+            <Button onClick={() => setShowNewProject(true)} data-testid="button-new-project">
+              <Plus className="w-4 h-4 me-2" />
+              {t("newProject", lang)}
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -153,6 +283,14 @@ export default function DashboardPage() {
               {t("noProjectsDesc", lang)}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button
+                className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90"
+                onClick={() => setInstantDialogOpen(true)}
+                data-testid="button-instant-first"
+              >
+                <Zap className="w-4 h-4" />
+                {lang === "ar" ? "إنشاء موقع فوراً" : "Generate Instantly"}
+              </Button>
               <Button onClick={() => setShowNewProject(true)} data-testid="button-create-first">
                 <Sparkles className="w-4 h-4 me-2" />
                 {t("startFromScratch", lang)}
@@ -189,7 +327,7 @@ export default function DashboardPage() {
                           <Sparkles className="w-10 h-10 text-muted-foreground/30" />
                         </div>
                       )}
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 end-3">
                         <Badge variant={statusColor(project.status)} data-testid={`badge-status-${project.id}`}>
                           {statusLabel(project.status)}
                         </Badge>
@@ -279,6 +417,110 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Instant Generate Dialog */}
+      <Dialog open={instantDialogOpen} onOpenChange={(open) => { if (!isInstantGenerating) { setInstantDialogOpen(open); if (!open) { setInstantProgress(0); setInstantStep(0); } } }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-white" />
+              </div>
+              {lang === "ar" ? "إنشاء موقع فوري" : "Instant Website Generator"}
+            </DialogTitle>
+            <DialogDescription>
+              {lang === "ar"
+                ? "صف نشاطك التجاري بجملة أو جملتين وسنبني موقعاً كاملاً في ثوانٍ"
+                : "Describe your business in 1-2 sentences and we'll build a complete website in seconds"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!isInstantGenerating ? (
+            <div className="space-y-4 pt-2">
+              <Textarea
+                value={instantPrompt}
+                onChange={(e) => setInstantPrompt(e.target.value)}
+                placeholder={
+                  lang === "ar"
+                    ? "مثال: مطعم مشويات سعودي في الرياض يقدم أفضل المشويات والوجبات الشعبية بأسعار معقولة"
+                    : "Example: A modern digital marketing agency in Dubai specializing in social media and SEO services for SMEs"
+                }
+                className="resize-none min-h-[110px]"
+                rows={4}
+                data-testid="input-instant-prompt"
+                disabled={isInstantGenerating}
+              />
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
+                <Sparkles className="w-4 h-4 text-violet-500 flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  {lang === "ar"
+                    ? "سيتم إنشاء موقع كامل مع تصميم احترافي وقسم خدمات وتواصل خلال 15-20 ثانية"
+                    : "A full website with professional design, services & contact section will be ready in 15-20 seconds"}
+                </p>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setInstantDialogOpen(false)} data-testid="button-cancel-instant">
+                  {t("cancel", lang)}
+                </Button>
+                <Button
+                  disabled={!instantPrompt.trim()}
+                  onClick={handleInstantGenerate}
+                  className="bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 gap-2"
+                  data-testid="button-confirm-instant"
+                >
+                  <Zap className="w-4 h-4" />
+                  {lang === "ar" ? "أنشئ موقعي الآن" : "Generate My Website"}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6 py-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-violet-600 dark:text-violet-400">
+                    {instantSteps[instantStep]}
+                  </span>
+                  <span className="text-muted-foreground font-mono">{Math.round(instantProgress)}%</span>
+                </div>
+                <Progress value={instantProgress} className="h-2" />
+              </div>
+
+              <div className="space-y-2">
+                {instantSteps.map((step, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: lang === "ar" ? 10 : -10 }}
+                    animate={{ opacity: i <= instantStep ? 1 : 0.3 }}
+                    transition={{ duration: 0.3 }}
+                    className={`flex items-center gap-2 text-sm ${i <= instantStep ? "text-foreground" : "text-muted-foreground"}`}
+                  >
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      i < instantStep
+                        ? "bg-emerald-500"
+                        : i === instantStep
+                        ? "bg-violet-500"
+                        : "bg-muted"
+                    }`}>
+                      {i < instantStep ? (
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                          <path d="M1 4L3 6L7 2" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                        </svg>
+                      ) : i === instantStep ? (
+                        <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                      ) : null}
+                    </div>
+                    <span>{step}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground">
+                {lang === "ar" ? "الرجاء الانتظار، لا تغلق هذه النافذة..." : "Please wait, don't close this window..."}
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
         <DialogContent>

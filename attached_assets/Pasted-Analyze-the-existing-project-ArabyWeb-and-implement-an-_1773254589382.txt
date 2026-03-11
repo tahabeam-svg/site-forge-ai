@@ -1,0 +1,149 @@
+Analyze the existing project **ArabyWeb** and implement an **Instant AI Website Generation System** that can generate a complete website in under 20 seconds.
+
+Do not rebuild the project. Extend the current architecture.
+
+Goal:
+User types a short prompt and the system generates a full website instantly.
+
+Example user prompt:
+"Create a website for a coffee shop in Riyadh."
+
+Implementation requirements:
+
+1. Prompt Processing
+   Create an AI pipeline that processes a user prompt and extracts:
+
+* business name
+* business type
+* target city
+* services
+* tone (modern, luxury, simple)
+
+2. Fast AI Generation Strategy
+   To keep generation under 20 seconds:
+
+Do NOT generate the entire site with AI.
+
+Instead:
+
+Step 1:
+Classify business type.
+
+Step 2:
+Select a predefined template.
+
+Step 3:
+Use AI only to generate:
+
+* hero text
+* services
+* about text
+* contact description
+* SEO title and meta description
+
+Use OpenAI model:
+gpt-4.1-mini
+
+3. Template Injection System
+   Create a template engine.
+
+Templates should include:
+
+* business
+* restaurant
+* agency
+* portfolio
+* startup
+
+Each template must have placeholder tags:
+
+{{business_name}}
+{{hero_title}}
+{{hero_description}}
+{{services}}
+{{about_text}}
+{{contact_info}}
+
+Replace placeholders with AI generated content.
+
+4. Component Library
+   Create reusable components:
+
+Hero
+Services
+Testimonials
+Gallery
+Pricing
+Footer
+
+Store them in a Components table for reuse.
+
+5. Site Generation Engine
+   Create a function:
+
+generateWebsite(prompt)
+
+Process:
+
+1. classify prompt
+2. choose template
+3. call OpenAI
+4. fill template placeholders
+5. generate HTML structure
+6. store site in database
+
+Return generated website preview.
+
+6. Website Storage
+   Save generated sites in database:
+
+Websites
+
+* id
+* site_name
+* prompt
+* template_used
+* created_at
+
+Pages
+
+* id
+* website_id
+* page_name
+* html_content
+
+7. Subdomain Publishing
+   Automatically publish the site at:
+
+sitename.arabyweb.net
+
+8. AI Edit Mode
+   User can type commands like:
+
+"make design more modern"
+"add testimonials"
+"change colors to dark mode"
+
+Regenerate only the affected sections.
+
+9. Performance Optimization
+   Implement:
+
+* prompt caching
+* template reuse
+* component reuse
+
+Goal:
+Website generation time < 20 seconds.
+
+10. Dashboard
+    Add user dashboard with:
+
+Generate site
+Edit site
+Publish site
+Export site
+
+Make the UI in Arabic.
+
+Output only the new modules and integration code needed to extend the current project.
