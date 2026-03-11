@@ -1,0 +1,129 @@
+Analyze the existing **ArabyWeb** project and extend the chatbot with a **Learning System and Language Adaptation Engine**.
+
+Do not rebuild the project. Integrate these capabilities into the existing chatbot system.
+
+Goal:
+Allow the chatbot to learn from visitor questions and automatically respond using the visitor's language or dialect.
+
+Implementation requirements:
+
+1. Question Learning System
+   Create a system that stores all user questions.
+
+Database table:
+
+VisitorQuestions
+
+* id
+* question
+* detected_language
+* detected_dialect
+* response_generated
+* created_at
+
+Every new user question must be stored.
+
+2. Pattern Recognition
+   Create a background process that analyzes repeated questions.
+
+If the same question appears frequently, create a knowledge entry automatically.
+
+Table:
+
+AutoLearnedKnowledge
+
+* id
+* question_pattern
+* suggested_answer
+* usage_count
+* created_at
+
+3. Language Detection
+   Implement automatic language detection.
+
+Detect:
+
+* Arabic
+* English
+
+If Arabic is detected, classify dialect:
+
+* Modern Standard Arabic
+* Gulf Arabic
+* Egyptian Arabic
+* Levantine Arabic
+* Maghrebi Arabic
+
+4. Dialect Matching
+   The chatbot should respond using the same dialect or language detected from the user message.
+
+Example:
+
+User:
+"كيف اسوي موقع؟"
+
+Bot:
+"تقدر تسوي موقع بسهولة باستخدام ArabyWeb."
+
+User:
+"How can I build my website?"
+
+Bot:
+"You can create a full website in seconds using ArabyWeb."
+
+5. Response Style Engine
+   Create a response style layer.
+
+The chatbot must adapt tone:
+
+* friendly
+* professional
+* simple
+
+6. Conversation Memory
+   Store conversation history to improve context.
+
+Tables:
+
+Conversations
+Messages
+
+The chatbot should remember the conversation context.
+
+7. Self Improvement Loop
+   Create a training system:
+
+Step 1:
+Analyze stored visitor questions.
+
+Step 2:
+Detect most frequent questions.
+
+Step 3:
+Generate improved answers using OpenAI.
+
+Step 4:
+Store them in KnowledgeBase.
+
+8. Admin Dashboard
+   Add chatbot learning dashboard:
+
+Features:
+
+* view most common questions
+* approve AI generated answers
+* edit responses
+* monitor language distribution
+
+9. Smart Prompting
+   Use a system prompt:
+
+"You are the ArabyWeb assistant.
+Respond using the same language or dialect used by the visitor.
+Be helpful and guide users to create their website and subscribe."
+
+10. Performance
+    Implement caching for repeated questions to reduce API calls.
+
+Output:
+Provide modules for language detection, learning system, database schema, and chatbot integration.
