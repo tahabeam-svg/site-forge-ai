@@ -80,6 +80,8 @@ export default function ChatWidget() {
   const [formType, setFormType] = useState<"trial" | "consultation">("trial");
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
+  const [leadPhone, setLeadPhone] = useState("");
+  const [leadPhoneError, setLeadPhoneError] = useState("");
   const [leadBusiness, setLeadBusiness] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [proactiveBubble, setProactiveBubble] = useState<string | null>(null);
@@ -195,8 +197,26 @@ export default function ChatWidget() {
     }
   }
 
+  function validatePhone(value: string): string {
+    if (!value) return "";
+    if (!/^05/.test(value)) return isRTL ? "يجب أن يبدأ الرقم بـ 05" : "Number must start with 05";
+    if (!/^\d+$/.test(value)) return isRTL ? "أرقام فقط" : "Digits only";
+    if (value.length !== 10) return isRTL ? "يجب أن يكون 10 أرقام" : "Must be exactly 10 digits";
+    return "";
+  }
+
+  function handlePhoneChange(value: string) {
+    const digits = value.replace(/\D/g, "").slice(0, 10);
+    setLeadPhone(digits);
+    setLeadPhoneError(validatePhone(digits));
+  }
+
   async function saveLead() {
     if (!leadEmail) return;
+    if (formType === "consultation") {
+      const phoneErr = validatePhone(leadPhone);
+      if (phoneErr) { setLeadPhoneError(phoneErr); return; }
+    }
     try {
       await fetch("/api/chatbot/lead", {
         method: "POST",
@@ -204,6 +224,7 @@ export default function ChatWidget() {
         body: JSON.stringify({
           name: leadName,
           email: leadEmail,
+          phone: leadPhone || undefined,
           businessType: leadBusiness,
           sessionId: sessionId.current,
         }),
@@ -416,11 +437,21 @@ export default function ChatWidget() {
                     <input value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
                       type="email" placeholder={isRTL ? "بريدك الإلكتروني" : "Email address"}
                       className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-violet-400 transition-colors" dir="ltr" />
+                    <div className="space-y-1">
+                      <input value={leadPhone} onChange={e => handlePhoneChange(e.target.value)}
+                        type="tel" inputMode="numeric" placeholder={isRTL ? "رقم الجوال (05XXXXXXXX)" : "Mobile (05XXXXXXXX)"}
+                        maxLength={10}
+                        className={`w-full text-xs px-3 py-2 rounded-lg border bg-background outline-none transition-colors ${leadPhoneError ? "border-red-400 focus:border-red-400" : "border-border focus:border-violet-400"}`}
+                        dir="ltr" />
+                      {leadPhoneError && (
+                        <p className="text-[10px] text-red-500 px-1">{leadPhoneError}</p>
+                      )}
+                    </div>
                     <input value={leadBusiness} onChange={e => setLeadBusiness(e.target.value)}
                       type="text" placeholder={isRTL ? "نوع نشاطك التجاري" : "Your business type"}
                       className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-violet-400 transition-colors" />
                     <div className="flex gap-2 pt-1">
-                      <button onClick={saveLead} disabled={!leadEmail}
+                      <button onClick={saveLead} disabled={!leadEmail || !!leadPhoneError || !leadPhone}
                         className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white text-xs py-2.5 rounded-lg font-bold text-center transition-all shadow-sm disabled:opacity-50">
                         {isRTL ? "📅 احجز استشارتك المجانية" : "📅 Book Free Consultation"}
                       </button>
