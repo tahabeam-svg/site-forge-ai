@@ -1025,9 +1025,12 @@ For Netlify/Vercel:
       const result = await processChat({ message, sessionId, conversationId, history, pageLang });
       res.json(result);
     } catch (err: any) {
-      console.error("Chatbot error:", err?.message);
+      console.error("Chatbot error:", err?.message, err?.status, err?.code);
+      const { pageLang } = req.body;
       res.json({
-        reply: "عذراً، حدث خطأ مؤقت. يرجى المحاولة مرة أخرى.",
+        reply: pageLang === "en"
+          ? "Sorry, a temporary error occurred. Please try again in a moment."
+          : "عذراً، حدث خطأ مؤقت. يرجى المحاولة مرة أخرى بعد لحظة.",
         conversationId: 0,
         source: "error",
       });

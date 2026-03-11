@@ -273,22 +273,34 @@ export async function processChat(req: ChatRequest): Promise<ChatResponse> {
     }
   }
 
-  // 4. Call OpenAI
+  // 4. Call OpenAI (with retry + fallback model)
   const systemPrompt = await buildSystemPrompt(langInfo);
   const messages: any[] = [
     { role: "system", content: systemPrompt },
-    ...history.slice(-6), // last 6 messages for context
+    ...history.slice(-6),
     { role: "user", content: message },
   ];
 
-  const completion = await openai.chat.completions.create({
-    model: MODEL,
-    messages,
-    max_completion_tokens: 400,
-    temperature: 0.7,
-  } as any);
+  let completion: any;
+  const models = [MODEL, "gpt-4o-mini"];
+  let lastError: any;
+  for (const model of models) {
+    try {
+      completion = await openai.chat.completions.create({
+        model,
+        messages,
+        max_completion_tokens: 400,
+        temperature: 0.7,
+      } as any);
+      break;
+    } catch (err: any) {
+      lastError = err;
+      console.error(`Chatbot OpenAI error (model=${model}):`, err?.message || err);
+      if (model === models[models.length - 1]) throw lastError;
+    }
+  }
 
-  const reply = completion.choices[0]?.message?.content || 
+  const reply = completion?.choices[0]?.message?.content || 
     (langInfo.language === "ar" ? "عذراً، لم أفهم سؤالك. هل يمكنك إعادة صياغته؟" : "Sorry, I didn't understand. Could you rephrase?");
 
   setCache(cacheKey, reply);
