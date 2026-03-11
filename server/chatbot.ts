@@ -291,17 +291,18 @@ export async function processChat(req: ChatRequest): Promise<ChatResponse> {
   ];
 
   let completion: any;
-  const models = [MODEL, "gpt-4o-mini"];
+  const FALLBACK_MODEL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-4o" : "gpt-4o-mini";
+  const models = [MODEL, FALLBACK_MODEL];
   let lastError: any;
   for (const model of models) {
     try {
       completion = await openai.chat.completions.create({
         model,
         messages,
-        max_completion_tokens: 400,
+        max_completion_tokens: 500,
         temperature: 0.7,
       } as any);
-      break;
+      if (completion?.choices?.[0]?.message?.content) break;
     } catch (err: any) {
       lastError = err;
       console.error(`Chatbot OpenAI error (model=${model}):`, err?.message || err);

@@ -105,7 +105,6 @@ export default function ChatWidget() {
     const openTimer = setTimeout(() => {
       if (!open) {
         setOpen(true);
-        setHasAutoOpened(true);
         sessionStorage.setItem(STORAGE_KEY, "1");
       }
     }, 8000);
