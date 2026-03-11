@@ -3,6 +3,8 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import memorystore from "memorystore";
+import { Pool } from "pg";
 import type { Express, RequestHandler } from "express";
 import bcrypt from "bcryptjs";
 import { db } from "../../db";
@@ -10,21 +12,55 @@ import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 
 const PgSession = connectPgSimple(session);
+const MemoryStore = memorystore(session);
 
-export function getSession() {
+async function ensureSessionTable(): Promise<boolean> {
+  if (!process.env.DATABASE_URL) return false;
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS "session" (
+        "sid" varchar NOT NULL,
+        "sess" json NOT NULL,
+        "expire" timestamp(6) NOT NULL,
+        CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+      )
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
+    console.log("Session table ready");
+    return true;
+  } catch (err: any) {
+    console.error("Could not create session table:", err.message);
+    return false;
+  } finally {
+    await pool.end().catch(() => {});
+  }
+}
+
+function buildSessionMiddleware(pgAvailable: boolean) {
   if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET environment variable is required");
   }
-  const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
+  const sessionTtl = 30 * 24 * 60 * 60 * 1000;
+
+  const store = pgAvailable && process.env.DATABASE_URL
+    ? new PgSession({
+        conString: process.env.DATABASE_URL,
+        tableName: "session",
+        createTableIfMissing: false,
+        ttl: sessionTtl / 1000,
+        pruneSessionInterval: 60 * 60,
+        errorLog: (err: Error) => console.error("Session store error:", err.message),
+      })
+    : new MemoryStore({ checkPeriod: sessionTtl });
+
+  if (!pgAvailable) {
+    console.warn("⚠️  Using MemoryStore for sessions (sessions will reset on restart)");
+  }
+
   return session({
     secret: process.env.SESSION_SECRET,
-    store: new PgSession({
-      conString: process.env.DATABASE_URL,
-      tableName: "session",
-      createTableIfMissing: false, // table created in DB migration (seed.ts)
-      ttl: sessionTtl / 1000,
-      pruneSessionInterval: 60 * 60,
-    }),
+    store,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -38,7 +74,8 @@ export function getSession() {
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
-  app.use(getSession());
+  const pgOk = await ensureSessionTable();
+  app.use(buildSessionMiddleware(pgOk));
   app.use(passport.initialize());
   app.use(passport.session());
 
