@@ -268,8 +268,9 @@ export async function setupAuth(app: Express) {
           }
           req.login(user, (loginErr) => {
             if (loginErr) {
-              console.error("Google login session error:", loginErr);
-              return res.redirect("/auth?error=google&reason=session");
+              const msg = loginErr?.message || String(loginErr) || "unknown";
+              console.error("Google login session error:", msg);
+              return res.redirect("/auth?error=google&reason=" + encodeURIComponent(msg));
             }
             return res.redirect("/");
           });
