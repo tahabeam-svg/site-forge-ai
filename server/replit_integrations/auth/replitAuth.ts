@@ -36,12 +36,25 @@ class PgSessionStore extends Store {
 
   async set(sid: string, sessionData: session.SessionData, cb?: (err?: any) => void) {
     const expire = new Date(Date.now() + this.ttlSeconds * 1000);
+    const sess = JSON.stringify(sessionData);
     try {
-      await this.pool.query(
-        `INSERT INTO session(sid, sess, expire) VALUES($1,$2,$3)
-         ON CONFLICT(sid) DO UPDATE SET sess=$2, expire=$3`,
-        [sid, JSON.stringify(sessionData), expire]
+      // Use UPDATE-then-INSERT to avoid ON CONFLICT issues with deferrable PKs
+      const upd = await this.pool.query(
+        `UPDATE session SET sess=$2, expire=$3 WHERE sid=$1`,
+        [sid, sess, expire]
       );
+      if ((upd.rowCount ?? 0) === 0) {
+        await this.pool.query(
+          `INSERT INTO session(sid, sess, expire) VALUES($1,$2,$3)`,
+          [sid, sess, expire]
+        ).catch(async () => {
+          // Race condition: row appeared between UPDATE and INSERT — update again
+          await this.pool.query(
+            `UPDATE session SET sess=$2, expire=$3 WHERE sid=$1`,
+            [sid, sess, expire]
+          );
+        });
+      }
       cb?.();
     } catch (e) { cb?.(e); }
   }
@@ -73,14 +86,32 @@ async function getOrCreatePool(): Promise<Pool | null> {
   if (_pgPool) return _pgPool;
   _pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
   try {
-    // Ensure session table exists
+    // Create session table if it doesn't exist
     await _pgPool.query(`
       CREATE TABLE IF NOT EXISTS session (
-        sid varchar NOT NULL PRIMARY KEY,
+        sid varchar NOT NULL,
         sess json NOT NULL,
         expire timestamp(6) NOT NULL
       )
     `);
+    // Ensure primary key exists (non-deferrable) — safe if already exists
+    try {
+      await _pgPool.query(
+        `ALTER TABLE session ADD CONSTRAINT session_pkey PRIMARY KEY (sid)`
+      );
+    } catch {
+      // Already exists — check if it's deferrable and recreate if needed
+      const { rows } = await _pgPool.query(`
+        SELECT conname, condeferrable FROM pg_constraint
+        WHERE conname='session_pkey' AND contype='p'
+      `);
+      if (rows[0]?.condeferrable) {
+        // Drop deferrable PK and add non-deferrable one
+        await _pgPool.query(`ALTER TABLE session DROP CONSTRAINT session_pkey`);
+        await _pgPool.query(`ALTER TABLE session ADD CONSTRAINT session_pkey PRIMARY KEY (sid)`);
+        console.log("Session PK constraint fixed (was deferrable, now non-deferrable)");
+      }
+    }
     await _pgPool.query(
       `CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON session (expire)`
     );
