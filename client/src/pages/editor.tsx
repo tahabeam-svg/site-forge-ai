@@ -40,6 +40,7 @@ import {
   ImagePlus,
   Crown,
   Lock,
+  ChevronDown,
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
@@ -110,6 +111,8 @@ export default function EditorPage() {
   const [customSecondary, setCustomSecondary] = useState("#0f172a");
   const [customAccent, setCustomAccent] = useState("#8b5cf6");
   const [limitReached, setLimitReached] = useState(false);
+  const [showStyleScrollHint, setShowStyleScrollHint] = useState(false);
+  const styleScrollRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,6 +130,26 @@ export default function EditorPage() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // One-time scroll hint for the style tab
+  useEffect(() => {
+    if (activeTab === "style") {
+      const seen = localStorage.getItem("aw_style_scroll_hint_seen");
+      if (!seen) {
+        setShowStyleScrollHint(true);
+        const timer = setTimeout(() => {
+          setShowStyleScrollHint(false);
+          localStorage.setItem("aw_style_scroll_hint_seen", "1");
+        }, 4000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [activeTab]);
+
+  const dismissStyleHint = () => {
+    setShowStyleScrollHint(false);
+    localStorage.setItem("aw_style_scroll_hint_seen", "1");
+  };
 
   const generateMutation = useMutation({
     mutationFn: async () => {
@@ -849,7 +872,12 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="style" className="flex-1 overflow-y-auto mt-0 px-3 pb-3">
+              <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 relative">
+                <div
+                  ref={styleScrollRef}
+                  className="flex-1 overflow-y-auto px-3 pb-3"
+                  onScroll={dismissStyleHint}
+                >
                 <div className="mt-2 space-y-4">
                   {project.colorPalette && typeof project.colorPalette === "object" && (
                     <div>
@@ -1074,6 +1102,24 @@ ${project.generatedHtml}
                     </div>
                   </div>
                 </div>
+                </div>{/* end scrollRef div */}
+
+                {/* One-time scroll hint overlay */}
+                {showStyleScrollHint && (
+                  <div
+                    className="absolute bottom-0 left-0 right-0 flex flex-col items-center pb-4 pt-8 pointer-events-none"
+                    style={{ background: "linear-gradient(to bottom, transparent, hsl(var(--background) / 0.97) 55%)" }}
+                  >
+                    <button
+                      className="pointer-events-auto flex items-center gap-1.5 text-xs text-muted-foreground bg-background border border-border rounded-full px-3 py-1.5 shadow-md hover:text-foreground transition-colors"
+                      onClick={dismissStyleHint}
+                      data-testid="button-dismiss-scroll-hint"
+                    >
+                      <ChevronDown className="w-3.5 h-3.5 animate-bounce" />
+                      {lang === "ar" ? "مرّر للأسفل لخيارات أكثر" : "Scroll down for more options"}
+                    </button>
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           )}
