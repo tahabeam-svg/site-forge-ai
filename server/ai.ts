@@ -53,14 +53,27 @@ CRITICAL REQUIREMENTS:
 - Use Lucide-style SVG icons inline (simple line icons)
 - Use Google Fonts: ${isArabic ? "Cairo (headings), Tajawal (body)" : "Montserrat (headings), Inter (body)"}
 
-SECTIONS TO INCLUDE:
-1. Hero/Header - Bold headline, subtitle, CTA button, hero image or gradient background
-2. About - Company/brand story with image
-3. Services/Features - Grid of 3-6 services with icons
-4. Gallery/Portfolio - Image grid or showcase
-5. Testimonials - Customer reviews (if relevant)
-6. Contact - Contact form layout, address, phone, social links
-7. Footer - Links, copyright, social icons
+SINGLE-PAGE NAVIGATION — ABSOLUTELY MANDATORY:
+- This is a SINGLE-PAGE website. ALL navigation links MUST use anchor href (e.g. href="#about", href="#services") — NEVER use href="/about" or href="/services" or any path-based links.
+- Every anchor link in the navigation MUST have a matching section with that exact id attribute in the HTML.
+- Required sections and their EXACT ids (use these exact ids, no variations):
+  * id="about"       → ${isArabic ? "من نحن" : "About Us"} section
+  * id="services"    → ${isArabic ? "خدماتنا" : "Services"} section
+  * id="gallery"     → ${isArabic ? "معرض الأعمال" : "Gallery/Portfolio"} section
+  * id="testimonials"→ ${isArabic ? "آراء العملاء" : "Testimonials"} section
+  * id="contact"     → ${isArabic ? "تواصل معنا" : "Contact Us"} section
+- The navigation bar MUST contain links to: #about, #services, #gallery, #testimonials, #contact
+- Add to CSS: html { scroll-behavior: smooth; }
+- NEVER generate href links that start with "/" or "http" in the navigation menu.
+
+SECTIONS TO INCLUDE (ALL REQUIRED — do not skip any):
+1. Hero/Header   — Bold headline, subtitle, CTA button, full-screen hero image with dark overlay
+2. About (#about)       — Company/brand story with image, key stats or highlights
+3. Services (#services) — Grid of 4-6 cards with inline SVG icons, each with name + description
+4. Gallery (#gallery)   — Responsive image grid (3 columns on desktop, 1 on mobile) with hover zoom
+5. Testimonials (#testimonials) — 3 customer reviews with names, roles, star ratings
+6. Contact (#contact)   — Contact form (name, email, phone, message) + address info + Google Maps iframe
+7. Footer       — Logo, nav links anchors, copyright
 
 DESIGN GUIDELINES:
 - Use a cohesive, professional color palette (avoid generic blue)
@@ -68,7 +81,7 @@ DESIGN GUIDELINES:
 - For corporate sites: use clean whites with professional accent colors
 - For food/restaurant: use warm, inviting colors
 - Include CSS animations (fadeIn, slideUp) for sections
-- Smooth scroll behavior
+- html { scroll-behavior: smooth; }
 - Hover effects on buttons and cards
 - Box shadows for depth
 - Border-radius for modern feel
@@ -113,9 +126,35 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanat
 
   const content = response.choices[0]?.message?.content || "";
 
+  // Sanitize nav links: replace path-based hrefs with anchor hrefs
+  function sanitizeNavLinks(html: string): string {
+    const navMap: Record<string, string> = {
+      "/about": "#about", "/about-us": "#about", "/من-نحن": "#about", "/who-we-are": "#about",
+      "/services": "#services", "/our-services": "#services", "/خدماتنا": "#services",
+      "/gallery": "#gallery", "/portfolio": "#gallery", "/works": "#gallery", "/أعمالنا": "#gallery",
+      "/testimonials": "#testimonials", "/reviews": "#testimonials", "/آراء-العملاء": "#testimonials",
+      "/contact": "#contact", "/contact-us": "#contact", "/تواصل-معنا": "#contact",
+    };
+    let result = html;
+    for (const [path, anchor] of Object.entries(navMap)) {
+      result = result.replace(new RegExp(`href=["']${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "gi"), `href="${anchor}"`);
+    }
+    // Ensure smooth scroll is added to CSS if not present
+    return result;
+  }
+
+  function sanitizeCss(css: string): string {
+    if (!css.includes("scroll-behavior")) {
+      return "html { scroll-behavior: smooth; }\n" + css;
+    }
+    return css;
+  }
+
   try {
     const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
+    parsed.html = sanitizeNavLinks(parsed.html || "");
+    parsed.css = sanitizeCss(parsed.css || "");
     return parsed as GeneratedWebsite;
   } catch {
     return {
@@ -276,7 +315,21 @@ Return ONLY a JSON object with 'html' and 'css' fields. No markdown, no explanat
   const content = response.choices[0]?.message?.content || "";
   try {
     const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+    // Sanitize nav links after edit too
+    const navMap: Record<string, string> = {
+      "/about": "#about", "/about-us": "#about", "/services": "#services",
+      "/our-services": "#services", "/gallery": "#gallery", "/portfolio": "#gallery",
+      "/testimonials": "#testimonials", "/reviews": "#testimonials",
+      "/contact": "#contact", "/contact-us": "#contact",
+    };
+    let html = parsed.html || currentHtml;
+    for (const [path, anchor] of Object.entries(navMap)) {
+      html = html.replace(new RegExp(`href=["']${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "gi"), `href="${anchor}"`);
+    }
+    let css = parsed.css || currentCss;
+    if (!css.includes("scroll-behavior")) css = "html { scroll-behavior: smooth; }\n" + css;
+    return { html, css };
   } catch {
     return { html: currentHtml, css: currentCss };
   }
