@@ -72,14 +72,24 @@ function Router() {
   );
 }
 
+function AppInner() {
+  const [location] = useLocation();
+  const hideChat = location.startsWith("/editor/") || location.startsWith("/preview/");
+  return (
+    <>
+      <Toaster />
+      <Router />
+      {!hideChat && <ChatWidget />}
+    </>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <AuthProvider>
-          <Toaster />
-          <Router />
-          <ChatWidget />
+          <AppInner />
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

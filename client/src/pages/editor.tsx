@@ -104,6 +104,9 @@ export default function EditorPage() {
   const [mediaUrl, setMediaUrl] = useState("");
   const [chatImagePreview, setChatImagePreview] = useState<string | null>(null);
   const [chatImageFile, setChatImageFile] = useState<File | null>(null);
+  const [customPrimary, setCustomPrimary] = useState("#10b981");
+  const [customSecondary, setCustomSecondary] = useState("#0f172a");
+  const [customAccent, setCustomAccent] = useState("#8b5cf6");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -298,7 +301,7 @@ export default function EditorPage() {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${project.seoTitle || project.name}</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@300;400;500;600;700&family=El+Messiri:wght@400;500;600;700&family=Almarai:wght@300;400;700;800&family=Reem+Kufi:wght@400;500;600;700&family=Lateef:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&family=Raleway:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=Nunito:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
 body { font-family: ${lang === "ar" ? "'Cairo', 'Tajawal', 'IBM Plex Sans Arabic'" : "'Inter', 'Poppins', 'Montserrat'"}, sans-serif; }
@@ -425,7 +428,7 @@ ${project.generatedHtml}
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`w-full md:w-[480px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-[540px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
           {!project.generatedHtml ? (
             <div className="p-4">
               <Card className="p-5">
@@ -809,25 +812,84 @@ ${project.generatedHtml}
                   <div>
                     <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                       <Palette className="w-4 h-4" />
-                      {lang === "ar" ? "تغيير الألوان" : "Change Colors"}
+                      {lang === "ar" ? "منتقي الألوان المخصص" : "Custom Color Picker"}
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      {[
+                        { label: lang === "ar" ? "الرئيسي" : "Primary", value: customPrimary, set: setCustomPrimary, cmdAr: "غيّر اللون الرئيسي", cmdEn: "Change the primary color to" },
+                        { label: lang === "ar" ? "الثانوي" : "Secondary", value: customSecondary, set: setCustomSecondary, cmdAr: "غيّر اللون الثانوي", cmdEn: "Change the secondary/background color to" },
+                        { label: lang === "ar" ? "التمييز" : "Accent", value: customAccent, set: setCustomAccent, cmdAr: "غيّر لون التمييز", cmdEn: "Change the accent color to" },
+                      ].map(({ label, value, set, cmdAr, cmdEn }) => (
+                        <div key={label} className="flex flex-col items-center gap-1">
+                          <label className="text-[11px] text-muted-foreground">{label}</label>
+                          <div className="relative w-full h-9 rounded-lg overflow-hidden border border-border shadow-sm cursor-pointer">
+                            <input
+                              type="color"
+                              value={value}
+                              onChange={(e) => set(e.target.value)}
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              data-testid={`color-picker-${label}`}
+                            />
+                            <div className="w-full h-full rounded-lg" style={{ background: value }} />
+                          </div>
+                          <span className="text-[10px] text-muted-foreground font-mono">{value}</span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full text-[10px] h-6 px-1"
+                            disabled={editMutation.isPending}
+                            onClick={() => editMutation.mutate(lang === "ar" ? `${cmdAr} إلى ${value}` : `${cmdEn} ${value}`)}
+                            data-testid={`button-apply-color-${label}`}
+                          >
+                            {lang === "ar" ? "تطبيق" : "Apply"}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Palette className="w-4 h-4" />
+                      {lang === "ar" ? "أنظمة ألوان جاهزة" : "Color Presets"}
                     </h3>
                     <div className="grid grid-cols-2 gap-1.5">
                       {(lang === "ar"
-                        ? ["أسود وذهبي", "أزرق داكن وفضي", "أبيض وأخضر", "بنفسجي وزهري", "أحمر وأبيض", "كحلي وبرتقالي"]
-                        : ["Black & Gold", "Navy & Silver", "White & Green", "Purple & Pink", "Red & White", "Navy & Orange"]
+                        ? [
+                            { label: "أسود وذهبي", colors: ["#0f0f0f", "#e2b04a"] },
+                            { label: "أزرق داكن وفضي", colors: ["#1e3a5f", "#c0c0c0"] },
+                            { label: "أبيض وأخضر زمردي", colors: ["#ffffff", "#10b981"] },
+                            { label: "بنفسجي وزهري", colors: ["#4c1d95", "#ec4899"] },
+                            { label: "كحلي وذهبي", colors: ["#1e293b", "#f59e0b"] },
+                            { label: "أخضر داكن وبيج", colors: ["#14532d", "#f5f0e8"] },
+                          ]
+                        : [
+                            { label: "Black & Gold", colors: ["#0f0f0f", "#e2b04a"] },
+                            { label: "Navy & Silver", colors: ["#1e3a5f", "#c0c0c0"] },
+                            { label: "White & Emerald", colors: ["#ffffff", "#10b981"] },
+                            { label: "Purple & Pink", colors: ["#4c1d95", "#ec4899"] },
+                            { label: "Navy & Amber", colors: ["#1e293b", "#f59e0b"] },
+                            { label: "Dark Green & Beige", colors: ["#14532d", "#f5f0e8"] },
+                          ]
                       ).map((scheme, i) => (
                         <Button
                           key={i}
                           variant="outline"
                           size="sm"
-                          className="text-xs h-8"
+                          className="text-xs h-8 justify-start gap-2"
                           onClick={() => editMutation.mutate(
-                            lang === "ar" ? `غيّر الألوان إلى ${scheme}` : `Change colors to ${scheme}`
+                            lang === "ar"
+                              ? `غيّر الألوان: الرئيسي ${scheme.colors[0]} والتمييز ${scheme.colors[1]}`
+                              : `Change colors: primary to ${scheme.colors[0]} and accent to ${scheme.colors[1]}`
                           )}
                           disabled={editMutation.isPending}
                           data-testid={`button-color-scheme-${i}`}
                         >
-                          {scheme}
+                          <div className="flex gap-0.5 shrink-0">
+                            <div className="w-3 h-3 rounded-sm" style={{ background: scheme.colors[0] }} />
+                            <div className="w-3 h-3 rounded-sm" style={{ background: scheme.colors[1] }} />
+                          </div>
+                          {scheme.label}
                         </Button>
                       ))}
                     </div>
@@ -838,31 +900,74 @@ ${project.generatedHtml}
                   <div>
                     <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                       <Type className="w-4 h-4" />
-                      {lang === "ar" ? "الخطوط" : "Fonts"}
+                      {lang === "ar" ? "الخطوط العربية" : "Arabic Fonts"}
                     </h3>
-                    <div className="grid grid-cols-1 gap-1.5">
+                    <div className="grid grid-cols-2 gap-1.5">
                       {(lang === "ar"
                         ? [
-                            { name: "القاهرة (Cairo)", cmd: "غيّر الخط إلى Cairo" },
-                            { name: "تجول (Tajawal)", cmd: "غيّر الخط إلى Tajawal" },
-                            { name: "IBM Plex Arabic", cmd: "غيّر الخط إلى IBM Plex Sans Arabic" },
+                            { name: "القاهرة — Cairo", cmd: "غيّر الخط إلى Cairo", family: "Cairo" },
+                            { name: "تجول — Tajawal", cmd: "غيّر الخط إلى Tajawal", family: "Tajawal" },
+                            { name: "IBM Plex Arabic", cmd: "غيّر الخط إلى IBM Plex Sans Arabic", family: "IBM Plex Sans Arabic" },
+                            { name: "نوتو عربي", cmd: "غيّر الخط إلى Noto Sans Arabic", family: "Noto Sans Arabic" },
+                            { name: "أميري — Amiri", cmd: "غيّر الخط إلى Amiri", family: "Amiri" },
+                            { name: "ريدكس برو", cmd: "غيّر الخط إلى Readex Pro", family: "Readex Pro" },
+                            { name: "المسيري", cmd: "غيّر الخط إلى El Messiri", family: "El Messiri" },
+                            { name: "المراعي", cmd: "غيّر الخط إلى Almarai", family: "Almarai" },
+                            { name: "ريم كوفي", cmd: "غيّر الخط إلى Reem Kufi", family: "Reem Kufi" },
+                            { name: "لطيف — Lateef", cmd: "غيّر الخط إلى Lateef", family: "Lateef" },
                           ]
                         : [
-                            { name: "Inter (Modern)", cmd: "Change the font to Inter" },
-                            { name: "Poppins (Rounded)", cmd: "Change the font to Poppins" },
-                            { name: "Montserrat (Bold)", cmd: "Change the font to Montserrat" },
+                            { name: "Cairo (عربي)", cmd: "Change the font to Cairo", family: "Cairo" },
+                            { name: "Tajawal (عربي)", cmd: "Change the font to Tajawal", family: "Tajawal" },
+                            { name: "Readex Pro", cmd: "Change the font to Readex Pro", family: "Readex Pro" },
+                            { name: "Almarai", cmd: "Change the font to Almarai", family: "Almarai" },
+                            { name: "Amiri (Classic)", cmd: "Change the font to Amiri", family: "Amiri" },
+                            { name: "El Messiri", cmd: "Change the font to El Messiri", family: "El Messiri" },
                           ]
                       ).map((font, i) => (
                         <Button
                           key={i}
                           variant="outline"
                           size="sm"
-                          className="justify-start text-xs h-8"
+                          className="justify-start text-xs h-8 overflow-hidden"
+                          style={{ fontFamily: `'${font.family}', sans-serif` }}
                           onClick={() => editMutation.mutate(font.cmd)}
                           disabled={editMutation.isPending}
-                          data-testid={`button-font-${i}`}
+                          data-testid={`button-font-ar-${i}`}
                         >
-                          <Type className="w-3 h-3 me-2" />
+                          {font.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                      <Type className="w-4 h-4" />
+                      {lang === "ar" ? "الخطوط الإنجليزية" : "English Fonts"}
+                    </h3>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        { name: "Inter — Modern", cmd: lang === "ar" ? "غيّر الخط إلى Inter" : "Change the font to Inter", family: "Inter" },
+                        { name: "Poppins — Rounded", cmd: lang === "ar" ? "غيّر الخط إلى Poppins" : "Change the font to Poppins", family: "Poppins" },
+                        { name: "Montserrat — Bold", cmd: lang === "ar" ? "غيّر الخط إلى Montserrat" : "Change the font to Montserrat", family: "Montserrat" },
+                        { name: "Playfair Display", cmd: lang === "ar" ? "غيّر الخط إلى Playfair Display" : "Change the font to Playfair Display", family: "Playfair Display" },
+                        { name: "Raleway — Elegant", cmd: lang === "ar" ? "غيّر الخط إلى Raleway" : "Change the font to Raleway", family: "Raleway" },
+                        { name: "Roboto — Clean", cmd: lang === "ar" ? "غيّر الخط إلى Roboto" : "Change the font to Roboto", family: "Roboto" },
+                        { name: "Nunito — Friendly", cmd: lang === "ar" ? "غيّر الخط إلى Nunito" : "Change the font to Nunito", family: "Nunito" },
+                        { name: "DM Sans — Pro", cmd: lang === "ar" ? "غيّر الخط إلى DM Sans" : "Change the font to DM Sans", family: "DM Sans" },
+                        { name: "Josefin Sans", cmd: lang === "ar" ? "غيّر الخط إلى Josefin Sans" : "Change the font to Josefin Sans", family: "Josefin Sans" },
+                      ].map((font, i) => (
+                        <Button
+                          key={i}
+                          variant="outline"
+                          size="sm"
+                          className="justify-start text-xs h-8 overflow-hidden"
+                          style={{ fontFamily: `'${font.family}', sans-serif` }}
+                          onClick={() => editMutation.mutate(font.cmd)}
+                          disabled={editMutation.isPending}
+                          data-testid={`button-font-en-${i}`}
+                        >
                           {font.name}
                         </Button>
                       ))}
