@@ -15,6 +15,22 @@ export async function seedDatabase() {
     console.error("Migration warning:", e.message);
   }
 
+  // Ensure session table exists (connect-pg-simple)
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS "session" (
+        "sid" varchar NOT NULL COLLATE "default",
+        "sess" json NOT NULL,
+        "expire" timestamp(6) NOT NULL,
+        CONSTRAINT "session_pkey" PRIMARY KEY ("sid") DEFERRABLE INITIALLY IMMEDIATE
+      ) WITH (OIDS=FALSE)
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
+    console.log("Migration: session table ensured");
+  } catch (e: any) {
+    console.error("Session table warning:", e.message);
+  }
+
   const existing = await db.select().from(templates);
   if (existing.length > 0) return;
 

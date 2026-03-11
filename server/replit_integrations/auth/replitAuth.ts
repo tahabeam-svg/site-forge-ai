@@ -20,10 +20,10 @@ export function getSession() {
     secret: process.env.SESSION_SECRET,
     store: new PgSession({
       conString: process.env.DATABASE_URL,
-      tableName: "user_sessions",
-      createTableIfMissing: true,
+      tableName: "session",
+      createTableIfMissing: false, // table created in DB migration (seed.ts)
       ttl: sessionTtl / 1000,
-      pruneSessionInterval: 60 * 60, // prune expired sessions every hour
+      pruneSessionInterval: 60 * 60,
     }),
     resave: false,
     saveUninitialized: false,
