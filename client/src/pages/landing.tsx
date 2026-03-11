@@ -157,188 +157,233 @@ export default function LandingPage() {
         )}
       </nav>
 
-      <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-violet-500/5 to-amber-500/5" />
-        <motion.div
-          className="absolute top-16 left-[10%] w-64 h-64 sm:w-80 sm:h-80 bg-emerald-400/15 rounded-full blur-3xl"
-          animate={{ x: [0, 30, 0], y: [0, -20, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute top-32 right-[10%] w-72 h-72 sm:w-96 sm:h-96 bg-violet-400/12 rounded-full blur-3xl"
-          animate={{ x: [0, -25, 0], y: [0, 25, 0], scale: [1, 1.15, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-[30%] w-56 h-56 sm:w-72 sm:h-72 bg-amber-400/10 rounded-full blur-3xl"
-          animate={{ x: [0, 20, 0], y: [0, -15, 0], scale: [1, 1.08, 1] }}
-          transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        />
+      {/* ─── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative pt-20 sm:pt-28 pb-14 sm:pb-20 overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.04] via-violet-500/[0.04] to-amber-500/[0.04]" />
+        <motion.div className="absolute top-0 start-[5%] w-[500px] h-[500px] bg-emerald-400/10 rounded-full blur-[100px] pointer-events-none"
+          animate={{ x: [0, 40, 0], y: [0, -30, 0] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.div className="absolute top-10 end-[5%] w-[400px] h-[400px] bg-violet-400/10 rounded-full blur-[100px] pointer-events-none"
+          animate={{ x: [0, -30, 0], y: [0, 30, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }} />
+        <motion.div className="absolute bottom-0 start-[30%] w-[350px] h-[350px] bg-teal-400/8 rounded-full blur-[80px] pointer-events-none"
+          animate={{ x: [0, 20, 0], y: [0, -20, 0] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
 
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div
-            className="absolute top-24 left-[15%] w-2 h-2 bg-emerald-400/40 rounded-full"
-            animate={{ y: [0, -80, 0], opacity: [0.4, 0.8, 0.4] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute top-40 right-[20%] w-1.5 h-1.5 bg-violet-400/40 rounded-full"
-            animate={{ y: [0, -60, 0], opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          />
-          <motion.div
-            className="absolute top-56 left-[40%] w-1 h-1 bg-amber-400/50 rounded-full"
-            animate={{ y: [0, -70, 0], opacity: [0.5, 0.9, 0.5] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          />
-          <motion.div
-            className="absolute top-36 right-[35%] w-2.5 h-2.5 bg-teal-400/30 rounded-full"
-            animate={{ y: [0, -90, 0], opacity: [0.2, 0.6, 0.2] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-          />
-          <motion.div
-            className="absolute top-48 left-[60%] w-1.5 h-1.5 bg-pink-400/30 rounded-full"
-            animate={{ y: [0, -50, 0], opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-          />
-        </div>
+        <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
 
-        <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
-          <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp}>
-            <Badge variant="secondary" className="mb-5 sm:mb-6 px-3 sm:px-4 py-1.5 text-xs sm:text-sm border-emerald-200/60 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm text-emerald-700 dark:text-emerald-300 dark:border-emerald-800 max-w-[90vw] text-center shadow-sm" data-testid="badge-new">
-              <Zap className="w-3.5 h-3.5 me-1 sm:me-1.5 shrink-0" />
-              {t("heroBadge", lang)}
-            </Badge>
-          </motion.div>
-
-          <motion.h1
-            custom={1}
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            className="font-extrabold tracking-tight mb-6 sm:mb-8"
-            data-testid="text-hero-title"
-          >
-            <span
-              className="block pb-3 bg-gradient-to-br from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent"
-              style={{ fontSize: "clamp(2.4rem, 7vw, 5.5rem)", lineHeight: 1.18 }}
+            {/* ── Text Column ── */}
+            <motion.div
+              className="flex flex-col items-center text-center lg:items-start lg:text-start order-2 lg:order-1"
+              initial="hidden" animate="visible" variants={{ hidden: {}, visible: {} }}
             >
-              {t("tagline", lang)}
-            </span>
-            <span
-              className="block mt-2 font-semibold bg-gradient-to-r from-emerald-500 via-teal-500 to-violet-500 bg-clip-text text-transparent pb-1"
-              style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)", lineHeight: 1.5 }}
-            >
-              {t("taglineSub", lang)}
-            </span>
-          </motion.h1>
+              {/* Badge */}
+              <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp} className="mb-5 sm:mb-6">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium
+                  bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300
+                  border border-emerald-200/70 dark:border-emerald-700/50 shadow-sm" data-testid="badge-new">
+                  <Zap className="w-3.5 h-3.5 shrink-0" />
+                  {t("heroBadge", lang)}
+                </span>
+              </motion.div>
 
-          <motion.p
-            custom={2}
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 leading-[1.85]"
-            data-testid="text-hero-subtitle"
-          >
-            {t("subtitle", lang)}
-          </motion.p>
+              {/* Title */}
+              <motion.h1
+                custom={1} initial="hidden" animate="visible" variants={fadeUp}
+                className="font-extrabold tracking-tight mb-5 sm:mb-6"
+                data-testid="text-hero-title"
+              >
+                <span className="block text-foreground" style={{ fontSize: "clamp(2.6rem, 6vw, 4.5rem)", lineHeight: 1.15 }}>
+                  {lang === "ar" ? "أنشئ موقعك" : "Build Your Website"}
+                </span>
+                <span
+                  className="block bg-gradient-to-l from-emerald-500 via-teal-500 to-emerald-600 bg-clip-text text-transparent"
+                  style={{ fontSize: "clamp(2.6rem, 6vw, 4.5rem)", lineHeight: 1.2, paddingBottom: "0.15em" }}
+                >
+                  {lang === "ar" ? "بالذكاء الاصطناعي" : "with AI — Free"}
+                </span>
+                <span className="block text-muted-foreground font-semibold mt-1"
+                  style={{ fontSize: "clamp(1rem, 2vw, 1.35rem)", lineHeight: 1.6 }}>
+                  {lang === "ar" ? "وأطلق محتوى السوشيال ميديا في دقائق" : "Launch social media content in minutes"}
+                </span>
+              </motion.h1>
 
-          <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center gap-3 mb-6">
-            <button
-              onClick={handleCTA}
-              className="relative text-base font-semibold text-white px-10 py-4 rounded-2xl cursor-pointer border-0 outline-none
-                bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600
-                shadow-[0_6px_0_0_#0d7351,0_8px_20px_rgba(16,185,129,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)]
-                hover:shadow-[0_4px_0_0_#0d7351,0_6px_16px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)]
-                hover:translate-y-[2px]
-                active:shadow-[0_1px_0_0_#0d7351,0_2px_8px_rgba(16,185,129,0.4),inset_0_2px_4px_rgba(0,0,0,0.15)]
-                active:translate-y-[5px]
-                transition-all duration-150 ease-out
-                group overflow-hidden flex items-center justify-center gap-2"
-              data-testid="button-hero-cta"
-            >
-              <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-              <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
-              <span className="relative flex items-center gap-2">
-                {!isAuthenticated && <SiGoogle className="w-5 h-5" />}
-                {t("getStarted", lang)}
-                <ArrowRight className="w-5 h-5" />
-              </span>
-            </button>
-          </motion.div>
+              {/* Subtitle */}
+              <motion.p
+                custom={2} initial="hidden" animate="visible" variants={fadeUp}
+                className="text-base sm:text-lg text-muted-foreground max-w-lg mb-7 sm:mb-9 leading-[1.8]"
+                data-testid="text-hero-subtitle"
+              >
+                {t("subtitle", lang)}
+              </motion.p>
 
-          <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-12 sm:mb-16">
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-              {lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card required"}
-            </span>
-            <span className="hidden sm:block text-border">|</span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-violet-500 flex-shrink-0" />
-              {lang === "ar" ? "مجاني للأبد" : "Free forever plan"}
-            </span>
-            <span className="hidden sm:block text-border">|</span>
-            <span className="flex items-center gap-1.5">
-              <Check className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              {lang === "ar" ? "تسجيل بحساب جوجل" : "Sign in with Google"}
-            </span>
-          </motion.div>
+              {/* CTA */}
+              <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-5 w-full">
+                <button
+                  onClick={handleCTA}
+                  className="relative text-base font-semibold text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl cursor-pointer border-0 outline-none
+                    bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600
+                    shadow-[0_5px_0_0_#0d7351,0_7px_18px_rgba(16,185,129,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)]
+                    hover:shadow-[0_3px_0_0_#0d7351,0_5px_14px_rgba(16,185,129,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)]
+                    hover:translate-y-[2px]
+                    active:shadow-[0_1px_0_0_#0d7351,0_2px_6px_rgba(16,185,129,0.3),inset_0_2px_4px_rgba(0,0,0,0.15)]
+                    active:translate-y-[4px]
+                    transition-all duration-150 ease-out
+                    group overflow-hidden flex items-center justify-center gap-2"
+                  data-testid="button-hero-cta"
+                >
+                  <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+                  <span className="relative flex items-center gap-2">
+                    {!isAuthenticated && <SiGoogle className="w-4.5 h-4.5" />}
+                    {t("getStarted", lang)}
+                    <ArrowRight className="w-4.5 h-4.5" />
+                  </span>
+                </button>
+              </motion.div>
 
-          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp}>
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 max-w-lg mx-auto">
-              {[
-                { value: t("heroStat1", lang), label: t("heroStat1Label", lang), color: "text-emerald-600 dark:text-emerald-400" },
-                { value: t("heroStat2", lang), label: t("heroStat2Label", lang), color: "text-violet-600 dark:text-violet-400" },
-                { value: t("heroStat3", lang), label: t("heroStat3Label", lang), color: "text-amber-600 dark:text-amber-400" },
-              ].map((stat, i) => (
-                <div key={i} className="text-center bg-white/70 dark:bg-zinc-900/70 backdrop-blur-sm border border-border/50 rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow" data-testid={`stat-${i}`}>
-                  <div className={`font-extrabold ${stat.color} pb-0.5`} style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)" }} dir="ltr">
-                    {stat.value}
+              {/* Trust badges */}
+              <motion.div custom={3.5} initial="hidden" animate="visible" variants={fadeUp}
+                className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-2 text-sm text-muted-foreground mb-9 sm:mb-11">
+                {[
+                  { icon: Check, color: "text-emerald-500", text: lang === "ar" ? "بدون بطاقة ائتمان" : "No credit card" },
+                  { icon: Check, color: "text-violet-500", text: lang === "ar" ? "خطة مجانية دائماً" : "Free forever plan" },
+                  { icon: Check, color: "text-amber-500", text: lang === "ar" ? "تسجيل بجوجل" : "Google sign-in" },
+                ].map(({ icon: Icon, color, text }, i) => (
+                  <span key={i} className="flex items-center gap-1.5">
+                    <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${color}`} />
+                    {text}
+                  </span>
+                ))}
+              </motion.div>
+
+              {/* Stats */}
+              <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-sm lg:max-w-none">
+                {[
+                  { value: "10,000+", label: lang === "ar" ? "موقع تم إنشاؤه" : "Websites Created", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-800/40" },
+                  { value: "< 2 min", label: lang === "ar" ? "وقت الإنشاء" : "Build Time", color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-100 dark:border-violet-800/40" },
+                  { value: "100%", label: lang === "ar" ? "للسوق السعودي" : "Arabic-first", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-800/40" },
+                ].map((stat, i) => (
+                  <div key={i} className={`text-center rounded-xl p-3 sm:p-4 border ${stat.bg}`} data-testid={`stat-${i}`}>
+                    <div className={`font-extrabold ${stat.color} leading-none mb-1`} style={{ fontSize: "clamp(1.25rem, 3vw, 1.75rem)" }} dir="ltr">
+                      {stat.value}
+                    </div>
+                    <div className="text-[0.65rem] sm:text-xs text-muted-foreground leading-snug font-medium">{stat.label}</div>
                   </div>
-                  <div className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-snug font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+                ))}
+              </motion.div>
+            </motion.div>
 
-          <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp} className="mt-10 sm:mt-16 relative max-w-4xl mx-auto hidden sm:block">
-            <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-violet-500/15 to-amber-500/20 rounded-2xl blur-2xl" />
-            <Card className="relative rounded-xl border-2 overflow-hidden shadow-2xl">
-              <div className="bg-card p-3 border-b flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-400/80" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
-                  <div className="w-3 h-3 rounded-full bg-green-400/80" />
+            {/* ── Visual Column ── */}
+            <motion.div
+              custom={2} initial="hidden" animate="visible" variants={fadeUp}
+              className="order-1 lg:order-2 relative"
+            >
+              {/* Glow */}
+              <div className="absolute -inset-6 bg-gradient-to-br from-emerald-500/15 via-violet-500/10 to-amber-500/10 rounded-3xl blur-3xl pointer-events-none" />
+
+              {/* Browser window */}
+              <div className="relative rounded-2xl border-2 border-border/60 overflow-hidden shadow-2xl bg-card">
+                {/* Browser chrome */}
+                <div className="bg-muted/80 backdrop-blur-sm px-4 py-2.5 border-b border-border/60 flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/90" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/90" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/90" />
+                  </div>
+                  <div className="flex-1 flex justify-center">
+                    <div className="text-xs text-muted-foreground bg-background/80 border border-border/50 rounded-md px-3 py-1 inline-flex items-center gap-1.5 min-w-[160px] justify-center">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      arabyweb.net
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-muted-foreground bg-muted rounded-md px-3 py-1 inline-block">arabyweb.net/dashboard</div>
+
+                {/* Dashboard content */}
+                <div className="bg-gradient-to-br from-background to-muted/30 p-5 sm:p-7">
+                  {/* AI prompt area */}
+                  <div className="mb-5 rounded-xl border border-border/70 bg-background p-4 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
+                        <Sparkles className="w-3.5 h-3.5 text-white" />
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground">{lang === "ar" ? "أنشئ موقعك بالذكاء الاصطناعي" : "Generate with AI"}</span>
+                    </div>
+                    <div className="bg-muted/60 rounded-lg px-3 py-2.5 text-sm text-muted-foreground border border-border/40" dir="rtl">
+                      {lang === "ar" ? "مطعم شاورما في الرياض، قائمة طعام وحجز طاولات..." : "A modern restaurant in Riyadh with menu and reservations..."}
+                    </div>
+                    <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
+                      <motion.div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
+                        animate={{ width: ["0%", "85%", "100%", "0%"] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }} />
+                    </div>
+                    <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                      <Sparkles className="w-3 h-3" />
+                      <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                        {lang === "ar" ? "جاري إنشاء موقعك..." : "Generating your website..."}
+                      </motion.span>
+                    </div>
+                  </div>
+
+                  {/* Website cards */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { gradient: "from-emerald-500 to-teal-600", icon: Building2, name: lang === "ar" ? "مطعم الرياض" : "Riyadh Restaurant", status: lang === "ar" ? "منشور" : "Live", statusColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400" },
+                      { gradient: "from-violet-500 to-purple-600", icon: Gem, name: lang === "ar" ? "متجر الجوهرة" : "Gem Store", status: lang === "ar" ? "مسودة" : "Draft", statusColor: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-400" },
+                    ].map((card, i) => (
+                      <div key={i} className="bg-background rounded-xl p-3 border border-border/60 shadow-sm hover:shadow-md transition-shadow">
+                        <div className={`w-full h-20 sm:h-24 bg-gradient-to-br ${card.gradient} rounded-lg mb-3 flex items-center justify-center`}>
+                          <card.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white/70" />
+                        </div>
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-semibold text-foreground truncate">{card.name}</span>
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${card.statusColor}`}>{card.status}</span>
+                        </div>
+                        <div className="h-1.5 bg-muted rounded-full mt-2 w-4/5" />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Bottom bar */}
+                  <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
+                    <span className="flex items-center gap-1.5">
+                      <Globe2 className="w-3.5 h-3.5 text-emerald-500" />
+                      {lang === "ar" ? "٢ موقع نشط" : "2 active sites"}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                      {lang === "ar" ? "٥ كريدت متبقي" : "5 credits left"}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "١٢٤ زيارة" : "124 visits"}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <div className="p-6 sm:p-10 bg-gradient-to-br from-emerald-500/5 via-violet-500/3 to-amber-500/5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-background rounded-lg p-4 border">
-                    <div className="w-full h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-md mb-3 flex items-center justify-center">
-                      <Building2 className="w-10 h-10 text-white/60" />
-                    </div>
-                    <div className="h-3 bg-muted rounded w-3/4 mb-2" />
-                    <div className="h-2 bg-muted rounded w-1/2" />
-                  </div>
-                  <div className="bg-background rounded-lg p-4 border">
-                    <div className="w-full h-24 bg-gradient-to-br from-violet-500 to-purple-600 rounded-md mb-3 flex items-center justify-center">
-                      <Gem className="w-10 h-10 text-white/60" />
-                    </div>
-                    <div className="h-3 bg-muted rounded w-3/4 mb-2" />
-                    <div className="h-2 bg-muted rounded w-1/2" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
 
-          <motion.p custom={6} initial="hidden" animate="visible" variants={fadeUp} className="mt-8 text-sm text-muted-foreground hidden sm:block">
-            {t("trustedBy", lang)}
-          </motion.p>
+              {/* Floating badges */}
+              <motion.div
+                className="absolute -top-4 -end-4 sm:-top-5 sm:-end-5 bg-white dark:bg-zinc-900 border border-border shadow-lg rounded-xl px-3 py-2 flex items-center gap-2 text-xs font-semibold z-10"
+                animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                  <Sparkles className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-foreground">{lang === "ar" ? "موقع جاهز في ٩٠ ثانية" : "Site ready in 90 sec"}</span>
+              </motion.div>
+
+              <motion.div
+                className="absolute -bottom-4 -start-4 sm:-bottom-5 sm:-start-5 bg-white dark:bg-zinc-900 border border-border shadow-lg rounded-xl px-3 py-2 flex items-center gap-2 text-xs font-semibold z-10"
+                animate={{ y: [0, 6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              >
+                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                  <Star className="w-3 h-3 text-white" />
+                </div>
+                <span className="text-foreground">{lang === "ar" ? "+١٠٠٠ موقع هذا الأسبوع" : "+1000 sites this week"}</span>
+              </motion.div>
+            </motion.div>
+
+          </div>
         </div>
       </section>
 
