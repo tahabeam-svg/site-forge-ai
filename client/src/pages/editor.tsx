@@ -38,6 +38,8 @@ import {
   X,
   Paperclip,
   ImagePlus,
+  Crown,
+  Lock,
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
@@ -107,6 +109,7 @@ export default function EditorPage() {
   const [customPrimary, setCustomPrimary] = useState("#10b981");
   const [customSecondary, setCustomSecondary] = useState("#0f172a");
   const [customAccent, setCustomAccent] = useState("#8b5cf6");
+  const [limitReached, setLimitReached] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -154,19 +157,23 @@ export default function EditorPage() {
         command: cmd,
         language: lang,
       });
+      if (res.status === 402) {
+        const data = await res.json();
+        throw Object.assign(new Error("limit_reached"), { data });
+      }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "messages"] });
       setEditCommand("");
-      toast({
-        title: lang === "ar" ? "تم التعديل" : "Updated!",
-        description: lang === "ar" ? "تم تطبيق التعديلات" : "Changes applied successfully",
-      });
     },
-    onError: (err: Error) => {
-      toast({ title: t("error", lang), description: err.message, variant: "destructive" });
+    onError: (err: any) => {
+      if (err.message === "limit_reached") {
+        setLimitReached(true);
+      } else {
+        toast({ title: t("error", lang), description: err.message, variant: "destructive" });
+      }
     },
   });
 
@@ -515,15 +522,32 @@ ${project.generatedHtml}
                             ? "bg-emerald-50 dark:bg-emerald-950/30 text-foreground"
                             : "bg-muted text-muted-foreground"
                         }`}>
-                          {msg.role === "user" && msg.content.match(/\/uploads\/[^\s]+\.(jpg|jpeg|png|svg|webp|gif)/i) && (
-                            <img
-                              src={msg.content.match(/\/uploads\/[^\s]+\.(jpg|jpeg|png|svg|webp|gif)/i)?.[0]}
-                              alt=""
-                              className="h-12 w-auto rounded mb-1.5 object-cover"
-                              data-testid={`img-chat-uploaded-${msg.id}`}
-                            />
-                          )}
-                          {msg.content}
+                          {msg.role === "assistant"
+                            ? msg.content.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|\n)/).map((part, pi) => {
+                                if (part.startsWith("**") && part.endsWith("**")) {
+                                  return <strong key={pi} className="text-foreground font-semibold">{part.slice(2, -2)}</strong>;
+                                }
+                                const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+                                if (linkMatch) {
+                                  return <a key={pi} href={linkMatch[2]} className="text-violet-600 dark:text-violet-400 underline font-medium">{linkMatch[1]}</a>;
+                                }
+                                if (part === "\n") return <br key={pi} />;
+                                return <span key={pi}>{part}</span>;
+                              })
+                            : (
+                              <>
+                                {msg.content.match(/data:image\/[^;]+;base64,/i) && (
+                                  <img
+                                    src={msg.content.match(/(data:image\/[^\s"']+)/i)?.[1]}
+                                    alt=""
+                                    className="h-12 w-auto rounded mb-1.5 object-cover"
+                                    data-testid={`img-chat-uploaded-${msg.id}`}
+                                  />
+                                )}
+                                {msg.content}
+                              </>
+                            )
+                          }
                         </div>
                       </div>
                     ))}
@@ -558,6 +582,30 @@ ${project.generatedHtml}
                       </Button>
                     ))}
                   </div>
+                  {limitReached && (
+                    <div className="rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/30 p-4 text-center space-y-2" data-testid="banner-limit-reached">
+                      <div className="flex items-center justify-center gap-2">
+                        <Lock className="w-5 h-5 text-amber-500" />
+                        <span className="font-bold text-amber-700 dark:text-amber-400">
+                          {lang === "ar" ? "انتهت تعديلاتك المجانية" : "Free edits limit reached"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {lang === "ar"
+                          ? "لقد استخدمت جميع تعديلاتك المجانية. اشترك للحصول على تعديلات غير محدودة وإزالة شعار عربي ويب."
+                          : "You've used all free edits. Upgrade for unlimited edits and remove the ArabyWeb badge."}
+                      </p>
+                      <Button
+                        className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white gap-2"
+                        size="sm"
+                        onClick={() => window.location.href = "/pricing"}
+                        data-testid="button-upgrade-from-limit"
+                      >
+                        <Crown className="w-4 h-4" />
+                        {lang === "ar" ? "اشترك الآن" : "Upgrade Now"}
+                      </Button>
+                    </div>
+                  )}
                   {chatImagePreview && (
                     <div className="relative inline-block">
                       <img
@@ -575,13 +623,13 @@ ${project.generatedHtml}
                       </button>
                     </div>
                   )}
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 items-end">
                     <Button
                       variant="outline"
                       size="icon"
-                      className="shrink-0"
+                      className="shrink-0 mb-0.5"
                       onClick={() => chatFileInputRef.current?.click()}
-                      disabled={editMutation.isPending || chatUploadMutation.isPending}
+                      disabled={editMutation.isPending || chatUploadMutation.isPending || limitReached}
                       title={lang === "ar" ? "ارفع شعار أو صورة" : "Upload logo or image"}
                       data-testid="button-chat-attach"
                     >
@@ -591,24 +639,31 @@ ${project.generatedHtml}
                         <ImagePlus className="w-4 h-4" />
                       )}
                     </Button>
-                    <Input
+                    <Textarea
                       value={editCommand}
                       onChange={(e) => setEditCommand(e.target.value)}
-                      placeholder={chatImageFile
-                        ? (lang === "ar" ? "أضف تعليمات للصورة (اختياري)..." : "Add instructions for the image (optional)...")
-                        : t("editCommandPlaceholder", lang)
+                      placeholder={limitReached
+                        ? (lang === "ar" ? "🔒 يجب الاشتراك للمتابعة..." : "🔒 Upgrade to continue...")
+                        : chatImageFile
+                          ? (lang === "ar" ? "أضف تعليمات للصورة (اختياري)..." : "Add instructions for the image (optional)...")
+                          : t("editCommandPlaceholder", lang)
                       }
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSendWithImage();
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          if (!limitReached) handleSendWithImage();
+                        }
                       }}
-                      className="text-sm"
+                      rows={3}
+                      disabled={limitReached}
+                      className="text-sm resize-none leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed"
                       data-testid="input-edit-command"
                     />
                     <Button
                       size="icon"
-                      className="shrink-0 bg-gradient-to-r from-emerald-500 to-teal-600"
+                      className="shrink-0 bg-gradient-to-r from-emerald-500 to-teal-600 mb-0.5"
                       onClick={handleSendWithImage}
-                      disabled={(!editCommand && !chatImageFile) || editMutation.isPending || chatUploadMutation.isPending}
+                      disabled={(!editCommand && !chatImageFile) || editMutation.isPending || chatUploadMutation.isPending || limitReached}
                       data-testid="button-apply-edit"
                     >
                       {(editMutation.isPending || chatUploadMutation.isPending) ? (

@@ -65,6 +65,24 @@ const upload = multer({
   },
 });
 
+// Free plan: max user messages per project before upgrade wall
+const FREE_MSG_LIMIT = 8;
+
+// ArabyWeb badge injected into free-plan websites
+const FREE_PLAN_BADGE = `<div id="aw-free-badge" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);color:#fff;text-align:center;padding:9px 16px;font-family:'Cairo','Inter',sans-serif;font-size:13px;z-index:2147483647;direction:rtl;display:flex;align-items:center;justify-content:center;gap:10px;border-top:2px solid #10b981;box-shadow:0 -2px 12px rgba(16,185,129,0.3);">هذا الموقع أُنشئ بواسطة <strong style="color:#10b981;margin:0 4px;">عربي ويب</strong><a href="https://arabyWeb.net/pricing" target="_blank" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:4px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:bold;margin-inline-start:6px;">اشترك لإزالة الشعار</a></div>`;
+
+function injectFreePlanWatermark(html: string): string {
+  const badge = FREE_PLAN_BADGE;
+  if (html.includes('id="aw-free-badge"')) return html; // already injected
+  if (html.includes("</body>")) return html.replace("</body>", `${badge}\n</body>`);
+  return html + badge;
+}
+
+function removeFreePlanWatermark(html: string): string {
+  // Remove the badge div (handles different quote styles)
+  return html.replace(/<div id="aw-free-badge"[\s\S]*?<\/div>/gi, "");
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
@@ -162,14 +180,27 @@ export async function registerRoutes(
 
       const generated = await generateWebsite(description, language);
 
+      const user = await storage.getUser(userId);
+      const isFreePlan = !user?.plan || user.plan === "free";
+      const isAdmin = user?.email === "tahabeam@gmail.com" || (user as any)?.role === "admin";
+      const finalHtml = (isFreePlan && !isAdmin)
+        ? injectFreePlanWatermark(generated.html)
+        : removeFreePlanWatermark(generated.html);
+
+      const freePlanNote = isFreePlan && !isAdmin
+        ? (language === "ar"
+          ? "\n\n💡 **ملاحظة:** موقعك على الخطة المجانية يحتوي على شعار عربي ويب. [اشترك الآن](/pricing) لإزالته."
+          : "\n\n💡 **Note:** Your free plan site includes the ArabyWeb badge. [Upgrade now](/pricing) to remove it.")
+        : "";
+
       await storage.addChatMessage({
         projectId: project.id,
         role: "assistant",
-        content: language === "ar" ? "تم إنشاء الموقع بنجاح ✨" : "Website generated successfully ✨",
+        content: (language === "ar" ? "تم إنشاء الموقع بنجاح ✨" : "Website generated successfully ✨") + freePlanNote,
       });
 
       const updated = await storage.updateProject(project.id, {
-        generatedHtml: generated.html,
+        generatedHtml: finalHtml,
         generatedCss: generated.css,
         seoTitle: generated.seoTitle,
         seoDescription: generated.seoDescription,
@@ -202,14 +233,27 @@ export async function registerRoutes(
 
       const generated = await generateInstantWebsite(description, language);
 
+      const user2 = await storage.getUser(req.user.id);
+      const isFreePlan2 = !user2?.plan || user2.plan === "free";
+      const isAdmin2 = user2?.email === "tahabeam@gmail.com" || (user2 as any)?.role === "admin";
+      const finalHtml2 = (isFreePlan2 && !isAdmin2)
+        ? injectFreePlanWatermark(generated.html)
+        : removeFreePlanWatermark(generated.html);
+
+      const freePlanNote2 = isFreePlan2 && !isAdmin2
+        ? (language === "ar"
+          ? "\n\n💡 **ملاحظة:** موقعك على الخطة المجانية يحتوي على شعار عربي ويب. [اشترك الآن](/pricing) لإزالته."
+          : "\n\n💡 **Note:** Free plan site includes the ArabyWeb badge. [Upgrade](/pricing) to remove it.")
+        : "";
+
       await storage.addChatMessage({
         projectId: project.id,
         role: "assistant",
-        content: language === "ar" ? "تم إنشاء الموقع فورياً ✨" : "Website generated instantly ✨",
+        content: (language === "ar" ? "تم إنشاء الموقع فورياً ✨" : "Website generated instantly ✨") + freePlanNote2,
       });
 
       const updated = await storage.updateProject(project.id, {
-        generatedHtml: generated.html,
+        generatedHtml: finalHtml2,
         generatedCss: generated.css,
         seoTitle: generated.seoTitle,
         seoDescription: generated.seoDescription,
@@ -237,6 +281,25 @@ export async function registerRoutes(
       const parsed = editCommandSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Edit command is required" });
       const { command, language } = parsed.data;
+      const lang = language || "ar";
+
+      // Check free plan message limit
+      const userEdit = await storage.getUser(userId);
+      const isAdminEdit = userEdit?.email === "tahabeam@gmail.com" || (userEdit as any)?.role === "admin";
+      const isFreePlanEdit = !userEdit?.plan || userEdit.plan === "free";
+
+      if (isFreePlanEdit && !isAdminEdit) {
+        const existingMessages = await storage.getChatMessages(project.id);
+        const userMsgCount = existingMessages.filter((m) => m.role === "user").length;
+        if (userMsgCount >= FREE_MSG_LIMIT) {
+          return res.status(402).json({
+            message: "limit_reached",
+            messageAr: `وصلت للحد الأقصى (${FREE_MSG_LIMIT} تعديلات) في الخطة المجانية. اشترك الآن للحصول على تعديلات غير محدودة.`,
+            messageEn: `You've reached the free plan limit (${FREE_MSG_LIMIT} edits). Upgrade now for unlimited edits.`,
+            remaining: 0,
+          });
+        }
+      }
 
       await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
 
@@ -244,17 +307,40 @@ export async function registerRoutes(
         project.generatedHtml || "",
         project.generatedCss || "",
         command,
-        language || "ar"
+        lang
       );
+
+      // Maintain free-plan watermark in edited HTML
+      let finalEditHtml = result.html;
+      if (isFreePlanEdit && !isAdminEdit) {
+        finalEditHtml = injectFreePlanWatermark(finalEditHtml);
+      } else {
+        finalEditHtml = removeFreePlanWatermark(finalEditHtml);
+      }
+
+      // Show remaining edits for free plan
+      const allMessages = await storage.getChatMessages(project.id);
+      const newUserMsgCount = allMessages.filter((m) => m.role === "user").length;
+      const remainingEdits = isFreePlanEdit && !isAdminEdit
+        ? Math.max(0, FREE_MSG_LIMIT - newUserMsgCount)
+        : null;
+
+      const remainingNote = (remainingEdits !== null && remainingEdits <= 3 && remainingEdits > 0)
+        ? (lang === "ar"
+          ? `\n\n⚠️ تبقى لك **${remainingEdits}** تعديل${remainingEdits === 1 ? "" : "ات"} مجانية فقط. [اشترك الآن](/pricing) للحصول على تعديلات غير محدودة.`
+          : `\n\n⚠️ Only **${remainingEdits}** free edit${remainingEdits === 1 ? "" : "s"} remaining. [Upgrade now](/pricing) for unlimited edits.`)
+        : remainingEdits === 0
+          ? (lang === "ar" ? "\n\n🔒 انتهت تعديلاتك المجانية. [اشترك الآن](/pricing)" : "\n\n🔒 Free edits used up. [Upgrade now](/pricing)")
+          : "";
 
       await storage.addChatMessage({
         projectId: project.id,
         role: "assistant",
-        content: language === "ar" ? "تم تطبيق التعديلات ✅" : "Changes applied ✅",
+        content: result.summary + remainingNote,
       });
 
       const updated = await storage.updateProject(project.id, {
-        generatedHtml: result.html,
+        generatedHtml: finalEditHtml,
         generatedCss: result.css,
       });
 

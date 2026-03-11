@@ -280,7 +280,7 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
   }
 }
 
-export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar"): Promise<{ html: string; css: string }> {
+export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar"): Promise<{ html: string; css: string; summary: string }> {
   const isArabic = language === "ar";
 
   const response = await openai.chat.completions.create({
@@ -301,7 +301,12 @@ GUIDELINES:
 - If asked to embed a YouTube video, use an iframe with the embed URL
 - If asked to embed media from a URL, create an appropriate embed
 
-Return ONLY a JSON object with 'html' and 'css' fields. No markdown, no explanation.`,
+Return ONLY a JSON object with 3 fields:
+- 'html': the updated full HTML
+- 'css': the updated full CSS
+- 'summary': a short ${isArabic ? "Arabic" : "English"} message (1-2 sentences) describing exactly what was changed/added/removed. Be specific and friendly. ${isArabic ? "مثال: 'تم تغيير لون الخلفية إلى أسود وإضافة تأثيرات ذهبية على العناوين ✅'" : "Example: 'Background color changed to black and golden effects added to headings ✅'"}
+
+No markdown, no extra explanation outside the JSON.`,
       },
       {
         role: "user",
@@ -329,9 +334,10 @@ Return ONLY a JSON object with 'html' and 'css' fields. No markdown, no explanat
     }
     let css = parsed.css || currentCss;
     if (!css.includes("scroll-behavior")) css = "html { scroll-behavior: smooth; }\n" + css;
-    return { html, css };
+    const summary = parsed.summary || (isArabic ? "تم تطبيق التعديلات ✅" : "Changes applied ✅");
+    return { html, css, summary };
   } catch {
-    return { html: currentHtml, css: currentCss };
+    return { html: currentHtml, css: currentCss, summary: isArabic ? "تم تطبيق التعديلات ✅" : "Changes applied ✅" };
   }
 }
 
