@@ -61,13 +61,17 @@ export async function setupAuth(app: Express) {
   );
 
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    const callbackURL = process.env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback";
+    // Use explicit callback URL from env, or auto-build from DOMAIN, or fallback to relative
+    const callbackURL = process.env.GOOGLE_CALLBACK_URL ||
+      (process.env.DOMAIN ? `https://${process.env.DOMAIN}/api/auth/google/callback` : "/api/auth/google/callback");
+    console.log("Google OAuth callback URL:", callbackURL);
     passport.use(
       new GoogleStrategy(
         {
           clientID: process.env.GOOGLE_CLIENT_ID,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET,
           callbackURL,
+          proxy: true, // trust X-Forwarded-Proto from Nginx (Hostinger)
         },
         async (_accessToken, _refreshToken, profile, done) => {
           try {
@@ -97,11 +101,14 @@ export async function setupAuth(app: Express) {
             }).returning();
             return done(null, newUser);
           } catch (err) {
+            console.error("Google OAuth error:", err);
             return done(err as Error);
           }
         }
       )
     );
+  } else {
+    console.warn("Google OAuth: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET not set — Google login disabled");
   }
 
   passport.serializeUser((user: any, cb) => cb(null, user.id));
@@ -161,9 +168,31 @@ export async function setupAuth(app: Express) {
   if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     app.get("/api/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
     app.get("/api/auth/google/callback",
-      passport.authenticate("google", { failureRedirect: "/auth?error=google" }),
-      (_req, res) => { res.redirect("/"); }
+      (req, res, next) => {
+        passport.authenticate("google", (err: any, user: any, info: any) => {
+          if (err) {
+            console.error("Google OAuth callback error:", err?.message || err);
+            return res.redirect("/auth?error=google&reason=" + encodeURIComponent(err?.message || "unknown"));
+          }
+          if (!user) {
+            console.warn("Google OAuth: no user returned", info);
+            return res.redirect("/auth?error=google&reason=no_user");
+          }
+          req.login(user, (loginErr) => {
+            if (loginErr) {
+              console.error("Google login session error:", loginErr);
+              return res.redirect("/auth?error=google&reason=session");
+            }
+            return res.redirect("/");
+          });
+        })(req, res, next);
+      }
     );
+  } else {
+    // Show helpful error if Google is not configured
+    app.get("/api/auth/google", (_req, res) => {
+      res.status(503).json({ message: "Google login is not configured on this server" });
+    });
   }
 
   app.get("/api/login", (_req, res) => res.redirect("/auth"));
