@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
+import { Store } from "express-session";
 import memorystore from "memorystore";
 import { Pool } from "pg";
 import type { Express, RequestHandler } from "express";
@@ -11,50 +11,102 @@ import { db } from "../../db";
 import { users } from "@shared/models/auth";
 import { eq } from "drizzle-orm";
 
-const PgSession = connectPgSimple(session);
 const MemoryStore = memorystore(session);
 
-async function ensureSessionTable(): Promise<boolean> {
-  if (!process.env.DATABASE_URL) return false;
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// ── Custom PostgreSQL session store (no external files needed) ──────────────
+class PgSessionStore extends Store {
+  private pool: Pool;
+  private ttlSeconds: number;
+
+  constructor(pool: Pool, ttlSeconds: number) {
+    super();
+    this.pool = pool;
+    this.ttlSeconds = ttlSeconds;
+  }
+
+  async get(sid: string, cb: (err: any, session?: session.SessionData | null) => void) {
+    try {
+      const { rows } = await this.pool.query(
+        `SELECT sess FROM session WHERE sid=$1 AND expire > NOW()`,
+        [sid]
+      );
+      cb(null, rows[0] ? rows[0].sess : null);
+    } catch (e) { cb(e); }
+  }
+
+  async set(sid: string, sessionData: session.SessionData, cb?: (err?: any) => void) {
+    const expire = new Date(Date.now() + this.ttlSeconds * 1000);
+    try {
+      await this.pool.query(
+        `INSERT INTO session(sid, sess, expire) VALUES($1,$2,$3)
+         ON CONFLICT(sid) DO UPDATE SET sess=$2, expire=$3`,
+        [sid, JSON.stringify(sessionData), expire]
+      );
+      cb?.();
+    } catch (e) { cb?.(e); }
+  }
+
+  async destroy(sid: string, cb?: (err?: any) => void) {
+    try {
+      await this.pool.query(`DELETE FROM session WHERE sid=$1`, [sid]);
+      cb?.();
+    } catch (e) { cb?.(e); }
+  }
+
+  async touch(sid: string, _session: session.SessionData, cb?: () => void) {
+    const expire = new Date(Date.now() + this.ttlSeconds * 1000);
+    try {
+      await this.pool.query(
+        `UPDATE session SET expire=$2 WHERE sid=$1`,
+        [sid, expire]
+      );
+      cb?.();
+    } catch { cb?.(); }
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
+let _pgPool: Pool | null = null;
+
+async function getOrCreatePool(): Promise<Pool | null> {
+  if (!process.env.DATABASE_URL) return null;
+  if (_pgPool) return _pgPool;
+  _pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS "session" (
-        "sid" varchar NOT NULL,
-        "sess" json NOT NULL,
-        "expire" timestamp(6) NOT NULL,
-        CONSTRAINT "session_pkey" PRIMARY KEY ("sid")
+    // Ensure session table exists
+    await _pgPool.query(`
+      CREATE TABLE IF NOT EXISTS session (
+        sid varchar NOT NULL PRIMARY KEY,
+        sess json NOT NULL,
+        expire timestamp(6) NOT NULL
       )
     `);
-    await pool.query(`CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON "session" ("expire")`);
-    console.log("Session table ready");
-    return true;
+    await _pgPool.query(
+      `CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON session (expire)`
+    );
+    console.log("Session table ready (custom PgSessionStore)");
+    return _pgPool;
   } catch (err: any) {
-    console.error("Could not create session table:", err.message);
-    return false;
-  } finally {
-    await pool.end().catch(() => {});
+    console.error("Session table init failed:", err.message);
+    await _pgPool.end().catch(() => {});
+    _pgPool = null;
+    return null;
   }
 }
 
-function buildSessionMiddleware(pgAvailable: boolean) {
+async function buildSessionMiddleware() {
   if (!process.env.SESSION_SECRET) {
     throw new Error("SESSION_SECRET environment variable is required");
   }
   const sessionTtl = 30 * 24 * 60 * 60 * 1000;
+  const ttlSec = sessionTtl / 1000;
 
-  const store = pgAvailable && process.env.DATABASE_URL
-    ? new PgSession({
-        conString: process.env.DATABASE_URL,
-        tableName: "session",
-        createTableIfMissing: false,
-        ttl: sessionTtl / 1000,
-        pruneSessionInterval: 60 * 60,
-        errorLog: (err: Error) => console.error("Session store error:", err.message),
-      })
+  const pool = await getOrCreatePool();
+  const store = pool
+    ? new PgSessionStore(pool, ttlSec)
     : new MemoryStore({ checkPeriod: sessionTtl });
 
-  if (!pgAvailable) {
+  if (!pool) {
     console.warn("⚠️  Using MemoryStore for sessions (sessions will reset on restart)");
   }
 
@@ -74,8 +126,7 @@ function buildSessionMiddleware(pgAvailable: boolean) {
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
-  const pgOk = await ensureSessionTable();
-  app.use(buildSessionMiddleware(pgOk));
+  app.use(await buildSessionMiddleware());
   app.use(passport.initialize());
   app.use(passport.session());
 
