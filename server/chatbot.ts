@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { db } from "./db";
+import { storage } from "./storage";
 import {
   visitorQuestions, autoLearnedKnowledge, knowledgeBase,
   chatbotConversations, chatbotMessages, leads,
@@ -105,8 +106,37 @@ async function searchAutoLearned(question: string): Promise<string | null> {
   return null;
 }
 
+// ─── Fetch Live Pricing ────────────────────────────────────────────────────────
+interface PricingInfo {
+  proPrice: number;    // in SAR
+  businessPrice: number; // in SAR
+  proCredits: number;
+  businessCredits: number;
+}
+
+async function getLivePricing(): Promise<PricingInfo> {
+  try {
+    const [proP, businessP, proC, businessC] = await Promise.all([
+      storage.getSetting("price_pro"),
+      storage.getSetting("price_business"),
+      storage.getSetting("credits_pro"),
+      storage.getSetting("credits_business"),
+    ]);
+    // prices stored in halalas (1 SAR = 100 halalas), e.g. 4900 = 49 SAR
+    const proPrice = proP ? Math.round(parseInt(proP) / 100) : 49;
+    const businessPrice = businessP ? Math.round(parseInt(businessP) / 100) : 99;
+    const proCredits = proC ? parseInt(proC) : 50;
+    const businessCredits = businessC ? parseInt(businessC) : 200;
+    return { proPrice, businessPrice, proCredits, businessCredits };
+  } catch {
+    return { proPrice: 49, businessPrice: 99, proCredits: 50, businessCredits: 200 };
+  }
+}
+
 // ─── Build System Prompt ───────────────────────────────────────────────────────
-function buildSystemPrompt(langInfo: LanguageInfo): string {
+async function buildSystemPrompt(langInfo: LanguageInfo): Promise<string> {
+  const pricing = await getLivePricing();
+
   const dialectInstruction = langInfo.language === "ar" ? `
 You must respond in Arabic. Specifically use ${langInfo.dialectLabel} dialect naturally.
 - Gulf Arabic: use words like "تقدر", "وش", "الحين", "يبغى"
@@ -121,7 +151,7 @@ You must respond in Arabic. Specifically use ${langInfo.dialectLabel} dialect na
 Your goals:
 1. Help visitors understand ArabyWeb and its features
 2. Guide users to create their first website
-3. Encourage upgrading to paid plans (Pro 99 SAR/mo, Business 299 SAR/mo)
+3. Encourage upgrading to paid plans
 4. Provide technical support for website building
 
 Key facts about ArabyWeb:
@@ -129,7 +159,10 @@ Key facts about ArabyWeb:
 - No coding required — 100% visual editor
 - Supports Arabic (RTL) and English
 - Publishing with one click
-- Plans: Free (limited), Pro (99 SAR/mo), Business (299 SAR/mo)
+- Plans:
+  * Free: limited features, try the platform
+  * Pro: ${pricing.proPrice} SAR/month — ${pricing.proCredits} credits, more features
+  * Business: ${pricing.businessPrice} SAR/month — ${pricing.businessCredits} credits, full features + priority support
 - 10,000+ websites created
 - 100% made for the Saudi/Arab market
 
@@ -137,7 +170,7 @@ ${dialectInstruction}
 
 Be warm, helpful, and concise. Keep responses under 3 sentences unless explaining a process.
 If someone seems interested in signing up, guide them to click "ابدأ مجاناً" / "Get Started".
-If they ask about pricing, mention the free plan first then the paid plans.`;
+If they ask about pricing, mention the free plan first then the paid plans with the EXACT prices above.`;
 }
 
 // ─── Main Chat Function ────────────────────────────────────────────────────────
@@ -155,44 +188,57 @@ export interface ChatResponse {
   source: "cache" | "knowledge_base" | "auto_learned" | "openai";
 }
 
+// Detect if message is about pricing — always use live data
+function isPricingQuestion(message: string): boolean {
+  return /سعر|اسعار|أسعار|تكلفة|كم الاشتراك|كم السعر|how much|price|pricing|cost|plan|باقة|باقات|اشتراك|pro|business/i.test(message);
+}
+
 export async function processChat(req: ChatRequest): Promise<ChatResponse> {
   const { message, sessionId, history = [] } = req;
 
   // Detect language
   const langInfo = detectLanguageAndDialect(message);
 
-  // 1. Check cache
+  const pricingQ = isPricingQuestion(message);
   const cacheKey = `${langInfo.language}:${message.trim().toLowerCase()}`;
-  const cached = getCached(cacheKey);
-  if (cached) {
-    await saveInteraction(message, langInfo, cached, sessionId);
-    const convId = await ensureConversation(req.conversationId, sessionId, langInfo);
-    await saveMessages(convId, message, cached);
-    return { reply: cached, conversationId: convId, langInfo, source: "cache" };
+
+  // 1. Check cache (skip for pricing questions — always need fresh prices)
+  if (!pricingQ) {
+    const cached = getCached(cacheKey);
+    if (cached) {
+      await saveInteraction(message, langInfo, cached, sessionId);
+      const convId = await ensureConversation(req.conversationId, sessionId, langInfo);
+      await saveMessages(convId, message, cached);
+      return { reply: cached, conversationId: convId, langInfo, source: "cache" };
+    }
   }
 
-  // 2. Search KnowledgeBase
-  const kbAnswer = await searchKnowledgeBase(message, langInfo.language);
-  if (kbAnswer) {
-    setCache(cacheKey, kbAnswer);
-    await saveInteraction(message, langInfo, kbAnswer, sessionId);
-    const convId = await ensureConversation(req.conversationId, sessionId, langInfo);
-    await saveMessages(convId, message, kbAnswer);
-    return { reply: kbAnswer, conversationId: convId, langInfo, source: "knowledge_base" };
+  // 2. Search KnowledgeBase (skip for pricing questions — KB may have stale prices)
+  if (!pricingQ) {
+    const kbAnswer = await searchKnowledgeBase(message, langInfo.language);
+    if (kbAnswer) {
+      setCache(cacheKey, kbAnswer);
+      await saveInteraction(message, langInfo, kbAnswer, sessionId);
+      const convId = await ensureConversation(req.conversationId, sessionId, langInfo);
+      await saveMessages(convId, message, kbAnswer);
+      return { reply: kbAnswer, conversationId: convId, langInfo, source: "knowledge_base" };
+    }
   }
 
-  // 3. Search Auto-Learned
-  const autoAnswer = await searchAutoLearned(message);
-  if (autoAnswer) {
-    setCache(cacheKey, autoAnswer);
-    await saveInteraction(message, langInfo, autoAnswer, sessionId);
-    const convId = await ensureConversation(req.conversationId, sessionId, langInfo);
-    await saveMessages(convId, message, autoAnswer);
-    return { reply: autoAnswer, conversationId: convId, langInfo, source: "auto_learned" };
+  // 3. Search Auto-Learned (skip for pricing questions)
+  if (!pricingQ) {
+    const autoAnswer = await searchAutoLearned(message);
+    if (autoAnswer) {
+      setCache(cacheKey, autoAnswer);
+      await saveInteraction(message, langInfo, autoAnswer, sessionId);
+      const convId = await ensureConversation(req.conversationId, sessionId, langInfo);
+      await saveMessages(convId, message, autoAnswer);
+      return { reply: autoAnswer, conversationId: convId, langInfo, source: "auto_learned" };
+    }
   }
 
   // 4. Call OpenAI
-  const systemPrompt = buildSystemPrompt(langInfo);
+  const systemPrompt = await buildSystemPrompt(langInfo);
   const messages: any[] = [
     { role: "system", content: systemPrompt },
     ...history.slice(-6), // last 6 messages for context

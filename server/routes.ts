@@ -704,9 +704,9 @@ export async function registerRoutes(
       const businessCredits = await storage.getSetting("credits_business");
       const freeCredits = await storage.getSetting("credits_free");
       res.json({
-        pro: { price: proPrice ? parseInt(proPrice.value) : 4900, credits: proCredits ? parseInt(proCredits.value) : 50 },
-        business: { price: businessPrice ? parseInt(businessPrice.value) : 9900, credits: businessCredits ? parseInt(businessCredits.value) : 200 },
-        free: { credits: freeCredits ? parseInt(freeCredits.value) : 5 },
+        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 50 },
+        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 200 },
+        free: { credits: freeCredits ? parseInt(freeCredits) : 5 },
       });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch pricing" });
@@ -736,7 +736,7 @@ export async function registerRoutes(
   app.get("/api/admin/promotions", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const promoData = await storage.getSetting("active_promotions");
-      res.json(promoData ? JSON.parse(promoData.value) : []);
+      res.json(promoData ? JSON.parse(promoData) : []);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch promotions" });
     }
@@ -760,7 +760,7 @@ export async function registerRoutes(
       const businessCredits = await storage.getSetting("credits_business");
       const freeCredits = await storage.getSetting("credits_free");
       const promoData = await storage.getSetting("active_promotions");
-      const promotions = promoData ? JSON.parse(promoData.value) : [];
+      const promotions = promoData ? JSON.parse(promoData) : [];
       const now = new Date();
       const activePromos = promotions.filter((p: any) => {
         if (!p.isActive) return false;
@@ -768,9 +768,9 @@ export async function registerRoutes(
         return true;
       });
       res.json({
-        pro: { price: proPrice ? parseInt(proPrice.value) : 4900, credits: proCredits ? parseInt(proCredits.value) : 50 },
-        business: { price: businessPrice ? parseInt(businessPrice.value) : 9900, credits: businessCredits ? parseInt(businessCredits.value) : 200 },
-        free: { credits: freeCredits ? parseInt(freeCredits.value) : 5 },
+        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 50 },
+        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 200 },
+        free: { credits: freeCredits ? parseInt(freeCredits) : 5 },
         promotions: activePromos,
       });
     } catch (err) {
