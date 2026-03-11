@@ -65,14 +65,20 @@ ${project.generatedHtml}
 
   return (
     <div className="h-screen flex flex-col bg-background" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
-      <header className="flex items-center justify-between gap-2 px-4 py-2 border-b bg-background shrink-0">
+      <header className="flex items-center justify-between gap-2 px-4 py-2.5 border-b bg-background shrink-0 shadow-sm">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/editor/${project.id}`)} data-testid="button-back-editor">
+          <Button
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold shadow-sm gap-2"
+            size="sm"
+            onClick={() => navigate(`/editor/${project.id}`)}
+            data-testid="button-back-editor"
+          >
             <ArrowLeft className="w-4 h-4" />
+            {lang === "ar" ? "العودة للتحرير" : "Back to Editor"}
           </Button>
-          <div>
-            <h1 className="text-sm font-semibold" data-testid="text-preview-name">{project.name}</h1>
-            <p className="text-xs text-muted-foreground">{t("preview", lang)}</p>
+          <div className="hidden sm:block">
+            <h1 className="text-sm font-semibold leading-none" data-testid="text-preview-name">{project.name}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">{t("preview", lang)}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

@@ -9,7 +9,6 @@ import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobCon
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
 import archiver from "archiver";
 import crypto from "crypto";
 import { db } from "./db";
@@ -55,19 +54,10 @@ async function isAdmin(req: any, res: Response, next: NextFunction) {
   }
 }
 
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
+// Use memory storage so uploaded images survive server restarts as base64 data URLs
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, uploadDir),
-    filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname);
-      const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-      cb(null, name);
-    },
-  }),
-  limits: { fileSize: 10 * 1024 * 1024 },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = [".jpg", ".jpeg", ".png", ".svg", ".webp", ".gif"];
     const ext = path.extname(file.originalname).toLowerCase();
@@ -86,20 +76,15 @@ export async function registerRoutes(
   await setupAuth(app);
   registerAuthRoutes(app);
 
-  app.use("/uploads", isAuthenticated, (req: any, res, next) => {
-    const filePath = path.join(uploadDir, path.basename(req.path));
-    if (fs.existsSync(filePath)) {
-      res.sendFile(filePath);
-    } else {
-      res.status(404).json({ message: "File not found" });
-    }
-  });
-
   app.post("/api/upload", isAuthenticated, upload.array("files", 10), (req: any, res) => {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: "No files uploaded" });
     }
-    const urls = (req.files as Express.Multer.File[]).map(f => `/uploads/${f.filename}`);
+    // Convert to base64 data URLs so images persist across server restarts
+    const urls = (req.files as Express.Multer.File[]).map(f => {
+      const base64 = f.buffer.toString("base64");
+      return `data:${f.mimetype};base64,${base64}`;
+    });
     res.json({ urls });
   });
 
