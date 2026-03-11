@@ -77,6 +77,7 @@ export default function ChatWidget() {
   const [showQuickReplies, setShowQuickReplies] = useState(true);
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [formType, setFormType] = useState<"trial" | "consultation">("trial");
   const [leadName, setLeadName] = useState("");
   const [leadEmail, setLeadEmail] = useState("");
   const [leadBusiness, setLeadBusiness] = useState("");
@@ -162,15 +163,25 @@ export default function ChatWidget() {
       });
       const data = await res.json();
 
+      if (data.conversationId) setConversationId(data.conversationId);
+
+      // Detect [CONSULTATION] marker — strip it and show consultation form
+      const CONSULT_TAG = "[CONSULTATION]";
+      const rawReply: string = data.reply || "";
+      const needsConsultation = rawReply.includes(CONSULT_TAG);
+      const cleanReply = rawReply.replace(CONSULT_TAG, "").trim();
+
       history.current.push({ role: "user", content: msgText });
-      history.current.push({ role: "assistant", content: data.reply });
+      history.current.push({ role: "assistant", content: cleanReply });
       if (history.current.length > 14) history.current = history.current.slice(-14);
 
-      if (data.conversationId) setConversationId(data.conversationId);
-      addBotMessage(data.reply);
+      addBotMessage(cleanReply);
 
-      // Show lead form after 2 exchanges (4 messages) if not captured
-      if (history.current.length >= 4 && !leadCaptured && !showLeadForm) {
+      if (needsConsultation && !leadCaptured) {
+        setFormType("consultation");
+        setTimeout(() => setShowLeadForm(true), 800);
+      } else if (history.current.length >= 4 && !leadCaptured && !showLeadForm) {
+        setFormType("trial");
         setTimeout(() => setShowLeadForm(true), 1500);
       }
 
@@ -199,9 +210,14 @@ export default function ChatWidget() {
       });
       setLeadCaptured(true);
       setShowLeadForm(false);
-      addBotMessage(uiLang === "ar"
-        ? "✅ تم الحفظ! الآن ابدأ تجربتك المجانية فوراً — أنشئ موقعك في أقل من 90 ثانية بدون أي برمجة 🚀\n\nاضغط على \"ابدأ مجاناً\" أعلى الصفحة الآن!"
-        : "✅ Saved! Start your free trial now — build your website in under 90 seconds with zero coding 🚀\n\nClick 'Start Free' at the top of the page!");
+      const successMsg = uiLang === "ar"
+        ? (formType === "consultation"
+            ? "✅ تم! سيتواصل معك فريقنا خلال 24 ساعة لمساعدتك.\n\nفي انتظار ذلك، يمكنك تجربة المنصة مجاناً الآن 🚀"
+            : "✅ تم الحفظ! الآن ابدأ تجربتك المجانية فوراً — أنشئ موقعك في أقل من 90 ثانية بدون أي برمجة 🚀\n\nاضغط على \"ابدأ مجاناً\" أعلى الصفحة الآن!")
+        : (formType === "consultation"
+            ? "✅ Done! Our team will reach out within 24 hours.\n\nMeanwhile, try the platform free 🚀"
+            : "✅ Saved! Start your free trial now — build your website in under 90 seconds with zero coding 🚀\n\nClick 'Start Free' at the top of the page!");
+      addBotMessage(successMsg);
     } catch {}
   }
 
@@ -350,7 +366,7 @@ export default function ChatWidget() {
                 )}
 
                 {/* Lead capture form */}
-                {showLeadForm && !leadCaptured && (
+                {showLeadForm && !leadCaptured && formType === "trial" && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 space-y-2">
                     <div className="flex items-center gap-2 mb-1">
@@ -372,6 +388,42 @@ export default function ChatWidget() {
                         className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs py-2.5 rounded-lg font-bold text-center transition-all shadow-sm">
                         {isRTL ? "🚀 ابدأ مجاناً الآن" : "🚀 Start Free Now"}
                       </a>
+                      <button onClick={() => setShowLeadForm(false)}
+                        className="text-xs text-muted-foreground px-2 py-2 rounded-lg hover:bg-muted transition-colors">
+                        {isRTL ? "لاحقاً" : "Later"}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {showLeadForm && !leadCaptured && formType === "consultation" && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950/30 dark:to-purple-950/30 border border-violet-200 dark:border-violet-800 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                        <span className="text-[10px] text-white">💬</span>
+                      </div>
+                      <p className="text-xs font-bold text-violet-700 dark:text-violet-400">
+                        {isRTL ? "احجز استشارة مجانية مع خبرائنا" : "Book a free consultation"}
+                      </p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground">
+                      {isRTL ? "سيتواصل معك أحد خبرائنا خلال 24 ساعة لمساعدتك" : "Our expert will reach out within 24 hours"}
+                    </p>
+                    <input value={leadName} onChange={e => setLeadName(e.target.value)}
+                      type="text" placeholder={isRTL ? "اسمك الكريم" : "Your name"}
+                      className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-violet-400 transition-colors" />
+                    <input value={leadEmail} onChange={e => setLeadEmail(e.target.value)}
+                      type="email" placeholder={isRTL ? "بريدك الإلكتروني" : "Email address"}
+                      className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-violet-400 transition-colors" dir="ltr" />
+                    <input value={leadBusiness} onChange={e => setLeadBusiness(e.target.value)}
+                      type="text" placeholder={isRTL ? "نوع نشاطك التجاري" : "Your business type"}
+                      className="w-full text-xs px-3 py-2 rounded-lg border border-border bg-background outline-none focus:border-violet-400 transition-colors" />
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={saveLead} disabled={!leadEmail}
+                        className="flex-1 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white text-xs py-2.5 rounded-lg font-bold text-center transition-all shadow-sm disabled:opacity-50">
+                        {isRTL ? "📅 احجز استشارتك المجانية" : "📅 Book Free Consultation"}
+                      </button>
                       <button onClick={() => setShowLeadForm(false)}
                         className="text-xs text-muted-foreground px-2 py-2 rounded-lg hover:bg-muted transition-colors">
                         {isRTL ? "لاحقاً" : "Later"}
