@@ -202,9 +202,9 @@ export async function processChat(req: ChatRequest): Promise<ChatResponse> {
   const completion = await openai.chat.completions.create({
     model: MODEL,
     messages,
-    max_tokens: 400,
+    max_completion_tokens: 400,
     temperature: 0.7,
-  });
+  } as any);
 
   const reply = completion.choices[0]?.message?.content || 
     (langInfo.language === "ar" ? "عذراً، لم أفهم سؤالك. هل يمكنك إعادة صياغته؟" : "Sorry, I didn't understand. Could you rephrase?");
@@ -311,9 +311,9 @@ export async function runSelfImprovementCycle() {
           { role: "system", content: systemP + "\nGive a perfect, comprehensive answer to this FAQ." },
           { role: "user", content: row.question },
         ],
-        max_tokens: 300,
+        max_completion_tokens: 300,
         temperature: 0.5,
-      });
+      } as any);
       const answer = completion.choices[0]?.message?.content || "";
       if (!answer) continue;
 
