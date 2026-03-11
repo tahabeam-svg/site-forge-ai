@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useLocation } from "wouter";
@@ -26,6 +26,11 @@ import {
   Target,
   Menu,
   X,
+  Users,
+  Clock,
+  CheckCircle2,
+  ChevronRight,
+  Play,
 } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
 import { Button } from "@/components/ui/button";
@@ -56,6 +61,19 @@ export default function LandingPage() {
   const [, navigate] = useLocation();
   const lang = language;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [typeIndex, setTypeIndex] = useState(0);
+
+  const businessWords = {
+    ar: ["مطعمك", "متجرك", "عيادتك", "شركتك", "محلّك", "خدمتك"],
+    en: ["Restaurant", "Online Store", "Clinic", "Startup", "Portfolio", "Business"],
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTypeIndex(i => (i + 1) % 6);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
 
   const features = [
     { icon: Sparkles, title: t("aiGeneration", lang), desc: t("aiGenerationDesc", lang), gradient: "from-violet-500 to-purple-600" },
@@ -158,236 +176,317 @@ export default function LandingPage() {
       </nav>
 
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative pt-20 sm:pt-28 pb-14 sm:pb-20 overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.04] via-violet-500/[0.04] to-amber-500/[0.04]" />
-        <motion.div className="absolute top-0 start-[5%] w-[500px] h-[500px] bg-emerald-400/10 rounded-full blur-[100px] pointer-events-none"
-          animate={{ x: [0, 40, 0], y: [0, -30, 0] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }} />
-        <motion.div className="absolute top-10 end-[5%] w-[400px] h-[400px] bg-violet-400/10 rounded-full blur-[100px] pointer-events-none"
-          animate={{ x: [0, -30, 0], y: [0, 30, 0] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }} />
-        <motion.div className="absolute bottom-0 start-[30%] w-[350px] h-[350px] bg-teal-400/8 rounded-full blur-[80px] pointer-events-none"
-          animate={{ x: [0, 20, 0], y: [0, -20, 0] }} transition={{ duration: 14, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
+      <section className="relative pt-20 sm:pt-24 pb-0 overflow-hidden bg-zinc-950">
+        {/* Background grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
+        {/* Gradient fade at bottom */}
+        <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-b from-transparent to-zinc-950 pointer-events-none z-10" />
+        {/* Glow orbs */}
+        <motion.div className="absolute top-[-100px] start-[10%] w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
+        <motion.div className="absolute top-[50px] end-[5%] w-[500px] h-[500px] bg-violet-500/15 rounded-full blur-[120px] pointer-events-none"
+          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
+        <motion.div className="absolute bottom-[100px] start-[30%] w-[400px] h-[400px] bg-teal-400/10 rounded-full blur-[100px] pointer-events-none"
+          animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 4 }} />
 
-        <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+        <div className="relative z-20 max-w-5xl mx-auto px-5 sm:px-6 text-center">
 
-            {/* ── Text Column ── */}
-            <motion.div
-              className="flex flex-col items-center text-center lg:items-start lg:text-start order-2 lg:order-1"
-              initial="hidden" animate="visible" variants={{ hidden: {}, visible: {} }}
-            >
-              {/* Badge */}
-              <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp} className="mb-5 sm:mb-6">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium
-                  bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300
-                  border border-emerald-200/70 dark:border-emerald-700/50 shadow-sm" data-testid="badge-new">
-                  <Zap className="w-3.5 h-3.5 shrink-0" />
-                  {t("heroBadge", lang)}
-                </span>
-              </motion.div>
+          {/* ── Announcement Badge ── */}
+          <motion.div custom={0} initial="hidden" animate="visible" variants={fadeUp} className="mb-8">
+            <a href="#marketing" className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold
+              bg-white/[0.07] border border-white/[0.12] text-white/80 hover:bg-white/[0.12] transition-colors cursor-pointer">
+              <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 relative">
+                <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+              </span>
+              {lang === "ar" ? "جديد — أداة توليد المحتوى التسويقي بالذكاء الاصطناعي 🎉" : "New — AI Marketing Content Generator launched 🎉"}
+              <ChevronRight className="w-3.5 h-3.5 opacity-60" />
+            </a>
+          </motion.div>
 
-              {/* Title */}
-              <motion.h1
-                custom={1} initial="hidden" animate="visible" variants={fadeUp}
-                className="font-extrabold tracking-tight mb-5 sm:mb-6"
-                data-testid="text-hero-title"
-              >
-                <span className="block text-foreground" style={{ fontSize: "clamp(2.6rem, 6vw, 4.5rem)", lineHeight: 1.15 }}>
-                  {lang === "ar" ? "أنشئ موقعك" : "Build Your Website"}
-                </span>
-                <span
-                  className="block bg-gradient-to-l from-emerald-500 via-teal-500 to-emerald-600 bg-clip-text text-transparent"
-                  style={{ fontSize: "clamp(2.6rem, 6vw, 4.5rem)", lineHeight: 1.2, paddingBottom: "0.15em" }}
-                >
-                  {lang === "ar" ? "بالذكاء الاصطناعي" : "with AI — Free"}
-                </span>
-                <span className="block text-muted-foreground font-semibold mt-1"
-                  style={{ fontSize: "clamp(1rem, 2vw, 1.35rem)", lineHeight: 1.6 }}>
-                  {lang === "ar" ? "وأطلق محتوى السوشيال ميديا في دقائق" : "Launch social media content in minutes"}
-                </span>
-              </motion.h1>
-
-              {/* Subtitle */}
-              <motion.p
-                custom={2} initial="hidden" animate="visible" variants={fadeUp}
-                className="text-base sm:text-lg text-muted-foreground max-w-lg mb-7 sm:mb-9 leading-[1.8]"
-                data-testid="text-hero-subtitle"
-              >
-                {t("subtitle", lang)}
-              </motion.p>
-
-              {/* CTA */}
-              <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp} className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mb-5 w-full">
-                <button
-                  onClick={handleCTA}
-                  className="relative text-base font-semibold text-white px-8 sm:px-10 py-3.5 sm:py-4 rounded-2xl cursor-pointer border-0 outline-none
-                    bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600
-                    shadow-[0_5px_0_0_#0d7351,0_7px_18px_rgba(16,185,129,0.4),inset_0_1px_1px_rgba(255,255,255,0.3)]
-                    hover:shadow-[0_3px_0_0_#0d7351,0_5px_14px_rgba(16,185,129,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)]
-                    hover:translate-y-[2px]
-                    active:shadow-[0_1px_0_0_#0d7351,0_2px_6px_rgba(16,185,129,0.3),inset_0_2px_4px_rgba(0,0,0,0.15)]
-                    active:translate-y-[4px]
-                    transition-all duration-150 ease-out
-                    group overflow-hidden flex items-center justify-center gap-2"
-                  data-testid="button-hero-cta"
-                >
-                  <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-                  <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
-                  <span className="relative flex items-center gap-2">
-                    {!isAuthenticated && <SiGoogle className="w-4.5 h-4.5" />}
-                    {t("getStarted", lang)}
-                    <ArrowRight className="w-4.5 h-4.5" />
+          {/* ── Headline ── */}
+          <motion.h1 custom={1} initial="hidden" animate="visible" variants={fadeUp}
+            className="font-black tracking-tight text-white mb-4"
+            style={{ fontSize: "clamp(2.8rem, 7vw, 5.5rem)", lineHeight: 1.1, letterSpacing: "-0.02em" }}
+            data-testid="text-hero-title"
+          >
+            {lang === "ar" ? (
+              <>
+                <span className="block">أنشئ موقع</span>
+                <span className="block">
+                  <span className="relative inline-block">
+                    <span className="relative bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
+                      style={{ paddingBottom: "0.1em" }}>
+                      <AnimatePresence mode="wait">
+                        <motion.span key={typeIndex}
+                          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                          className="inline-block">
+                          {businessWords.ar[typeIndex]}
+                        </motion.span>
+                      </AnimatePresence>
+                    </span>
                   </span>
-                </button>
-              </motion.div>
-
-              {/* Stats */}
-              <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp} className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-sm lg:max-w-none">
-                {[
-                  { value: "10,000+", label: lang === "ar" ? "موقع تم إنشاؤه" : "Websites Created", color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-800/40" },
-                  { value: "< 2 min", label: lang === "ar" ? "وقت الإنشاء" : "Build Time", color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-100 dark:border-violet-800/40" },
-                  { value: "100%", label: lang === "ar" ? "للسوق السعودي" : "Arabic-first", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-800/40" },
-                ].map((stat, i) => (
-                  <div key={i} className={`text-center rounded-xl p-3 sm:p-4 border ${stat.bg}`} data-testid={`stat-${i}`}>
-                    <div className={`font-extrabold ${stat.color} leading-none mb-1`} style={{ fontSize: "clamp(1.25rem, 3vw, 1.75rem)" }} dir="ltr">
-                      {stat.value}
-                    </div>
-                    <div className="text-[0.65rem] sm:text-xs text-muted-foreground leading-snug font-medium">{stat.label}</div>
-                  </div>
-                ))}
-              </motion.div>
-            </motion.div>
-
-            {/* ── Visual Column ── */}
-            <motion.div
-              custom={2} initial="hidden" animate="visible" variants={fadeUp}
-              className="order-1 lg:order-2 relative"
-            >
-              {/* Glow */}
-              <div className="absolute -inset-6 bg-gradient-to-br from-emerald-500/15 via-violet-500/10 to-amber-500/10 rounded-3xl blur-3xl pointer-events-none" />
-
-              {/* Browser window */}
-              <div className="relative rounded-2xl border-2 border-border/60 overflow-hidden shadow-2xl bg-card">
-                {/* Browser chrome */}
-                <div className="bg-muted/80 backdrop-blur-sm px-4 py-2.5 border-b border-border/60 flex items-center gap-3">
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400/90" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-400/90" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-400/90" />
-                  </div>
-                  <div className="flex-1 flex justify-center">
-                    <div className="text-xs text-muted-foreground bg-background/80 border border-border/50 rounded-md px-3 py-1 inline-flex items-center gap-1.5 min-w-[160px] justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      arabyweb.net
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dashboard content */}
-                <div className="bg-gradient-to-br from-background to-muted/30 p-5 sm:p-7">
-                  {/* AI prompt area */}
-                  <div className="mb-5 rounded-xl border border-border/70 bg-background p-4 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
-                        <Sparkles className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <span className="text-xs font-semibold text-muted-foreground">{lang === "ar" ? "أنشئ موقعك بالذكاء الاصطناعي" : "Generate with AI"}</span>
-                    </div>
-                    <div className="bg-muted/60 rounded-lg px-3 py-2.5 text-sm text-muted-foreground border border-border/40" dir="rtl">
-                      {lang === "ar" ? "مطعم شاورما في الرياض، قائمة طعام وحجز طاولات..." : "A modern restaurant in Riyadh with menu and reservations..."}
-                    </div>
-                    <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden">
-                      <motion.div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"
-                        animate={{ width: ["0%", "85%", "100%", "0%"] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 1 }} />
-                    </div>
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-                      <Sparkles className="w-3 h-3" />
-                      <motion.span animate={{ opacity: [1, 0.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                        {lang === "ar" ? "جاري إنشاء موقعك..." : "Generating your website..."}
+                </span>
+                <span className="block text-white/95">في 90 ثانية</span>
+              </>
+            ) : (
+              <>
+                <span className="block">Build Your</span>
+                <span className="block">
+                  <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
+                    style={{ paddingBottom: "0.1em" }}>
+                    <AnimatePresence mode="wait">
+                      <motion.span key={typeIndex}
+                        initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                        className="inline-block">
+                        {businessWords.en[typeIndex]}
                       </motion.span>
-                    </div>
-                  </div>
+                    </AnimatePresence>
+                  </span>
+                </span>
+                <span className="block text-white/95">in 90 Seconds</span>
+              </>
+            )}
+          </motion.h1>
 
-                  {/* Website cards */}
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { gradient: "from-emerald-500 to-teal-600", icon: Building2, name: lang === "ar" ? "مطعم الرياض" : "Riyadh Restaurant", status: lang === "ar" ? "منشور" : "Live", statusColor: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400" },
-                      { gradient: "from-violet-500 to-purple-600", icon: Gem, name: lang === "ar" ? "متجر الجوهرة" : "Gem Store", status: lang === "ar" ? "مسودة" : "Draft", statusColor: "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-400" },
-                    ].map((card, i) => (
-                      <div key={i} className="bg-background rounded-xl p-3 border border-border/60 shadow-sm hover:shadow-md transition-shadow">
-                        <div className={`w-full h-20 sm:h-24 bg-gradient-to-br ${card.gradient} rounded-lg mb-3 flex items-center justify-center`}>
-                          <card.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white/70" />
-                        </div>
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-semibold text-foreground truncate">{card.name}</span>
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium shrink-0 ${card.statusColor}`}>{card.status}</span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full mt-2 w-4/5" />
-                      </div>
-                    ))}
-                  </div>
+          {/* ── Subheadline ── */}
+          <motion.p custom={2} initial="hidden" animate="visible" variants={fadeUp}
+            className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto mb-9 leading-relaxed"
+            data-testid="text-hero-subtitle">
+            {lang === "ar"
+              ? "الذكاء الاصطناعي يبني موقعك الاحترافي من وصف بسيط — وأطلق حملاتك على انستقرام وتويتر تلقائياً"
+              : "AI generates your professional website from a simple description — and auto-creates your social media campaigns"}
+          </motion.p>
 
-                  {/* Bottom bar */}
-                  <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
-                    <span className="flex items-center gap-1.5">
-                      <Globe2 className="w-3.5 h-3.5 text-emerald-500" />
-                      {lang === "ar" ? "٢ موقع نشط" : "2 active sites"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Zap className="w-3.5 h-3.5 text-amber-500" />
-                      {lang === "ar" ? "٥ كريدت متبقي" : "5 credits left"}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <TrendingUp className="w-3.5 h-3.5 text-violet-500" />
-                      {lang === "ar" ? "١٢٤ زيارة" : "124 visits"}
+          {/* ── Star Rating ── */}
+          <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp}
+            className="flex items-center justify-center gap-3 mb-8">
+            <div className="flex items-center gap-0.5">
+              {[1,2,3,4,5].map(i => (
+                <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+              ))}
+            </div>
+            <span className="text-sm font-bold text-white/80">4.9/5</span>
+            <span className="text-sm text-white/40">—</span>
+            <span className="text-sm text-white/50">
+              {lang === "ar" ? "+٢٠٠٠ عميل راضٍ" : "2,000+ satisfied customers"}
+            </span>
+          </motion.div>
+
+          {/* ── CTA ── */}
+          <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <button
+              onClick={handleCTA}
+              className="relative group text-base font-bold text-white px-8 sm:px-10 py-4 rounded-2xl cursor-pointer border-0 outline-none
+                bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600
+                shadow-[0_5px_0_0_#0d7351,0_8px_30px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.35)]
+                hover:shadow-[0_3px_0_0_#0d7351,0_5px_20px_rgba(16,185,129,0.55),inset_0_1px_1px_rgba(255,255,255,0.35)]
+                hover:translate-y-[2px]
+                active:shadow-[0_1px_0_0_#0d7351,0_2px_8px_rgba(16,185,129,0.3),inset_0_2px_4px_rgba(0,0,0,0.15)]
+                active:translate-y-[4px]
+                transition-all duration-150 ease-out overflow-hidden flex items-center justify-center gap-2.5 min-w-[220px]"
+              data-testid="button-hero-cta"
+            >
+              <span className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+              <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+              <span className="relative flex items-center gap-2.5">
+                {!isAuthenticated && <SiGoogle className="w-4.5 h-4.5" />}
+                <span>{lang === "ar" ? "ابدأ مجاناً الآن" : "Get Started Free"}</span>
+                <ArrowRight className="w-4.5 h-4.5" />
+              </span>
+            </button>
+            <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              className="flex items-center gap-2 text-sm font-medium text-white/60 hover:text-white/90 transition-colors px-4 py-3">
+              <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
+                <Play className="w-3.5 h-3.5 fill-current ms-0.5" />
+              </div>
+              {lang === "ar" ? "شاهد كيف يعمل" : "See how it works"}
+            </button>
+          </motion.div>
+
+          {/* ── Micro trust ── */}
+          <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp}
+            className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-14 text-xs text-white/35">
+            {[
+              { icon: CheckCircle2, text: lang === "ar" ? "لا يلزم بطاقة ائتمان" : "No credit card required" },
+              { icon: CheckCircle2, text: lang === "ar" ? "نشر فوري بنقرة واحدة" : "One-click publishing" },
+              { icon: CheckCircle2, text: lang === "ar" ? "+١٠,٠٠٠ موقع تم إنشاؤه" : "10,000+ sites built" },
+            ].map(({ icon: Icon, text }, i) => (
+              <span key={i} className="flex items-center gap-1.5">
+                <Icon className="w-3.5 h-3.5 text-emerald-500" />
+                {text}
+              </span>
+            ))}
+          </motion.div>
+
+          {/* ── Browser Mockup ── */}
+          <motion.div custom={6} initial="hidden" animate="visible" variants={fadeUp}
+            className="relative mx-auto max-w-4xl">
+            {/* Glow behind browser */}
+            <div className="absolute -inset-4 bg-gradient-to-b from-emerald-500/20 via-teal-500/10 to-transparent rounded-3xl blur-2xl pointer-events-none" />
+
+            {/* Browser chrome */}
+            <div className="relative rounded-t-2xl border border-white/[0.12] overflow-hidden shadow-[0_0_80px_rgba(16,185,129,0.15)]">
+              {/* Top bar */}
+              <div className="bg-zinc-900/90 backdrop-blur-sm px-4 py-3 border-b border-white/[0.08] flex items-center gap-3">
+                <div className="flex gap-1.5 shrink-0">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                </div>
+                <div className="flex-1 flex justify-center">
+                  <div className="flex items-center gap-2 bg-zinc-800/80 border border-white/[0.08] rounded-lg px-4 py-1.5 text-xs text-white/50 max-w-xs w-full justify-center">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span dir="ltr">arabyweb.net/my-restaurant</span>
+                    <span className="ms-auto text-[10px] text-emerald-400/80 font-medium">
+                      {lang === "ar" ? "منشور ✓" : "Live ✓"}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Floating badges */}
-              <motion.div
-                className="absolute -top-4 -end-4 sm:-top-5 sm:-end-5 bg-white dark:bg-zinc-900 border border-border shadow-lg rounded-xl px-3 py-2 flex items-center gap-2 text-xs font-semibold z-10"
-                animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-              >
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                  <Sparkles className="w-3 h-3 text-white" />
+              {/* Generated website preview */}
+              <div className="bg-zinc-900 overflow-hidden" style={{ height: "400px" }}>
+                {/* Site nav */}
+                <div className="bg-zinc-900/95 border-b border-white/[0.06] px-6 py-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600" />
+                    <span className="text-white font-bold text-sm">
+                      {lang === "ar" ? "مطعم الشام" : "Al-Sham Restaurant"}
+                    </span>
+                  </div>
+                  <div className="hidden sm:flex gap-5 text-xs text-white/50">
+                    <span>{lang === "ar" ? "الرئيسية" : "Home"}</span>
+                    <span>{lang === "ar" ? "قائمة الطعام" : "Menu"}</span>
+                    <span>{lang === "ar" ? "حجز طاولة" : "Reservations"}</span>
+                    <span>{lang === "ar" ? "تواصل معنا" : "Contact"}</span>
+                  </div>
+                  <div className="bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-semibold px-4 py-1.5 rounded-lg">
+                    {lang === "ar" ? "احجز الآن" : "Book Now"}
+                  </div>
                 </div>
-                <span className="text-foreground">{lang === "ar" ? "موقع جاهز في ٩٠ ثانية" : "Site ready in 90 sec"}</span>
-              </motion.div>
 
-              <motion.div
-                className="absolute -bottom-4 -start-4 sm:-bottom-5 sm:-start-5 bg-white dark:bg-zinc-900 border border-border shadow-lg rounded-xl px-3 py-2 flex items-center gap-2 text-xs font-semibold z-10"
-                animate={{ y: [0, 6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              >
-                <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                  <Star className="w-3 h-3 text-white" />
+                {/* Site hero */}
+                <div className="relative h-48 bg-gradient-to-br from-zinc-800 via-zinc-900 to-black overflow-hidden">
+                  {/* Food image mockup with gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-900/30 via-zinc-900/60 to-zinc-950/90" />
+                  <div className="absolute inset-0 flex items-center px-8" dir={lang === "ar" ? "rtl" : "ltr"}>
+                    <div className="max-w-xs">
+                      <div className="text-white/40 text-xs mb-2 uppercase tracking-widest">
+                        {lang === "ar" ? "منذ ١٩٩٥ · الرياض" : "Since 1995 · Riyadh"}
+                      </div>
+                      <h2 className="text-white font-black text-2xl sm:text-3xl leading-tight mb-3">
+                        {lang === "ar" ? "أصالة الطعم\nالشرقي الأصيل" : "Authentic Flavors\nof the East"}
+                      </h2>
+                      <div className="flex gap-2">
+                        <div className="bg-amber-500 text-black text-xs font-bold px-3 py-1.5 rounded-lg">
+                          {lang === "ar" ? "استكشف القائمة" : "Explore Menu"}
+                        </div>
+                        <div className="border border-white/30 text-white/80 text-xs font-medium px-3 py-1.5 rounded-lg">
+                          {lang === "ar" ? "حجز طاولة" : "Reserve Table"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Decorative food icons */}
+                  <div className="absolute end-8 top-1/2 -translate-y-1/2 text-5xl opacity-20">🍽️</div>
+                  {/* AI generation progress overlay */}
+                  <motion.div className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-500/40"
+                    initial={{ scaleX: 0 }} animate={{ scaleX: [0, 1, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, repeatDelay: 3, ease: "easeInOut" }}
+                    style={{ transformOrigin: "left" }} />
                 </div>
-                <span className="text-foreground">{lang === "ar" ? "+١٠٠٠ موقع هذا الأسبوع" : "+1000 sites this week"}</span>
-              </motion.div>
+
+                {/* Feature cards row */}
+                <div className="px-6 py-4 grid grid-cols-3 gap-3" dir={lang === "ar" ? "rtl" : "ltr"}>
+                  {[
+                    { emoji: "⭐", title: lang === "ar" ? "٤.٩/٥ تقييم" : "4.9/5 Rating", sub: lang === "ar" ? "+٥٠٠ مراجعة" : "500+ reviews" },
+                    { emoji: "🚀", title: lang === "ar" ? "توصيل سريع" : "Fast Delivery", sub: lang === "ar" ? "خلال ٣٠ دقيقة" : "Within 30 min" },
+                    { emoji: "📱", title: lang === "ar" ? "طلب أونلاين" : "Order Online", sub: lang === "ar" ? "متاح ٢٤/٧" : "Available 24/7" },
+                  ].map((card, i) => (
+                    <div key={i} className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-3 text-center">
+                      <div className="text-2xl mb-1">{card.emoji}</div>
+                      <div className="text-white/90 text-xs font-bold leading-tight">{card.title}</div>
+                      <div className="text-white/35 text-[10px] mt-0.5">{card.sub}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* AI generation label */}
+            <div className="absolute -top-3 start-6 bg-zinc-950 border border-emerald-500/30 rounded-lg px-3 py-1.5 flex items-center gap-2 text-xs text-emerald-400 font-medium shadow-lg">
+              <motion.div className="w-1.5 h-1.5 rounded-full bg-emerald-400"
+                animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.2, repeat: Infinity }} />
+              {lang === "ar" ? "تم إنشاؤه بالذكاء الاصطناعي في ٨٧ ثانية" : "Generated by AI in 87 seconds"}
+            </div>
+
+            {/* Floating activity cards */}
+            <motion.div
+              className="absolute -end-4 top-12 bg-zinc-900/95 border border-white/[0.12] rounded-xl shadow-2xl px-3 py-2.5 flex items-center gap-2.5 text-xs z-20 backdrop-blur-sm"
+              animate={{ y: [0, -7, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm shrink-0">👨‍🍳</div>
+              <div>
+                <p className="text-white/90 font-semibold">{lang === "ar" ? "أحمد — الرياض" : "Ahmed — Riyadh"}</p>
+                <p className="text-white/45">{lang === "ar" ? "نشر موقعه قبل ٣ دقائق ✨" : "Published 3 min ago ✨"}</p>
+              </div>
             </motion.div>
 
-          </div>
+            <motion.div
+              className="absolute -start-4 bottom-16 bg-zinc-900/95 border border-white/[0.12] rounded-xl shadow-2xl px-3 py-2.5 flex items-center gap-2.5 text-xs z-20 backdrop-blur-sm"
+              animate={{ y: [0, 8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-sm shrink-0">📱</div>
+              <div>
+                <p className="text-white/90 font-semibold">{lang === "ar" ? "سارة — جدة" : "Sara — Jeddah"}</p>
+                <p className="text-white/45">{lang === "ar" ? "أطلقت ٦٠ منشور تسويقي 🚀" : "Launched 60 posts campaign 🚀"}</p>
+              </div>
+            </motion.div>
+
+            {/* User avatars + count at bottom */}
+            <motion.div custom={7} initial="hidden" animate="visible" variants={fadeUp}
+              className="flex items-center justify-center gap-3 pt-6 pb-2">
+              <div className="flex -space-x-2 rtl:space-x-reverse">
+                {["🧑‍💼","👩‍💻","👨‍🍳","👩‍🔬","🧑‍🎨"].map((emoji, i) => (
+                  <div key={i} className="w-8 h-8 rounded-full bg-zinc-800 border-2 border-zinc-950 flex items-center justify-center text-sm">
+                    {emoji}
+                  </div>
+                ))}
+              </div>
+              <div className="text-sm text-white/50">
+                <span className="font-bold text-white/80">+1,247</span>{" "}
+                {lang === "ar" ? "انضموا هذا الأسبوع" : "joined this week"}
+              </div>
+            </motion.div>
+          </motion.div>
+
         </div>
       </section>
 
-      <section className="py-12 bg-muted/30">
+
+      {/* Transition band from dark hero to light sections */}
+      <section className="py-10 bg-zinc-900 border-b border-white/[0.06]">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-10">
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5 sm:gap-12">
             {[
               { icon: Crown, text: t("saudiTrust1", lang) },
               { icon: Globe2, text: t("saudiTrust2", lang) },
               { icon: TrendingUp, text: t("saudiTrust3", lang) },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground">
-                <item.icon className="w-5 h-5 text-emerald-500" />
+              <div key={i} className="flex items-center gap-2.5 text-sm text-white/60">
+                <item.icon className="w-5 h-5 text-emerald-400" />
                 <span className="font-medium">{item.text}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
+      {/* Color transition to light page */}
+      <div className="h-20 bg-gradient-to-b from-zinc-900 to-background" />
 
       <section id="marketing" className="py-14 sm:py-20 bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-cyan-50/50 dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-cyan-950/20">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
