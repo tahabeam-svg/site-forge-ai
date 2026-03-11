@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, X, Send, Loader2, Globe2, Minimize2, Sparkles } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Minimize2, Sparkles } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 interface Message {
   id: string;
@@ -22,22 +23,18 @@ const PROACTIVE_MSGS_EN = [
   "🚀 10,000+ websites built — try it free today!",
 ];
 
-// Opening smart question to qualify visitor
-const OPENING_AR = `مرحباً! 👋 أنا مساعد عربي ويب الذكي.
+// Opening welcome message — simple & warm
+const OPENING_AR = `أهلاً وسهلاً بك في عربي ويب! 😊
 
-نحن نساعدك على:
-🌐 بناء موقع احترافي في 90 ثانية
-📱 توليد محتوى سوشيال ميديا تلقائياً
+أنا مساعدك الذكي، يسعدني مساعدتك في بناء موقعك الاحترافي أو إنشاء محتوى السوشيال ميديا بالذكاء الاصطناعي.
 
-لأرشّحك للخيار الأنسب — **ما نوع نشاطك التجاري؟** (مطعم، متجر، عيادة، شركة، مستقل...؟)`;
+كيف يمكنني مساعدتك اليوم؟`;
 
-const OPENING_EN = `Hello! 👋 I'm ArabyWeb's AI assistant.
+const OPENING_EN = `Welcome to ArabyWeb! 😊
 
-We help you with:
-🌐 Build a professional website in 90 seconds
-📱 Auto-generate social media content
+I'm your AI assistant — happy to help you build your professional website or generate social media content.
 
-To recommend the best plan — **what type of business do you have?**`;
+How can I help you today?`;
 
 // Quick reply chips based on business type
 const QUICK_REPLIES_AR = [
@@ -69,13 +66,15 @@ function detectInputLang(text: string): "ar" | "en" {
 }
 
 export default function ChatWidget() {
+  const { language } = useAuth();
+  const uiLang: "ar" | "en" = language === "en" ? "en" : "ar";
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversationId, setConversationId] = useState<number | undefined>();
   const [showQuickReplies, setShowQuickReplies] = useState(true);
-  const [uiLang, setUiLang] = useState<"ar" | "en">("ar");
   const [leadCaptured, setLeadCaptured] = useState(false);
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [leadName, setLeadName] = useState("");
@@ -83,17 +82,10 @@ export default function ChatWidget() {
   const [leadBusiness, setLeadBusiness] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [proactiveBubble, setProactiveBubble] = useState<string | null>(null);
-  const [hasAutoOpened, setHasAutoOpened] = useState(false);
   const sessionId = useRef(generateSessionId());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const history = useRef<Array<{ role: "user" | "assistant"; content: string }>>([]);
-
-  // Detect page language
-  useEffect(() => {
-    const pageLang = document.documentElement.lang === "en" || document.documentElement.dir === "ltr" ? "en" : "ar";
-    setUiLang(pageLang);
-  }, []);
 
   // Proactive auto-open for new visitors
   useEffect(() => {
@@ -150,8 +142,6 @@ export default function ChatWidget() {
     const msgText = (text || input).trim();
     if (!msgText || loading) return;
 
-    const detectedLang = detectInputLang(msgText);
-    setUiLang(detectedLang);
     setShowQuickReplies(false);
     setInput("");
     setLoading(true);
@@ -168,6 +158,7 @@ export default function ChatWidget() {
           sessionId: sessionId.current,
           conversationId,
           history: history.current,
+          pageLang: uiLang,
         }),
       });
       const data = await res.json();

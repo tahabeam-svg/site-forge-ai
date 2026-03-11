@@ -1019,10 +1019,10 @@ For Netlify/Vercel:
   // Main chat endpoint (public — for landing page widget)
   app.post("/api/chatbot/message", async (req, res) => {
     try {
-      const { message, sessionId, conversationId, history } = req.body;
+      const { message, sessionId, conversationId, history, pageLang } = req.body;
       if (!message || !sessionId) return res.status(400).json({ message: "message and sessionId required" });
 
-      const result = await processChat({ message, sessionId, conversationId, history });
+      const result = await processChat({ message, sessionId, conversationId, history, pageLang });
       res.json(result);
     } catch (err: any) {
       console.error("Chatbot error:", err?.message);

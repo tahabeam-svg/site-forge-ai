@@ -209,6 +209,7 @@ export interface ChatRequest {
   conversationId?: number;
   sessionId: string;
   history?: Array<{ role: "user" | "assistant"; content: string }>;
+  pageLang?: string;
 }
 
 export interface ChatResponse {
@@ -224,10 +225,15 @@ function isPricingQuestion(message: string): boolean {
 }
 
 export async function processChat(req: ChatRequest): Promise<ChatResponse> {
-  const { message, sessionId, history = [] } = req;
+  const { message, sessionId, history = [], pageLang } = req;
 
-  // Detect language
-  const langInfo = detectLanguageAndDialect(message);
+  // Detect language from message, then override with page language if provided
+  let langInfo = detectLanguageAndDialect(message);
+  if (pageLang === "ar") {
+    langInfo = { language: "ar", dialect: langInfo.dialect === "msa" ? "gulf" : langInfo.dialect, dialectLabel: langInfo.dialectLabel };
+  } else if (pageLang === "en") {
+    langInfo = { language: "en", dialect: "en", dialectLabel: "English" };
+  }
 
   const pricingQ = isPricingQuestion(message);
   const cacheKey = `${langInfo.language}:${message.trim().toLowerCase()}`;
