@@ -32,7 +32,8 @@ import {
   ChevronRight,
   Play,
 } from "lucide-react";
-import { SiGoogle } from "react-icons/si";
+import { SiGoogle, SiX, SiLinkedin, SiInstagram, SiYoutube } from "react-icons/si";
+import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -766,67 +767,106 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="py-12 border-t bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                  <Globe2 className="w-4 h-4 text-white" />
+      <footer className="border-t bg-muted/30">
+        {/* ── Main footer body ── */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+
+          {/* Desktop: 4-col grid | Mobile: brand full-width then 2-col links */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+
+            {/* Brand — full-width on mobile */}
+            <div className="col-span-2 lg:col-span-1">
+              <div className="flex items-center gap-2.5 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
+                  <Globe2 className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-lg bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                <span className="font-bold text-xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                   {t("brand", lang)}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-xs">
                 {lang === "ar"
                   ? "المنصة الأولى لبناء المواقع بالذكاء الاصطناعي في العالم العربي"
                   : "The #1 AI website builder for the Arab world"}
               </p>
+              {/* Social icons */}
+              <div className="flex items-center gap-2">
+                {[
+                  { icon: SiX, href: "https://x.com/arabyweb", label: "X" },
+                  { icon: SiLinkedin, href: "https://linkedin.com/company/arabyweb", label: "LinkedIn" },
+                  { icon: SiInstagram, href: "https://instagram.com/arabyweb", label: "Instagram" },
+                  { icon: SiYoutube, href: "https://youtube.com/@arabyweb", label: "YouTube" },
+                ].map(({ icon: Icon, href, label }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-8 h-8 rounded-lg bg-background border flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:border-emerald-400 transition-all"
+                    data-testid={`link-social-${label.toLowerCase()}`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </a>
+                ))}
+                <a
+                  href="mailto:support@arabyweb.net"
+                  aria-label="Email"
+                  className="w-8 h-8 rounded-lg bg-background border flex items-center justify-center text-muted-foreground hover:text-emerald-600 hover:border-emerald-400 transition-all"
+                  data-testid="link-social-email"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
+            {/* Product */}
             <div>
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
+              <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {lang === "ar" ? "المنتج" : "Product"}
               </h4>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
                 <li><a href="/templates" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-templates">{lang === "ar" ? "القوالب" : "Templates"}</a></li>
+                <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "لوحة التحكم" : "Dashboard"}</a></li>
               </ul>
             </div>
 
+            {/* Support */}
             <div>
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
+              <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {lang === "ar" ? "الدعم" : "Support"}
               </h4>
-              <ul className="space-y-2.5 text-sm">
-                <li><a href="/faq" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-faq">{lang === "ar" ? "الأسئلة المتكررة" : "FAQ"}</a></li>
+              <ul className="space-y-3 text-sm">
+                <li><a href="/faq" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-faq">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a></li>
                 <li><a href="mailto:support@arabyweb.net" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-contact">{lang === "ar" ? "تواصل معنا" : "Contact Us"}</a></li>
               </ul>
             </div>
 
+            {/* Legal */}
             <div>
-              <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">
+              <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {lang === "ar" ? "قانوني" : "Legal"}
               </h4>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="space-y-3 text-sm">
                 <li><a href="/terms" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-terms">{lang === "ar" ? "شروط الاستخدام" : "Terms of Service"}</a></li>
                 <li><a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-privacy">{lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}</a></li>
               </ul>
             </div>
           </div>
+        </div>
 
-          <div className="pt-8 border-t flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              &copy; 2026 {t("brand", lang)}. {lang === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"}.
+        {/* ── Bottom bar ── */}
+        <div className="border-t bg-muted/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">
+              &copy; 2026 {t("brand", lang)}. {lang === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
             </p>
-            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-              <a href="/terms" className="hover:text-foreground transition-colors">{lang === "ar" ? "الشروط" : "Terms"}</a>
-              <span className="text-muted-foreground/40">|</span>
-              <a href="/privacy" className="hover:text-foreground transition-colors">{lang === "ar" ? "الخصوصية" : "Privacy"}</a>
-              <span className="text-muted-foreground/40">|</span>
-              <a href="/faq" className="hover:text-foreground transition-colors">{lang === "ar" ? "الأسئلة" : "FAQ"}</a>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span>{lang === "ar" ? "صُنع بـ" : "Made with"}</span>
+              <span className="text-emerald-500 mx-0.5">♥</span>
+              <span>{lang === "ar" ? "للعالم العربي" : "for the Arab world"}</span>
             </div>
           </div>
         </div>
