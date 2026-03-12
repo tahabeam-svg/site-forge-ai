@@ -15,18 +15,34 @@ const openai = new OpenAI({
 const MODEL = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-5.2" : "gpt-4.1-mini";
 
 // ─── Response Cache ───────────────────────────────────────────────────────────
-const responseCache = new Map<string, { response: string; ts: number }>();
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+const responseCache = new Map<string, { response: string; ts: number; hits: number }>();
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours (increased from 1h)
+let cacheHits = 0;
+let cacheMisses = 0;
+let totalRequests = 0;
+
+export function getCacheStats() {
+  return {
+    size: responseCache.size,
+    hits: cacheHits,
+    misses: cacheMisses,
+    total: totalRequests,
+    hitRate: totalRequests > 0 ? Math.round((cacheHits / totalRequests) * 100) : 0,
+  };
+}
 
 function getCached(key: string): string | null {
+  totalRequests++;
   const cached = responseCache.get(key);
-  if (!cached) return null;
-  if (Date.now() - cached.ts > CACHE_TTL) { responseCache.delete(key); return null; }
+  if (!cached) { cacheMisses++; return null; }
+  if (Date.now() - cached.ts > CACHE_TTL) { responseCache.delete(key); cacheMisses++; return null; }
+  cached.hits++;
+  cacheHits++;
   return cached.response;
 }
 
 function setCache(key: string, response: string) {
-  responseCache.set(key, { response, ts: Date.now() });
+  responseCache.set(key, { response, ts: Date.now(), hits: 0 });
 }
 
 // ─── Language & Dialect Detection ─────────────────────────────────────────────
@@ -72,20 +88,30 @@ export function detectLanguageAndDialect(text: string): LanguageInfo {
 async function searchKnowledgeBase(question: string, language: string): Promise<string | null> {
   try {
     const lowerQ = question.toLowerCase();
-    const keywords = lowerQ.split(/\s+/).filter(w => w.length > 2);
+    const keywords = lowerQ.split(/\s+/).filter(w => w.length > 2).slice(0, 5);
+    if (keywords.length === 0) return null;
 
+    // Fetch candidates matching any keyword
+    const candidateMap = new Map<number, { entry: any; score: number }>();
     for (const kw of keywords) {
       const results = await db.select().from(knowledgeBase)
         .where(ilike(knowledgeBase.question, `%${kw}%`))
-        .limit(3);
-
-      const match = results.find(r =>
-        r.isApproved &&
-        (r.language === language || r.language === "both")
-      );
-      if (match) return match.answer;
+        .limit(10);
+      for (const r of results) {
+        if (!r.isApproved) continue;
+        if (r.language !== language && r.language !== "both" && r.language !== "ar") continue;
+        const existing = candidateMap.get(r.id);
+        if (existing) {
+          existing.score++;
+        } else {
+          candidateMap.set(r.id, { entry: r, score: 1 });
+        }
+      }
     }
-    return null;
+    if (candidateMap.size === 0) return null;
+    // Return the entry with highest keyword overlap score
+    const sorted = [...candidateMap.values()].sort((a, b) => b.score - a.score);
+    return sorted[0].entry.answer;
   } catch (err: any) {
     console.error("searchKnowledgeBase error:", err?.message);
     return null;

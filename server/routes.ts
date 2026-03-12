@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite } from "./ai";
-import { processChat, getChatbotStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
+import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { z } from "zod";
@@ -1303,7 +1303,8 @@ For Netlify/Vercel:
   app.get("/api/admin/chatbot/stats", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const stats = await getChatbotStats();
-      res.json(stats);
+      const cacheStats = getCacheStats();
+      res.json({ ...stats, cacheStats });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
@@ -1314,6 +1315,15 @@ For Netlify/Vercel:
       const limit = parseInt(req.query.limit as string) || 50;
       const questions = await storage.getVisitorQuestions(limit);
       res.json(questions);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/admin/chatbot/questions/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteVisitorQuestion(parseInt(req.params.id));
+      res.json({ ok: true });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
@@ -1373,10 +1383,34 @@ For Netlify/Vercel:
     }
   });
 
+  app.delete("/api/admin/chatbot/auto-learned/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteAutoLearned(parseInt(req.params.id));
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   app.get("/api/admin/chatbot/leads", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const leads = await storage.getLeads();
       res.json(leads);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin/chatbot/leads/export.csv", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const leads = await storage.getLeads();
+      const header = "ID,Name,Email,Business Type,Session,Source,Created At\n";
+      const rows = leads.map((l: any) =>
+        [l.id, `"${(l.name || "").replace(/"/g, '""')}"`, `"${(l.email || "").replace(/"/g, '""')}"`, `"${(l.businessType || "").replace(/"/g, '""')}"`, l.sessionId || "", l.source || "chatbot", l.createdAt].join(",")
+      ).join("\n");
+      res.setHeader("Content-Type", "text/csv; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="leads-${new Date().toISOString().split("T")[0]}.csv"`);
+      res.send("\uFEFF" + header + rows); // BOM for Excel Arabic support
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }

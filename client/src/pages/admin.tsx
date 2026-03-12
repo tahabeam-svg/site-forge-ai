@@ -74,7 +74,7 @@ interface FraudData { suspiciousIps: SuspiciousIp[]; recentFreeUsers: (FraudAcco
 type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot" | "fraud";
 
 export default function AdminPage() {
-  const { language, logout } = useAuth();
+  const { language, logout, user } = useAuth();
   const lang = language;
   const { toast } = useToast();
   const isRTL = lang === "ar";
@@ -314,7 +314,7 @@ export default function AdminPage() {
           <div className="p-3 border-t border-zinc-800">
             <div className="px-3 py-2 rounded-lg bg-zinc-800/50">
               <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{lang === "ar" ? "المشرف" : "Admin"}</p>
-              <p className="text-xs text-zinc-300 mt-0.5 truncate">tahabeam@gmail.com</p>
+              <p className="text-xs text-zinc-300 mt-0.5 truncate">{(user as any)?.email || "admin"}</p>
             </div>
           </div>
         </aside>
@@ -1116,8 +1116,8 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
   const [editId, setEditId] = useState<number | null>(null);
   const [editA, setEditA] = useState("");
 
-  const { data: stats } = useQuery({ queryKey: ["/api/admin/chatbot/stats"] });
-  const { data: questions = [] } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/questions"] });
+  const { data: stats, refetch: refetchStats } = useQuery({ queryKey: ["/api/admin/chatbot/stats"] });
+  const { data: questions = [], refetch: refetchQ } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/questions"] });
   const { data: kb = [], refetch: refetchKb } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/knowledge-base"] });
   const { data: autoLearned = [], refetch: refetchAuto } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/auto-learned"] });
   const { data: leads = [] } = useQuery<any[]>({ queryKey: ["/api/admin/chatbot/leads"] });
@@ -1146,9 +1146,19 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
     onSuccess: () => { refetchAuto(); refetchKb(); toast({ title: isRTL ? "تم الاعتماد ونقله للقاعدة" : "Approved & added to KB" }); },
   });
 
+  const deleteAutoMutation = useMutation({
+    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/admin/chatbot/auto-learned/${id}`); },
+    onSuccess: () => { refetchAuto(); toast({ title: isRTL ? "تم الحذف" : "Deleted" }); },
+  });
+
+  const deleteQMutation = useMutation({
+    mutationFn: async (id: number) => { await apiRequest("DELETE", `/api/admin/chatbot/questions/${id}`); },
+    onSuccess: () => { refetchQ(); refetchStats(); },
+  });
+
   const retrainMutation = useMutation({
     mutationFn: async () => { await apiRequest("POST", "/api/admin/chatbot/retrain"); },
-    onSuccess: () => toast({ title: isRTL ? "بدأ التحسين الذاتي" : "Self-improvement started" }),
+    onSuccess: () => { toast({ title: isRTL ? "بدأ التحسين الذاتي" : "Self-improvement started" }); setTimeout(() => refetchAuto(), 3000); },
   });
 
   const tabs = [
@@ -1207,6 +1217,39 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
             ))}
           </div>
 
+          {/* Cache Stats Card */}
+          {s.cacheStats && (
+            <Card className="bg-zinc-800/50 border-zinc-700/50 p-5">
+              <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-yellow-400" />
+                {isRTL ? "إحصاء الكاش — توفير استخدام AI" : "Cache Stats — AI Usage Savings"}
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="bg-zinc-700/40 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-yellow-400">{s.cacheStats.hitRate}%</div>
+                  <div className="text-zinc-400 text-xs mt-1">{isRTL ? "معدل الإصابة" : "Hit Rate"}</div>
+                </div>
+                <div className="bg-zinc-700/40 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-emerald-400">{s.cacheStats.hits}</div>
+                  <div className="text-zinc-400 text-xs mt-1">{isRTL ? "استجابات من الكاش" : "Cache Hits"}</div>
+                </div>
+                <div className="bg-zinc-700/40 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-red-400">{s.cacheStats.misses}</div>
+                  <div className="text-zinc-400 text-xs mt-1">{isRTL ? "طلبات OpenAI" : "OpenAI Calls"}</div>
+                </div>
+                <div className="bg-zinc-700/40 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-blue-400">{s.cacheStats.size}</div>
+                  <div className="text-zinc-400 text-xs mt-1">{isRTL ? "حجم الكاش" : "Cache Size"}</div>
+                </div>
+              </div>
+              <p className="text-zinc-500 text-xs mt-3">
+                {isRTL
+                  ? `الكاش يوفّر تكاليف AI — كل إصابة = طلب OpenAI مُوفَّر. TTL: 6 ساعات`
+                  : `Cache saves AI costs — each hit = one saved OpenAI call. TTL: 6 hours`}
+              </p>
+            </Card>
+          )}
+
           {s.languageDistribution && s.languageDistribution.length > 0 && (
             <Card className="bg-zinc-800/50 border-zinc-700/50 p-5">
               <h3 className="text-white font-semibold mb-3">{isRTL ? "توزيع اللغات" : "Language Distribution"}</h3>
@@ -1245,13 +1288,14 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
 
       {activeTab === "questions" && (
         <Card className="bg-zinc-800/50 border-zinc-700/50">
-          <div className="p-4 border-b border-zinc-700/50">
+          <div className="p-4 border-b border-zinc-700/50 flex items-center justify-between">
             <h3 className="text-white font-semibold">{isRTL ? `أحدث ${questions.length} سؤال` : `Latest ${questions.length} Questions`}</h3>
+            <span className="text-zinc-500 text-xs">{isRTL ? "احذف الأسئلة غير المفيدة لتنظيف البيانات" : "Delete irrelevant questions to clean data"}</span>
           </div>
           <ScrollArea className="h-[500px]">
             <div className="divide-y divide-zinc-700/30">
               {questions.map((q: any) => (
-                <div key={q.id} className="p-4 hover:bg-zinc-700/20 transition-colors">
+                <div key={q.id} className="p-4 hover:bg-zinc-700/20 transition-colors group">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm font-medium">{q.question}</p>
@@ -1259,7 +1303,7 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
                         <p className="text-zinc-500 text-xs mt-1 line-clamp-2">{q.ai_response}</p>
                       )}
                     </div>
-                    <div className="flex gap-1 flex-shrink-0">
+                    <div className="flex gap-1 flex-shrink-0 items-center">
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                         {q.detected_language === "ar" ? "عربي" : "EN"}
                       </span>
@@ -1268,6 +1312,11 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
                           {q.detected_dialect}
                         </span>
                       )}
+                      <button onClick={() => deleteQMutation.mutate(q.id)}
+                        disabled={deleteQMutation.isPending}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500 hover:text-red-400 p-1 ms-1">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   </div>
                   <p className="text-zinc-600 text-[10px] mt-1">{new Date(q.created_at).toLocaleString(lang === "ar" ? "ar-SA" : "en-US")}</p>
@@ -1365,7 +1414,11 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
         <Card className="bg-zinc-800/50 border-zinc-700/50">
           <div className="p-4 border-b border-zinc-700/50">
             <h3 className="text-white font-semibold">{isRTL ? "إجابات تعلّمها الذكاء الاصطناعي تلقائياً" : "AI Auto-Learned Answers"}</h3>
-            <p className="text-zinc-500 text-xs mt-1">{isRTL ? "راجع هذه الإجابات واعتمدها لإضافتها لقاعدة المعرفة" : "Review these answers and approve to add to Knowledge Base"}</p>
+            <p className="text-zinc-500 text-xs mt-1">
+              {isRTL
+                ? "راجع هذه الإجابات — اعتمدها لنقلها لقاعدة المعرفة (وتُحذف تلقائياً منها)، أو احذفها إن كانت غير صحيحة"
+                : "Review — Approve to move to KB (auto-removed from here), or delete if incorrect"}
+            </p>
           </div>
           <ScrollArea className="h-[450px]">
             <div className="divide-y divide-zinc-700/30">
@@ -1377,16 +1430,24 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
                         <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/20">
                           {item.usage_count}× {isRTL ? "مرات" : "times"}
                         </span>
+                        <span className="text-[10px] text-zinc-500">{item.language === "ar" ? "عربي" : "EN"}</span>
                       </div>
                       <p className="text-white text-sm font-medium">{item.question_pattern}</p>
                       <p className="text-zinc-400 text-xs mt-1">{item.answer}</p>
                     </div>
-                    <Button size="sm" onClick={() => approveAutoMutation.mutate(item.id)}
-                      disabled={approveAutoMutation.isPending}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1 flex-shrink-0">
-                      <ThumbsUp className="w-3 h-3" />
-                      {isRTL ? "اعتماد" : "Approve"}
-                    </Button>
+                    <div className="flex gap-2 flex-shrink-0">
+                      <Button size="sm" onClick={() => approveAutoMutation.mutate(item.id)}
+                        disabled={approveAutoMutation.isPending}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1">
+                        <ThumbsUp className="w-3 h-3" />
+                        {isRTL ? "اعتماد" : "Approve"}
+                      </Button>
+                      <button onClick={() => deleteAutoMutation.mutate(item.id)}
+                        disabled={deleteAutoMutation.isPending}
+                        className="text-zinc-500 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1402,8 +1463,19 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
 
       {activeTab === "leads" && (
         <Card className="bg-zinc-800/50 border-zinc-700/50">
-          <div className="p-4 border-b border-zinc-700/50">
+          <div className="p-4 border-b border-zinc-700/50 flex items-center justify-between gap-3">
             <h3 className="text-white font-semibold">{isRTL ? `${leads.length} عميل محتمل` : `${leads.length} Leads`}</h3>
+            {leads.length > 0 && (
+              <a
+                href="/api/admin/chatbot/leads/export.csv"
+                download
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-medium transition-colors"
+                data-testid="link-export-leads-csv"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {isRTL ? "تصدير CSV" : "Export CSV"}
+              </a>
+            )}
           </div>
           <ScrollArea className="h-[450px]">
             <div className="divide-y divide-zinc-700/30">
@@ -1413,7 +1485,7 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
                     {(lead.name || lead.email || "?")[0].toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm font-medium">{lead.name || isRTL ? "غير محدد" : "Unknown"}</p>
+                    <p className="text-white text-sm font-medium">{lead.name || (isRTL ? "غير محدد" : "Unknown")}</p>
                     <p className="text-zinc-400 text-xs" dir="ltr">{lead.email}</p>
                     {lead.business_type && <p className="text-zinc-500 text-xs">{lead.business_type}</p>}
                   </div>

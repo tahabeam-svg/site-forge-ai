@@ -45,8 +45,10 @@ export interface IStorage {
   updateKnowledgeEntry(id: number, data: Partial<KnowledgeBase>): Promise<KnowledgeBase | undefined>;
   deleteKnowledgeEntry(id: number): Promise<void>;
   getVisitorQuestions(limit?: number): Promise<any[]>;
+  deleteVisitorQuestion(id: number): Promise<void>;
   getAutoLearnedKnowledge(): Promise<AutoLearnedKnowledge[]>;
   approveAutoLearned(id: number): Promise<void>;
+  deleteAutoLearned(id: number): Promise<void>;
   getLeads(): Promise<Lead[]>;
   createLead(lead: InsertLead): Promise<Lead>;
 }
@@ -220,6 +222,10 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(visitorQuestions).orderBy(desc(visitorQuestions.createdAt)).limit(limit);
   }
 
+  async deleteVisitorQuestion(id: number): Promise<void> {
+    await db.delete(visitorQuestions).where(eq(visitorQuestions.id, id));
+  }
+
   async getAutoLearnedKnowledge(): Promise<AutoLearnedKnowledge[]> {
     return db.select().from(autoLearnedKnowledge).orderBy(desc(autoLearnedKnowledge.usageCount));
   }
@@ -234,6 +240,12 @@ export class DatabaseStorage implements IStorage {
       language: item.language || "ar",
       isApproved: true,
     });
+    // Remove from auto-learned after promotion to KB
+    await db.delete(autoLearnedKnowledge).where(eq(autoLearnedKnowledge.id, id));
+  }
+
+  async deleteAutoLearned(id: number): Promise<void> {
+    await db.delete(autoLearnedKnowledge).where(eq(autoLearnedKnowledge.id, id));
   }
 
   async getLeads(): Promise<Lead[]> {
