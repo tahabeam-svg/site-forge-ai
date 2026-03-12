@@ -512,7 +512,7 @@ ${project.generatedHtml}
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`w-full md:w-[540px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"} pb-[60px] md:pb-0`}>
+        <div className={`w-full md:w-[540px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
           {!project.generatedHtml ? (
             <div className="p-4">
               <Card className="p-5">
@@ -644,7 +644,7 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-3 pt-3 md:pt-0">
+              <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
                 <div className="mt-2 space-y-3">
                   <div>
                     <h3 className="text-sm font-semibold mb-2">
@@ -710,7 +710,7 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="media" className="flex-1 overflow-y-auto mt-0 px-3 pb-3 pt-3 md:pt-0">
+              <TabsContent value="media" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
                 <div className="mt-2 space-y-4">
                   <div>
                     <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -811,7 +811,7 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative">
+              <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative pb-[72px] md:pb-0">
                 <div
                   ref={styleScrollRef}
                   className="flex-1 overflow-y-auto px-3 pb-3"
@@ -1064,7 +1064,7 @@ ${project.generatedHtml}
 
             {/* ─── Chat Input: OUTSIDE Tabs, always at bottom ─── */}
             {activeTab === "chat" && (
-              <div className="shrink-0 px-4 pb-3 pt-2 space-y-2 border-t border-border/50 bg-background">
+              <div className="shrink-0 px-4 pb-[68px] md:pb-3 pt-2 space-y-2 border-t border-border/50 bg-background">
                 <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                   {suggestedCmds.slice(0, 6).map((cmd, i) => (
                     <Button
