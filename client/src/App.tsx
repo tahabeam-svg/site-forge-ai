@@ -25,6 +25,12 @@ import PrivacyPage from "@/pages/privacy";
 import FAQPage from "@/pages/faq";
 import DeployGuidePage from "@/pages/deploy-guide";
 
+function PricingRedirect() {
+  const [, setLocation] = useLocation();
+  setLocation("/billing");
+  return null;
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
@@ -62,6 +68,7 @@ function Router() {
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
       <Route path="/github-deploy">{() => <ProtectedRoute component={GitHubDeployPage} />}</Route>
       <Route path="/payment-methods">{() => <ProtectedRoute component={PaymentMethodsPage} />}</Route>
+      <Route path="/pricing" component={PricingRedirect} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />
       <Route path="/faq" component={FAQPage} />

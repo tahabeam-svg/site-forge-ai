@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import DashboardLayout from "@/components/dashboard-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ import {
   Twitter,
   Youtube,
   Zap,
+  Crown,
+  Lock,
 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 
@@ -56,11 +59,20 @@ export default function AIMarketingPage() {
   const { language } = useAuth();
   const lang = language;
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [topic, setTopic] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("instagram");
   const [selectedTone, setSelectedTone] = useState("professional");
   const [result, setResult] = useState<SocialContent | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+
+  const { data: subscription } = useQuery<{ plan: string; isAdmin?: boolean }>({
+    queryKey: ["/api/subscription"],
+  });
+
+  const isFreePlan = !subscription?.plan || subscription.plan === "free";
+  const isAdmin = subscription?.isAdmin === true;
+  const needsUpgrade = isFreePlan && !isAdmin;
 
   const generateMutation = useMutation({
     mutationFn: async () => {
@@ -70,6 +82,10 @@ export default function AIMarketingPage() {
         language: lang,
         tone: selectedTone,
       });
+      if (!res.ok) {
+        const err = await res.json();
+        throw err;
+      }
       return res.json();
     },
     onSuccess: (data: SocialContent) => {
@@ -78,11 +94,19 @@ export default function AIMarketingPage() {
         title: lang === "ar" ? "تم إنشاء المحتوى!" : "Content generated!",
       });
     },
-    onError: () => {
-      toast({
-        title: lang === "ar" ? "فشل إنشاء المحتوى" : "Failed to generate content",
-        variant: "destructive",
-      });
+    onError: (err: any) => {
+      if (err?.message === "upgrade_required") {
+        toast({
+          title: lang === "ar" ? "يلزم الترقية" : "Upgrade Required",
+          description: lang === "ar" ? err.messageAr : err.messageEn,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: lang === "ar" ? "فشل إنشاء المحتوى" : "Failed to generate content",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -107,7 +131,41 @@ export default function AIMarketingPage() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
+        {needsUpgrade && (
+          <Card className="p-8 border-2 border-dashed border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 text-center" data-testid="card-upgrade-marketing">
+            <div className="flex flex-col items-center gap-4 max-w-lg mx-auto">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold flex items-center justify-center gap-2 mb-2">
+                  <Crown className="w-5 h-5 text-amber-500" />
+                  {lang === "ar" ? "ميزة حصرية للخطط المدفوعة" : "Premium Feature"}
+                </h2>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {lang === "ar"
+                    ? "أداة التسويق بالذكاء الاصطناعي متاحة لمشتركي خطة برو وبزنس فقط. اشترك الآن للحصول على محتوى تسويقي احترافي لإنستغرام، فيسبوك، لينكدإن وأكثر."
+                    : "AI Marketing Tool is available on Pro and Business plans. Upgrade to generate professional marketing content for Instagram, Facebook, LinkedIn, and more."}
+                </p>
+              </div>
+              <div className="flex gap-3 mt-2">
+                <Button
+                  onClick={() => setLocation("/pricing")}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                  data-testid="button-upgrade-marketing"
+                >
+                  <Crown className="w-4 h-4 mr-2 rtl:ml-2 rtl:mr-0" />
+                  {lang === "ar" ? "اشترك الآن" : "Upgrade Now"}
+                </Button>
+                <Button variant="outline" onClick={() => setLocation("/dashboard")}>
+                  {lang === "ar" ? "العودة للرئيسية" : "Go to Dashboard"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <div className={`grid lg:grid-cols-2 gap-6 ${needsUpgrade ? "opacity-50 pointer-events-none select-none" : ""}`}>
           <div className="space-y-4">
             <Card className="p-5 space-y-4">
               <div>

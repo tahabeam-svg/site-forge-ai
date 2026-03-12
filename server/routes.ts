@@ -68,6 +68,14 @@ const upload = multer({
 // Free plan: max user messages per project before upgrade wall
 const FREE_MSG_LIMIT = 8;
 
+// Helper: fetch user plan info in one place
+async function getUserPlanInfo(userId: string): Promise<{ isFreePlan: boolean; isUserAdmin: boolean }> {
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  const isUserAdmin = user?.isAdmin === true;
+  const isFreePlan = !user?.plan || user.plan === "free";
+  return { isFreePlan, isUserAdmin };
+}
+
 // CSS fix injected into all generated websites to prevent horizontal overflow
 const OVERFLOW_FIX_CSS = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}</style>`;
 
@@ -207,14 +215,12 @@ export async function registerRoutes(
 
       const generated = await generateWebsite(description, language);
 
-      const user = await storage.getUser(userId);
-      const isFreePlan = !user?.plan || user.plan === "free";
-      const isAdmin = user?.email === "tahabeam@gmail.com" || (user as any)?.role === "admin";
-      const finalHtml = (isFreePlan && !isAdmin)
+      const { isFreePlan, isUserAdmin } = await getUserPlanInfo(userId);
+      const finalHtml = (isFreePlan && !isUserAdmin)
         ? injectFreePlanWatermark(generated.html)
         : removeFreePlanWatermark(generated.html);
 
-      const freePlanNote = isFreePlan && !isAdmin
+      const freePlanNote = isFreePlan && !isUserAdmin
         ? (language === "ar"
           ? "\n\n💡 **ملاحظة:** موقعك على الخطة المجانية يحتوي على شعار عربي ويب. [اشترك الآن](/pricing) لإزالته."
           : "\n\n💡 **Note:** Your free plan site includes the ArabyWeb badge. [Upgrade now](/pricing) to remove it.")
@@ -260,14 +266,12 @@ export async function registerRoutes(
 
       const generated = await generateInstantWebsite(description, language);
 
-      const user2 = await storage.getUser(req.user.id);
-      const isFreePlan2 = !user2?.plan || user2.plan === "free";
-      const isAdmin2 = user2?.email === "tahabeam@gmail.com" || (user2 as any)?.role === "admin";
-      const finalHtml2 = (isFreePlan2 && !isAdmin2)
+      const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2 } = await getUserPlanInfo(req.user.id);
+      const finalHtml2 = (isFreePlan2 && !isUserAdmin2)
         ? injectFreePlanWatermark(generated.html)
         : removeFreePlanWatermark(generated.html);
 
-      const freePlanNote2 = isFreePlan2 && !isAdmin2
+      const freePlanNote2 = isFreePlan2 && !isUserAdmin2
         ? (language === "ar"
           ? "\n\n💡 **ملاحظة:** موقعك على الخطة المجانية يحتوي على شعار عربي ويب. [اشترك الآن](/pricing) لإزالته."
           : "\n\n💡 **Note:** Free plan site includes the ArabyWeb badge. [Upgrade](/pricing) to remove it.")
@@ -311,9 +315,7 @@ export async function registerRoutes(
       const lang = language || "ar";
 
       // Check free plan message limit
-      const userEdit = await storage.getUser(userId);
-      const isAdminEdit = userEdit?.email === "tahabeam@gmail.com" || (userEdit as any)?.role === "admin";
-      const isFreePlanEdit = !userEdit?.plan || userEdit.plan === "free";
+      const { isFreePlan: isFreePlanEdit, isUserAdmin: isAdminEdit } = await getUserPlanInfo(userId);
 
       if (isFreePlanEdit && !isAdminEdit) {
         const existingMessages = await storage.getChatMessages(project.id);
@@ -412,9 +414,7 @@ export async function registerRoutes(
       const data = { ...parsed.data };
       // Apply/remove watermark if HTML is being updated (e.g. template applied via browser)
       if (data.generatedHtml) {
-        const userPut = await storage.getUser(userId);
-        const isAdminPut = userPut?.email === "tahabeam@gmail.com" || (userPut as any)?.role === "admin";
-        const isFreePlanPut = !userPut?.plan || userPut.plan === "free";
+        const { isFreePlan: isFreePlanPut, isUserAdmin: isAdminPut } = await getUserPlanInfo(userId);
         if (isFreePlanPut && !isAdminPut) {
           data.generatedHtml = injectFreePlanWatermark(data.generatedHtml);
         } else {
@@ -693,6 +693,14 @@ export async function registerRoutes(
 
   app.post("/api/marketing/generate", isAuthenticated, async (req: any, res) => {
     try {
+      const { isFreePlan, isUserAdmin } = await getUserPlanInfo(req.user.id);
+      if (isFreePlan && !isUserAdmin) {
+        return res.status(402).json({
+          message: "upgrade_required",
+          messageAr: "أداة التسويق بالذكاء الاصطناعي متاحة للخطط المدفوعة فقط. اشترك الآن للوصول إليها.",
+          messageEn: "AI Marketing Tool is available on paid plans only. Upgrade now to access it.",
+        });
+      }
       const parsed = socialContentSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
       const { topic, platform, language, tone } = parsed.data;

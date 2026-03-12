@@ -337,7 +337,7 @@ export default function EditorPage() {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
+        const img = new window.Image();
         img.onload = () => {
           const MAX = 600;
           const ratio = Math.min(1, MAX / Math.max(img.width, img.height));
@@ -1005,7 +1005,7 @@ ${project.generatedHtml}
                   onScroll={dismissStyleHint}
                 >
                 <div className="mt-2 space-y-4">
-                  {project.colorPalette && typeof project.colorPalette === "object" && (
+                  {!!(project.colorPalette && typeof project.colorPalette === "object") && (
                     <div>
                       <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                         <Palette className="w-4 h-4" />

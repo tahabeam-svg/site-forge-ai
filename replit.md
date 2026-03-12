@@ -28,7 +28,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Quick style commands
 - Billing & subscription page with pricing plans
 - Admin dashboard with user/project management, stats, and coupon system
-- AI Social Media Marketing tool (generate posts for Instagram, Facebook, LinkedIn, Twitter, TikTok, YouTube)
+- AI Social Media Marketing tool (generate posts for Instagram, Facebook, LinkedIn, Twitter, TikTok, YouTube) — **Pro/Business plan only** (free users see upgrade prompt)
 - Coupon system (admin creates discount codes with percentage/fixed, expiry, usage limits)
 - Settings page (profile, language, preferences)
 - Analytics page (project stats, traffic overview, activity)

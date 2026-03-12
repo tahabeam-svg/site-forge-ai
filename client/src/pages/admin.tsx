@@ -953,6 +953,151 @@ export default function AdminPage() {
               <ChatbotAdminSection lang={lang} toast={toast} />
             )}
 
+            {/* ─── Anti-Fraud Section ───────────────────────────────────────── */}
+            {activeSection === "fraud" && (
+              <div className="space-y-6">
+                <Card className="bg-zinc-900 border-zinc-800">
+                  <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5 text-amber-400" />
+                      {isRTL ? "مكافحة الاحتيال — اكتشاف الحسابات المتعددة" : "Anti-Fraud — Multi-Account Detection"}
+                    </h3>
+                    <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2"
+                      onClick={() => refetchFraud()} disabled={fraudLoading} data-testid="button-refresh-fraud">
+                      <RefreshCw className={`w-4 h-4 ${fraudLoading ? "animate-spin" : ""}`} />
+                      {isRTL ? "تحديث" : "Refresh"}
+                    </Button>
+                  </div>
+                  <div className="p-4 bg-amber-500/5 border-b border-amber-500/20">
+                    <div className="flex gap-3 text-sm text-amber-300/80">
+                      <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+                      <div>
+                        {isRTL
+                          ? "يتم تتبع عنوان IP عند التسجيل. الحد الأقصى: 3 حسابات لكل IP خلال 24 ساعة. الحسابات المعلقة لا تستطيع تسجيل الدخول."
+                          : "IP is tracked on registration. Max: 3 accounts per IP per 24h. Suspended accounts cannot log in."}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {fraudLoading ? (
+                  <div className="flex items-center justify-center p-16"><Loader2 className="w-8 h-8 animate-spin text-amber-400" /></div>
+                ) : (
+                  <>
+                    {/* Suspicious IPs */}
+                    <Card className="bg-zinc-900 border-zinc-800">
+                      <div className="p-4 border-b border-zinc-800">
+                        <h4 className="font-semibold text-white flex items-center gap-2 text-sm">
+                          <Network className="w-4 h-4 text-red-400" />
+                          {isRTL ? "عناوين IP مشبوهة (أكثر من حساب)" : "Suspicious IPs (multiple accounts)"}
+                          <Badge className="bg-red-500/20 text-red-400 border-red-500/30 ms-2">{fraudData?.suspiciousIps?.length ?? 0}</Badge>
+                        </h4>
+                      </div>
+                      {!fraudData?.suspiciousIps?.length ? (
+                        <div className="p-8 text-center text-zinc-500">
+                          <CheckCircle className="w-10 h-10 mx-auto mb-3 text-emerald-600" />
+                          <p className="text-sm">{isRTL ? "لا توجد عناوين IP مشبوهة حالياً" : "No suspicious IPs detected"}</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-zinc-800">
+                          {fraudData.suspiciousIps.map((entry) => (
+                            <div key={entry.ip} className="p-4">
+                              <div className="flex items-start justify-between gap-3 mb-3">
+                                <p className="font-mono text-sm text-amber-300 flex items-center gap-2">
+                                  <Network className="w-3.5 h-3.5" />
+                                  {entry.ip}
+                                  <span className="text-zinc-500 font-sans text-xs">({entry.account_count} {isRTL ? "حسابات" : "accounts"})</span>
+                                </p>
+                                <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white gap-1 shrink-0 text-xs"
+                                  onClick={() => suspendIpMutation.mutate({ ip: entry.ip, reason: isRTL ? `IP مشبوه (${entry.ip})` : `Fraud: shared IP (${entry.ip})` })}
+                                  disabled={suspendIpMutation.isPending} data-testid={`button-suspend-ip-${entry.ip}`}>
+                                  <UserX className="w-3 h-3" />
+                                  {isRTL ? "تعليق الكل" : "Suspend All"}
+                                </Button>
+                              </div>
+                              <div className="grid gap-2">
+                                {entry.accounts.map((acc: FraudAccount) => (
+                                  <div key={acc.id} className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2 gap-2">
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-xs text-zinc-200 truncate">{acc.email}</p>
+                                      <p className="text-[10px] text-zinc-500">
+                                        {new Date(acc.created_at).toLocaleDateString(isRTL ? "ar-SA" : "en-US")}
+                                        {acc.last_login_ip && acc.last_login_ip !== entry.ip && (
+                                          <span className="text-amber-500 ms-2">{isRTL ? "آخر دخول:" : "last login:"} {acc.last_login_ip}</span>
+                                        )}
+                                      </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      <Badge className={acc.plan === "free" ? "bg-zinc-700 text-zinc-300 text-[10px]" : "bg-emerald-500/20 text-emerald-400 text-[10px]"}>{acc.plan}</Badge>
+                                      {acc.is_suspended ? (
+                                        <Badge className="bg-red-500/20 text-red-400 text-[10px]">{isRTL ? "معلق" : "Suspended"}</Badge>
+                                      ) : (
+                                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                                          onClick={() => suspendUserMutation.mutate({ userId: acc.id, reason: isRTL ? `احتيال: IP مشترك (${entry.ip})` : `Fraud: shared IP (${entry.ip})` })}
+                                          disabled={suspendUserMutation.isPending} data-testid={`button-suspend-fraud-${acc.id}`}>
+                                          <Ban className="w-3 h-3" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Card>
+
+                    {/* Recent free users (last 48h) */}
+                    <Card className="bg-zinc-900 border-zinc-800">
+                      <div className="p-4 border-b border-zinc-800">
+                        <h4 className="font-semibold text-white flex items-center gap-2 text-sm">
+                          <Users className="w-4 h-4 text-blue-400" />
+                          {isRTL ? "مستخدمو الخطة المجانية (آخر 48 ساعة)" : "Recent Free Users (last 48h)"}
+                          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 ms-2">{fraudData?.recentFreeUsers?.length ?? 0}</Badge>
+                        </h4>
+                      </div>
+                      {!fraudData?.recentFreeUsers?.length ? (
+                        <div className="p-8 text-center text-zinc-500">
+                          <Users className="w-8 h-8 mx-auto mb-2 text-zinc-700" />
+                          <p className="text-sm">{isRTL ? "لا يوجد مستخدمون جدد في الـ 48 ساعة الماضية" : "No new free users in the last 48h"}</p>
+                        </div>
+                      ) : (
+                        <ScrollArea className="h-[400px]">
+                          <div className="divide-y divide-zinc-800">
+                            {fraudData.recentFreeUsers.map((user: FraudAccount & { registration_ip: string | null; project_count: number }, i: number) => (
+                              <div key={user.id} className="flex items-center justify-between p-3 hover:bg-zinc-800/40 transition-colors" data-testid={`row-fraud-user-${i}`}>
+                                <div className="min-w-0 flex-1">
+                                  <p className="text-sm text-zinc-200 truncate">{user.email}</p>
+                                  <p className="text-[10px] text-zinc-500 font-mono flex flex-wrap gap-2">
+                                    {user.registration_ip && <span className="text-blue-400">{user.registration_ip}</span>}
+                                    <span>{new Date(user.created_at).toLocaleString(isRTL ? "ar-SA" : "en-US")}</span>
+                                    <span className="text-emerald-400">{user.project_count} {isRTL ? "مشاريع" : "projects"}</span>
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0 ms-2">
+                                  {user.is_suspended ? (
+                                    <Badge className="bg-red-500/20 text-red-400 text-[10px]">{isRTL ? "معلق" : "Suspended"}</Badge>
+                                  ) : (
+                                    <Button size="sm" variant="ghost" className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                      onClick={() => suspendUserMutation.mutate({ userId: user.id, reason: isRTL ? "مشبوه: حساب مجاني جديد" : "Suspicious: new free account" })}
+                                      disabled={suspendUserMutation.isPending} data-testid={`button-suspend-recent-${i}`}>
+                                      <Ban className="w-3 h-3 me-1" />
+                                      {isRTL ? "تعليق" : "Suspend"}
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </Card>
+                  </>
+                )}
+              </div>
+            )}
+
           </div>
         </main>
       </div>
@@ -1283,185 +1428,6 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
         </Card>
       )}
 
-      {/* ANTI-FRAUD */}
-      {activeSection === "fraud" && (
-        <div className="space-y-6">
-          {/* Header */}
-          <Card className="bg-zinc-900 border-zinc-800">
-            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
-              <h3 className="font-semibold text-white flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-400" />
-                {isRTL ? "مكافحة الاحتيال — اكتشاف الحسابات المتعددة" : "Anti-Fraud — Multi-Account Detection"}
-              </h3>
-              <Button
-                size="sm"
-                variant="outline"
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2"
-                onClick={() => refetchFraud()}
-                disabled={fraudLoading}
-                data-testid="button-refresh-fraud"
-              >
-                <RefreshCw className={`w-4 h-4 ${fraudLoading ? "animate-spin" : ""}`} />
-                {isRTL ? "تحديث" : "Refresh"}
-              </Button>
-            </div>
-
-            {/* Info box */}
-            <div className="p-4 bg-amber-500/5 border-b border-amber-500/20">
-              <div className="flex gap-3 text-sm text-amber-300/80">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
-                <div>
-                  {isRTL
-                    ? "يتم تتبع عنوان IP عند التسجيل. الحد الأقصى المسموح به: 3 حسابات لكل IP خلال 24 ساعة. الحسابات المعلقة لا تستطيع تسجيل الدخول."
-                    : "IP address is tracked on registration. Max allowed: 3 accounts per IP within 24h. Suspended accounts cannot log in."}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {fraudLoading ? (
-            <div className="flex items-center justify-center p-16">
-              <Loader2 className="w-8 h-8 animate-spin text-amber-400" />
-            </div>
-          ) : (
-            <>
-              {/* Suspicious IPs (multiple accounts) */}
-              <Card className="bg-zinc-900 border-zinc-800">
-                <div className="p-4 border-b border-zinc-800">
-                  <h4 className="font-semibold text-white flex items-center gap-2 text-sm">
-                    <Network className="w-4 h-4 text-red-400" />
-                    {isRTL ? "عناوين IP مشبوهة (أكثر من حساب)" : "Suspicious IPs (multiple accounts)"}
-                    <Badge className="bg-red-500/20 text-red-400 border-red-500/30 ms-2">
-                      {fraudData?.suspiciousIps?.length ?? 0}
-                    </Badge>
-                  </h4>
-                </div>
-                {!fraudData?.suspiciousIps?.length ? (
-                  <div className="p-8 text-center text-zinc-500">
-                    <CheckCircle className="w-10 h-10 mx-auto mb-3 text-emerald-600" />
-                    <p className="text-sm">{isRTL ? "لا توجد عناوين IP مشبوهة حالياً" : "No suspicious IPs detected"}</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-zinc-800">
-                    {fraudData.suspiciousIps.map((entry) => (
-                      <div key={entry.ip} className="p-4">
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <div>
-                            <p className="font-mono text-sm text-amber-300 flex items-center gap-2">
-                              <Network className="w-3.5 h-3.5" />
-                              {entry.ip}
-                              <span className="text-zinc-500 font-sans text-xs">
-                                ({entry.account_count} {isRTL ? "حسابات" : "accounts"})
-                              </span>
-                            </p>
-                          </div>
-                          <Button
-                            size="sm"
-                            className="bg-red-600 hover:bg-red-700 text-white gap-1 shrink-0 text-xs"
-                            onClick={() => suspendIpMutation.mutate({ ip: entry.ip, reason: isRTL ? `تعليق تلقائي: IP مشبوه (${entry.ip})` : `Fraud: shared IP (${entry.ip})` })}
-                            disabled={suspendIpMutation.isPending}
-                            data-testid={`button-suspend-ip-${entry.ip}`}
-                          >
-                            <UserX className="w-3 h-3" />
-                            {isRTL ? "تعليق الكل" : "Suspend All"}
-                          </Button>
-                        </div>
-                        <div className="grid gap-2">
-                          {entry.accounts.map((acc) => (
-                            <div key={acc.id} className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2 gap-2">
-                              <div className="min-w-0 flex-1">
-                                <p className="text-xs text-zinc-200 truncate">{acc.email}</p>
-                                <p className="text-[10px] text-zinc-500">
-                                  {new Date(acc.created_at).toLocaleDateString(isRTL ? "ar-SA" : "en-US")}
-                                  {acc.last_login_ip && acc.last_login_ip !== entry.ip && (
-                                    <span className="text-amber-500 ms-2">{isRTL ? "آخر دخول من:" : "last login:"} {acc.last_login_ip}</span>
-                                  )}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <Badge className={acc.plan === "free" ? "bg-zinc-700 text-zinc-300 text-[10px]" : "bg-emerald-500/20 text-emerald-400 text-[10px]"}>
-                                  {acc.plan}
-                                </Badge>
-                                {acc.is_suspended ? (
-                                  <Badge className="bg-red-500/20 text-red-400 text-[10px]">{isRTL ? "معلق" : "Suspended"}</Badge>
-                                ) : (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
-                                    onClick={() => suspendUserMutation.mutate({ userId: acc.id, reason: isRTL ? `احتيال: IP مشترك (${entry.ip})` : `Fraud: shared IP (${entry.ip})` })}
-                                    disabled={suspendUserMutation.isPending}
-                                    data-testid={`button-suspend-fraud-${acc.id}`}
-                                  >
-                                    <Ban className="w-3 h-3" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </Card>
-
-              {/* Recent free users (last 48h) */}
-              <Card className="bg-zinc-900 border-zinc-800">
-                <div className="p-4 border-b border-zinc-800">
-                  <h4 className="font-semibold text-white flex items-center gap-2 text-sm">
-                    <Users className="w-4 h-4 text-blue-400" />
-                    {isRTL ? "مستخدمو الخطة المجانية (آخر 48 ساعة)" : "Recent Free Users (last 48h)"}
-                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 ms-2">
-                      {fraudData?.recentFreeUsers?.length ?? 0}
-                    </Badge>
-                  </h4>
-                </div>
-                {!fraudData?.recentFreeUsers?.length ? (
-                  <div className="p-8 text-center text-zinc-500">
-                    <Users className="w-8 h-8 mx-auto mb-2 text-zinc-700" />
-                    <p className="text-sm">{isRTL ? "لا يوجد مستخدمون جدد في الـ 48 ساعة الماضية" : "No new free users in the last 48h"}</p>
-                  </div>
-                ) : (
-                  <ScrollArea className="h-[400px]">
-                    <div className="divide-y divide-zinc-800">
-                      {fraudData.recentFreeUsers.map((user, i) => (
-                        <div key={user.id} className="flex items-center justify-between p-3 hover:bg-zinc-800/40 transition-colors" data-testid={`row-fraud-user-${i}`}>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm text-zinc-200 truncate">{user.email}</p>
-                            <p className="text-[10px] text-zinc-500 font-mono flex flex-wrap gap-2">
-                              {user.registration_ip && <span className="text-blue-400">{user.registration_ip}</span>}
-                              <span>{new Date(user.created_at).toLocaleString(isRTL ? "ar-SA" : "en-US")}</span>
-                              <span className="text-emerald-400">{user.project_count} {isRTL ? "مشاريع" : "projects"}</span>
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 shrink-0 ms-2">
-                            {user.is_suspended ? (
-                              <Badge className="bg-red-500/20 text-red-400 text-[10px]">{isRTL ? "معلق" : "Suspended"}</Badge>
-                            ) : (
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                                onClick={() => suspendUserMutation.mutate({ userId: user.id, reason: isRTL ? "مشبوه: حساب مجاني جديد" : "Suspicious: new free account" })}
-                                disabled={suspendUserMutation.isPending}
-                                data-testid={`button-suspend-recent-${i}`}
-                              >
-                                <Ban className="w-3 h-3 me-1" />
-                                {isRTL ? "تعليق" : "Suspend"}
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                )}
-              </Card>
-            </>
-          )}
-        </div>
-      )}
     </div>
   );
 }
