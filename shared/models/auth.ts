@@ -28,6 +28,12 @@ export const users = pgTable("users", {
   plan: varchar("plan").default("free"),
   githubToken: varchar("github_token"),
   githubUsername: varchar("github_username"),
+  // ── Anti-fraud fields ─────────────────────────────────────────────────────
+  registrationIp: varchar("registration_ip"),
+  lastLoginIp: varchar("last_login_ip"),
+  isSuspended: boolean("is_suspended").default(false),
+  suspendReason: varchar("suspend_reason"),
+  // ─────────────────────────────────────────────────────────────────────────
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

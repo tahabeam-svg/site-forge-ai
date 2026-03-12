@@ -13,7 +13,7 @@ import archiver from "archiver";
 import crypto from "crypto";
 import { db } from "./db";
 import { users } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql, and, gte, desc } from "drizzle-orm";
 
 const ENCRYPTION_KEY = crypto.createHash("sha256").update(process.env.SESSION_SECRET || "arabyweb-fallback-key").digest();
 const IV_LENGTH = 16;
@@ -485,7 +485,9 @@ export async function registerRoutes(
   app.get("/api/admin/users", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const allUsers = await storage.getAllUsers();
-      res.json(allUsers);
+      // Strip password hashes from admin response
+      const safeUsers = allUsers.map(({ password: _, ...u }) => u);
+      res.json(safeUsers);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch users" });
     }
@@ -567,15 +569,118 @@ export async function registerRoutes(
     }
   });
 
+  // ── Suspend user ────────────────────────────────────────────────────────────
   app.patch("/api/admin/users/:id/suspend", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const { reason } = req.body;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+      if (user.isAdmin) return res.status(403).json({ message: "Cannot suspend admin accounts" });
+      const [updated] = await db.update(users).set({
+        isSuspended: true,
+        suspendReason: reason || "مخالفة شروط الاستخدام",
+        updatedAt: new Date(),
+      }).where(eq(users.id, userId)).returning();
+      console.log(`[ADMIN] Suspended user ${user.email} (${userId}). Reason: ${reason}`);
+      res.json({ message: "User suspended", user: updated });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to suspend user" });
+    }
+  });
+
+  // ── Unsuspend user ───────────────────────────────────────────────────────────
+  app.patch("/api/admin/users/:id/unsuspend", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const userId = req.params.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
-      await db.update(users).set({ updatedAt: new Date() }).where(eq(users.id, userId));
-      res.json({ message: "User suspended", userId });
+      const [updated] = await db.update(users).set({
+        isSuspended: false,
+        suspendReason: null,
+        updatedAt: new Date(),
+      }).where(eq(users.id, userId)).returning();
+      console.log(`[ADMIN] Unsuspended user ${user.email} (${userId})`);
+      res.json({ message: "User unsuspended", user: updated });
     } catch (err) {
-      res.status(500).json({ message: "Failed to suspend user" });
+      res.status(500).json({ message: "Failed to unsuspend user" });
+    }
+  });
+
+  // ── Fraud detection: accounts sharing the same registration IP ──────────────
+  app.get("/api/admin/fraud/suspicious", isAuthenticated, isAdmin, async (_req: any, res) => {
+    try {
+      // Find IPs with more than 1 account registered
+      const suspiciousIps = await db.execute(sql`
+        SELECT
+          registration_ip as ip,
+          COUNT(*)::int as account_count,
+          json_agg(json_build_object(
+            'id', id,
+            'email', email,
+            'plan', plan,
+            'is_suspended', is_suspended,
+            'created_at', created_at,
+            'last_login_ip', last_login_ip
+          ) ORDER BY created_at DESC) as accounts
+        FROM users
+        WHERE registration_ip IS NOT NULL
+          AND registration_ip NOT IN ('127.0.0.1', '::1', 'unknown')
+        GROUP BY registration_ip
+        HAVING COUNT(*) > 1
+        ORDER BY account_count DESC
+        LIMIT 100
+      `);
+
+      // Users who have registered but never upgraded (potential abusers)
+      const since48h = new Date(Date.now() - 48 * 60 * 60 * 1000);
+      const recentFreeUsers = await db.execute(sql`
+        SELECT
+          u.id,
+          u.email,
+          u.registration_ip,
+          u.last_login_ip,
+          u.plan,
+          u.is_suspended,
+          u.created_at,
+          COUNT(p.id)::int as project_count
+        FROM users u
+        LEFT JOIN projects p ON p.user_id = u.id
+        WHERE u.plan = 'free'
+          AND u.is_admin = false
+          AND u.created_at > ${since48h}
+        GROUP BY u.id
+        ORDER BY u.created_at DESC
+        LIMIT 50
+      `);
+
+      res.json({
+        suspiciousIps: suspiciousIps.rows,
+        recentFreeUsers: recentFreeUsers.rows,
+      });
+    } catch (err) {
+      console.error("Fraud detection error:", err);
+      res.status(500).json({ message: "Failed to run fraud detection" });
+    }
+  });
+
+  // ── Bulk suspend all accounts from a suspicious IP ──────────────────────────
+  app.post("/api/admin/fraud/suspend-ip", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { ip, reason } = req.body;
+      if (!ip) return res.status(400).json({ message: "IP is required" });
+      const suspended = await db.update(users)
+        .set({
+          isSuspended: true,
+          suspendReason: reason || `تعليق تلقائي: IP مشبوه (${ip})`,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(users.registrationIp, ip), eq(users.isAdmin, false)))
+        .returning({ id: users.id, email: users.email });
+      console.log(`[ADMIN] Bulk suspended ${suspended.length} accounts from IP ${ip}`);
+      res.json({ message: `تم تعليق ${suspended.length} حساب من IP ${ip}`, suspended });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to bulk suspend" });
     }
   });
 

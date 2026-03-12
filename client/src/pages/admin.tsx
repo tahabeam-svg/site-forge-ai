@@ -53,18 +53,25 @@ import {
   RefreshCw,
   CheckCircle,
   ThumbsUp,
+  AlertTriangle,
+  Network,
+  UserX,
+  UserCheck,
 } from "lucide-react";
 
 interface AdminStats { totalUsers: number; totalProjects: number; publishedProjects: number; }
-interface AdminUser { id: string; email: string | null; firstName: string | null; lastName: string | null; profileImageUrl: string | null; plan?: string; credits?: number; createdAt: string | null; }
+interface AdminUser { id: string; email: string | null; firstName: string | null; lastName: string | null; profileImageUrl: string | null; plan?: string; credits?: number; createdAt: string | null; isSuspended?: boolean; registrationIp?: string | null; }
 interface AdminProject { id: number; userId: string; name: string; description: string | null; status: string; createdAt: string; }
 interface Coupon { id: number; code: string; discountType: string; discountValue: number; maxUses: number | null; usedCount: number | null; expiresAt: string | null; isActive: boolean | null; createdAt: string; }
 interface PaymobSettings { api_key?: string; integration_id?: string; iframe_id?: string; hmac_secret?: string; }
 interface AdminSubscription { id: number; userId: string; plan: string; status: string; paymobOrderId: string | null; amountCents: number | null; currency: string | null; startDate: string | null; endDate: string | null; createdAt: string; }
 interface PricingData { pro: { price: number; credits: number }; business: { price: number; credits: number }; free: { credits: number }; }
 interface Promotion { id: string; name: string; nameAr: string; discountPercent: number; appliesTo: "all" | "pro" | "business"; isActive: boolean; expiresAt: string | null; createdAt: string; }
+interface FraudAccount { id: string; email: string; plan: string; is_suspended: boolean; created_at: string; last_login_ip: string | null; }
+interface SuspiciousIp { ip: string; account_count: number; accounts: FraudAccount[]; }
+interface FraudData { suspiciousIps: SuspiciousIp[]; recentFreeUsers: (FraudAccount & { registration_ip: string | null; project_count: number })[]; }
 
-type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot";
+type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot" | "fraud";
 
 export default function AdminPage() {
   const { language, logout } = useAuth();
@@ -110,6 +117,11 @@ export default function AdminPage() {
   const { data: adminSubs = [] } = useQuery<AdminSubscription[]>({ queryKey: ["/api/admin/subscriptions"], enabled: !statsError });
   const { data: pricingData } = useQuery<PricingData>({ queryKey: ["/api/admin/pricing"], enabled: !statsError });
   const { data: promotions = [] } = useQuery<Promotion[]>({ queryKey: ["/api/admin/promotions"], enabled: !statsError });
+  const { data: fraudData, isLoading: fraudLoading, refetch: refetchFraud } = useQuery<FraudData>({
+    queryKey: ["/api/admin/fraud/suspicious"],
+    enabled: activeSection === "fraud" && !statsError,
+    staleTime: 30000,
+  });
 
   useEffect(() => {
     if (pricingData) {
@@ -138,8 +150,36 @@ export default function AdminPage() {
   });
 
   const suspendUserMutation = useMutation({
-    mutationFn: async (userId: string) => { await apiRequest("PATCH", `/api/admin/users/${userId}/suspend`); },
-    onSuccess: () => { toast({ title: lang === "ar" ? "تم إيقاف المستخدم" : "User suspended" }); },
+    mutationFn: async ({ userId, reason }: { userId: string; reason?: string }) => {
+      await apiRequest("PATCH", `/api/admin/users/${userId}/suspend`, { reason });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/fraud/suspicious"] });
+      toast({ title: lang === "ar" ? "تم تعليق الحساب" : "Account suspended" });
+    },
+    onError: () => { toast({ title: lang === "ar" ? "فشل التعليق" : "Suspend failed", variant: "destructive" }); },
+  });
+
+  const unsuspendUserMutation = useMutation({
+    mutationFn: async (userId: string) => { await apiRequest("PATCH", `/api/admin/users/${userId}/unsuspend`); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/fraud/suspicious"] });
+      toast({ title: lang === "ar" ? "تم رفع التعليق" : "Account unsuspended" });
+    },
+  });
+
+  const suspendIpMutation = useMutation({
+    mutationFn: async ({ ip, reason }: { ip: string; reason?: string }) => {
+      return await apiRequest("POST", `/api/admin/fraud/suspend-ip`, { ip, reason });
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/fraud/suspicious"] });
+      toast({ title: lang === "ar" ? `تم تعليق جميع الحسابات من هذا IP` : `All accounts from this IP suspended` });
+    },
+    onError: () => { toast({ title: lang === "ar" ? "فشل التعليق الجماعي" : "Bulk suspend failed", variant: "destructive" }); },
   });
 
   const savePaymobMutation = useMutation({
@@ -200,6 +240,7 @@ export default function AdminPage() {
     { key: "payments", icon: Receipt, label: "Payments", labelAr: "المدفوعات" },
     { key: "gateway", icon: CreditCard, label: "Gateway", labelAr: "بوابة الدفع" },
     { key: "chatbot", icon: Bot, label: "Chatbot AI", labelAr: "الشاتبوت الذكي" },
+    { key: "fraud", icon: AlertTriangle, label: "Anti-Fraud", labelAr: "مكافحة الاحتيال" },
   ];
 
   const statusLabel = (s: string) => lang === "ar" ? ({ draft: "مسودة", generating: "قيد الإنشاء", generated: "مُنشأ", published: "منشور", error: "خطأ" }[s] || s) : s;
@@ -485,9 +526,15 @@ export default function AdminPage() {
                         </div>
                         <div className="flex items-center gap-1 sm:gap-3 shrink-0 ms-2">
                           <span className="text-[10px] sm:text-xs text-zinc-500 hidden sm:inline">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</span>
-                          <Button variant="ghost" size="sm" className="text-red-400 h-7 w-7 sm:h-8 sm:w-8 p-0" onClick={() => suspendUserMutation.mutate(user.id)} data-testid={`button-suspend-user-${i}`}>
-                            <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                          </Button>
+                          {user.isSuspended ? (
+                            <Button variant="ghost" size="sm" className="text-emerald-400 h-7 w-7 sm:h-8 sm:w-8 p-0" onClick={() => unsuspendUserMutation.mutate(user.id)} data-testid={`button-unsuspend-user-${i}`} title={lang === "ar" ? "رفع التعليق" : "Unsuspend"}>
+                              <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </Button>
+                          ) : (
+                            <Button variant="ghost" size="sm" className="text-red-400 h-7 w-7 sm:h-8 sm:w-8 p-0" onClick={() => suspendUserMutation.mutate({ userId: user.id, reason: lang === "ar" ? "قرار إداري" : "Admin action" })} data-testid={`button-suspend-user-${i}`} title={lang === "ar" ? "تعليق الحساب" : "Suspend"}>
+                              <Ban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1234,6 +1281,186 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
             </div>
           </ScrollArea>
         </Card>
+      )}
+
+      {/* ANTI-FRAUD */}
+      {activeSection === "fraud" && (
+        <div className="space-y-6">
+          {/* Header */}
+          <Card className="bg-zinc-900 border-zinc-800">
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <AlertTriangle className="w-5 h-5 text-amber-400" />
+                {isRTL ? "مكافحة الاحتيال — اكتشاف الحسابات المتعددة" : "Anti-Fraud — Multi-Account Detection"}
+              </h3>
+              <Button
+                size="sm"
+                variant="outline"
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2"
+                onClick={() => refetchFraud()}
+                disabled={fraudLoading}
+                data-testid="button-refresh-fraud"
+              >
+                <RefreshCw className={`w-4 h-4 ${fraudLoading ? "animate-spin" : ""}`} />
+                {isRTL ? "تحديث" : "Refresh"}
+              </Button>
+            </div>
+
+            {/* Info box */}
+            <div className="p-4 bg-amber-500/5 border-b border-amber-500/20">
+              <div className="flex gap-3 text-sm text-amber-300/80">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+                <div>
+                  {isRTL
+                    ? "يتم تتبع عنوان IP عند التسجيل. الحد الأقصى المسموح به: 3 حسابات لكل IP خلال 24 ساعة. الحسابات المعلقة لا تستطيع تسجيل الدخول."
+                    : "IP address is tracked on registration. Max allowed: 3 accounts per IP within 24h. Suspended accounts cannot log in."}
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {fraudLoading ? (
+            <div className="flex items-center justify-center p-16">
+              <Loader2 className="w-8 h-8 animate-spin text-amber-400" />
+            </div>
+          ) : (
+            <>
+              {/* Suspicious IPs (multiple accounts) */}
+              <Card className="bg-zinc-900 border-zinc-800">
+                <div className="p-4 border-b border-zinc-800">
+                  <h4 className="font-semibold text-white flex items-center gap-2 text-sm">
+                    <Network className="w-4 h-4 text-red-400" />
+                    {isRTL ? "عناوين IP مشبوهة (أكثر من حساب)" : "Suspicious IPs (multiple accounts)"}
+                    <Badge className="bg-red-500/20 text-red-400 border-red-500/30 ms-2">
+                      {fraudData?.suspiciousIps?.length ?? 0}
+                    </Badge>
+                  </h4>
+                </div>
+                {!fraudData?.suspiciousIps?.length ? (
+                  <div className="p-8 text-center text-zinc-500">
+                    <CheckCircle className="w-10 h-10 mx-auto mb-3 text-emerald-600" />
+                    <p className="text-sm">{isRTL ? "لا توجد عناوين IP مشبوهة حالياً" : "No suspicious IPs detected"}</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-zinc-800">
+                    {fraudData.suspiciousIps.map((entry) => (
+                      <div key={entry.ip} className="p-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div>
+                            <p className="font-mono text-sm text-amber-300 flex items-center gap-2">
+                              <Network className="w-3.5 h-3.5" />
+                              {entry.ip}
+                              <span className="text-zinc-500 font-sans text-xs">
+                                ({entry.account_count} {isRTL ? "حسابات" : "accounts"})
+                              </span>
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            className="bg-red-600 hover:bg-red-700 text-white gap-1 shrink-0 text-xs"
+                            onClick={() => suspendIpMutation.mutate({ ip: entry.ip, reason: isRTL ? `تعليق تلقائي: IP مشبوه (${entry.ip})` : `Fraud: shared IP (${entry.ip})` })}
+                            disabled={suspendIpMutation.isPending}
+                            data-testid={`button-suspend-ip-${entry.ip}`}
+                          >
+                            <UserX className="w-3 h-3" />
+                            {isRTL ? "تعليق الكل" : "Suspend All"}
+                          </Button>
+                        </div>
+                        <div className="grid gap-2">
+                          {entry.accounts.map((acc) => (
+                            <div key={acc.id} className="flex items-center justify-between bg-zinc-800/50 rounded-lg px-3 py-2 gap-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs text-zinc-200 truncate">{acc.email}</p>
+                                <p className="text-[10px] text-zinc-500">
+                                  {new Date(acc.created_at).toLocaleDateString(isRTL ? "ar-SA" : "en-US")}
+                                  {acc.last_login_ip && acc.last_login_ip !== entry.ip && (
+                                    <span className="text-amber-500 ms-2">{isRTL ? "آخر دخول من:" : "last login:"} {acc.last_login_ip}</span>
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <Badge className={acc.plan === "free" ? "bg-zinc-700 text-zinc-300 text-[10px]" : "bg-emerald-500/20 text-emerald-400 text-[10px]"}>
+                                  {acc.plan}
+                                </Badge>
+                                {acc.is_suspended ? (
+                                  <Badge className="bg-red-500/20 text-red-400 text-[10px]">{isRTL ? "معلق" : "Suspended"}</Badge>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 w-6 p-0 text-red-400 hover:text-red-300"
+                                    onClick={() => suspendUserMutation.mutate({ userId: acc.id, reason: isRTL ? `احتيال: IP مشترك (${entry.ip})` : `Fraud: shared IP (${entry.ip})` })}
+                                    disabled={suspendUserMutation.isPending}
+                                    data-testid={`button-suspend-fraud-${acc.id}`}
+                                  >
+                                    <Ban className="w-3 h-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              {/* Recent free users (last 48h) */}
+              <Card className="bg-zinc-900 border-zinc-800">
+                <div className="p-4 border-b border-zinc-800">
+                  <h4 className="font-semibold text-white flex items-center gap-2 text-sm">
+                    <Users className="w-4 h-4 text-blue-400" />
+                    {isRTL ? "مستخدمو الخطة المجانية (آخر 48 ساعة)" : "Recent Free Users (last 48h)"}
+                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 ms-2">
+                      {fraudData?.recentFreeUsers?.length ?? 0}
+                    </Badge>
+                  </h4>
+                </div>
+                {!fraudData?.recentFreeUsers?.length ? (
+                  <div className="p-8 text-center text-zinc-500">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-zinc-700" />
+                    <p className="text-sm">{isRTL ? "لا يوجد مستخدمون جدد في الـ 48 ساعة الماضية" : "No new free users in the last 48h"}</p>
+                  </div>
+                ) : (
+                  <ScrollArea className="h-[400px]">
+                    <div className="divide-y divide-zinc-800">
+                      {fraudData.recentFreeUsers.map((user, i) => (
+                        <div key={user.id} className="flex items-center justify-between p-3 hover:bg-zinc-800/40 transition-colors" data-testid={`row-fraud-user-${i}`}>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm text-zinc-200 truncate">{user.email}</p>
+                            <p className="text-[10px] text-zinc-500 font-mono flex flex-wrap gap-2">
+                              {user.registration_ip && <span className="text-blue-400">{user.registration_ip}</span>}
+                              <span>{new Date(user.created_at).toLocaleString(isRTL ? "ar-SA" : "en-US")}</span>
+                              <span className="text-emerald-400">{user.project_count} {isRTL ? "مشاريع" : "projects"}</span>
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 ms-2">
+                            {user.is_suspended ? (
+                              <Badge className="bg-red-500/20 text-red-400 text-[10px]">{isRTL ? "معلق" : "Suspended"}</Badge>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 px-2 text-xs text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                                onClick={() => suspendUserMutation.mutate({ userId: user.id, reason: isRTL ? "مشبوه: حساب مجاني جديد" : "Suspicious: new free account" })}
+                                disabled={suspendUserMutation.isPending}
+                                data-testid={`button-suspend-recent-${i}`}
+                              >
+                                <Ban className="w-3 h-3 me-1" />
+                                {isRTL ? "تعليق" : "Suspend"}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                )}
+              </Card>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
