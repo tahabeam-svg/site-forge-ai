@@ -117,6 +117,8 @@ export default function EditorPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const chatFileInputRef = useRef<HTMLInputElement>(null);
+  const chatInputAreaRef = useRef<HTMLDivElement>(null);
+  const [msgAreaHeight, setMsgAreaHeight] = useState<number | null>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -141,6 +143,37 @@ export default function EditorPage() {
       document.documentElement.style.overflow = "";
     };
   }, []);
+
+  // JS-calculated messages area height — bypasses ALL CSS inheritance issues
+  useEffect(() => {
+    const calc = () => {
+      if (window.innerWidth >= 768) { setMsgAreaHeight(null); return; }
+      const headerH = 48;       // mobile header h-12
+      const bottomNavH = 60;    // fixed bottom nav
+      const inputH = chatInputAreaRef.current?.offsetHeight ?? 112;
+      setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+    };
+    calc();
+    window.addEventListener("resize", calc);
+    window.addEventListener("orientationchange", calc);
+    return () => {
+      window.removeEventListener("resize", calc);
+      window.removeEventListener("orientationchange", calc);
+    };
+  }, []);
+
+  // Recalculate when input area changes (tab switch, limit banner, image preview)
+  useEffect(() => {
+    if (typeof window === "undefined" || window.innerWidth >= 768) return;
+    // Defer slightly so the DOM is updated before measuring
+    const id = requestAnimationFrame(() => {
+      const headerH = 48;
+      const bottomNavH = 60;
+      const inputH = chatInputAreaRef.current?.offsetHeight ?? 112;
+      setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [limitReached, chatImagePreview, activeTab]);
 
   // One-time scroll hint for the style tab
   useEffect(() => {
@@ -580,7 +613,11 @@ ${project.generatedHtml}
               </TabsList>
 
               {/* Chat messages only — input is OUTSIDE Tabs below */}
-              <TabsContent value="chat" className="flex-1 overflow-y-auto mt-0 px-4 py-3">
+              <TabsContent
+                value="chat"
+                className="overflow-y-auto mt-0 px-4 py-3 md:flex-1"
+                style={msgAreaHeight !== null ? { height: msgAreaHeight, flex: "none" } : undefined}
+              >
                 <div className="space-y-4">
                   {messages.map((msg) => (
                     <div
@@ -1064,7 +1101,7 @@ ${project.generatedHtml}
 
             {/* ─── Chat Input: OUTSIDE Tabs, always at bottom ─── */}
             {activeTab === "chat" && (
-              <div className="shrink-0 px-4 pb-[68px] md:pb-3 pt-2 space-y-2 border-t border-border/50 bg-background">
+              <div ref={chatInputAreaRef} className="shrink-0 px-4 pb-[68px] md:pb-3 pt-2 space-y-2 border-t border-border/50 bg-background">
                 <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                   {suggestedCmds.slice(0, 6).map((cmd, i) => (
                     <Button
