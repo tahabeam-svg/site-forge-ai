@@ -567,7 +567,7 @@ ${project.generatedHtml}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0 px-4 pb-3 pt-3 md:pt-0">
+              <TabsContent value="chat" className="flex-1 h-0 flex flex-col overflow-hidden mt-0 px-4 pb-3 pt-3 md:pt-0">
                 <ScrollArea className="flex-1 md:mt-3">
                   <div className="space-y-4 pe-2">
                     {messages.map((msg) => (
