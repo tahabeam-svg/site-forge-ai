@@ -15,6 +15,25 @@ export async function seedDatabase() {
     console.error("Migration warning:", e.message);
   }
 
+  // Anti-fraud & admin columns
+  try {
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS registration_ip VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_ip VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT false`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS suspend_reason VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS github_token VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS github_username VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image_url VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`);
+    console.log("Migration: anti-fraud & profile columns ensured");
+  } catch (e: any) {
+    console.error("Migration warning (anti-fraud):", e.message);
+  }
+
   // Migrate pricing to new values: Pro 9900 halalas (99 SAR), Business 19900 halalas (199 SAR)
   try {
     await db.execute(sql`
@@ -46,6 +65,111 @@ export async function seedDatabase() {
     console.log("Migration: session table ensured");
   } catch (e: any) {
     console.error("Session table warning:", e.message);
+  }
+
+  // Ensure all chatbot & platform tables exist
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS visitor_questions (
+        id SERIAL PRIMARY KEY,
+        question TEXT NOT NULL,
+        detected_language TEXT DEFAULT 'ar',
+        detected_dialect TEXT DEFAULT 'msa',
+        ai_response TEXT,
+        session_id TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS auto_learned_knowledge (
+        id SERIAL PRIMARY KEY,
+        question_pattern TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        usage_count INTEGER DEFAULT 1,
+        language TEXT DEFAULT 'ar',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS knowledge_base (
+        id SERIAL PRIMARY KEY,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        category TEXT DEFAULT 'general',
+        language TEXT DEFAULT 'ar',
+        is_approved BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS chatbot_conversations (
+        id SERIAL PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        user_id TEXT,
+        detected_language TEXT DEFAULT 'ar',
+        detected_dialect TEXT DEFAULT 'msa',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS chatbot_messages (
+        id SERIAL PRIMARY KEY,
+        conversation_id INTEGER NOT NULL,
+        sender TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS leads (
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        email TEXT,
+        business_type TEXT,
+        session_id TEXT,
+        source TEXT DEFAULT 'chatbot',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS coupons (
+        id SERIAL PRIMARY KEY,
+        code TEXT NOT NULL UNIQUE,
+        discount_type TEXT NOT NULL,
+        discount_value INTEGER NOT NULL,
+        max_uses INTEGER DEFAULT 0,
+        used_count INTEGER DEFAULT 0,
+        expires_at TIMESTAMP,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS subscriptions (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR NOT NULL,
+        plan VARCHAR NOT NULL DEFAULT 'free',
+        status VARCHAR NOT NULL DEFAULT 'active',
+        paymob_order_id VARCHAR,
+        paymob_transaction_id VARCHAR,
+        amount_cents INTEGER,
+        currency VARCHAR DEFAULT 'SAR',
+        start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS platform_settings (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR NOT NULL UNIQUE,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    console.log("Migration: all platform tables ensured");
+  } catch (e: any) {
+    console.error("Platform tables migration warning:", e.message);
   }
 
   const existing = await db.select().from(templates);
