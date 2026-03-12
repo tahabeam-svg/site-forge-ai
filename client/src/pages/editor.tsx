@@ -470,48 +470,72 @@ img,video,embed,object,iframe{max-width:100%!important;height:auto}
 }
 </style>
 <script id="aw-mobile-nav">(function(){
+  if(window.innerWidth>768)return;
   var mSvg='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
   var cSvg='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-  var BTNS='#aw-menu-btn,[id*="menu-btn"],[id*="hamburger"],[class*="hamburger"],[class*="menu-toggle"],[class*="nav-toggle"],[class*="burger"],[aria-controls*="menu"],[aria-controls*="nav"],[aria-label*="menu"],[aria-label*="Menu"],[aria-label*="قائمة"],[aria-label*="القائمة"],[aria-expanded]';
   function init(){
-    if(window.innerWidth>768)return;
-    /* Find real nav — prefer <nav>, then <header> that wraps a <nav>, skip standalone hero headers */
+    /* STEP 1: Find the real navigation bar (not hero headers) */
     var nav=document.querySelector('nav');
-    if(!nav){var hdrs=document.querySelectorAll('header');for(var h=0;h<hdrs.length;h++){if(hdrs[h].querySelector('nav,[class*="nav"],[class*="menu"]')){nav=hdrs[h];break;}}}
+    if(!nav){
+      var hdrs=document.querySelectorAll('header');
+      for(var h=0;h<hdrs.length;h++){
+        if(hdrs[h].querySelector('nav,ul,[class*="nav"],[class*="menu"]')){nav=hdrs[h];break;}
+      }
+    }
     if(!nav)return;
-    /* Already has a hamburger? Just make it visible */
-    var existing=nav.querySelector(BTNS)||document.querySelector(BTNS);
-    if(existing&&existing.id!=='aw-mobile-menu'){existing.style.cssText+='display:block!important;visibility:visible!important;opacity:1!important;';return;}
-    /* Find desktop links container */
+    /* STEP 2: Hide ALL existing hamburger buttons (we replace with ours that has real JS) */
+    var existingBtns=nav.querySelectorAll('[class*="toggle"],[class*="hamburger"],[class*="burger"],[class*="menu-btn"],[aria-controls*="menu"],[aria-controls*="nav"]');
+    existingBtns.forEach(function(b){b.style.display='none';});
+    /* STEP 3: Find desktop links container */
     var lc=nav.querySelector('.nav-links,.aw-nav-links,.navbar-links,.menu-links,.nav-menu,.nav-list,.header-links,[class*="nav-links"],[class*="nav-menu"],[class*="navbar-nav"],[class*="menu-links"]');
-    if(!lc){var kids=nav.querySelectorAll('div,ul');for(var k=0;k<kids.length;k++){if(kids[k].querySelectorAll('a').length>=2){lc=kids[k];break;}}}
+    if(!lc){
+      var kids=nav.querySelectorAll('div,ul');
+      for(var k=0;k<kids.length;k++){
+        if(kids[k].querySelectorAll('a').length>=2&&kids[k]!==nav){lc=kids[k];break;}
+      }
+    }
     if(!lc)return;
-    /* Hide desktop links */
-    lc.style.cssText+='display:none!important;';
-    var anchors=lc.querySelectorAll('a');
+    var anchors=Array.from(lc.querySelectorAll('a'));
     if(!anchors.length)return;
+    /* Hide desktop links */
+    lc.style.cssText+='display:none!important;visibility:hidden!important;';
     /* Fix brand name truncation */
-    var brand=nav.querySelector('[class*="brand"],[class*="logo"],.nav-brand,.logo,h1,h2,h3');
-    if(brand){brand.style.whiteSpace='nowrap';brand.style.overflow='visible';brand.style.textOverflow='unset';brand.style.flexShrink='0';brand.style.maxWidth='65%';}
-    /* Create mobile dropdown — appended to body to avoid hero/overflow traps */
+    var brand=nav.querySelector('[class*="brand"],[class*="logo"],.nav-brand,.logo');
+    if(brand){brand.style.cssText+='white-space:nowrap!important;overflow:visible!important;flex-shrink:0!important;max-width:70%!important;';}
+    /* STEP 4: Detect nav background for contrast (transparent nav on dark hero = use white icon) */
+    var bg=window.getComputedStyle(nav).backgroundColor;
+    var m=bg.match(/\d+/g);
+    var isDark=true; /* default: assume dark (transparent nav on dark hero) */
+    if(m&&m.length>=3){var lum=0.299*+m[0]+0.587*+m[1]+0.114*+m[2];isDark=lum<160;}
+    var iconColor=isDark?'#ffffff':'#1e293b';
+    var btnBg=isDark?'rgba(0,0,0,0.25)':'rgba(255,255,255,0.9)';
+    /* STEP 5: Create dropdown — append to BODY (not nav) to avoid overflow/hero traps */
     var mm=document.createElement('div');
     mm.id='aw-mobile-menu';
-    mm.style.cssText='display:none;flex-direction:column;background:#fff;padding:0.75rem 1.25rem;position:fixed;left:0;right:0;top:60px;z-index:2147483646;box-shadow:0 8px 32px rgba(0,0,0,0.22);border-top:3px solid #e2e8f0;max-height:80vh;overflow-y:auto;';
-    Array.from(anchors).forEach(function(a){
-      var cl=a.cloneNode(true);
-      cl.removeAttribute('style');
-      cl.style.cssText='padding:0.85rem 0;font-size:1rem;font-weight:500;display:block;border-bottom:1px solid #f1f5f9;text-decoration:none;color:#1e293b;';
-      cl.addEventListener('click',function(){mm.style.display='none';btn.innerHTML=mSvg;});
-      mm.appendChild(cl);
+    var dir=document.documentElement.getAttribute('dir')||document.body.getAttribute('dir')||'rtl';
+    mm.setAttribute('dir',dir);
+    mm.style.cssText='display:none;flex-direction:column;background:#fff;padding:0.5rem 0;position:fixed;left:0;right:0;top:60px;z-index:2147483646;box-shadow:0 8px 32px rgba(0,0,0,0.25);border-top:3px solid #10b981;max-height:80vh;overflow-y:auto;';
+    anchors.forEach(function(a){
+      var text=(a.textContent||'').trim();
+      if(!text)return;
+      var li=document.createElement('a');
+      li.href=a.getAttribute('href')||'#';
+      li.textContent=text;
+      li.style.cssText='padding:0.9rem 1.5rem;font-size:1rem;font-weight:600;display:block;border-bottom:1px solid #f1f5f9;text-decoration:none;color:#1e293b;font-family:inherit;';
+      li.addEventListener('click',function(){mm.style.display='none';btn.innerHTML=mSvg;btn.style.color=iconColor;});
+      mm.appendChild(li);
     });
-    /* Create hamburger button */
+    if(!mm.children.length)return;
+    /* STEP 6: Create our hamburger button with contrast-aware styling */
     var btn=document.createElement('button');
-    btn.id='aw-menu-btn';btn.setAttribute('aria-label','Menu');btn.innerHTML=mSvg;
-    btn.style.cssText='background:none;border:none;cursor:pointer;padding:8px;display:block!important;color:#0f172a;flex-shrink:0;line-height:1;';
-    btn.addEventListener('click',function(){
+    btn.id='aw-menu-btn';
+    btn.setAttribute('aria-label','القائمة');
+    btn.innerHTML=mSvg;
+    btn.style.cssText='border:none;border-radius:8px;cursor:pointer;padding:7px;display:block!important;flex-shrink:0;line-height:1;transition:opacity 0.2s;background:'+btnBg+';color:'+iconColor+';';
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
       var isOpen=mm.style.display==='flex';
       if(!isOpen){
-        /* Calculate exact position from button's real screen coordinates */
         var r=btn.getBoundingClientRect();
         mm.style.top=r.bottom+'px';
         mm.style.display='flex';
@@ -520,24 +544,22 @@ img,video,embed,object,iframe{max-width:100%!important;height:auto}
         mm.style.display='none';
         btn.innerHTML=mSvg;
       }
+      btn.style.color=iconColor;
     });
-    /* Close menu when clicking outside */
     document.addEventListener('click',function(e){
       if(mm.style.display==='flex'&&!mm.contains(e.target)&&e.target!==btn){
         mm.style.display='none';btn.innerHTML=mSvg;
       }
     });
-    /* Update position on scroll (for sticky navs) */
     window.addEventListener('scroll',function(){
       if(mm.style.display==='flex'){var r=btn.getBoundingClientRect();mm.style.top=r.bottom+'px';}
     },{passive:true});
-    /* Insert button into nav inner wrapper */
+    /* STEP 7: Insert button and dropdown */
     var ni=nav.querySelector('.nav-inner,.nav-container,.navbar-inner,.nav-wrap,.container,[class*="nav-inner"],[class*="nav-container"],[class*="nav-wrap"]')||nav;
     ni.appendChild(btn);
-    /* Append dropdown to body — NOT to nav — to avoid position/overflow issues */
     document.body.appendChild(mm);
   }
-  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{init();}
+  if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',init);}else{setTimeout(init,0);}
 })();</script>`;
     const awBadge = `<div id="aw-free-badge" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);color:#fff;text-align:center;padding:9px 16px;font-family:'Inter','Cairo',sans-serif;font-size:13px;z-index:2147483647;direction:ltr;display:flex;align-items:center;justify-content:center;gap:10px;border-top:2px solid #10b981;box-shadow:0 -2px 12px rgba(16,185,129,0.3);">Built with <strong style="color:#10b981;margin:0 4px;">ArabyWeb</strong><a href="https://arabyWeb.net/pricing" target="_blank" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:4px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:bold;margin-left:6px;">Upgrade to remove</a></div>`;
 
