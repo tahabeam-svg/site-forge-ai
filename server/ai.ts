@@ -66,6 +66,20 @@ SINGLE-PAGE NAVIGATION — ABSOLUTELY MANDATORY:
 - Add to CSS: html { scroll-behavior: smooth; }
 - NEVER generate href links that start with "/" or "http" in the navigation menu.
 
+MOBILE HAMBURGER MENU — MANDATORY (this is NOT optional, ALWAYS include):
+- The navbar MUST have a hamburger menu button that appears only on mobile (hidden on desktop)
+- Use this EXACT pattern for the hamburger button:
+  <button id="aw-menu-btn" onclick="var m=document.getElementById('aw-mobile-menu');m.style.display=m.style.display==='flex'?'none':'flex'" style="display:none;background:none;border:none;cursor:pointer;padding:8px;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+- The mobile menu div MUST have id="aw-mobile-menu" and be hidden by default (display:none)
+- When links in mobile menu are clicked, add onclick="document.getElementById('aw-mobile-menu').style.display='none'" to each link
+- In CSS, add: @media(max-width:768px){ #aw-menu-btn{display:block !important;} .aw-nav-links{display:none !important;} }
+- The mobile menu (id="aw-mobile-menu") must have: position:absolute; top:100%; left:0; right:0; flex-direction:column; background:white (or nav background color); padding:1rem; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:1000;
+- The nav container must have position:relative
+- DO NOT use media query classes for the hamburger. Always use inline styles + the @media override above.
+- This hamburger menu is CRITICAL for mobile usability. Never skip it.
+
 SECTIONS TO INCLUDE (ALL REQUIRED — do not skip any):
 1. Hero/Header   — Bold headline, subtitle, CTA button, full-screen hero image with dark overlay
 2. About (#about)       — Company/brand story with image, key stats or highlights
@@ -344,6 +358,15 @@ TECHNICAL GUIDELINES:
 - Preserve responsive design (add @media queries for new content)
 - Keep all existing sections unless explicitly asked to remove
 ${imageDataUrl ? `- IMAGE ATTACHED: Embed the EXACT data URL provided under "IMAGE_DATA_URL:" as the src of the appropriate element. Do NOT use a placeholder.` : ""}
+
+MOBILE HAMBURGER MENU — CHECK AND FIX:
+- If the existing website navbar does NOT already have a hamburger menu (id="aw-menu-btn" or similar), ADD one to the navbar.
+- The hamburger pattern to use:
+  * Add a button with onclick: "var m=document.getElementById('aw-mobile-menu');m.style.display=m.style.display==='flex'?'none':'flex'"
+  * Wrap the desktop nav links in a div with class="aw-nav-links"
+  * Add a mobile menu div with id="aw-mobile-menu" style="display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:#fff;padding:1rem;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000"
+  * In CSS add: @media(max-width:768px){.aw-nav-links{display:none!important;}#aw-menu-btn{display:block!important;}}
+- If the navbar already has a hamburger menu, leave it as-is and focus on the requested change.
 
 Return ONLY a JSON object with these 3 fields:
 {
