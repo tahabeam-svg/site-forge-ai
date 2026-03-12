@@ -93,12 +93,14 @@ async function searchKnowledgeBase(question: string, language: string): Promise<
 }
 
 // ─── Auto-Learned Knowledge Search ────────────────────────────────────────────
-async function searchAutoLearned(question: string): Promise<string | null> {
+async function searchAutoLearned(question: string, language: string): Promise<string | null> {
   try {
     const words = question.split(/\s+/).filter(w => w.length > 3).slice(0, 3);
     for (const word of words) {
       const [match] = await db.select().from(autoLearnedKnowledge)
-        .where(ilike(autoLearnedKnowledge.questionPattern, `%${word}%`))
+        .where(
+          sql`${ilike(autoLearnedKnowledge.questionPattern, `%${word}%`)} AND (${autoLearnedKnowledge.language} = ${language} OR ${autoLearnedKnowledge.language} = 'both')`
+        )
         .orderBy(desc(autoLearnedKnowledge.usageCount))
         .limit(1);
       if (match) {
@@ -254,7 +256,7 @@ export async function processChat(req: ChatRequest): Promise<ChatResponse> {
   if (pageLang === "ar") {
     langInfo = { language: "ar", dialect: langInfo.dialect === "msa" ? "gulf" : langInfo.dialect, dialectLabel: langInfo.dialectLabel };
   } else if (pageLang === "en") {
-    langInfo = { language: "en", dialect: "en", dialectLabel: "English" };
+    langInfo = { language: "en", dialect: "none", dialectLabel: "English" };
   }
 
   const pricingQ = isPricingQuestion(message);
@@ -285,7 +287,7 @@ export async function processChat(req: ChatRequest): Promise<ChatResponse> {
 
   // 3. Search Auto-Learned (skip for pricing questions)
   if (!pricingQ) {
-    const autoAnswer = await searchAutoLearned(message);
+    const autoAnswer = await searchAutoLearned(message, langInfo.language);
     if (autoAnswer) {
       setCache(cacheKey, autoAnswer);
       await saveInteraction(message, langInfo, autoAnswer, sessionId);

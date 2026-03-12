@@ -24,6 +24,7 @@ export interface IStorage {
   updateCoupon(id: number, data: Partial<Coupon>): Promise<Coupon | undefined>;
   deleteCoupon(id: number): Promise<void>;
 
+  getUser(id: string): Promise<any | undefined>;
   getAllProjects(): Promise<Project[]>;
   getAllUsers(): Promise<any[]>;
   getStats(): Promise<{ totalUsers: number; totalProjects: number; publishedProjects: number }>;
@@ -96,6 +97,11 @@ export class DatabaseStorage implements IStorage {
   async addChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     const [newMessage] = await db.insert(chatMessages).values(message).returning();
     return newMessage;
+  }
+
+  async getUser(id: string): Promise<any | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getAllProjects(): Promise<Project[]> {
