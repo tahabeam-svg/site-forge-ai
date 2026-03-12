@@ -4,7 +4,7 @@ import { t } from "@/lib/i18n";
 import { useLocation, useParams } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Project, ChatMessage } from "@shared/schema";
+import type { Project, ChatMessage, Template } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,6 +41,9 @@ import {
   Crown,
   Lock,
   ChevronDown,
+  LayoutTemplate,
+  Check,
+  Filter,
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
@@ -71,6 +74,7 @@ const SECTION_TYPES_EN = [
 ];
 
 const SUGGESTED_COMMANDS_AR = [
+  "أريد مشاهدة القوالب",
   "اجعل التصميم أكثر فخامة",
   "غيّر الألوان إلى أسود وذهبي",
   "أضف تأثيرات حركية للأقسام",
@@ -78,10 +82,10 @@ const SUGGESTED_COMMANDS_AR = [
   "أضف معلومات التواصل",
   "حسّن الخطوط والتنسيق",
   "أضف أيقونات للخدمات",
-  "اجعل التصميم متجاوباً أكثر",
 ];
 
 const SUGGESTED_COMMANDS_EN = [
+  "Show me templates",
   "Make the design more luxurious",
   "Change colors to black and gold",
   "Add section animations",
@@ -89,7 +93,6 @@ const SUGGESTED_COMMANDS_EN = [
   "Add contact information",
   "Improve typography and spacing",
   "Add service icons",
-  "Make the design more responsive",
 ];
 
 export default function EditorPage() {
@@ -119,10 +122,24 @@ export default function EditorPage() {
   const chatFileInputRef = useRef<HTMLInputElement>(null);
   const chatInputAreaRef = useRef<HTMLDivElement>(null);
   const [msgAreaHeight, setMsgAreaHeight] = useState<number | null>(null);
+  const [showTemplateBrowser, setShowTemplateBrowser] = useState(false);
+  const [templateCategory, setTemplateCategory] = useState("all");
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
   });
+
+  const { data: allTemplates = [] } = useQuery<Template[]>({
+    queryKey: ["/api/templates"],
+    staleTime: 10 * 60 * 1000,
+  });
+
+  const TEMPLATE_KEYWORDS_AR = /قالب|قوالب|تصميم جاهز|نموذج جاهز|شكل جديد|غير الشكل|تغيير القالب|ابدأ من|اختر قالب|تصفح القوالب|شاهد القوالب|أريد قالب|بغيت قالب/i;
+  const TEMPLATE_KEYWORDS_EN = /template|templates|browse template|change template|pick template|see template|show template|choose template|start from template/i;
+
+  function isTemplateRequest(text: string): boolean {
+    return TEMPLATE_KEYWORDS_AR.test(text) || TEMPLATE_KEYWORDS_EN.test(text);
+  }
 
   const { data: messages = [] } = useQuery<ChatMessage[]>({
     queryKey: ["/api/projects", projectId, "messages"],
@@ -210,6 +227,28 @@ export default function EditorPage() {
       toast({
         title: lang === "ar" ? "تم الإنشاء" : "Generated!",
         description: lang === "ar" ? "تم إنشاء موقعك بنجاح" : "Your website has been generated successfully",
+      });
+    },
+    onError: (err: Error) => {
+      toast({ title: t("error", lang), description: err.message, variant: "destructive" });
+    },
+  });
+
+  const applyTemplateMutation = useMutation({
+    mutationFn: async (template: Template) => {
+      const res = await apiRequest("PUT", `/api/projects/${projectId}`, {
+        generatedHtml: template.previewHtml,
+        generatedCss: template.previewCss || "",
+        status: "generated",
+      });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
+      setShowTemplateBrowser(false);
+      toast({
+        title: lang === "ar" ? "تم تطبيق القالب ✅" : "Template applied ✅",
+        description: lang === "ar" ? "يمكنك تخصيصه الآن" : "You can customize it now",
       });
     },
     onError: (err: Error) => {
@@ -354,10 +393,16 @@ export default function EditorPage() {
   };
 
   const handleSendWithImage = () => {
+    const trimmed = editCommand.trim();
     if (chatImageFile) {
       chatUploadMutation.mutate(chatImageFile);
-    } else if (editCommand.trim()) {
-      editMutation.mutate(editCommand);
+    } else if (trimmed && isTemplateRequest(trimmed)) {
+      setShowTemplateBrowser(true);
+      setEditCommand("");
+      setActiveTab("chat");
+      requestAnimationFrame(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }));
+    } else if (trimmed) {
+      editMutation.mutate(trimmed);
       setEditCommand("");
     }
   };
@@ -677,6 +722,96 @@ ${project.generatedHtml}
                       </div>
                     </div>
                   )}
+
+                  {/* ─── Inline Template Browser ─── */}
+                  {showTemplateBrowser && (
+                    <div className="flex gap-2">
+                      <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0 mt-1">
+                        <LayoutTemplate className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0 bg-muted rounded-xl px-3 py-3">
+                        <div className="flex items-center justify-between mb-2.5">
+                          <p className="text-sm font-semibold">
+                            {lang === "ar" ? "اختر قالباً لتطبيقه" : "Choose a template to apply"}
+                          </p>
+                          <button
+                            onClick={() => setShowTemplateBrowser(false)}
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {/* Category filter */}
+                        <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3" style={{ scrollbarWidth: "none" }}>
+                          {["all", "corporate", "ecommerce", "restaurant", "portfolio", "medical", "startup"].map((cat) => (
+                            <button
+                              key={cat}
+                              onClick={() => setTemplateCategory(cat)}
+                              className={`shrink-0 text-[11px] px-2.5 py-1 rounded-full border transition-all ${
+                                templateCategory === cat
+                                  ? "bg-emerald-500 text-white border-emerald-500"
+                                  : "border-border text-muted-foreground hover:border-emerald-400"
+                              }`}
+                            >
+                              {cat === "all" ? (lang === "ar" ? "الكل" : "All")
+                                : cat === "corporate" ? (lang === "ar" ? "شركات" : "Corporate")
+                                : cat === "ecommerce" ? (lang === "ar" ? "متجر" : "Store")
+                                : cat === "restaurant" ? (lang === "ar" ? "مطعم" : "Restaurant")
+                                : cat === "portfolio" ? (lang === "ar" ? "أعمال" : "Portfolio")
+                                : cat === "medical" ? (lang === "ar" ? "طبي" : "Medical")
+                                : (lang === "ar" ? "ناشئة" : "Startup")}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Template grid */}
+                        <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                          {(templateCategory === "all"
+                            ? allTemplates.slice(0, 20)
+                            : allTemplates.filter((t) => t.category === templateCategory).slice(0, 20)
+                          ).map((tpl) => (
+                            <div key={tpl.id} className="group relative rounded-lg overflow-hidden border border-border hover:border-emerald-400 transition-all">
+                              <img
+                                src={tpl.thumbnail || ""}
+                                alt={lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name}
+                                className="w-full aspect-video object-cover"
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-2">
+                                <p className="text-white text-[11px] font-semibold text-center leading-tight">
+                                  {lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name}
+                                </p>
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-[11px] px-2.5 bg-emerald-500 hover:bg-emerald-600"
+                                  onClick={() => applyTemplateMutation.mutate(tpl)}
+                                  disabled={applyTemplateMutation.isPending}
+                                  data-testid={`button-apply-template-${tpl.id}`}
+                                >
+                                  {applyTemplateMutation.isPending
+                                    ? <Loader2 className="w-3 h-3 animate-spin" />
+                                    : (lang === "ar" ? "طبّق" : "Apply")}
+                                </Button>
+                              </div>
+                              {tpl.isPremium && (
+                                <div className="absolute top-1 end-1">
+                                  <Crown className="w-3 h-3 text-amber-400" />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Browse all link */}
+                        <a
+                          href="/templates"
+                          onClick={(e) => { e.preventDefault(); navigate("/templates"); }}
+                          className="block text-center text-xs text-emerald-600 dark:text-emerald-400 hover:underline mt-2.5"
+                        >
+                          {lang === "ar" ? `تصفح جميع القوالب (${allTemplates.length})` : `Browse all templates (${allTemplates.length})`}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
                   <div ref={chatEndRef} />
                 </div>
               </TabsContent>
@@ -1109,7 +1244,14 @@ ${project.generatedHtml}
                       variant="outline"
                       size="sm"
                       className="text-xs h-7 px-2.5 shrink-0 whitespace-nowrap"
-                      onClick={() => setEditCommand(cmd)}
+                      onClick={() => {
+                        if (isTemplateRequest(cmd)) {
+                          setShowTemplateBrowser(true);
+                          requestAnimationFrame(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }));
+                        } else {
+                          setEditCommand(cmd);
+                        }
+                      }}
                       data-testid={`button-suggestion-${i}`}
                     >
                       <Sparkles className="w-3 h-3 me-1 text-emerald-500" />

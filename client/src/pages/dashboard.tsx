@@ -5,7 +5,7 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Project } from "@shared/schema";
+import type { Project, Template } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,9 @@ import {
   Download,
   Upload,
   Zap,
+  Check,
+  Crown,
+  LayoutTemplate,
 } from "lucide-react";
 
 const INSTANT_STEPS = {
@@ -77,6 +80,7 @@ export default function DashboardPage() {
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
   const [instantDialogOpen, setInstantDialogOpen] = useState(false);
   const [instantPrompt, setInstantPrompt] = useState("");
@@ -89,16 +93,35 @@ export default function DashboardPage() {
     queryKey: ["/api/projects"],
   });
 
+  const { data: templates = [] } = useQuery<Template[]>({
+    queryKey: ["/api/templates"],
+    staleTime: 10 * 60 * 1000,
+  });
+  const dialogTemplates = templates.slice(0, 9);
+
   const createMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/projects", { name: newName, description: newDesc });
-      return res.json();
+      const res = await apiRequest("POST", "/api/projects", {
+        name: newName,
+        description: newDesc,
+        templateId: selectedTemplate?.id || undefined,
+      });
+      const project = await res.json();
+      if (selectedTemplate) {
+        await apiRequest("PUT", `/api/projects/${project.id}`, {
+          generatedHtml: selectedTemplate.previewHtml,
+          generatedCss: selectedTemplate.previewCss || "",
+          status: "generated",
+        });
+      }
+      return project;
     },
     onSuccess: (project: Project) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       setShowNewProject(false);
       setNewName("");
       setNewDesc("");
+      setSelectedTemplate(null);
       navigate(`/editor/${project.id}`);
     },
     onError: (err: Error) => {
@@ -539,6 +562,86 @@ export default function DashboardPage() {
             }}
             className="space-y-4"
           >
+            {/* Template quick-picker */}
+            {dialogTemplates.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <LayoutTemplate className="w-3.5 h-3.5 text-muted-foreground" />
+                  {lang === "ar" ? "ابدأ من قالب (اختياري)" : "Start from template (optional)"}
+                </label>
+                <div className="grid grid-cols-5 gap-2">
+                  {/* AI/blank option */}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedTemplate(null)}
+                    className={`aspect-video rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all text-[10px] font-medium ${
+                      !selectedTemplate
+                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
+                        : "border-border hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground"
+                    }`}
+                    data-testid="button-select-blank-template"
+                  >
+                    <Sparkles className={`w-4 h-4 ${!selectedTemplate ? "text-emerald-500" : "text-muted-foreground"}`} />
+                    {lang === "ar" ? "ذكاء" : "AI"}
+                  </button>
+                  {/* Template thumbnails */}
+                  {dialogTemplates.map((tpl) => (
+                    <button
+                      type="button"
+                      key={tpl.id}
+                      onClick={() => {
+                        setSelectedTemplate(tpl);
+                        if (!newName) setNewName(lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name);
+                        if (!newDesc) setNewDesc(lang === "ar" && tpl.descriptionAr ? tpl.descriptionAr : tpl.description || "");
+                      }}
+                      className={`aspect-video rounded-lg border-2 overflow-hidden relative transition-all focus:outline-none ${
+                        selectedTemplate?.id === tpl.id
+                          ? "border-emerald-500 shadow-md shadow-emerald-500/20"
+                          : "border-border hover:border-emerald-300 dark:hover:border-emerald-700"
+                      }`}
+                      data-testid={`button-select-template-${tpl.id}`}
+                    >
+                      <img
+                        src={tpl.thumbnail || ""}
+                        alt={lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name}
+                        className="w-full h-full object-cover"
+                      />
+                      {selectedTemplate?.id === tpl.id && (
+                        <div className="absolute inset-0 bg-emerald-500/25 flex items-center justify-center">
+                          <div className="bg-emerald-500 rounded-full p-0.5">
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                        </div>
+                      )}
+                      {tpl.isPremium && (
+                        <div className="absolute top-0.5 end-0.5">
+                          <Crown className="w-2.5 h-2.5 text-amber-400" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                  {/* Browse more */}
+                  <button
+                    type="button"
+                    onClick={() => { setShowNewProject(false); navigate("/templates"); }}
+                    className="aspect-video rounded-lg border-2 border-dashed border-border hover:border-emerald-400/60 flex flex-col items-center justify-center gap-1 transition-all text-[10px] text-muted-foreground hover:text-foreground"
+                    data-testid="button-browse-more-templates"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {lang === "ar" ? "المزيد" : "More"}
+                  </button>
+                </div>
+                {selectedTemplate && (
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    {lang === "ar"
+                      ? `تم اختيار: ${selectedTemplate.nameAr || selectedTemplate.name}`
+                      : `Selected: ${selectedTemplate.name}`}
+                  </p>
+                )}
+              </div>
+            )}
+
             <div className="space-y-2">
               <label className="text-sm font-medium">{t("projectName", lang)}</label>
               <Input
@@ -556,17 +659,19 @@ export default function DashboardPage() {
                 onChange={(e) => setNewDesc(e.target.value)}
                 placeholder={t("descriptionPlaceholder", lang)}
                 className="resize-none"
-                rows={3}
+                rows={2}
                 data-testid="input-project-description"
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setShowNewProject(false)} data-testid="button-cancel-create">
+              <Button type="button" variant="outline" onClick={() => { setShowNewProject(false); setSelectedTemplate(null); }} data-testid="button-cancel-create">
                 {t("cancel", lang)}
               </Button>
               <Button type="submit" disabled={createMutation.isPending || !newName} data-testid="button-confirm-create">
                 {createMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
-                {t("createProject", lang)}
+                {selectedTemplate
+                  ? (lang === "ar" ? "إنشاء من القالب" : "Create from Template")
+                  : t("createProject", lang)}
               </Button>
             </div>
           </form>
