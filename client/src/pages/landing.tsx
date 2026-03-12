@@ -625,16 +625,16 @@ export default function LandingPage() {
             {[
               {
                 name: lang === "ar" ? "المبتدئ" : "Starter",
-                price: "35 ر.س",
-                yearly: "336 ر.س",
+                price: lang === "ar" ? "35 ر.س" : "$9",
+                yearly: lang === "ar" ? "336 ر.س" : "$86",
                 features: lang === "ar"
                   ? ["20 منشور شهرياً", "تعليقات وهاشتاقات", "أفكار تسويقية أساسية"]
                   : ["20 posts/month", "Captions & hashtags", "Basic marketing ideas"],
               },
               {
                 name: lang === "ar" ? "النمو" : "Growth",
-                price: "69 ر.س",
-                yearly: "662 ر.س",
+                price: lang === "ar" ? "69 ر.س" : "$19",
+                yearly: lang === "ar" ? "662 ر.س" : "$182",
                 popular: true,
                 features: lang === "ar"
                   ? ["60 منشور شهرياً", "تقويم محتوى", "أفكار حملات", "محتوى تفاعلي"]
@@ -642,8 +642,8 @@ export default function LandingPage() {
               },
               {
                 name: lang === "ar" ? "احترافي" : "Pro Marketing",
-                price: "149 ر.س",
-                yearly: "1,430 ر.س",
+                price: lang === "ar" ? "149 ر.س" : "$39",
+                yearly: lang === "ar" ? "1,430 ر.س" : "$374",
                 features: lang === "ar"
                   ? ["منشورات غير محدودة", "نصوص تسويقية متقدمة", "حملات إطلاق منتجات", "استراتيجيات تسويقية"]
                   : ["Unlimited posts", "Advanced copy", "Product launch campaigns", "Marketing strategies"],
@@ -661,10 +661,10 @@ export default function LandingPage() {
                     <h4 className="font-semibold mb-1">{plan.name}</h4>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-3xl font-bold">{plan.price}</span>
-                      <span className="text-muted-foreground text-sm">/شهرياً</span>
+                      <span className="text-muted-foreground text-sm">{lang === "ar" ? "/شهرياً" : "/mo"}</span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {`${plan.yearly}/سنوياً`}
+                      {`${plan.yearly}${lang === "ar" ? "/سنوياً" : "/yr"}`}
                     </p>
                   </div>
                   <div className="space-y-2 mb-4">

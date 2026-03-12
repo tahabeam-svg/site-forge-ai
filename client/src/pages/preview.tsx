@@ -4,7 +4,7 @@ import { useLocation, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@shared/schema";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, Loader2 } from "lucide-react";
 
 export default function PreviewPage() {
   const { language } = useAuth();
@@ -19,17 +19,35 @@ export default function PreviewPage() {
 
   const getPreviewHtml = () => {
     if (!project?.generatedHtml) return "";
-    return `<!DOCTYPE html>
+
+    const overflowFix = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}</style>`;
+    const awBadge = `<div id="aw-free-badge" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);color:#fff;text-align:center;padding:9px 16px;font-family:'Inter','Cairo',sans-serif;font-size:13px;z-index:2147483647;direction:ltr;display:flex;align-items:center;justify-content:center;gap:10px;border-top:2px solid #10b981;box-shadow:0 -2px 12px rgba(16,185,129,0.3);">Built with <strong style="color:#10b981;margin:0 4px;">ArabyWeb</strong><a href="https://arabyWeb.net/pricing" target="_blank" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:4px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:bold;margin-left:6px;">Upgrade to remove</a></div>`;
+
+    const applyFixes = (html: string) => {
+      let fixed = html.replace(/<div id="aw-free-badge"[\s\S]*?<\/div>/i, awBadge);
+      if (!fixed.includes('id="aw-overflow-fix"')) {
+        fixed = fixed.includes("</head>")
+          ? fixed.replace("</head>", `${overflowFix}\n</head>`)
+          : overflowFix + fixed;
+      }
+      return fixed;
+    };
+
+    if (project.generatedHtml.trimStart().startsWith("<!DOCTYPE")) {
+      return applyFixes(project.generatedHtml);
+    }
+
+    return applyFixes(`<!DOCTYPE html>
 <html lang="${lang}" dir="${lang === "ar" ? "rtl" : "ltr"}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${project.seoTitle || project.name}</title>
 <meta name="description" content="${project.seoDescription || ""}">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: ${lang === "ar" ? "'Cairo'" : "'Inter'"}, sans-serif; }
+* { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+body { font-family: ${lang === "ar" ? "'Cairo', 'Tajawal', 'IBM Plex Sans Arabic'" : "'Inter', 'Poppins', 'Montserrat'"}, sans-serif; }
 img { max-width: 100%; height: auto; }
 ${project.generatedCss || ""}
 </style>
@@ -37,7 +55,7 @@ ${project.generatedCss || ""}
 <body>
 ${project.generatedHtml}
 </body>
-</html>`;
+</html>`);
   };
 
   if (isLoading) {
@@ -73,7 +91,7 @@ ${project.generatedHtml}
             onClick={() => navigate(`/editor/${project.id}`)}
             data-testid="button-back-editor"
           >
-            <ArrowLeft className="w-4 h-4" />
+            {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
             {lang === "ar" ? "العودة للتحرير" : "Back to Editor"}
           </Button>
           <div className="hidden sm:block">
@@ -101,7 +119,7 @@ ${project.generatedHtml}
         <iframe
           srcDoc={getPreviewHtml()}
           className="w-full h-full border-0"
-          sandbox="allow-same-origin"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
           title="Full Preview"
           data-testid="iframe-full-preview"
         />

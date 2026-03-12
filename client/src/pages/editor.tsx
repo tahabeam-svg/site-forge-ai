@@ -1380,7 +1380,7 @@ ${project.generatedHtml}
                 ref={iframeRef}
                 srcDoc={getPreviewHtml()}
                 className="w-full h-full border-0"
-                sandbox="allow-same-origin"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
                 title="Website Preview"
                 data-testid="iframe-preview"
               />
