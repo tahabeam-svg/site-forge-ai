@@ -412,43 +412,58 @@ ${project.generatedHtml}
         onChange={handleChatImageSelect}
       />
 
-      <header className="flex items-center justify-between gap-2 px-3 md:px-4 py-2 border-b bg-background shrink-0">
-        <div className="flex items-center gap-2 md:gap-3 min-w-0">
-          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate("/dashboard")} data-testid="button-back">
+      {/* ─── Mobile Header ─── */}
+      <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12">
+        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => navigate("/dashboard")} data-testid="button-back">
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+        <h1 className="text-sm font-semibold truncate flex-1" data-testid="text-project-name">{project.name}</h1>
+        {project.generatedHtml && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => setMobileView(mobileView === "panel" ? "preview" : "panel")}
+              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                mobileView === "preview"
+                  ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 text-emerald-700 dark:text-emerald-400"
+                  : "bg-muted border-border text-muted-foreground"
+              }`}
+              data-testid="button-mobile-toggle"
+            >
+              {mobileView === "panel" ? <><Eye className="w-3.5 h-3.5 me-1" />{lang === "ar" ? "معاينة" : "Preview"}</> : <><Wand2 className="w-3.5 h-3.5 me-1" />{lang === "ar" ? "تعديل" : "Edit"}</>}
+            </button>
+            {project.status === "published" ? (
+              <Badge className="bg-emerald-500 text-[11px] px-2 h-6" data-testid="badge-published">
+                {lang === "ar" ? "منشور" : "Live"}
+              </Badge>
+            ) : (
+              <Button
+                size="sm"
+                className="h-7 text-xs px-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                onClick={() => publishMutation.mutate()}
+                disabled={publishMutation.isPending}
+                data-testid="button-publish"
+              >
+                {publishMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Rocket className="w-3.5 h-3.5 me-1" />{lang === "ar" ? "نشر" : "Publish"}</>}
+              </Button>
+            )}
+          </div>
+        )}
+      </header>
+
+      {/* ─── Desktop Header ─── */}
+      <header className="hidden md:flex items-center justify-between gap-3 px-4 py-2 border-b bg-background shrink-0">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate("/dashboard")} data-testid="button-back-desktop">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <Separator orientation="vertical" className="h-6 hidden sm:block" />
+          <Separator orientation="vertical" className="h-6" />
           <div className="min-w-0">
-            <h1 className="text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
-            <p className="text-xs text-muted-foreground truncate hidden sm:block">{project.description || ""}</p>
+            <h1 className="text-sm font-semibold truncate" data-testid="text-project-name-desktop">{project.name}</h1>
+            <p className="text-xs text-muted-foreground truncate">{project.description || ""}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {project.generatedHtml && (
-            <div className="flex md:hidden items-center gap-1 bg-muted rounded-md p-0.5">
-              <Button
-                variant={mobileView === "panel" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setMobileView("panel")}
-                className="text-xs px-2 h-7"
-                data-testid="button-mobile-panel"
-              >
-                <Wand2 className="w-3.5 h-3.5 me-1" />
-                {lang === "ar" ? "تعديل" : "Edit"}
-              </Button>
-              <Button
-                variant={mobileView === "preview" ? "secondary" : "ghost"}
-                size="sm"
-                onClick={() => setMobileView("preview")}
-                className="text-xs px-2 h-7"
-                data-testid="button-mobile-preview"
-              >
-                <Eye className="w-3.5 h-3.5 me-1" />
-                {lang === "ar" ? "معاينة" : "Preview"}
-              </Button>
-            </div>
-          )}
-          <div className="hidden sm:flex items-center gap-1 bg-muted rounded-md p-0.5">
+          <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
             {[
               { size: "desktop" as const, icon: Monitor },
               { size: "tablet" as const, icon: Tablet },
@@ -467,26 +482,26 @@ ${project.generatedHtml}
           </div>
           {project.generatedHtml && (
             <>
-              <Button variant="outline" size="sm" className="hidden sm:flex" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview">
+              <Button variant="outline" size="sm" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview">
                 <Eye className="w-4 h-4 me-1" />
                 {t("preview", lang)}
               </Button>
               {project.status !== "published" && (
-                <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} data-testid="button-publish">
+                <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} data-testid="button-publish-desktop">
                   <Rocket className="w-4 h-4 me-1" />
-                  <span className="hidden sm:inline">{t("publish", lang)}</span>
+                  {t("publish", lang)}
                 </Button>
               )}
             </>
           )}
           {project.status === "published" && (
-            <Badge className="bg-emerald-500" data-testid="badge-published">{t("published", lang)}</Badge>
+            <Badge className="bg-emerald-500" data-testid="badge-published-desktop">{t("published", lang)}</Badge>
           )}
         </div>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`w-full md:w-[540px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-[540px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"} pb-[60px] md:pb-0`}>
           {!project.generatedHtml ? (
             <div className="p-4">
               <Card className="p-5">
@@ -533,7 +548,7 @@ ${project.generatedHtml}
             </div>
           ) : (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
-              <TabsList className="mx-3 mt-3 shrink-0 grid grid-cols-4">
+              <TabsList className="hidden md:grid mx-3 mt-3 shrink-0 grid-cols-4">
                 <TabsTrigger value="chat" className="text-xs gap-1" data-testid="tab-chat">
                   <MessageSquare className="w-3.5 h-3.5" />
                   {lang === "ar" ? "محادثة" : "Chat"}
@@ -552,8 +567,8 @@ ${project.generatedHtml}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0 px-4 pb-3">
-                <ScrollArea className="flex-1 mt-3">
+              <TabsContent value="chat" className="flex-1 flex flex-col overflow-hidden mt-0 px-4 pb-3 pt-3 md:pt-0">
+                <ScrollArea className="flex-1 md:mt-3">
                   <div className="space-y-4 pe-2">
                     {messages.map((msg) => (
                       <div
@@ -618,18 +633,18 @@ ${project.generatedHtml}
                 </ScrollArea>
 
                 <div className="mt-2 space-y-2 shrink-0">
-                  <div className="flex flex-wrap gap-1">
-                    {suggestedCmds.slice(0, 4).map((cmd, i) => (
+                  <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+                    {suggestedCmds.slice(0, 6).map((cmd, i) => (
                       <Button
                         key={i}
                         variant="outline"
                         size="sm"
-                        className="text-xs h-7 px-2"
+                        className="text-xs h-7 px-2.5 shrink-0 whitespace-nowrap"
                         onClick={() => setEditCommand(cmd)}
                         data-testid={`button-suggestion-${i}`}
                       >
                         <Sparkles className="w-3 h-3 me-1 text-emerald-500" />
-                        <span className="truncate max-w-[120px]">{cmd}</span>
+                        {cmd}
                       </Button>
                     ))}
                   </div>
@@ -705,9 +720,9 @@ ${project.generatedHtml}
                           if (!limitReached) handleSendWithImage();
                         }
                       }}
-                      rows={3}
+                      rows={2}
                       disabled={limitReached}
-                      className="text-sm resize-none leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="text-sm resize-none leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px] max-h-[100px] md:max-h-none"
                       data-testid="input-edit-command"
                     />
                     <Button
@@ -727,7 +742,7 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-3">
+              <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-3 pt-3 md:pt-0">
                 <div className="mt-2 space-y-3">
                   <div>
                     <h3 className="text-sm font-semibold mb-2">
@@ -793,7 +808,7 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="media" className="flex-1 overflow-y-auto mt-0 px-3 pb-3">
+              <TabsContent value="media" className="flex-1 overflow-y-auto mt-0 px-3 pb-3 pt-3 md:pt-0">
                 <div className="mt-2 space-y-4">
                   <div>
                     <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -894,7 +909,7 @@ ${project.generatedHtml}
                 </div>
               </TabsContent>
 
-              <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 relative">
+              <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative">
                 <div
                   ref={styleScrollRef}
                   className="flex-1 overflow-y-auto px-3 pb-3"
@@ -1179,6 +1194,36 @@ ${project.generatedHtml}
           )}
         </div>
       </div>
+
+      {/* ─── Mobile Bottom Navigation Bar ─── */}
+      {project.generatedHtml && mobileView === "panel" && (
+        <div className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-50 flex h-[60px]" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
+          {[
+            { value: "chat", icon: MessageSquare, labelAr: "محادثة", labelEn: "Chat" },
+            { value: "sections", icon: Layout, labelAr: "أقسام", labelEn: "Sections" },
+            { value: "media", icon: Image, labelAr: "وسائط", labelEn: "Media" },
+            { value: "style", icon: Palette, labelAr: "تنسيق", labelEn: "Style" },
+          ].map(({ value, icon: Icon, labelAr, labelEn }) => (
+            <button
+              key={value}
+              onClick={() => setActiveTab(value)}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
+                activeTab === value
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-muted-foreground"
+              }`}
+              data-testid={`tab-mobile-${value}`}
+            >
+              <div className={`relative flex items-center justify-center w-10 h-6 rounded-full transition-colors ${
+                activeTab === value ? "bg-emerald-100 dark:bg-emerald-950/40" : ""
+              }`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] font-medium">{lang === "ar" ? labelAr : labelEn}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
