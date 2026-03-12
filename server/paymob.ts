@@ -109,7 +109,7 @@ export async function verifyHmac(
   receivedHmac: string
 ): Promise<boolean> {
   const { hmacSecret } = await getPaymobConfig();
-  if (!hmacSecret) return true;
+  if (!hmacSecret) return false;
 
   const crypto = await import("crypto");
   const orderId = typeof data.order === "object" ? data.order?.id : data.order;

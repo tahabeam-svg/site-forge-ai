@@ -52,4 +52,12 @@ export function registerAuthRoutes(app: Express): void {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+
+  app.post("/api/auth/logout", (req: any, res) => {
+    req.session.destroy((err: any) => {
+      if (err) console.error("Session destroy error:", err);
+      res.clearCookie("connect.sid");
+      res.json({ success: true });
+    });
+  });
 }

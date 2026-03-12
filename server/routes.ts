@@ -74,6 +74,13 @@ const FREE_PLAN_MAX_PROJECTS = 3;
 // ─── Chatbot Rate Limiter (IP-based, in-memory) ───────────────────────────────
 const chatbotRateMap = new Map<string, { count: number; resetAt: number }>();
 const CHATBOT_MAX_PER_HOUR = 40;
+// Clean up expired entries every 30 minutes to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  Array.from(chatbotRateMap.entries()).forEach(([key, val]) => {
+    if (val.resetAt < now) chatbotRateMap.delete(key);
+  });
+}, 30 * 60 * 1000);
 function checkChatbotRateLimit(ip: string): boolean {
   const now = Date.now();
   const entry = chatbotRateMap.get(ip);
@@ -235,6 +242,7 @@ export async function registerRoutes(
       if (!project) return res.status(404).json({ message: "Project not found" });
       const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
 
       const language = req.body.language || "ar";
       const description = req.body.description || project.description || project.name;
@@ -291,6 +299,7 @@ export async function registerRoutes(
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
       if (project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+      if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
 
       const language = req.body.language || "ar";
       const description = req.body.description || project.description || project.name;
@@ -801,6 +810,7 @@ export async function registerRoutes(
 
   const initiatePaymentSchema = z.object({
     plan: z.enum(["pro", "business"]),
+    billingCycle: z.enum(["monthly", "yearly"]).optional().default("monthly"),
   });
 
   app.post("/api/payments/initiate", isAuthenticated, async (req: any, res) => {

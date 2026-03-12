@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user, language, setLanguage } = useAuth();
+  const { user, language, setLanguage, logout } = useAuth();
   const lang = language;
 
   return (
@@ -63,8 +63,8 @@ export default function SettingsPage() {
                   <Shield className="w-3 h-3" />
                   {lang === "ar" ? "نوع الحساب" : "Account Type"}
                 </label>
-                <Badge variant="secondary" className="mt-1" data-testid="text-account-type">
-                  {lang === "ar" ? "مجاني" : "Free"}
+                <Badge variant="secondary" className={`mt-1 capitalize ${user?.plan && user.plan !== 'free' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400' : ''}`} data-testid="text-account-type">
+                  {user?.plan === 'pro' ? (lang === 'ar' ? 'برو' : 'Pro') : user?.plan === 'business' ? (lang === 'ar' ? 'أعمال' : 'Business') : (lang === 'ar' ? 'مجاني' : 'Free')}
                 </Badge>
               </div>
             </div>

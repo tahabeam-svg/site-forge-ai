@@ -25,15 +25,21 @@ import PrivacyPage from "@/pages/privacy";
 import FAQPage from "@/pages/faq";
 import DeployGuidePage from "@/pages/deploy-guide";
 
+import { useEffect } from "react";
+
 function PricingRedirect() {
   const [, setLocation] = useLocation();
-  setLocation("/billing");
+  useEffect(() => { setLocation("/billing"); }, []);
   return null;
 }
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) setLocation("/auth");
+  }, [isLoading, isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -43,10 +49,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
     );
   }
 
-  if (!isAuthenticated) {
-    setLocation("/auth");
-    return null;
-  }
+  if (!isAuthenticated) return null;
 
   return <Component />;
 }

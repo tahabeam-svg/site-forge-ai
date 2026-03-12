@@ -547,7 +547,7 @@ No markdown, no code blocks, no explanation outside the JSON.`;
       [/>معاينة</g, ">خدماتنا<"],
       [/>تعديل</g, ">من نحن<"],
     ];
-    html = html.replace(/<(nav|header)[^>]*>[\s\S]*?<\/(nav|header)>/gi, (navBlock) => {
+    html = html.replace(/<(nav|header)[^>]*>[\s\S]*?<\/(nav|header)>/gi, (navBlock: string) => {
       let replaced = navBlock;
       for (const [p, r] of platformWords) { replaced = replaced.replace(p, r); }
       return replaced;
