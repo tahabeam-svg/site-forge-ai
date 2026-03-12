@@ -547,7 +547,7 @@ ${project.generatedHtml}
               </Card>
             </div>
           ) : (
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden min-h-0">
               <TabsList className="hidden md:grid mx-3 mt-3 shrink-0 grid-cols-4">
                 <TabsTrigger value="chat" className="text-xs gap-1" data-testid="tab-chat">
                   <MessageSquare className="w-3.5 h-3.5" />
