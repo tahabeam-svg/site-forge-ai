@@ -567,7 +567,8 @@ ${project.generatedHtml}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chat" className="flex-1 h-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0">
+              <TabsContent value="chat" className="flex-1 h-0 relative overflow-hidden mt-0">
+                <div className="absolute inset-0 flex flex-col pt-3">
                 {/* Messages — scrollable, fills all available space */}
                 <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-2">
                   <div className="space-y-4">
@@ -742,6 +743,7 @@ ${project.generatedHtml}
                     </Button>
                   </div>
                 </div>
+                </div>{/* end absolute inset-0 */}
               </TabsContent>
 
               <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-3 pt-3 md:pt-0">
