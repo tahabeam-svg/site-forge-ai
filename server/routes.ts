@@ -108,7 +108,7 @@ async function getUserPlanInfo(userId: string): Promise<{ isFreePlan: boolean; i
 }
 
 // CSS fix injected into all generated websites to prevent horizontal overflow
-const OVERFLOW_FIX_CSS = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}@media(max-width:768px){#aw-menu-btn{display:block!important}.aw-nav-links{display:none!important}[id*="menu-btn"],[id*="hamburger"],[class*="hamburger"],[class*="menu-toggle"]{display:block!important}}</style>`;
+const OVERFLOW_FIX_CSS = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}@media(max-width:768px){#aw-menu-btn{display:block!important}.aw-nav-links{display:none!important}[id*="menu-btn"],[id*="hamburger"],[class*="hamburger"],[class*="menu-toggle"],[class*="nav-toggle"],[class*="burger"]{display:block!important}}</style>`;
 
 function injectFreePlanWatermark(html: string): string {
   if (html.includes('id="aw-free-badge"')) {
