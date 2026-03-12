@@ -464,20 +464,10 @@ export default function EditorPage() {
 html,body{overflow-x:hidden!important;max-width:100%!important}
 *,*::before,*::after{box-sizing:border-box}
 img,video,embed,object,iframe{max-width:100%!important;height:auto}
-/* Mobile nav fix: hide nav links that overflow, show hamburger if present */
+/* Mobile nav fix: show hamburger button, hide desktop nav links */
 @media(max-width:768px){
   #aw-menu-btn{display:block !important;}
   .aw-nav-links{display:none !important;}
-  /* Prevent any nav from overflowing its container */
-  nav, header nav, header .nav, .navbar, .nav-bar{
-    flex-wrap:nowrap !important;
-    overflow:hidden;
-  }
-  /* Ensure nav links don't wrap into logo area */
-  nav a:not(.nav-logo):not(.btn-primary):not(.btn-outline):not([class*="logo"]):not([class*="brand"]){
-    display:none;
-  }
-  /* Show hamburger if it exists */
   [id*="menu-btn"],[id*="hamburger"],[class*="hamburger"],[class*="menu-toggle"]{
     display:block !important;
   }

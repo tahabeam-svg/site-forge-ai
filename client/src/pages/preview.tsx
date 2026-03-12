@@ -27,7 +27,6 @@ img,video,embed,object,iframe{max-width:100%!important;height:auto}
 @media(max-width:768px){
   #aw-menu-btn{display:block !important;}
   .aw-nav-links{display:none !important;}
-  nav a:not(.nav-logo):not(.btn-primary):not(.btn-outline):not([class*="logo"]):not([class*="brand"]){display:none;}
   [id*="menu-btn"],[id*="hamburger"],[class*="hamburger"],[class*="menu-toggle"]{display:block !important;}
 }
 </style>`;

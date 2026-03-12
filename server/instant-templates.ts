@@ -90,12 +90,21 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
   <nav class="nav">
     <div class="nav-inner">
       <span class="nav-brand">${content.business_name}</span>
-      <div class="nav-links">
+      <div class="aw-nav-links">
         <a href="#about">${isRTL ? "من نحن" : "About"}</a>
         <a href="#services">${isRTL ? "خدماتنا" : "Services"}</a>
         <a href="#contact">${isRTL ? "تواصل معنا" : "Contact"}</a>
         <a href="#contact" class="nav-cta">${content.cta_text}</a>
       </div>
+      <button id="aw-menu-btn" aria-label="Menu" onclick="var m=document.getElementById('aw-mobile-menu');m.style.display=m.style.display==='flex'?'none':'flex'" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:#0f172a;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+    <div id="aw-mobile-menu" style="display:none;flex-direction:column;background:#fff;padding:1rem 1.5rem;border-top:1px solid #e2e8f0;gap:0.25rem;">
+      <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" style="padding:0.75rem 0;font-size:0.95rem;font-weight:500;color:#475569;border-bottom:1px solid #f1f5f9;">${isRTL ? "من نحن" : "About"}</a>
+      <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" style="padding:0.75rem 0;font-size:0.95rem;font-weight:500;color:#475569;border-bottom:1px solid #f1f5f9;">${isRTL ? "خدماتنا" : "Services"}</a>
+      <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" style="padding:0.75rem 0;font-size:0.95rem;font-weight:500;color:#475569;border-bottom:1px solid #f1f5f9;">${isRTL ? "تواصل معنا" : "Contact"}</a>
+      <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" style="margin-top:0.5rem;padding:0.75rem 1.5rem;background:linear-gradient(135deg,${primary},${accent});color:#fff;border-radius:2rem;font-weight:700;text-align:center;">${content.cta_text}</a>
     </div>
   </nav>
 
@@ -225,9 +234,9 @@ img { max-width: 100%; display: block; }
 .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.08); }
 .nav-inner { max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
 .nav-brand { font-size: 1.25rem; font-weight: 800; background: linear-gradient(135deg, ${primary}, ${accent}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.nav-links { display: flex; align-items: center; gap: 2rem; }
-.nav-links a { font-size: 0.9rem; font-weight: 500; color: #475569; transition: color 0.2s; }
-.nav-links a:hover { color: ${primary}; }
+.aw-nav-links { display: flex; align-items: center; gap: 2rem; }
+.aw-nav-links a { font-size: 0.9rem; font-weight: 500; color: #475569; transition: color 0.2s; text-decoration: none; }
+.aw-nav-links a:hover { color: ${primary}; }
 .nav-cta { background: linear-gradient(135deg, ${primary}, ${accent}) !important; color: white !important; padding: 0.5rem 1.25rem; border-radius: 2rem; font-weight: 600 !important; transition: opacity 0.2s !important; }
 .nav-cta:hover { opacity: 0.9; color: white !important; }
 
@@ -295,8 +304,8 @@ img { max-width: 100%; display: block; }
   .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
   .about-badge { bottom: -1rem; ${dir === "rtl" ? "right: 1rem" : "left: 1rem"}; }
   .hero-title { font-size: 2.25rem; }
-  .nav-links { gap: 1rem; }
-  .nav-links a:not(.nav-cta) { display: none; }
+  .aw-nav-links { display: none !important; }
+  #aw-menu-btn { display: block !important; }
   .hero-btns { flex-direction: column; width: 100%; max-width: 300px; }
   .section { padding: 3.5rem 0; }
   .services-grid { grid-template-columns: 1fr; }

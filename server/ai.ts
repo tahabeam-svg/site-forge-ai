@@ -332,11 +332,16 @@ function extractBusinessTypeFromHtml(html: string): string {
 
 function enhanceVagueCommand(command: string, html: string, projectName: string, desc: string, lang: string): string {
   const vaguePatterns = [
-    /أر?يدك?\s*(أن\s*)?ت?ضيف?\s*(من\s*)?(محتوى|قسم|كونتنت)/i,
-    /أضف?\s*محتوى\s*(احتراف|مميز|جيد)/i,
+    /[أا]ر?يدك?\s*([أا]ن\s*)?ت?ضيف?\s*(من\s*)?(محتوى|قسم|كونتنت)/i,
+    /[أا]ضف?\s*محتوى\s*(احتراف|مميز|جيد)/i,
     /add\s+(professional|good|more)\s+content/i,
     /ضيف?\s*محتوى/i,
     /زود?\s*محتوى/i,
+    /[أا]ضف\s+محتوى/i,
+    /اضافة\s+محتوى/i,
+    /حسّن\s+الموقع/i,
+    /make\s+it\s+better/i,
+    /improve\s+(the\s+)?website/i,
   ];
   const isVague = vaguePatterns.some(p => p.test(command));
   if (!isVague) return command;
