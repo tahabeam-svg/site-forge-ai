@@ -31,9 +31,12 @@ import {
   CheckCircle2,
   ChevronRight,
   Play,
+  Mail,
+  Linkedin,
+  Instagram,
+  Youtube,
 } from "lucide-react";
-import { SiGoogle, SiX, SiLinkedin, SiInstagram, SiYoutube } from "react-icons/si";
-import { Mail } from "lucide-react";
+import { SiGoogle, SiX } from "react-icons/si";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -793,9 +796,9 @@ export default function LandingPage() {
               <div className="flex items-center gap-2">
                 {[
                   { icon: SiX, href: "https://x.com/arabyweb", label: "X" },
-                  { icon: SiLinkedin, href: "https://linkedin.com/company/arabyweb", label: "LinkedIn" },
-                  { icon: SiInstagram, href: "https://instagram.com/arabyweb", label: "Instagram" },
-                  { icon: SiYoutube, href: "https://youtube.com/@arabyweb", label: "YouTube" },
+                  { icon: Linkedin, href: "https://linkedin.com/company/arabyweb", label: "LinkedIn" },
+                  { icon: Instagram, href: "https://instagram.com/arabyweb", label: "Instagram" },
+                  { icon: Youtube, href: "https://youtube.com/@arabyweb", label: "YouTube" },
                 ].map(({ icon: Icon, href, label }) => (
                   <a
                     key={label}
