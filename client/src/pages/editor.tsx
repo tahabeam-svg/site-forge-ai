@@ -561,11 +561,14 @@ ${project.generatedHtml}
       />
 
       {/* ─── Mobile Header ─── */}
-      <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12">
+      <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12 border-t-2 border-t-violet-500">
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => navigate("/dashboard")} data-testid="button-back">
           {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
         </Button>
-        <h1 className="text-sm font-semibold truncate flex-1" data-testid="text-project-name">{project.name}</h1>
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <span className="shrink-0 w-5 h-5 rounded bg-violet-600 flex items-center justify-center text-[9px] font-black text-white leading-none">AW</span>
+          <h1 className="text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
+        </div>
         {project.generatedHtml && (
           <div className="flex items-center gap-1.5 shrink-0">
             <button

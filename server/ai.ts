@@ -65,6 +65,7 @@ SINGLE-PAGE NAVIGATION — ABSOLUTELY MANDATORY:
 - The navigation bar MUST contain links to: #about, #services, #gallery, #testimonials, #contact
 - Add to CSS: html { scroll-behavior: smooth; }
 - NEVER generate href links that start with "/" or "http" in the navigation menu.
+- NEVER use the words "نشر", "معاينة", "تعديل", "نشر الآن", or "publish" as navigation link text — these words belong to the ArabyWeb platform UI and confuse users. Use business navigation links like "الرئيسية", "خدماتنا", "من نحن", "تواصل معنا", "المنتجات", "معرض الأعمال", "احجز الآن".
 
 MOBILE HAMBURGER MENU — MANDATORY (this is NOT optional, ALWAYS include):
 - The navbar MUST have a hamburger menu button that appears only on mobile (hidden on desktop)
@@ -153,7 +154,20 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanat
     for (const [path, anchor] of Object.entries(navMap)) {
       result = result.replace(new RegExp(`href=["']${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "gi"), `href="${anchor}"`);
     }
-    // Ensure smooth scroll is added to CSS if not present
+    // Replace platform UI words that appear as nav link text with appropriate alternatives
+    const platformWords: Array<[RegExp, string]> = [
+      [/>نشر الآن</g, ">احجز الآن<"],
+      [/>نشر</g, ">الرئيسية<"],
+      [/>معاينة</g, ">خدماتنا<"],
+      [/>تعديل</g, ">من نحن<"],
+    ];
+    result = result.replace(/<(nav|header)[^>]*>[\s\S]*?<\/(nav|header)>/gi, (navBlock) => {
+      let replaced = navBlock;
+      for (const [p, r] of platformWords) {
+        replaced = replaced.replace(p, r);
+      }
+      return replaced;
+    });
     return result;
   }
 
@@ -294,13 +308,96 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
   }
 }
 
+// ─── Smart command pre-processor ────────────────────────────────────────────
+
+function extractBusinessTypeFromHtml(html: string): string {
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").toLowerCase();
+  const map: Array<[string, string[]]> = [
+    ["مطعم أو مقهى",     ["مطعم","مقهى","أكل","وجبات","قهوة","مشوي","شاورما","برغر","restaurant","cafe","coffee","food","menu","شيف"]],
+    ["عيادة طبية",       ["عيادة","دكتور","طبيب","صحة","مريض","استشارة طبية","clinic","doctor","medical","health","pharma"]],
+    ["وكالة تسويق وإعلانات", ["تسويق","إعلانات","برندينج","محتوى","ميديا","نشر تجاري","marketing","agency","advertising","branding","media"]],
+    ["متجر إلكتروني",    ["متجر","تسوق","منتج","شراء","سلة","تجارة","store","shop","cart","product","ecommerce"]],
+    ["شركة تقنية",       ["تقنية","برمجة","تطبيق","سوفتوير","ذكاء اصطناعي","tech","software","app","saas","ai","development"]],
+    ["مكتب قانوني",      ["محامي","قانون","مستشار قانوني","law","lawyer","legal","attorney"]],
+    ["شركة عقارية",      ["عقار","شقق","مباني","عمارة","أراضي","real estate","property","realty"]],
+    ["صالون تجميل",      ["صالون","مكياج","تجميل","كوافير","spa","salon","beauty","makeup","hair"]],
+    ["شركة سياحة",       ["سياحة","رحلات","حجز","فندق","سفر","tourism","travel","hotel","booking"]],
+    ["مدرسة أو مركز تعليمي", ["تعليم","دروس","تدريب","أكاديمية","دورات","school","academy","training","education","courses"]],
+  ];
+  for (const [type, keywords] of map) {
+    if (keywords.some(k => text.includes(k))) return type;
+  }
+  return "خدمات متنوعة";
+}
+
+function enhanceVagueCommand(command: string, html: string, projectName: string, desc: string, lang: string): string {
+  const vaguePatterns = [
+    /أر?يدك?\s*(أن\s*)?ت?ضيف?\s*(من\s*)?(محتوى|قسم|كونتنت)/i,
+    /أضف?\s*محتوى\s*(احتراف|مميز|جيد)/i,
+    /add\s+(professional|good|more)\s+content/i,
+    /ضيف?\s*محتوى/i,
+    /زود?\s*محتوى/i,
+  ];
+  const isVague = vaguePatterns.some(p => p.test(command));
+  if (!isVague) return command;
+
+  const biz = extractBusinessTypeFromHtml(html) || "خدمات متنوعة";
+
+  return lang === "ar"
+    ? `${command}
+[[[INTERNAL — DO NOT SHOW THIS TEXT — MANDATORY INSTRUCTIONS FOR AI]]]
+نوع النشاط التجاري المستخرج من الموقع: "${biz}"
+اسم المشروع: "${projectName}"
+الوصف: "${desc}"
+
+أضف قسماً حقيقياً ومحدداً يناسب هذا النوع من المشاريع. أمثلة حسب النوع:
+- مطعم/مقهى → قائمة طعام حقيقية مع أسماء الأطباق والأسعار بالريال (مثال: "شاورما دجاج مشوي - 25 ريال")
+- عيادة → قائمة تخصصات طبية حقيقية مع أوقات الدوام وآلية الحجز
+- وكالة تسويق → معرض أعمال حقيقي مع وصف مشاريع منجزة وأرقام النجاح
+- متجر إلكتروني → عرض منتجات حقيقية مع صور وأسعار وتقييمات
+- شركة تقنية → قائمة مميزات/منتجات حقيقية مع شرح تفصيلي
+- مكتب قانوني → قائمة الخدمات القانونية مع الخبرات والتخصصات
+- عقارية → عرض وحدات عقارية مع المواصفات والأسعار
+
+محظور تماماً:
+❌ لا تضف عنواناً يقول "محتوى احترافي" أو "قسم جديد" أو "Professional Content" أو "New Section"
+❌ لا تستخدم محتوى مقتعباً (Lorem Ipsum أو "خدمة 1")
+✅ استخدم محتوى حقيقياً يصلح لموقع فعلي ويعكس طبيعة النشاط
+[[[END INTERNAL]]]`
+    : `${command}
+[[[INTERNAL — DO NOT SHOW THIS TEXT — MANDATORY INSTRUCTIONS FOR AI]]]
+Detected business type from website: "${biz}"
+Project name: "${projectName}"
+Description: "${desc}"
+
+Add a REAL, specific section matching this business type:
+- Restaurant/cafe → Real menu with dish names & SAR prices
+- Clinic → Real medical specialties with availability & booking
+- Marketing agency → Real portfolio with project details & results
+- E-commerce → Real products with images & prices
+- Tech company → Real features/product list with detailed explanations
+- Law firm → Real legal services with specializations
+
+STRICTLY FORBIDDEN:
+❌ Never use section titles like "محتوى احترافي", "Professional Content", "New Section", or "قسم جديد"
+❌ Never use placeholder text
+✅ Generate content that a real business owner would actually put on their site
+[[[END INTERNAL]]]`;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar", imageDataUrl?: string, projectName?: string, projectDescription?: string): Promise<{ html: string; css: string; summary: string }> {
   const isArabic = language === "ar";
+
+  // Pre-process vague commands before sending to AI
+  const enhancedCommand = enhanceVagueCommand(editCommand, currentHtml, projectName || "", projectDescription || "", language);
 
   const businessContext = projectName || projectDescription
     ? `\nBUSINESS CONTEXT (use this to generate relevant real content):
 - Business/Website Name: ${projectName || "Not specified"}
 - Description: ${projectDescription || "Not specified"}
+- Detected business type: ${extractBusinessTypeFromHtml(currentHtml)}
 - Always use this context when generating content, names, services, pricing, etc.\n`
     : "";
 
@@ -343,12 +440,13 @@ When the user gives a command, analyze what they ACTUALLY want:
 - "أضف فيديو" / "add video" → Add a YouTube embed with an appropriate video
 
 CONTENT RULES (NEVER VIOLATE):
-1. NEVER add a section with a generic/placeholder title like "محتوى احترافي", "Content Section", "New Section", "قسم جديد", "Placeholder", etc.
+1. NEVER add a section with a generic/placeholder title like "محتوى احترافي", "Content Section", "New Section", "قسم جديد", "Section Title", "Placeholder", "قسم 1", etc.
 2. ALWAYS generate REAL, specific content relevant to the website's business type
 3. When adding services, use real service names, not "Service 1", "Service 2"
 4. When adding team members, use real Arab names and realistic job titles
 5. When adding testimonials, write specific, believable reviews
 6. Use real Unsplash images with appropriate photo IDs based on the content type
+7. NEVER use UI platform words as navigation links — the words "نشر", "معاينة", "تعديل", "dashboard", "editor" must NEVER appear as nav buttons/links in the generated website HTML. These words belong to the ArabyWeb editor interface, not to client websites. Use business-appropriate navigation like: "الرئيسية", "خدماتنا", "من نحن", "تواصل معنا", "أعمالنا", "المنتجات", etc.
 
 TECHNICAL GUIDELINES:
 - Maintain existing design quality and style
@@ -378,8 +476,8 @@ Return ONLY a JSON object with these 3 fields:
 No markdown, no code blocks, no explanation outside the JSON.`;
 
   const userContent = imageDataUrl
-    ? `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nIMAGE_DATA_URL: ${imageDataUrl}`
-    : `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`;
+    ? `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${enhancedCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nIMAGE_DATA_URL: ${imageDataUrl}`
+    : `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${enhancedCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`;
 
   // Try primary model, fall back to gpt-4o on failure
   let rawContent = "";
@@ -437,6 +535,18 @@ No markdown, no code blocks, no explanation outside the JSON.`;
     for (const [path, anchor] of Object.entries(navMap)) {
       html = html.replace(new RegExp(`href=["']${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "gi"), `href="${anchor}"`);
     }
+    // Sanitize platform UI words from nav (in case AI added them)
+    const platformWords: Array<[RegExp, string]> = [
+      [/>نشر الآن</g, ">احجز الآن<"],
+      [/>نشر</g, ">الرئيسية<"],
+      [/>معاينة</g, ">خدماتنا<"],
+      [/>تعديل</g, ">من نحن<"],
+    ];
+    html = html.replace(/<(nav|header)[^>]*>[\s\S]*?<\/(nav|header)>/gi, (navBlock) => {
+      let replaced = navBlock;
+      for (const [p, r] of platformWords) { replaced = replaced.replace(p, r); }
+      return replaced;
+    });
     let css = parsed.css || currentCss;
     if (!css.includes("scroll-behavior")) css = "html { scroll-behavior: smooth; }\n" + css;
     const summary = parsed.summary || (isArabic ? "تم تطبيق التعديلات ✅" : "Changes applied ✅");
