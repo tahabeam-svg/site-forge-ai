@@ -68,20 +68,49 @@ const upload = multer({
 // Free plan: max user messages per project before upgrade wall
 const FREE_MSG_LIMIT = 8;
 
-// ArabyWeb badge injected into free-plan websites
-const FREE_PLAN_BADGE = `<div id="aw-free-badge" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);color:#fff;text-align:center;padding:9px 16px;font-family:'Cairo','Inter',sans-serif;font-size:13px;z-index:2147483647;direction:rtl;display:flex;align-items:center;justify-content:center;gap:10px;border-top:2px solid #10b981;box-shadow:0 -2px 12px rgba(16,185,129,0.3);">هذا الموقع أُنشئ بواسطة <strong style="color:#10b981;margin:0 4px;">عربي ويب</strong><a href="https://arabyWeb.net/pricing" target="_blank" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:4px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:bold;margin-inline-start:6px;">اشترك لإزالة الشعار</a></div>`;
+// CSS fix injected into all generated websites to prevent horizontal overflow
+const OVERFLOW_FIX_CSS = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}</style>`;
 
-function injectFreePlanWatermark(html: string): string {
-  const badge = FREE_PLAN_BADGE;
-  if (html.includes('id="aw-free-badge"')) return html; // already injected
-  if (html.includes("</body>")) return html.replace("</body>", `${badge}\n</body>`);
-  return html + badge;
+function injectFreePlanWatermark(html: string, language: string = "ar"): string {
+  if (html.includes('id="aw-free-badge"')) {
+    // Already has badge — still inject overflow fix if missing
+    if (!html.includes('id="aw-overflow-fix"')) {
+      if (html.includes("</head>")) return html.replace("</head>", `${OVERFLOW_FIX_CSS}\n</head>`);
+    }
+    return html;
+  }
+
+  const isAr = language !== "en";
+  const badge = isAr
+    ? `<div id="aw-free-badge" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);color:#fff;text-align:center;padding:9px 16px;font-family:'Cairo','Inter',sans-serif;font-size:13px;z-index:2147483647;direction:rtl;display:flex;align-items:center;justify-content:center;gap:10px;border-top:2px solid #10b981;box-shadow:0 -2px 12px rgba(16,185,129,0.3);">هذا الموقع أُنشئ بواسطة <strong style="color:#10b981;margin:0 4px;">عربي ويب</strong><a href="https://arabyWeb.net/pricing" target="_blank" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:4px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:bold;margin-inline-start:6px;">اشترك لإزالة الشعار</a></div>`
+    : `<div id="aw-free-badge" style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(90deg,#0f172a 0%,#1e293b 100%);color:#fff;text-align:center;padding:9px 16px;font-family:'Inter','Cairo',sans-serif;font-size:13px;z-index:2147483647;direction:ltr;display:flex;align-items:center;justify-content:center;gap:10px;border-top:2px solid #10b981;box-shadow:0 -2px 12px rgba(16,185,129,0.3);">Built with <strong style="color:#10b981;margin:0 4px;">ArabyWeb</strong><a href="https://arabyWeb.net/pricing" target="_blank" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:4px 14px;border-radius:20px;text-decoration:none;font-size:12px;font-weight:bold;margin-left:6px;">Upgrade to remove</a></div>`;
+
+  // Inject overflow fix into <head>
+  let result = html;
+  if (result.includes("</head>")) {
+    result = result.replace("</head>", `${OVERFLOW_FIX_CSS}\n</head>`);
+  } else {
+    result = OVERFLOW_FIX_CSS + result;
+  }
+
+  // Inject badge into <body>
+  if (result.includes("</body>")) return result.replace("</body>", `${badge}\n</body>`);
+  return result + badge;
 }
 
 function removeFreePlanWatermark(html: string): string {
-  // Remove the badge div (handles different quote styles)
-  return html.replace(/<div id="aw-free-badge"[\s\S]*?<\/div>/gi, "");
+  // Inject overflow fix even for paid plans
+  let result = html.replace(/<div id="aw-free-badge"[\s\S]*?<\/div>/gi, "");
+  if (!result.includes('id="aw-overflow-fix"')) {
+    if (result.includes("</head>")) {
+      result = result.replace("</head>", `${OVERFLOW_FIX_CSS}\n</head>`);
+    } else {
+      result = OVERFLOW_FIX_CSS + result;
+    }
+  }
+  return result;
 }
+
 
 export async function registerRoutes(
   httpServer: Server,
@@ -185,7 +214,7 @@ export async function registerRoutes(
       const isFreePlan = !user?.plan || user.plan === "free";
       const isAdmin = user?.email === "tahabeam@gmail.com" || (user as any)?.role === "admin";
       const finalHtml = (isFreePlan && !isAdmin)
-        ? injectFreePlanWatermark(generated.html)
+        ? injectFreePlanWatermark(generated.html, language)
         : removeFreePlanWatermark(generated.html);
 
       const freePlanNote = isFreePlan && !isAdmin
@@ -238,7 +267,7 @@ export async function registerRoutes(
       const isFreePlan2 = !user2?.plan || user2.plan === "free";
       const isAdmin2 = user2?.email === "tahabeam@gmail.com" || (user2 as any)?.role === "admin";
       const finalHtml2 = (isFreePlan2 && !isAdmin2)
-        ? injectFreePlanWatermark(generated.html)
+        ? injectFreePlanWatermark(generated.html, language)
         : removeFreePlanWatermark(generated.html);
 
       const freePlanNote2 = isFreePlan2 && !isAdmin2
@@ -315,7 +344,7 @@ export async function registerRoutes(
       // Maintain free-plan watermark in edited HTML
       let finalEditHtml = result.html;
       if (isFreePlanEdit && !isAdminEdit) {
-        finalEditHtml = injectFreePlanWatermark(finalEditHtml);
+        finalEditHtml = injectFreePlanWatermark(finalEditHtml, lang);
       } else {
         finalEditHtml = removeFreePlanWatermark(finalEditHtml);
       }
