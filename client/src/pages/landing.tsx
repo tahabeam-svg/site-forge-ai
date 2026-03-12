@@ -863,13 +863,13 @@ export default function LandingPage() {
 
       <footer className="border-t bg-muted/30">
         {/* ── Main footer body ── */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
 
-          {/* Desktop: 4-col grid | Mobile: brand full-width then 2-col links */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-8">
+          {/* 3-col symmetric grid: Brand | Product | Support */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
 
-            {/* Brand — full-width on mobile */}
-            <div className="col-span-2 lg:col-span-1">
+            {/* Brand */}
+            <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
                   <Globe2 className="w-5 h-5 text-white" />
@@ -878,13 +878,13 @@ export default function LandingPage() {
                   {t("brand", lang)}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-5 max-w-xs">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {lang === "ar"
                   ? "المنصة الأولى لبناء المواقع بالذكاء الاصطناعي في العالم العربي"
                   : "The #1 AI website builder for the Arab world"}
               </p>
               {/* Social icons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
                 {[
                   { icon: SiX, href: "https://x.com/arabyweb", label: "X" },
                   { icon: Linkedin, href: "https://linkedin.com/company/arabyweb", label: "LinkedIn" },
@@ -915,7 +915,7 @@ export default function LandingPage() {
             </div>
 
             {/* Product */}
-            <div>
+            <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {lang === "ar" ? "المنتج" : "Product"}
               </h4>
@@ -927,33 +927,25 @@ export default function LandingPage() {
               </ul>
             </div>
 
-            {/* Support */}
-            <div>
+            {/* Support & Policies (merged — no "قانوني") */}
+            <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
                 {lang === "ar" ? "الدعم" : "Support"}
               </h4>
               <ul className="space-y-3 text-sm">
                 <li><a href="/faq" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-faq">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a></li>
                 <li><a href="mailto:support@arabyweb.net" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-contact">{lang === "ar" ? "تواصل معنا" : "Contact Us"}</a></li>
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
-                {lang === "ar" ? "قانوني" : "Legal"}
-              </h4>
-              <ul className="space-y-3 text-sm">
                 <li><a href="/terms" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-terms">{lang === "ar" ? "شروط الاستخدام" : "Terms of Service"}</a></li>
                 <li><a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-privacy">{lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}</a></li>
               </ul>
             </div>
+
           </div>
         </div>
 
         {/* ── Bottom bar ── */}
         <div className="border-t bg-muted/50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">
               &copy; 2026 {t("brand", lang)}. {lang === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
             </p>
