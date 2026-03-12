@@ -280,29 +280,79 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
   }
 }
 
-export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar", imageDataUrl?: string): Promise<{ html: string; css: string; summary: string }> {
+export async function editWebsiteWithAI(currentHtml: string, currentCss: string, editCommand: string, language: string = "ar", imageDataUrl?: string, projectName?: string, projectDescription?: string): Promise<{ html: string; css: string; summary: string }> {
   const isArabic = language === "ar";
 
-  const systemPrompt = `You are a professional web designer assistant for the Saudi/Arab market. The user will give you their current website HTML and CSS, along with an edit instruction. Apply the changes and return the updated HTML and CSS.
+  const businessContext = projectName || projectDescription
+    ? `\nBUSINESS CONTEXT (use this to generate relevant real content):
+- Business/Website Name: ${projectName || "Not specified"}
+- Description: ${projectDescription || "Not specified"}
+- Always use this context when generating content, names, services, pricing, etc.\n`
+    : "";
 
-GUIDELINES:
-- Maintain the existing design quality
-- Use professional fonts: ${isArabic ? "Cairo, Tajawal" : "Inter, Poppins, Montserrat"}
-- Use Unsplash images when adding new images: https://images.unsplash.com/photo-{ID}?w=800&h=600&fit=crop
-- Use Lucide-style SVG icons inline when adding icons
-- Preserve responsive design
-- Keep all existing sections unless asked to remove
-- Support both Arabic and English content
-- If asked to embed a YouTube video, use an iframe with the embed URL
-- If asked to embed media from a URL, create an appropriate embed
-${imageDataUrl ? `- The user has attached an image. Its data URL is provided at the end of the user message under "IMAGE_DATA_URL:". Embed THAT EXACT data URL as the src in the appropriate HTML element (logo in navbar <img>, hero image, gallery, etc.) based on the instruction. Do NOT use a placeholder — use the exact data URL string provided.` : ""}
+  const systemPrompt = `You are a world-class AI web designer for the Saudi/Arab market — like a combination of Wix ADI and GitHub Copilot. You deeply understand the user's INTENT, not just their literal words.
+${businessContext}
+INTELLIGENT INTENT INTERPRETATION:
+When the user gives a command, analyze what they ACTUALLY want:
 
-Return ONLY a JSON object with 3 fields:
-- 'html': the updated full HTML
-- 'css': the updated full CSS
-- 'summary': a short ${isArabic ? "Arabic" : "English"} message (1-2 sentences) describing exactly what was changed/added/removed. Be specific and friendly. ${isArabic ? "مثال: 'تم إضافة الشعار في شريط التنقل ✅'" : "Example: 'Logo added to the navigation bar ✅'"}
+- "أضف محتوى احترافي" / "add professional content" → Look at the existing website's industry/type and ADD REAL content:
+  * For a restaurant: add a menu section with real dish names and prices
+  * For a law firm: add a practice areas section with real legal services
+  * For a clinic: add a services section with real medical specialties
+  * For a tech company: add a features or product section with real benefits
+  NEVER add a section literally called "محتوى احترافي" or "Professional Content"
 
-No markdown, no extra explanation outside the JSON.`;
+- "حسّن الموقع" / "make it better" / "improve" → Upgrade design quality:
+  * Improve typography (font sizes, weights, line-height)
+  * Add smooth CSS animations (fadeIn, slideUp, hover effects)
+  * Improve color contrast and visual hierarchy
+  * Add subtle gradients and shadows
+  * Make spacing more professional
+
+- "أضف قسم الأسعار" / "add pricing section" → Add REAL pricing cards:
+  * Generate 3 realistic pricing tiers (Basic/Pro/Business or similar)
+  * Use prices appropriate for the market (e.g., 99 SAR / 199 SAR / 399 SAR)
+  * Include realistic feature lists relevant to the business
+
+- "أضف فريق العمل" / "add team section" → Add realistic team profiles:
+  * Use Arab names (e.g., محمد الشمري, نورة القحطاني, خالد العتيبي)
+  * Give them realistic roles matching the business type
+  * Add professional Unsplash portrait photos
+
+- "أضف شهادات العملاء" / "add testimonials" → Add 3 realistic reviews:
+  * Arab names, realistic roles
+  * Specific, detailed reviews (not generic)
+  * 5-star ratings
+
+- "غيّر الألوان" / "change colors" → Intelligently pick a professional new palette
+- "أضف خريطة" / "add map" → Add a Google Maps embed for a relevant city
+- "أضف فيديو" / "add video" → Add a YouTube embed with an appropriate video
+
+CONTENT RULES (NEVER VIOLATE):
+1. NEVER add a section with a generic/placeholder title like "محتوى احترافي", "Content Section", "New Section", "قسم جديد", "Placeholder", etc.
+2. ALWAYS generate REAL, specific content relevant to the website's business type
+3. When adding services, use real service names, not "Service 1", "Service 2"
+4. When adding team members, use real Arab names and realistic job titles
+5. When adding testimonials, write specific, believable reviews
+6. Use real Unsplash images with appropriate photo IDs based on the content type
+
+TECHNICAL GUIDELINES:
+- Maintain existing design quality and style
+- Use professional fonts: ${isArabic ? "Cairo (headings), Tajawal (body)" : "Inter/Poppins (headings), Inter (body)"}
+- Use Unsplash: https://images.unsplash.com/photo-{ID}?w=800&h=600&fit=crop
+- Use inline SVG Lucide-style icons when adding icons
+- Preserve responsive design (add @media queries for new content)
+- Keep all existing sections unless explicitly asked to remove
+${imageDataUrl ? `- IMAGE ATTACHED: Embed the EXACT data URL provided under "IMAGE_DATA_URL:" as the src of the appropriate element. Do NOT use a placeholder.` : ""}
+
+Return ONLY a JSON object with these 3 fields:
+{
+  "html": "complete updated HTML",
+  "css": "complete updated CSS",
+  "summary": "${isArabic ? "رسالة قصيرة بالعربية (1-2 جملة) تصف ما تم تغييره بالضبط. كن محدداً وودياً. مثال: 'تم إضافة قسم الأسعار مع 3 باقات احترافية ✅'" : "Short English message (1-2 sentences) describing exactly what changed. Be specific. Example: 'Added a 3-tier pricing section with SAR prices tailored to your business ✅'"}"
+}
+
+No markdown, no code blocks, no explanation outside the JSON.`;
 
   const userContent = imageDataUrl
     ? `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${editCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nIMAGE_DATA_URL: ${imageDataUrl}`

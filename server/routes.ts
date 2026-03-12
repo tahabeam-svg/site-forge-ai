@@ -389,7 +389,9 @@ export async function registerRoutes(
         project.generatedCss || "",
         command,
         lang,
-        imageDataUrl
+        imageDataUrl,
+        project.name,
+        project.description || ""
       );
 
       // Maintain free-plan watermark in edited HTML
