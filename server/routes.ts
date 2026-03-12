@@ -1491,5 +1491,56 @@ For Netlify/Vercel:
   // Run self-improvement every 6 hours
   setInterval(() => runSelfImprovementCycle().catch(console.error), 6 * 60 * 60 * 1000);
 
+  // ─── Feedback API ───
+  app.post("/api/feedback", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id || req.user?.claims?.sub;
+      const user = await storage.getUser(userId);
+      const { type, message, page } = req.body;
+      if (!message?.trim()) return res.status(400).json({ message: "Message required" });
+      const fb = await storage.createFeedback({
+        userId,
+        userName: user?.firstName || user?.email || null,
+        userEmail: user?.email || null,
+        type: type || "bug",
+        message: message.trim(),
+        page: page || null,
+      });
+      res.json(fb);
+    } catch (e) {
+      console.error("Feedback error:", e);
+      res.status(500).json({ message: "Failed to submit feedback" });
+    }
+  });
+
+  app.get("/api/admin/feedback", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const fb = await storage.getFeedback();
+      res.json(fb);
+    } catch (e) {
+      res.status(500).json({ message: "Failed to load feedback" });
+    }
+  });
+
+  app.get("/api/admin/feedback/count", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const count = await storage.getNewFeedbackCount();
+      res.json({ count });
+    } catch (e) {
+      res.status(500).json({ count: 0 });
+    }
+  });
+
+  app.patch("/api/admin/feedback/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, adminNote } = req.body;
+      await storage.updateFeedbackStatus(id, status, adminNote);
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ message: "Failed to update feedback" });
+    }
+  });
+
   return httpServer;
 }

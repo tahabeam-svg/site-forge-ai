@@ -57,6 +57,13 @@ import {
   Network,
   UserX,
   UserCheck,
+  MessageSquarePlus,
+  Inbox,
+  CheckCheck,
+  Clock,
+  Bug,
+  Lightbulb,
+  HelpCircle,
 } from "lucide-react";
 
 interface AdminStats { totalUsers: number; totalProjects: number; publishedProjects: number; }
@@ -70,8 +77,9 @@ interface Promotion { id: string; name: string; nameAr: string; discountPercent:
 interface FraudAccount { id: string; email: string; plan: string; is_suspended: boolean; created_at: string; last_login_ip: string | null; }
 interface SuspiciousIp { ip: string; account_count: number; accounts: FraudAccount[]; }
 interface FraudData { suspiciousIps: SuspiciousIp[]; recentFreeUsers: (FraudAccount & { registration_ip: string | null; project_count: number })[]; }
+interface UserFeedbackItem { id: number; userId: string | null; userName: string | null; userEmail: string | null; type: string; message: string; page: string | null; status: string; adminNote: string | null; createdAt: string; }
 
-type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot" | "fraud";
+type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot" | "fraud" | "feedback";
 
 export default function AdminPage() {
   const { language, logout, user } = useAuth();
@@ -122,6 +130,16 @@ export default function AdminPage() {
     enabled: activeSection === "fraud" && !statsError,
     staleTime: 30000,
   });
+  const { data: feedbackItems = [], isLoading: feedbackLoading, refetch: refetchFeedback } = useQuery<UserFeedbackItem[]>({
+    queryKey: ["/api/admin/feedback"],
+    enabled: activeSection === "feedback" && !statsError,
+  });
+  const { data: feedbackCountData } = useQuery<{ count: number }>({
+    queryKey: ["/api/admin/feedback/count"],
+    enabled: !statsError,
+    refetchInterval: 60000,
+  });
+  const newFeedbackCount = feedbackCountData?.count ?? 0;
 
   useEffect(() => {
     if (pricingData) {
@@ -241,6 +259,7 @@ export default function AdminPage() {
     { key: "gateway", icon: CreditCard, label: "Gateway", labelAr: "بوابة الدفع" },
     { key: "chatbot", icon: Bot, label: "Chatbot AI", labelAr: "الشاتبوت الذكي" },
     { key: "fraud", icon: AlertTriangle, label: "Anti-Fraud", labelAr: "مكافحة الاحتيال" },
+    { key: "feedback", icon: MessageSquarePlus, label: "Feedback", labelAr: "بلاغات المستخدمين" },
   ];
 
   const statusLabel = (s: string) => lang === "ar" ? ({ draft: "مسودة", generating: "قيد الإنشاء", generated: "مُنشأ", published: "منشور", error: "خطأ" }[s] || s) : s;
@@ -305,9 +324,14 @@ export default function AdminPage() {
                 }`}
                 data-testid={`nav-admin-${item.key}`}
               >
-                <item.icon className="w-4 h-4" />
-                {lang === "ar" ? item.labelAr : item.label}
-                {activeSection === item.key && <Chevron className="w-3 h-3 ms-auto" />}
+                <item.icon className="w-4 h-4 shrink-0" />
+                <span className="flex-1 text-start">{lang === "ar" ? item.labelAr : item.label}</span>
+                {item.key === "feedback" && newFeedbackCount > 0 && (
+                  <span className="ms-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">
+                    {newFeedbackCount}
+                  </span>
+                )}
+                {activeSection === item.key && item.key !== "feedback" && <Chevron className="w-3 h-3 ms-auto" />}
               </button>
             ))}
           </nav>
@@ -1500,6 +1524,165 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
         </Card>
       )}
 
+      {/* ─── Feedback Section ─── */}
+      {activeSection === "feedback" && (
+        <FeedbackAdminSection
+          items={feedbackItems}
+          loading={feedbackLoading}
+          lang={lang}
+          onRefresh={() => { refetchFeedback(); queryClient.invalidateQueries({ queryKey: ["/api/admin/feedback/count"] }); }}
+        />
+      )}
+
+    </div>
+  );
+}
+
+function FeedbackAdminSection({ items, loading, lang, onRefresh }: {
+  items: UserFeedbackItem[];
+  loading: boolean;
+  lang: string;
+  onRefresh: () => void;
+}) {
+  const { toast } = useToast();
+  const [noteMap, setNoteMap] = useState<Record<number, string>>({});
+  const isRTL = lang === "ar";
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, status, adminNote }: { id: number; status: string; adminNote?: string }) =>
+      apiRequest("PATCH", `/api/admin/feedback/${id}`, { status, adminNote }),
+    onSuccess: () => {
+      toast({ title: isRTL ? "تم التحديث ✅" : "Updated ✅" });
+      onRefresh();
+    },
+  });
+
+  const typeConfig: Record<string, { label: string; labelAr: string; color: string; bg: string; icon: any }> = {
+    bug: { label: "Bug", labelAr: "مشكلة", color: "text-red-400", bg: "bg-red-500/20", icon: Bug },
+    suggestion: { label: "Idea", labelAr: "اقتراح", color: "text-amber-400", bg: "bg-amber-500/20", icon: Lightbulb },
+    question: { label: "Question", labelAr: "سؤال", color: "text-blue-400", bg: "bg-blue-500/20", icon: HelpCircle },
+    praise: { label: "Praise", labelAr: "إطراء", color: "text-emerald-400", bg: "bg-emerald-500/20", icon: ThumbsUp },
+  };
+
+  const statusConfig: Record<string, { label: string; labelAr: string; color: string }> = {
+    new: { label: "New", labelAr: "جديد", color: "text-blue-400" },
+    read: { label: "Read", labelAr: "مقروء", color: "text-zinc-400" },
+    resolved: { label: "Resolved", labelAr: "محلول", color: "text-emerald-400" },
+  };
+
+  const newCount = items.filter(i => i.status === "new").length;
+  const readCount = items.filter(i => i.status === "read").length;
+  const resolvedCount = items.filter(i => i.status === "resolved").length;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { label: isRTL ? "جديدة" : "New", count: newCount, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", icon: Inbox },
+          { label: isRTL ? "مقروءة" : "Read", count: readCount, color: "text-zinc-300", bg: "bg-zinc-700/30 border-zinc-600/20", icon: Clock },
+          { label: isRTL ? "محلولة" : "Resolved", count: resolvedCount, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", icon: CheckCheck },
+        ].map(({ label, count, color, bg, icon: Icon }) => (
+          <Card key={label} className={`${bg} border p-4 text-center bg-zinc-900`}>
+            <Icon className={`w-5 h-5 ${color} mx-auto mb-1`} />
+            <p className={`text-2xl font-bold ${color}`}>{count}</p>
+            <p className="text-zinc-500 text-xs mt-0.5">{label}</p>
+          </Card>
+        ))}
+      </div>
+
+      <Card className="bg-zinc-900 border-zinc-800">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <MessageSquarePlus className="w-4 h-4 text-violet-400" />
+            <h3 className="font-semibold text-white text-sm">
+              {isRTL ? "بلاغات وملاحظات المستخدمين" : "User Feedback & Reports"}
+            </h3>
+            {newCount > 0 && (
+              <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{newCount}</span>
+            )}
+          </div>
+          <Button variant="ghost" size="sm" onClick={onRefresh} className="text-zinc-400 hover:text-white h-7 px-2">
+            <RefreshCw className="w-3.5 h-3.5" />
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin text-zinc-500 mx-auto" /></div>
+        ) : items.length === 0 ? (
+          <div className="p-12 text-center">
+            <MessageSquarePlus className="w-10 h-10 text-zinc-700 mx-auto mb-3" />
+            <p className="text-zinc-500 text-sm">{isRTL ? "لا يوجد بلاغات بعد" : "No feedback yet"}</p>
+          </div>
+        ) : (
+          <ScrollArea className="h-[600px]">
+            <div className="divide-y divide-zinc-800">
+              {items.map((item) => {
+                const tc = typeConfig[item.type] || typeConfig.bug;
+                const sc = statusConfig[item.status] || statusConfig.new;
+                const TypeIcon = tc.icon;
+                const note = noteMap[item.id] ?? (item.adminNote || "");
+                return (
+                  <div key={item.id} className={`p-4 space-y-3 ${item.status === "new" ? "bg-blue-500/5 border-s-2 border-blue-500" : ""}`}>
+                    <div className="flex items-start gap-3">
+                      <div className={`w-8 h-8 rounded-full ${tc.bg} flex items-center justify-center shrink-0 mt-0.5`}>
+                        <TypeIcon className={`w-4 h-4 ${tc.color}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${tc.bg} ${tc.color}`}>
+                            {isRTL ? tc.labelAr : tc.label}
+                          </span>
+                          <span className={`text-[11px] font-medium ${sc.color}`}>
+                            {isRTL ? sc.labelAr : sc.label}
+                          </span>
+                          {item.page && (
+                            <span className="text-[11px] text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded-full">{item.page}</span>
+                          )}
+                          <span className="text-[11px] text-zinc-600 ms-auto">
+                            {new Date(item.createdAt).toLocaleDateString(isRTL ? "ar-SA" : "en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-zinc-400">
+                          {item.userName && <span className="font-medium text-zinc-300">{item.userName}</span>}
+                          {item.userEmail && <span className="text-zinc-500" dir="ltr"> · {item.userEmail}</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-zinc-800/50 rounded-xl p-3 text-sm text-zinc-200 leading-relaxed" dir={isRTL ? "rtl" : "ltr"}>
+                      {item.message}
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="text"
+                        value={note}
+                        onChange={(e) => setNoteMap(prev => ({ ...prev, [item.id]: e.target.value }))}
+                        placeholder={isRTL ? "ملاحظة داخلية (اختياري)..." : "Internal note (optional)..."}
+                        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-200 placeholder-zinc-600 outline-none focus:border-zinc-500 transition-colors"
+                        dir={isRTL ? "rtl" : "ltr"}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {(["new", "read", "resolved"] as const).map((s) => (
+                        <Button
+                          key={s}
+                          size="sm"
+                          variant={item.status === s ? "secondary" : "ghost"}
+                          className={`h-7 text-xs px-3 ${item.status === s ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+                          disabled={updateMutation.isPending}
+                          onClick={() => updateMutation.mutate({ id: item.id, status: s, adminNote: note })}
+                          data-testid={`button-feedback-${s}-${item.id}`}
+                        >
+                          {s === "new" ? (isRTL ? "جديد" : "Mark New") : s === "read" ? (isRTL ? "مقروء" : "Mark Read") : (isRTL ? "محلول ✓" : "Resolved ✓")}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        )}
+      </Card>
     </div>
   );
 }

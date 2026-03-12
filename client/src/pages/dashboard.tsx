@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/dashboard-layout";
+import FeedbackButton from "@/components/FeedbackButton";
 import {
   Plus,
   Eye,
@@ -699,6 +700,7 @@ export default function DashboardPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <FeedbackButton lang={lang} page="dashboard" />
     </DashboardLayout>
   );
 }

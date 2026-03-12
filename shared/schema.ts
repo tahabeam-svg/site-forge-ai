@@ -167,12 +167,26 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
+export const userFeedback = pgTable("user_feedback", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id"),
+  userName: text("user_name"),
+  userEmail: text("user_email"),
+  type: text("type").notNull().default("bug"), // bug | suggestion | question | praise
+  message: text("message").notNull(),
+  page: text("page"), // which page/feature the feedback is about
+  status: text("status").notNull().default("new"), // new | read | resolved
+  adminNote: text("admin_note"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
 // Insert schemas
 export const insertVisitorQuestionSchema = createInsertSchema(visitorQuestions).omit({ id: true, createdAt: true });
 export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({ id: true, createdAt: true });
 export const insertLeadSchema = createInsertSchema(leads).omit({ id: true, createdAt: true });
 export const insertChatbotMessageSchema = createInsertSchema(chatbotMessages).omit({ id: true, createdAt: true });
 export const insertChatbotConversationSchema = createInsertSchema(chatbotConversations).omit({ id: true, createdAt: true });
+export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({ id: true, createdAt: true, status: true, adminNote: true });
 
 // Types
 export type VisitorQuestion = typeof visitorQuestions.$inferSelect;
@@ -181,6 +195,8 @@ export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
 export type ChatbotConversation = typeof chatbotConversations.$inferSelect;
 export type ChatbotMessage = typeof chatbotMessages.$inferSelect;
 export type Lead = typeof leads.$inferSelect;
+export type UserFeedback = typeof userFeedback.$inferSelect;
+export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
 export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
 export type InsertLead = z.infer<typeof insertLeadSchema>;
 

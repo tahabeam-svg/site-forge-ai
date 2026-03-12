@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge } from "@shared/schema";
+import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback } from "@shared/schema";
 import { eq, desc, sql, count, like, ilike } from "drizzle-orm";
 
 export interface IStorage {
@@ -51,6 +51,12 @@ export interface IStorage {
   deleteAutoLearned(id: number): Promise<void>;
   getLeads(): Promise<Lead[]>;
   createLead(lead: InsertLead): Promise<Lead>;
+
+  // Feedback
+  getFeedback(): Promise<UserFeedback[]>;
+  createFeedback(feedback: InsertUserFeedback): Promise<UserFeedback>;
+  updateFeedbackStatus(id: number, status: string, adminNote?: string): Promise<void>;
+  getNewFeedbackCount(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -255,6 +261,26 @@ export class DatabaseStorage implements IStorage {
   async createLead(lead: InsertLead): Promise<Lead> {
     const [result] = await db.insert(leads).values(lead).returning();
     return result;
+  }
+
+  async getFeedback(): Promise<UserFeedback[]> {
+    return db.select().from(userFeedback).orderBy(desc(userFeedback.createdAt));
+  }
+
+  async createFeedback(feedback: InsertUserFeedback): Promise<UserFeedback> {
+    const [result] = await db.insert(userFeedback).values(feedback).returning();
+    return result;
+  }
+
+  async updateFeedbackStatus(id: number, status: string, adminNote?: string): Promise<void> {
+    const updateData: any = { status };
+    if (adminNote !== undefined) updateData.adminNote = adminNote;
+    await db.update(userFeedback).set(updateData).where(eq(userFeedback.id, id));
+  }
+
+  async getNewFeedbackCount(): Promise<number> {
+    const [r] = await db.select({ count: count() }).from(userFeedback).where(eq(userFeedback.status, "new"));
+    return r?.count ?? 0;
   }
 }
 

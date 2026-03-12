@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import FeedbackButton from "@/components/FeedbackButton";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -1605,6 +1606,7 @@ ${project.generatedHtml}
           })}
         </div>
       )}
+      <FeedbackButton lang={lang} page="editor" />
     </div>
     </TooltipProvider>
   );
