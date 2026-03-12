@@ -887,7 +887,8 @@ export async function registerRoutes(
       const result: Record<string, string> = {};
       settings.forEach((s) => {
         const key = s.key.replace("paymob_", "");
-        result[key] = s.value.replace(/./g, (c, i) => (i < 4 ? c : "*"));
+        const v = s.value;
+        result[key] = v.length <= 4 ? v : v.slice(0, 4) + "*".repeat(Math.min(v.length - 4, 20));
       });
       res.json(result);
     } catch (err) {
@@ -1299,7 +1300,7 @@ For Netlify/Vercel:
   });
 
   // ─── Admin Chatbot Routes ────────────────────────────────────────────────────
-  app.get("/api/admin/chatbot/stats", isAuthenticated, async (req: any, res) => {
+  app.get("/api/admin/chatbot/stats", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const stats = await getChatbotStats();
       res.json(stats);
@@ -1308,18 +1309,26 @@ For Netlify/Vercel:
     }
   });
 
-  app.get("/api/admin/chatbot/questions", isAuthenticated, async (req: any, res) => {
-    const limit = parseInt(req.query.limit as string) || 50;
-    const questions = await storage.getVisitorQuestions(limit);
-    res.json(questions);
+  app.get("/api/admin/chatbot/questions", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const questions = await storage.getVisitorQuestions(limit);
+      res.json(questions);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
-  app.get("/api/admin/chatbot/knowledge-base", isAuthenticated, async (req: any, res) => {
-    const entries = await storage.getKnowledgeBase();
-    res.json(entries);
+  app.get("/api/admin/chatbot/knowledge-base", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const entries = await storage.getKnowledgeBase();
+      res.json(entries);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
-  app.post("/api/admin/chatbot/knowledge-base", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/chatbot/knowledge-base", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const entry = await storage.createKnowledgeEntry(req.body);
       res.json(entry);
@@ -1328,7 +1337,7 @@ For Netlify/Vercel:
     }
   });
 
-  app.patch("/api/admin/chatbot/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
+  app.patch("/api/admin/chatbot/knowledge-base/:id", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const entry = await storage.updateKnowledgeEntry(parseInt(req.params.id), req.body);
       res.json(entry);
@@ -1337,27 +1346,43 @@ For Netlify/Vercel:
     }
   });
 
-  app.delete("/api/admin/chatbot/knowledge-base/:id", isAuthenticated, async (req: any, res) => {
-    await storage.deleteKnowledgeEntry(parseInt(req.params.id));
-    res.json({ ok: true });
+  app.delete("/api/admin/chatbot/knowledge-base/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      await storage.deleteKnowledgeEntry(parseInt(req.params.id));
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
-  app.get("/api/admin/chatbot/auto-learned", isAuthenticated, async (req: any, res) => {
-    const items = await storage.getAutoLearnedKnowledge();
-    res.json(items);
+  app.get("/api/admin/chatbot/auto-learned", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const items = await storage.getAutoLearnedKnowledge();
+      res.json(items);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
-  app.post("/api/admin/chatbot/auto-learned/:id/approve", isAuthenticated, async (req: any, res) => {
-    await storage.approveAutoLearned(parseInt(req.params.id));
-    res.json({ ok: true });
+  app.post("/api/admin/chatbot/auto-learned/:id/approve", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      await storage.approveAutoLearned(parseInt(req.params.id));
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
-  app.get("/api/admin/chatbot/leads", isAuthenticated, async (req: any, res) => {
-    const leads = await storage.getLeads();
-    res.json(leads);
+  app.get("/api/admin/chatbot/leads", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const leads = await storage.getLeads();
+      res.json(leads);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
   });
 
-  app.post("/api/admin/chatbot/retrain", isAuthenticated, async (req: any, res) => {
+  app.post("/api/admin/chatbot/retrain", isAuthenticated, isAdmin, async (req: any, res) => {
     res.json({ ok: true, message: "Self-improvement cycle started" });
     runSelfImprovementCycle().catch(console.error);
   });
