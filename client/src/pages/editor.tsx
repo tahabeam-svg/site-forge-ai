@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
@@ -499,6 +500,7 @@ ${project.generatedHtml}
   const suggestedCmds = lang === "ar" ? SUGGESTED_COMMANDS_AR : SUGGESTED_COMMANDS_EN;
 
   return (
+    <TooltipProvider delayDuration={400}>
     <div className="flex flex-col bg-background overflow-hidden" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif", height: '100dvh' }}>
       <input
         ref={fileInputRef}
@@ -557,9 +559,14 @@ ${project.generatedHtml}
       {/* ─── Desktop Header ─── */}
       <header className="hidden md:flex items-center justify-between gap-3 px-4 py-2 border-b bg-background shrink-0">
         <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate("/dashboard")} data-testid="button-back-desktop">
-            {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0 hover:bg-emerald-50 dark:hover:bg-emerald-950/30" onClick={() => navigate("/dashboard")} data-testid="button-back-desktop">
+                {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{lang === "ar" ? "العودة إلى لوحة التحكم" : "Back to Dashboard"}</TooltipContent>
+          </Tooltip>
           <Separator orientation="vertical" className="h-6" />
           <div className="min-w-0">
             <h1 className="text-sm font-semibold truncate" data-testid="text-project-name-desktop">{project.name}</h1>
@@ -567,39 +574,58 @@ ${project.generatedHtml}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-muted rounded-md p-0.5">
+          {/* Viewport Switcher */}
+          <div className="flex items-center gap-0.5 bg-muted rounded-lg p-1 border">
             {[
-              { size: "desktop" as const, icon: Monitor },
-              { size: "tablet" as const, icon: Tablet },
-              { size: "mobile" as const, icon: Smartphone },
-            ].map(({ size, icon: Icon }) => (
-              <Button
-                key={size}
-                variant={viewport === size ? "secondary" : "ghost"}
-                size="icon"
-                onClick={() => setViewport(size)}
-                data-testid={`button-viewport-${size}`}
-              >
-                <Icon className="w-4 h-4" />
-              </Button>
+              { size: "desktop" as const, icon: Monitor, labelAr: "سطح المكتب", labelEn: "Desktop", color: "text-blue-600" },
+              { size: "tablet" as const, icon: Tablet, labelAr: "جهاز لوحي", labelEn: "Tablet", color: "text-violet-600" },
+              { size: "mobile" as const, icon: Smartphone, labelAr: "جوال", labelEn: "Mobile", color: "text-emerald-600" },
+            ].map(({ size, icon: Icon, labelAr, labelEn, color }) => (
+              <Tooltip key={size}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant={viewport === size ? "secondary" : "ghost"}
+                    size="icon"
+                    className={`h-7 w-7 transition-all ${viewport === size ? `${color} bg-white dark:bg-zinc-800 shadow-sm` : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setViewport(size)}
+                    data-testid={`button-viewport-${size}`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{lang === "ar" ? labelAr : labelEn}</TooltipContent>
+              </Tooltip>
             ))}
           </div>
           {project.generatedHtml && (
             <>
-              <Button variant="outline" size="sm" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview">
-                <Eye className="w-4 h-4 me-1" />
-                {t("preview", lang)}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview" className="hover:border-emerald-400 hover:text-emerald-600">
+                    <Eye className="w-4 h-4 me-1" />
+                    {t("preview", lang)}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{lang === "ar" ? "معاينة الموقع في نافذة جديدة" : "Preview site in full screen"}</TooltipContent>
+              </Tooltip>
               {project.status !== "published" && (
-                <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} data-testid="button-publish-desktop">
-                  <Rocket className="w-4 h-4 me-1" />
-                  {t("publish", lang)}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-sm shadow-emerald-500/20" onClick={() => publishMutation.mutate()} disabled={publishMutation.isPending} data-testid="button-publish-desktop">
+                      {publishMutation.isPending ? <Loader2 className="w-4 h-4 me-1 animate-spin" /> : <Rocket className="w-4 h-4 me-1" />}
+                      {t("publish", lang)}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{lang === "ar" ? "نشر الموقع والحصول على رابط مباشر" : "Publish site and get a live URL"}</TooltipContent>
+                </Tooltip>
               )}
             </>
           )}
           {project.status === "published" && (
-            <Badge className="bg-emerald-500" data-testid="badge-published-desktop">{t("published", lang)}</Badge>
+            <Badge className="bg-emerald-500 shadow-sm shadow-emerald-500/30" data-testid="badge-published-desktop">
+              <span className="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-pulse inline-block" />
+              {t("published", lang)}
+            </Badge>
           )}
         </div>
       </header>
@@ -653,23 +679,43 @@ ${project.generatedHtml}
           ) : (
             <>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden min-h-0">
-              <TabsList className="hidden md:grid mx-3 mt-3 shrink-0 grid-cols-4">
-                <TabsTrigger value="chat" className="text-xs gap-1" data-testid="tab-chat">
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  {lang === "ar" ? "محادثة" : "Chat"}
-                </TabsTrigger>
-                <TabsTrigger value="sections" className="text-xs gap-1" data-testid="tab-sections">
-                  <Layout className="w-3.5 h-3.5" />
-                  {lang === "ar" ? "أقسام" : "Sections"}
-                </TabsTrigger>
-                <TabsTrigger value="media" className="text-xs gap-1" data-testid="tab-media">
-                  <Image className="w-3.5 h-3.5" />
-                  {lang === "ar" ? "وسائط" : "Media"}
-                </TabsTrigger>
-                <TabsTrigger value="style" className="text-xs gap-1" data-testid="tab-style">
-                  <Palette className="w-3.5 h-3.5" />
-                  {lang === "ar" ? "تنسيق" : "Style"}
-                </TabsTrigger>
+              <TabsList className="hidden md:grid mx-3 mt-3 shrink-0 grid-cols-4 h-auto p-1 gap-0.5">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger value="chat" className="text-xs gap-1 py-2 data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-chat">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      {lang === "ar" ? "محادثة" : "Chat"}
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{lang === "ar" ? "تعديل موقعك بالذكاء الاصطناعي" : "Edit your site with AI chat"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger value="sections" className="text-xs gap-1 py-2 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-sections">
+                      <Layout className="w-3.5 h-3.5" />
+                      {lang === "ar" ? "أقسام" : "Sections"}
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{lang === "ar" ? "إضافة وإدارة أقسام الموقع" : "Add and manage page sections"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger value="media" className="text-xs gap-1 py-2 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-media">
+                      <Image className="w-3.5 h-3.5" />
+                      {lang === "ar" ? "وسائط" : "Media"}
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{lang === "ar" ? "رفع صور وشعارات وفيديو" : "Upload images, logos & video"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger value="style" className="text-xs gap-1 py-2 data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-style">
+                      <Palette className="w-3.5 h-3.5" />
+                      {lang === "ar" ? "تنسيق" : "Style"}
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">{lang === "ar" ? "ألوان وخطوط وأنماط التصميم" : "Colors, fonts & design styles"}</TooltipContent>
+                </Tooltip>
               </TabsList>
 
               {/* Chat messages only — input is OUTSIDE Tabs below */}
@@ -833,16 +879,29 @@ ${project.generatedHtml}
 
               <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
                 <div className="mt-2 space-y-3">
+                  {/* Colored header banner */}
+                  <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800/40 px-3 py-2.5 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
+                      <Layout className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">{lang === "ar" ? "إدارة الأقسام" : "Manage Sections"}</p>
+                      <p className="text-[10px] text-emerald-600/70 dark:text-emerald-500/70">{lang === "ar" ? "أضف أو عدّل أقسام موقعك" : "Add or modify your page sections"}</p>
+                    </div>
+                  </div>
+
                   <div>
-                    <h3 className="text-sm font-semibold mb-2">
+                    <h3 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
                       {lang === "ar" ? "الأقسام الحالية" : "Current Sections"}
                     </h3>
                     {project.sections && Array.isArray(project.sections) ? (
                       <div className="space-y-1">
                         {(project.sections as string[]).map((s, i) => (
-                          <div key={i} className="text-sm px-3 py-2 rounded-lg bg-muted flex items-center justify-between group" data-testid={`text-section-${i}`}>
-                            <span>{s}</span>
-                            <span className="text-xs text-muted-foreground">{i + 1}</span>
+                          <div key={i} className="text-sm px-3 py-2 rounded-lg bg-muted flex items-center justify-between group border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors" data-testid={`text-section-${i}`}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600 flex items-center justify-center text-[10px] font-bold shrink-0">{i + 1}</div>
+                              <span className="text-sm">{s}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -856,124 +915,149 @@ ${project.generatedHtml}
                   <Separator />
 
                   <div>
-                    <h3 className="text-sm font-semibold mb-2">
+                    <h3 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
                       {lang === "ar" ? "إضافة قسم جديد" : "Add New Section"}
                     </h3>
                     <div className="grid grid-cols-1 gap-1.5">
                       {sectionTypes.map((section, i) => (
-                        <Button
-                          key={i}
-                          variant="outline"
-                          size="sm"
-                          className="justify-start text-xs h-9"
-                          onClick={() => editMutation.mutate(section.command)}
-                          disabled={editMutation.isPending}
-                          data-testid={`button-add-section-${i}`}
-                        >
-                          <Plus className="w-3.5 h-3.5 me-2 text-emerald-500" />
-                          {section.name}
-                        </Button>
+                        <Tooltip key={i}>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start text-xs h-9 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 hover:text-emerald-700 dark:hover:text-emerald-400 transition-all"
+                              onClick={() => editMutation.mutate(section.command)}
+                              disabled={editMutation.isPending}
+                              data-testid={`button-add-section-${i}`}
+                            >
+                              <Plus className="w-3.5 h-3.5 me-2 text-emerald-500 shrink-0" />
+                              {section.name}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="max-w-[200px] text-xs">{lang === "ar" ? "اضغط لإضافة هذا القسم تلقائياً" : "Click to add this section with AI"}</TooltipContent>
+                        </Tooltip>
                       ))}
                     </div>
                   </div>
 
                   <Separator />
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => generateMutation.mutate()}
-                    disabled={generateMutation.isPending}
-                    data-testid="button-regenerate"
-                  >
-                    {generateMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4 me-2" />
-                    )}
-                    {lang === "ar" ? "إعادة الإنشاء" : "Regenerate"}
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20 hover:text-violet-700"
+                        onClick={() => generateMutation.mutate()}
+                        disabled={generateMutation.isPending}
+                        data-testid="button-regenerate"
+                      >
+                        {generateMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 me-2 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-4 h-4 me-2 text-violet-500" />
+                        )}
+                        {lang === "ar" ? "إعادة الإنشاء بالذكاء الاصطناعي" : "Regenerate with AI"}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{lang === "ar" ? "إعادة إنشاء الموقع بالكامل بالذكاء الاصطناعي" : "Rebuild entire website from scratch with AI"}</TooltipContent>
+                  </Tooltip>
                 </div>
               </TabsContent>
 
               <TabsContent value="media" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
                 <div className="mt-2 space-y-4">
+                  {/* Colored header banner */}
+                  <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2.5 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
+                      <Image className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">{lang === "ar" ? "الصور والوسائط" : "Images & Media"}</p>
+                      <p className="text-[10px] text-amber-600/70 dark:text-amber-500/70">{lang === "ar" ? "ارفع شعارك وصورك الخاصة" : "Upload your logo and custom images"}</p>
+                    </div>
+                  </div>
+
                   <div>
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                      <Upload className="w-4 h-4" />
+                    <h3 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                      <Upload className="w-3 h-3" />
                       {lang === "ar" ? "رفع ملفات" : "Upload Files"}
                     </h3>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {lang === "ar"
-                        ? "ارفع صور وشعارات لاستخدامها في موقعك"
-                        : "Upload images and logos to use in your website"}
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="w-full h-24 border-dashed"
-                      onClick={handleFileUpload}
-                      disabled={uploadMutation.isPending}
-                      data-testid="button-upload"
-                    >
-                      {uploadMutation.isPending ? (
-                        <div className="text-center">
-                          <Loader2 className="w-6 h-6 mx-auto mb-1 animate-spin" />
-                          <span className="text-xs">{lang === "ar" ? "جاري الرفع..." : "Uploading..."}</span>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          <Upload className="w-6 h-6 mx-auto mb-1 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground">
-                            {lang === "ar" ? "اضغط لرفع صور (JPG, PNG, SVG)" : "Click to upload images (JPG, PNG, SVG)"}
-                          </span>
-                        </div>
-                      )}
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full h-24 border-2 border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-950/10 hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:border-amber-400 transition-all group"
+                          onClick={handleFileUpload}
+                          disabled={uploadMutation.isPending}
+                          data-testid="button-upload"
+                        >
+                          {uploadMutation.isPending ? (
+                            <div className="text-center">
+                              <Loader2 className="w-7 h-7 mx-auto mb-1.5 animate-spin text-amber-500" />
+                              <span className="text-xs text-amber-600">{lang === "ar" ? "جاري الرفع..." : "Uploading..."}</span>
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                                <Upload className="w-5 h-5 text-amber-500" />
+                              </div>
+                              <span className="text-xs text-amber-700 dark:text-amber-400 font-medium">
+                                {lang === "ar" ? "اضغط لرفع صور وشعارات" : "Click to upload images & logos"}
+                              </span>
+                              <span className="block text-[10px] text-muted-foreground mt-0.5">JPG, PNG, SVG, WebP</span>
+                            </div>
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">{lang === "ar" ? "ارفع صورك وشعاراتك لإضافتها للموقع تلقائياً" : "Upload images and logos to automatically add to your site"}</TooltipContent>
+                    </Tooltip>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                      <Video className="w-4 h-4" />
-                      {lang === "ar" ? "إضافة فيديو" : "Embed Video"}
+                    <h3 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                      <Video className="w-3 h-3" />
+                      {lang === "ar" ? "تضمين فيديو" : "Embed Video"}
                     </h3>
                     <p className="text-xs text-muted-foreground mb-2">
-                      {lang === "ar"
-                        ? "ألصق رابط يوتيوب أو فيميو"
-                        : "Paste a YouTube or Vimeo URL"}
+                      {lang === "ar" ? "ألصق رابط يوتيوب أو فيميو" : "Paste a YouTube or Vimeo URL"}
                     </p>
                     <div className="flex gap-2">
                       <Input
                         value={mediaUrl}
                         onChange={(e) => setMediaUrl(e.target.value)}
-                        placeholder={lang === "ar" ? "https://youtube.com/watch?v=..." : "https://youtube.com/watch?v=..."}
+                        placeholder="https://youtube.com/watch?v=..."
                         className="text-sm"
                         data-testid="input-media-url"
                       />
-                      <Button
-                        size="icon"
-                        onClick={handleMediaEmbed}
-                        disabled={!mediaUrl || editMutation.isPending}
-                        data-testid="button-embed-media"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            onClick={handleMediaEmbed}
+                            disabled={!mediaUrl || editMutation.isPending}
+                            className="bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shrink-0"
+                            data-testid="button-embed-media"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">{lang === "ar" ? "إضافة الفيديو إلى الموقع" : "Embed video into site"}</TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
 
                   <Separator />
 
                   <div>
-                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
-                      <Image className="w-4 h-4" />
-                      {lang === "ar" ? "صور احترافية" : "Stock Images"}
+                    <h3 className="text-xs font-semibold mb-2 text-muted-foreground uppercase tracking-wide flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" />
+                      {lang === "ar" ? "صور ذكية بالذكاء الاصطناعي" : "AI Smart Images"}
                     </h3>
                     <p className="text-xs text-muted-foreground mb-2">
-                      {lang === "ar"
-                        ? "اطلب من الذكاء الاصطناعي إضافة صور مناسبة"
-                        : "Ask AI to add relevant stock images"}
+                      {lang === "ar" ? "اطلب من الذكاء الاصطناعي إضافة صور مناسبة" : "Ask AI to add relevant stock images"}
                     </p>
                     <div className="grid grid-cols-2 gap-1.5">
                       {(lang === "ar"
@@ -984,12 +1068,12 @@ ${project.generatedHtml}
                           key={i}
                           variant="outline"
                           size="sm"
-                          className="text-xs h-8 px-2"
+                          className="text-xs h-9 px-2 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20 hover:text-amber-700 transition-all"
                           onClick={() => editMutation.mutate(cmd)}
                           disabled={editMutation.isPending}
                           data-testid={`button-stock-image-${i}`}
                         >
-                          <Image className="w-3 h-3 me-1" />
+                          <Image className="w-3 h-3 me-1 text-amber-500 shrink-0" />
                           <span className="truncate">{cmd}</span>
                         </Button>
                       ))}
@@ -1005,6 +1089,16 @@ ${project.generatedHtml}
                   onScroll={dismissStyleHint}
                 >
                 <div className="mt-2 space-y-4">
+                  {/* Colored header banner */}
+                  <div className="rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/20 border border-rose-200 dark:border-rose-800/40 px-3 py-2.5 flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-rose-500 flex items-center justify-center shrink-0">
+                      <Palette className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-rose-700 dark:text-rose-400">{lang === "ar" ? "التصميم والتنسيق" : "Design & Style"}</p>
+                      <p className="text-[10px] text-rose-600/70 dark:text-rose-500/70">{lang === "ar" ? "ألوان وخطوط وأنماط بصرية" : "Colors, fonts & visual themes"}</p>
+                    </div>
+                  </div>
                   {!!(project.colorPalette && typeof project.colorPalette === "object") && (
                     <div>
                       <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
@@ -1252,27 +1346,33 @@ ${project.generatedHtml}
             {/* ─── Chat Input: OUTSIDE Tabs, always at bottom ─── */}
             {activeTab === "chat" && (
               <div ref={chatInputAreaRef} className="shrink-0 px-4 pb-[68px] md:pb-3 pt-2 space-y-2 border-t border-border/50 bg-background">
-                <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                  {suggestedCmds.slice(0, 6).map((cmd, i) => (
-                    <Button
-                      key={i}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-7 px-2.5 shrink-0 whitespace-nowrap"
-                      onClick={() => {
-                        if (isTemplateRequest(cmd)) {
-                          setShowTemplateBrowser(true);
-                          requestAnimationFrame(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }));
-                        } else {
-                          setEditCommand(cmd);
-                        }
-                      }}
-                      data-testid={`button-suggestion-${i}`}
-                    >
-                      <Sparkles className="w-3 h-3 me-1 text-emerald-500" />
-                      {cmd}
-                    </Button>
-                  ))}
+                {/* Suggestions row with label */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground font-medium shrink-0 hidden sm:block">
+                    {lang === "ar" ? "اقتراحات:" : "Try:"}
+                  </span>
+                  <div className="flex gap-1.5 overflow-x-auto pb-0.5 flex-1" style={{ scrollbarWidth: "none" }}>
+                    {suggestedCmds.slice(0, 6).map((cmd, i) => (
+                      <Button
+                        key={i}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7 px-2.5 shrink-0 whitespace-nowrap hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/20 hover:text-violet-700 dark:hover:text-violet-400 transition-all"
+                        onClick={() => {
+                          if (isTemplateRequest(cmd)) {
+                            setShowTemplateBrowser(true);
+                            requestAnimationFrame(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }));
+                          } else {
+                            setEditCommand(cmd);
+                          }
+                        }}
+                        data-testid={`button-suggestion-${i}`}
+                      >
+                        <Sparkles className="w-3 h-3 me-1 text-violet-500" />
+                        {cmd}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
                 {limitReached && (
                   <div className="rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-950/40 dark:to-yellow-950/30 p-4 text-center space-y-2" data-testid="banner-limit-reached">
@@ -1316,21 +1416,25 @@ ${project.generatedHtml}
                   </div>
                 )}
                 <div className="flex gap-1.5 items-end">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-[60px] w-[52px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md shadow-violet-500/30 border-0 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                    onClick={() => chatFileInputRef.current?.click()}
-                    disabled={editMutation.isPending || chatUploadMutation.isPending || limitReached}
-                    title={lang === "ar" ? "ارفع شعار أو صورة" : "Upload logo or image"}
-                    data-testid="button-chat-attach"
-                  >
-                    {chatUploadMutation.isPending ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <ImagePlus className="w-5 h-5" />
-                    )}
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 h-[60px] w-[52px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md shadow-violet-500/30 border-0 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                        onClick={() => chatFileInputRef.current?.click()}
+                        disabled={editMutation.isPending || chatUploadMutation.isPending || limitReached}
+                        data-testid="button-chat-attach"
+                      >
+                        {chatUploadMutation.isPending ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <ImagePlus className="w-5 h-5" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{lang === "ar" ? "ارفع صورة أو شعار لإضافته للموقع" : "Upload an image or logo to add to your site"}</TooltipContent>
+                  </Tooltip>
                   <Textarea
                     value={editCommand}
                     onChange={(e) => setEditCommand(e.target.value)}
@@ -1348,22 +1452,27 @@ ${project.generatedHtml}
                     }}
                     rows={2}
                     disabled={limitReached}
-                    className="text-sm resize-none leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px] max-h-[100px] md:max-h-none"
+                    className="text-sm resize-none leading-relaxed disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px] max-h-[100px] md:max-h-none rounded-xl border-violet-200 dark:border-violet-800/40 focus-visible:ring-violet-400"
                     data-testid="input-edit-command"
                   />
-                  <Button
-                    size="icon"
-                    className="shrink-0 h-[60px] w-[52px] rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-                    onClick={handleSendWithImage}
-                    disabled={(!editCommand && !chatImageFile) || editMutation.isPending || chatUploadMutation.isPending || limitReached}
-                    data-testid="button-apply-edit"
-                  >
-                    {(editMutation.isPending || chatUploadMutation.isPending) ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Send className="w-5 h-5" />
-                    )}
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon"
+                        className="shrink-0 h-[60px] w-[52px] rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+                        onClick={handleSendWithImage}
+                        disabled={(!editCommand && !chatImageFile) || editMutation.isPending || chatUploadMutation.isPending || limitReached}
+                        data-testid="button-apply-edit"
+                      >
+                        {(editMutation.isPending || chatUploadMutation.isPending) ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <Send className="w-5 h-5" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">{lang === "ar" ? "إرسال الأمر للذكاء الاصطناعي (Enter)" : "Send command to AI (Enter)"}</TooltipContent>
+                  </Tooltip>
                 </div>
               </div>
             )}
@@ -1406,33 +1515,45 @@ ${project.generatedHtml}
 
       {/* ─── Mobile Bottom Navigation Bar ─── */}
       {project.generatedHtml && mobileView === "panel" && (
-        <div className="md:hidden fixed bottom-0 inset-x-0 bg-background border-t z-50 flex h-[60px]" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
+        <div className="md:hidden fixed bottom-0 inset-x-0 bg-background/95 backdrop-blur-md border-t z-50 flex h-[60px] shadow-lg" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
           {[
-            { value: "chat", icon: MessageSquare, labelAr: "محادثة", labelEn: "Chat" },
-            { value: "sections", icon: Layout, labelAr: "أقسام", labelEn: "Sections" },
-            { value: "media", icon: Image, labelAr: "وسائط", labelEn: "Media" },
-            { value: "style", icon: Palette, labelAr: "تنسيق", labelEn: "Style" },
-          ].map(({ value, icon: Icon, labelAr, labelEn }) => (
-            <button
-              key={value}
-              onClick={() => setActiveTab(value)}
-              className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors ${
-                activeTab === value
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-muted-foreground"
-              }`}
-              data-testid={`tab-mobile-${value}`}
-            >
-              <div className={`relative flex items-center justify-center w-10 h-6 rounded-full transition-colors ${
-                activeTab === value ? "bg-emerald-100 dark:bg-emerald-950/40" : ""
-              }`}>
-                <Icon className="w-5 h-5" />
-              </div>
-              <span className="text-[10px] font-medium">{lang === "ar" ? labelAr : labelEn}</span>
-            </button>
-          ))}
+            { value: "chat", icon: MessageSquare, labelAr: "محادثة", labelEn: "Chat",
+              activeColor: "text-violet-600 dark:text-violet-400", activeBg: "bg-violet-100 dark:bg-violet-950/50", activeDot: "bg-violet-500" },
+            { value: "sections", icon: Layout, labelAr: "أقسام", labelEn: "Sections",
+              activeColor: "text-emerald-600 dark:text-emerald-400", activeBg: "bg-emerald-100 dark:bg-emerald-950/50", activeDot: "bg-emerald-500" },
+            { value: "media", icon: Image, labelAr: "وسائط", labelEn: "Media",
+              activeColor: "text-amber-600 dark:text-amber-400", activeBg: "bg-amber-100 dark:bg-amber-950/50", activeDot: "bg-amber-500" },
+            { value: "style", icon: Palette, labelAr: "تنسيق", labelEn: "Style",
+              activeColor: "text-rose-600 dark:text-rose-400", activeBg: "bg-rose-100 dark:bg-rose-950/50", activeDot: "bg-rose-500" },
+          ].map(({ value, icon: Icon, labelAr, labelEn, activeColor, activeBg, activeDot }) => {
+            const isActive = activeTab === value;
+            return (
+              <button
+                key={value}
+                onClick={() => setActiveTab(value)}
+                className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-all relative ${
+                  isActive ? activeColor : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid={`tab-mobile-${value}`}
+              >
+                {/* Active top indicator line */}
+                {isActive && (
+                  <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-b-full ${activeDot}`} />
+                )}
+                <div className={`flex items-center justify-center w-10 h-7 rounded-xl transition-all ${
+                  isActive ? `${activeBg} scale-110` : ""
+                }`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className={`text-[10px] font-semibold transition-all ${isActive ? "opacity-100" : "opacity-60"}`}>
+                  {lang === "ar" ? labelAr : labelEn}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 }
