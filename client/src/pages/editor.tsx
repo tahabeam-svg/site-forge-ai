@@ -131,6 +131,17 @@ export default function EditorPage() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Prevent page body from scrolling on the editor (mobile fix)
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+      document.documentElement.style.overflow = "";
+    };
+  }, []);
+
   // One-time scroll hint for the style tab
   useEffect(() => {
     if (activeTab === "style") {
@@ -395,7 +406,7 @@ ${project.generatedHtml}
   const suggestedCmds = lang === "ar" ? SUGGESTED_COMMANDS_AR : SUGGESTED_COMMANDS_EN;
 
   return (
-    <div className="h-screen flex flex-col bg-background" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
+    <div className="flex flex-col bg-background overflow-hidden" style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif", height: '100dvh' }}>
       <input
         ref={fileInputRef}
         type="file"
