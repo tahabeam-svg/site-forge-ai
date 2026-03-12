@@ -99,8 +99,8 @@ export default function BillingPage() {
   const isYearly = billingCycle === "yearly";
   const discount = 0.8;
 
-  const proMonthly = 49;
-  const businessMonthly = 99;
+  const proMonthly = 99;
+  const businessMonthly = 199;
   const proYearly = Math.round(proMonthly * 12 * discount);
   const businessYearly = Math.round(businessMonthly * 12 * discount);
   const proYearlyPerMonth = Math.round(proYearly / 12);
@@ -116,8 +116,8 @@ export default function BillingPage() {
       icon: Zap,
       credits: 5,
       features: lang === "ar"
-        ? ["5 نقاط/شهرياً", "موقع واحد", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع"]
-        : ["5 credits/month", "1 website", "Basic AI generation", "Community support"],
+        ? ["موقع واحد", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع", "يتضمن شعار عربي ويب"]
+        : ["1 website", "Basic AI generation", "Community support", "ArabyWeb badge on site"],
     },
     {
       id: "pro",
@@ -130,8 +130,8 @@ export default function BillingPage() {
       icon: Crown,
       credits: 50,
       features: lang === "ar"
-        ? ["50 نقطة/شهرياً", "حتى 10 مواقع", "حتى 50 منشور تسويقي", "لوحة تحليلات متقدمة", "تعديل متقدم بالذكاء الاصطناعي"]
-        : ["50 credits/month", "Up to 10 websites", "Up to 50 marketing posts", "Analytics dashboard", "Advanced AI editing"],
+        ? ["10 مواقع", "تعديل متقدم بالذكاء الاصطناعي", "دعم فني على مدار 24 ساعة", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
+        : ["10 websites", "Advanced AI editing", "24/7 technical support", "Analytics dashboard", "No ArabyWeb badge"],
     },
     {
       id: "business",
@@ -144,8 +144,8 @@ export default function BillingPage() {
       icon: Building2,
       credits: 200,
       features: lang === "ar"
-        ? ["200 نقطة/شهرياً", "حتى 50 موقع", "حتى 100 منشور تسويقي", "قوالب حصرية ومتميزة", "تعاون الفريق"]
-        : ["200 credits/month", "Up to 50 websites", "Up to 100 marketing posts", "Premium templates", "Team collaboration"],
+        ? ["30 موقعاً", "تعديل متقدم بالذكاء الاصطناعي", "دعم فني مخصص 24/7", "قوالب حصرية وتعاون الفريق", "بدون شعار عربي ويب"]
+        : ["30 websites", "Advanced AI editing", "24/7 priority support", "Premium templates & team collaboration", "No ArabyWeb badge"],
     },
   ];
 

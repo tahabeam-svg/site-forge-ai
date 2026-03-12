@@ -131,14 +131,14 @@ async function getLivePricing(): Promise<PricingInfo> {
       storage.getSetting("credits_pro"),
       storage.getSetting("credits_business"),
     ]);
-    // prices stored in halalas (1 SAR = 100 halalas), e.g. 4900 = 49 SAR
-    const proPrice = proP ? Math.round(parseInt(proP) / 100) : 49;
-    const businessPrice = businessP ? Math.round(parseInt(businessP) / 100) : 99;
+    // prices stored in halalas (1 SAR = 100 halalas), e.g. 9900 = 99 SAR
+    const proPrice = proP ? Math.round(parseInt(proP) / 100) : 99;
+    const businessPrice = businessP ? Math.round(parseInt(businessP) / 100) : 199;
     const proCredits = proC ? parseInt(proC) : 50;
     const businessCredits = businessC ? parseInt(businessC) : 200;
     return { proPrice, businessPrice, proCredits, businessCredits };
   } catch {
-    return { proPrice: 49, businessPrice: 99, proCredits: 50, businessCredits: 200 };
+    return { proPrice: 99, businessPrice: 199, proCredits: 50, businessCredits: 200 };
   }
 }
 
@@ -177,9 +177,9 @@ CONSULTATION TRIGGER (very important):
 - One-click publishing
 - Custom domains, SEO optimization, e-commerce, contact forms
 - Plans:
-  * Free: 1 website, 5 AI credits, basic features — great for testing
-  * Pro: ${pricing.proPrice} SAR/month — ${pricing.proCredits} credits, custom domain, advanced editor, more sections
-  * Business: ${pricing.businessPrice} SAR/month — ${pricing.businessCredits} credits, priority support, unlimited pages, e-commerce, analytics
+  * Free: 1 website, basic AI generation, community support — great for testing (free forever)
+  * Pro: ${pricing.proPrice} SAR/month — 10 websites, advanced AI editor, 24/7 technical support, analytics dashboard
+  * Business: ${pricing.businessPrice} SAR/month — 30 websites, advanced AI editor, 24/7 priority support, premium templates, team collaboration
 
 【2. AI Marketing & Social Media Content】
 - AI generates ready-to-post social media content (Instagram, Twitter/X, TikTok, Snapchat, LinkedIn)

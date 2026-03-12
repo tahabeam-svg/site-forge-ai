@@ -698,9 +698,9 @@ export default function LandingPage() {
                     <p className="text-sm text-muted-foreground mb-4">{plan.desc}</p>
                     <div className="flex items-baseline justify-center gap-1">
                       <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.price !== "مجاناً" && <span className="text-muted-foreground">{t("perMonth", lang)}</span>}
+                      {plan.id !== "free" && <span className="text-muted-foreground">{t("perMonth", lang)}</span>}
                     </div>
-                    {plan.price !== "مجاناً" && (
+                    {plan.id !== "free" && (
                       <p className="text-[10px] text-muted-foreground">
                         {lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة" : "* Excl. VAT"}
                       </p>

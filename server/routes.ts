@@ -778,8 +778,8 @@ export async function registerRoutes(
       const businessCredits = await storage.getSetting("credits_business");
       const freeCredits = await storage.getSetting("credits_free");
       res.json({
-        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 50 },
-        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 200 },
+        pro: { price: proPrice ? parseInt(proPrice) : 9900, credits: proCredits ? parseInt(proCredits) : 50 },
+        business: { price: businessPrice ? parseInt(businessPrice) : 19900, credits: businessCredits ? parseInt(businessCredits) : 200 },
         free: { credits: freeCredits ? parseInt(freeCredits) : 5 },
       });
     } catch (err) {
@@ -842,8 +842,8 @@ export async function registerRoutes(
         return true;
       });
       res.json({
-        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 50 },
-        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 200 },
+        pro: { price: proPrice ? parseInt(proPrice) : 9900, credits: proCredits ? parseInt(proCredits) : 50 },
+        business: { price: businessPrice ? parseInt(businessPrice) : 19900, credits: businessCredits ? parseInt(businessCredits) : 200 },
         free: { credits: freeCredits ? parseInt(freeCredits) : 5 },
         promotions: activePromos,
       });

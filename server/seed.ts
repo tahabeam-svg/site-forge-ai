@@ -15,6 +15,23 @@ export async function seedDatabase() {
     console.error("Migration warning:", e.message);
   }
 
+  // Migrate pricing to new values: Pro 9900 halalas (99 SAR), Business 19900 halalas (199 SAR)
+  try {
+    await db.execute(sql`
+      INSERT INTO platform_settings (key, value) VALUES ('price_pro', '9900')
+      ON CONFLICT (key) DO UPDATE SET value = '9900'
+      WHERE platform_settings.value IN ('4900', '4500', '3900')
+    `);
+    await db.execute(sql`
+      INSERT INTO platform_settings (key, value) VALUES ('price_business', '19900')
+      ON CONFLICT (key) DO UPDATE SET value = '19900'
+      WHERE platform_settings.value IN ('9900', '8900', '7900')
+    `);
+    console.log("Migration: pricing updated to Pro=99 SAR, Business=199 SAR");
+  } catch (e: any) {
+    console.error("Pricing migration warning:", e.message);
+  }
+
   // Ensure session table exists (connect-pg-simple)
   try {
     await db.execute(sql`
