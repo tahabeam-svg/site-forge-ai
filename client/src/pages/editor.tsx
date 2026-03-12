@@ -567,13 +567,14 @@ ${project.generatedHtml}
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chat" className="flex-1 h-0 flex flex-col overflow-hidden mt-0 px-4 pb-3 pt-3 md:pt-0">
-                <ScrollArea className="flex-1 md:mt-3">
-                  <div className="space-y-4 pe-2">
+              <TabsContent value="chat" className="flex-1 h-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0">
+                {/* Messages — scrollable, fills all available space */}
+                <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-2">
+                  <div className="space-y-4">
                     {messages.map((msg) => (
                       <div
                         key={msg.id}
-                        className={`flex gap-2 ${msg.role === "user" ? "" : ""}`}
+                        className="flex gap-2"
                         data-testid={`chat-message-${msg.id}`}
                       >
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
@@ -630,9 +631,10 @@ ${project.generatedHtml}
                     )}
                     <div ref={chatEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
 
-                <div className="mt-2 space-y-2 shrink-0">
+                {/* Input area — always at bottom */}
+                <div className="shrink-0 px-4 pb-3 pt-2 space-y-2">
                   <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
                     {suggestedCmds.slice(0, 6).map((cmd, i) => (
                       <Button
