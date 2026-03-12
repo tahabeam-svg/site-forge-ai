@@ -99,7 +99,7 @@ async function searchKnowledgeBase(question: string, language: string): Promise<
         .limit(10);
       for (const r of results) {
         if (!r.isApproved) continue;
-        if (r.language !== language && r.language !== "both" && r.language !== "ar") continue;
+        if (r.language !== language && r.language !== "both") continue;
         const existing = candidateMap.get(r.id);
         if (existing) {
           existing.score++;
@@ -110,7 +110,7 @@ async function searchKnowledgeBase(question: string, language: string): Promise<
     }
     if (candidateMap.size === 0) return null;
     // Return the entry with highest keyword overlap score
-    const sorted = [...candidateMap.values()].sort((a, b) => b.score - a.score);
+    const sorted = Array.from(candidateMap.values()).sort((a, b) => b.score - a.score);
     return sorted[0].entry.answer;
   } catch (err: any) {
     console.error("searchKnowledgeBase error:", err?.message);

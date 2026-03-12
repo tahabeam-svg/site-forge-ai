@@ -12,8 +12,8 @@ import path from "path";
 import archiver from "archiver";
 import crypto from "crypto";
 import { db } from "./db";
-import { users } from "@shared/schema";
-import { eq, sql, and, gte, desc } from "drizzle-orm";
+import { users, subscriptions } from "@shared/schema";
+import { eq, sql, and, gte, desc, lt } from "drizzle-orm";
 
 const ENCRYPTION_KEY = crypto.createHash("sha256").update(process.env.SESSION_SECRET || "arabyweb-fallback-key").digest();
 const IV_LENGTH = 16;
@@ -68,10 +68,41 @@ const upload = multer({
 // Free plan: max user messages per project before upgrade wall
 const FREE_MSG_LIMIT = 8;
 
-// Helper: fetch user plan info in one place
+// Free plan: max projects a free user can create
+const FREE_PLAN_MAX_PROJECTS = 3;
+
+// ─── Chatbot Rate Limiter (IP-based, in-memory) ───────────────────────────────
+const chatbotRateMap = new Map<string, { count: number; resetAt: number }>();
+const CHATBOT_MAX_PER_HOUR = 40;
+function checkChatbotRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = chatbotRateMap.get(ip);
+  if (!entry || entry.resetAt < now) {
+    chatbotRateMap.set(ip, { count: 1, resetAt: now + 60 * 60 * 1000 });
+    return true;
+  }
+  if (entry.count >= CHATBOT_MAX_PER_HOUR) return false;
+  entry.count++;
+  return true;
+}
+
+// Helper: fetch user plan info in one place (with subscription expiry check)
 async function getUserPlanInfo(userId: string): Promise<{ isFreePlan: boolean; isUserAdmin: boolean }> {
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   const isUserAdmin = user?.isAdmin === true;
+
+  if (user?.plan && user.plan !== "free") {
+    const now = new Date();
+    const [activeSub] = await db.select().from(subscriptions)
+      .where(and(eq(subscriptions.userId, userId), eq(subscriptions.status, "active")))
+      .orderBy(desc(subscriptions.endDate))
+      .limit(1);
+    if (!activeSub || (activeSub.endDate && new Date(activeSub.endDate) < now)) {
+      await db.update(users).set({ plan: "free", updatedAt: new Date() }).where(eq(users.id, userId));
+      return { isFreePlan: true, isUserAdmin };
+    }
+  }
+
   const isFreePlan = !user?.plan || user.plan === "free";
   return { isFreePlan, isUserAdmin };
 }
@@ -179,6 +210,19 @@ export async function registerRoutes(
       const userId = req.user.id;
       const parsed = createProjectSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
+
+      const { isFreePlan, isUserAdmin } = await getUserPlanInfo(userId);
+      if (isFreePlan && !isUserAdmin) {
+        const userProjects = await storage.getProjectsByUser(userId);
+        if (userProjects.length >= FREE_PLAN_MAX_PROJECTS) {
+          return res.status(402).json({
+            message: "upgrade_required",
+            messageAr: `وصلت للحد الأقصى (${FREE_PLAN_MAX_PROJECTS} مشاريع) في الخطة المجانية. اشترك الآن لإنشاء مشاريع غير محدودة.`,
+            messageEn: `You've reached the free plan limit (${FREE_PLAN_MAX_PROJECTS} projects). Upgrade now for unlimited projects.`,
+          });
+        }
+      }
+
       const { name, description, templateId } = parsed.data;
       const project = await storage.createProject({
         userId,
@@ -242,6 +286,10 @@ export async function registerRoutes(
         status: "generated",
       });
 
+      if (!isFreePlan && !isUserAdmin) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
+      }
+
       res.json(updated);
     } catch (err: any) {
       console.error("Generation error:", err?.message || err);
@@ -292,6 +340,10 @@ export async function registerRoutes(
         sections: generated.sections,
         status: "generated",
       });
+
+      if (!isFreePlan2 && !isUserAdmin2) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+      }
 
       res.json(updated);
     } catch (err: any) {
@@ -845,8 +897,10 @@ export async function registerRoutes(
           endDate,
         });
         const planCredits: Record<string, number> = { pro: 50, business: 200 };
-        const newCredits = planCredits[sub.plan] || 5;
-        await db.update(users).set({ plan: sub.plan, credits: newCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
+        const addedCredits = planCredits[sub.plan] || 5;
+        const [existingUser] = await db.select({ credits: users.credits }).from(users).where(eq(users.id, sub.userId));
+        const totalCredits = (existingUser?.credits || 0) + addedCredits;
+        await db.update(users).set({ plan: sub.plan, credits: totalCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
       } else {
         await storage.updateSubscription(sub.id, {
           status: "failed",
@@ -1258,10 +1312,21 @@ For Netlify/Vercel:
   // ─── Chatbot Routes ─────────────────────────────────────────────────────────
 
   // Main chat endpoint (public — for landing page widget)
-  app.post("/api/chatbot/message", async (req, res) => {
+  app.post("/api/chatbot/message", async (req: any, res) => {
     try {
       const { message, sessionId, conversationId, history, pageLang } = req.body;
       if (!message || !sessionId) return res.status(400).json({ message: "message and sessionId required" });
+
+      const clientIp = (req.headers["x-forwarded-for"] as string || req.socket?.remoteAddress || "unknown").split(",")[0].trim();
+      if (!checkChatbotRateLimit(clientIp)) {
+        return res.status(429).json({
+          reply: pageLang === "en"
+            ? "Too many messages. Please wait a while before sending more."
+            : "لقد أرسلت رسائل كثيرة. يرجى الانتظار قليلاً.",
+          conversationId: conversationId || 0,
+          source: "rate_limit",
+        });
+      }
 
       const result = await processChat({ message, sessionId, conversationId, history, pageLang });
       res.json(result);

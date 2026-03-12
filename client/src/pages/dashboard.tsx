@@ -106,15 +106,19 @@ export default function DashboardPage() {
         description: newDesc,
         templateId: selectedTemplate?.id || undefined,
       });
-      const project = await res.json();
+      const data = await res.json();
+      if (res.status === 402) {
+        throw new Error(lang === "ar" ? (data.messageAr || data.message) : (data.messageEn || data.message));
+      }
+      if (!res.ok) throw new Error(data.message || "Failed to create project");
       if (selectedTemplate) {
-        await apiRequest("PUT", `/api/projects/${project.id}`, {
+        await apiRequest("PUT", `/api/projects/${data.id}`, {
           generatedHtml: selectedTemplate.previewHtml,
           generatedCss: selectedTemplate.previewCss || "",
           status: "generated",
         });
       }
-      return project;
+      return data;
     },
     onSuccess: (project: Project) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
