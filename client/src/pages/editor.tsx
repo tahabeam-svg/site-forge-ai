@@ -1317,18 +1317,18 @@ ${project.generatedHtml}
                 )}
                 <div className="flex gap-1.5 items-end">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="shrink-0 mb-0.5"
+                    className="shrink-0 h-[60px] w-[52px] rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white shadow-md shadow-violet-500/30 border-0 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                     onClick={() => chatFileInputRef.current?.click()}
                     disabled={editMutation.isPending || chatUploadMutation.isPending || limitReached}
                     title={lang === "ar" ? "ارفع شعار أو صورة" : "Upload logo or image"}
                     data-testid="button-chat-attach"
                   >
                     {chatUploadMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <ImagePlus className="w-4 h-4" />
+                      <ImagePlus className="w-5 h-5" />
                     )}
                   </Button>
                   <Textarea
@@ -1353,15 +1353,15 @@ ${project.generatedHtml}
                   />
                   <Button
                     size="icon"
-                    className="shrink-0 bg-gradient-to-r from-emerald-500 to-teal-600 mb-0.5"
+                    className="shrink-0 h-[60px] w-[52px] rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md shadow-emerald-500/30 transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                     onClick={handleSendWithImage}
                     disabled={(!editCommand && !chatImageFile) || editMutation.isPending || chatUploadMutation.isPending || limitReached}
                     data-testid="button-apply-edit"
                   >
                     {(editMutation.isPending || chatUploadMutation.isPending) ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
-                      <Send className="w-4 h-4" />
+                      <Send className="w-5 h-5" />
                     )}
                   </Button>
                 </div>
