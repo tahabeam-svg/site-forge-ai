@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft,
+  ArrowRight,
   Sparkles,
   Loader2,
   Eye,
@@ -518,7 +519,7 @@ ${project.generatedHtml}
       {/* ─── Mobile Header ─── */}
       <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12">
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => navigate("/dashboard")} data-testid="button-back">
-          <ArrowLeft className="w-4 h-4" />
+          {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
         </Button>
         <h1 className="text-sm font-semibold truncate flex-1" data-testid="text-project-name">{project.name}</h1>
         {project.generatedHtml && (
@@ -557,7 +558,7 @@ ${project.generatedHtml}
       <header className="hidden md:flex items-center justify-between gap-3 px-4 py-2 border-b bg-background shrink-0">
         <div className="flex items-center gap-3 min-w-0">
           <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate("/dashboard")} data-testid="button-back-desktop">
-            <ArrowLeft className="w-4 h-4" />
+            {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
           </Button>
           <Separator orientation="vertical" className="h-6" />
           <div className="min-w-0">

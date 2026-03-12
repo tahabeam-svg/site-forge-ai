@@ -71,7 +71,7 @@ const FREE_MSG_LIMIT = 8;
 // CSS fix injected into all generated websites to prevent horizontal overflow
 const OVERFLOW_FIX_CSS = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}</style>`;
 
-function injectFreePlanWatermark(html: string, language: string = "en"): string {
+function injectFreePlanWatermark(html: string): string {
   if (html.includes('id="aw-free-badge"')) {
     // Already has badge — still inject overflow fix if missing
     if (!html.includes('id="aw-overflow-fix"')) {
@@ -211,7 +211,7 @@ export async function registerRoutes(
       const isFreePlan = !user?.plan || user.plan === "free";
       const isAdmin = user?.email === "tahabeam@gmail.com" || (user as any)?.role === "admin";
       const finalHtml = (isFreePlan && !isAdmin)
-        ? injectFreePlanWatermark(generated.html, language)
+        ? injectFreePlanWatermark(generated.html)
         : removeFreePlanWatermark(generated.html);
 
       const freePlanNote = isFreePlan && !isAdmin
@@ -264,7 +264,7 @@ export async function registerRoutes(
       const isFreePlan2 = !user2?.plan || user2.plan === "free";
       const isAdmin2 = user2?.email === "tahabeam@gmail.com" || (user2 as any)?.role === "admin";
       const finalHtml2 = (isFreePlan2 && !isAdmin2)
-        ? injectFreePlanWatermark(generated.html, language)
+        ? injectFreePlanWatermark(generated.html)
         : removeFreePlanWatermark(generated.html);
 
       const freePlanNote2 = isFreePlan2 && !isAdmin2
@@ -341,7 +341,7 @@ export async function registerRoutes(
       // Maintain free-plan watermark in edited HTML
       let finalEditHtml = result.html;
       if (isFreePlanEdit && !isAdminEdit) {
-        finalEditHtml = injectFreePlanWatermark(finalEditHtml, lang);
+        finalEditHtml = injectFreePlanWatermark(finalEditHtml);
       } else {
         finalEditHtml = removeFreePlanWatermark(finalEditHtml);
       }
@@ -409,7 +409,19 @@ export async function registerRoutes(
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       const parsed = updateProjectSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
-      const updated = await storage.updateProject(project.id, parsed.data);
+      const data = { ...parsed.data };
+      // Apply/remove watermark if HTML is being updated (e.g. template applied via browser)
+      if (data.generatedHtml) {
+        const userPut = await storage.getUser(userId);
+        const isAdminPut = userPut?.email === "tahabeam@gmail.com" || (userPut as any)?.role === "admin";
+        const isFreePlanPut = !userPut?.plan || userPut.plan === "free";
+        if (isFreePlanPut && !isAdminPut) {
+          data.generatedHtml = injectFreePlanWatermark(data.generatedHtml);
+        } else {
+          data.generatedHtml = removeFreePlanWatermark(data.generatedHtml);
+        }
+      }
+      const updated = await storage.updateProject(project.id, data);
       res.json(updated);
     } catch (err) {
       res.status(500).json({ message: "Failed to update project" });
@@ -1041,8 +1053,12 @@ export async function registerRoutes(
       archive.pipe(res);
 
       const isFullDoc = project.generatedHtml!.trimStart().startsWith('<!DOCTYPE');
+      // Detect language from stored HTML: if it has Arabic text, use RTL; otherwise LTR
+      const hasArabicContent = /[\u0600-\u06FF]/.test(project.generatedHtml!);
+      const exportLang = hasArabicContent ? "ar" : "en";
+      const exportDir = hasArabicContent ? "rtl" : "ltr";
       const fullHtml = isFullDoc ? project.generatedHtml! : `<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="${exportLang}" dir="${exportDir}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
