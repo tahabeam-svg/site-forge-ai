@@ -350,8 +350,8 @@ export async function registerRoutes(
         await storage.updateProject(project.id, { status: "error" });
         return res.status(402).json({
           message: "insufficient_credits",
-          messageAr: "نفد رصيدك من الكريدت. يرجى شراء كريدت إضافي أو ترقية خطتك.",
-          messageEn: "Your credits are depleted. Please top up credits or upgrade your plan.",
+          messageAr: "نفد رصيد الذكاء لديك. يرجى شراء جلسات إضافية أو ترقية خطتك.",
+          messageEn: "Your AI credits are depleted. Please top up AI sessions or upgrade your plan.",
         });
       }
 
@@ -417,8 +417,8 @@ export async function registerRoutes(
       if (!isFreePlan2 && !isUserAdmin2 && userCreditsInst <= 0) {
         return res.status(402).json({
           message: "insufficient_credits",
-          messageAr: "نفد رصيدك من الكريدت. يرجى شراء كريدت إضافي أو ترقية خطتك.",
-          messageEn: "Your credits are depleted. Please top up credits or upgrade your plan.",
+          messageAr: "نفد رصيد الذكاء لديك. يرجى شراء جلسات إضافية أو ترقية خطتك.",
+          messageEn: "Your AI credits are depleted. Please top up AI sessions or upgrade your plan.",
         });
       }
 
@@ -513,16 +513,16 @@ export async function registerRoutes(
         if (userCreditsEdit <= 0) {
           const limitMsgs: Record<string, Record<string, string>> = {
             free: {
-              ar: `وصلت للحد المجاني (${editLimit} تعديلات) لهذا الموقع. اشحن رصيدك أو اشترك للحصول على تعديلات إضافية.`,
-              en: `You've used your ${editLimit} free edits for this website. Top up credits or upgrade to continue editing.`,
+              ar: `وصلت للحد المجاني (${editLimit} تعديلات) لهذا الموقع. اشحن رصيد الذكاء أو اشترك للحصول على جلسات إضافية.`,
+              en: `You've used your ${editLimit} free edits for this website. Top up AI sessions or upgrade to continue editing.`,
             },
             pro: {
-              ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطتك الاحترافية. كل تعديل إضافي يخصم كريديت واحد. اشحن رصيدك للمتابعة.`,
-              en: `You've used your ${editLimit} free edits on the Pro plan. Each extra edit costs 1 credit. Top up to continue.`,
+              ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطتك الاحترافية. كل تعديل إضافي يخصم جلسة ذكاء واحدة. اشحن رصيدك للمتابعة.`,
+              en: `You've used your ${editLimit} free edits on the Pro plan. Each extra edit costs 1 AI session. Top up to continue.`,
             },
             business: {
-              ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطة الأعمال. كل تعديل إضافي يخصم كريديت واحد. اشحن رصيدك للمتابعة.`,
-              en: `You've used your ${editLimit} free edits on the Business plan. Each extra edit costs 1 credit. Top up to continue.`,
+              ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطة الأعمال. كل تعديل إضافي يخصم جلسة ذكاء واحدة. اشحن رصيدك للمتابعة.`,
+              en: `You've used your ${editLimit} free edits on the Business plan. Each extra edit costs 1 AI session. Top up to continue.`,
             },
           };
           const msgs = limitMsgs[planNameEdit] || limitMsgs.free;
@@ -582,12 +582,12 @@ export async function registerRoutes(
       if (!isAdminEdit) {
         if (creditDeducted) {
           remainingNote = lang === "ar"
-            ? `\n\n💳 تم خصم كريديت واحد لهذا التعديل الإضافي.`
-            : `\n\n💳 1 credit deducted for this extra edit.`;
+            ? `\n\n🧠 تم خصم جلسة ذكاء واحدة لهذا التعديل الإضافي.`
+            : `\n\n🧠 1 AI session deducted for this extra edit.`;
         } else if (remainingFree === 0) {
           remainingNote = lang === "ar"
-            ? `\n\n⚠️ انتهت تعديلاتك المجانية لهذا الموقع (${editLimit}/${editLimit}). التعديلات الإضافية تخصم كريديت واحد.`
-            : `\n\n⚠️ You've used all ${editLimit} free edits for this site. Extra edits will cost 1 credit each.`;
+            ? `\n\n⚠️ انتهت تعديلاتك المجانية لهذا الموقع (${editLimit}/${editLimit}). التعديلات الإضافية تخصم جلسة ذكاء واحدة.`
+            : `\n\n⚠️ You've used all ${editLimit} free edits for this site. Extra edits will cost 1 AI session each.`;
         } else if (remainingFree <= 2) {
           remainingNote = lang === "ar"
             ? `\n\n⚡ تبقى **${remainingFree}** تعديل${remainingFree === 1 ? "" : "ات"} مجانية لهذا الموقع.`
@@ -1079,7 +1079,7 @@ export async function registerRoutes(
       if (!configured) return res.status(400).json({ message: "Payment gateway not configured" });
 
       const parsed = buyCreditSchema.safeParse(req.body);
-      if (!parsed.success) return res.status(400).json({ message: "كمية الكريديت يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
+      if (!parsed.success) return res.status(400).json({ message: "كمية جلسات الذكاء يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
 
       const { credits } = parsed.data;
       // 1 credit = 1 SAR + 15% VAT = 1.15 SAR = 115 halalas

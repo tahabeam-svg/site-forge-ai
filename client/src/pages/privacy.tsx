@@ -80,7 +80,7 @@ export default function PrivacyPage() {
               <h3 className="text-lg font-medium mt-4 mb-2">بيانات الاستخدام</h3>
               <ul className="list-disc ps-6 space-y-1">
                 <li>المواقع التي تنشئها ومحتواها</li>
-                <li>سجل استخدام الرصيد (الكريدت)</li>
+                <li>سجل استخدام رصيد الذكاء</li>
                 <li>تفاعلاتك مع المنصة</li>
               </ul>
               <h3 className="text-lg font-medium mt-4 mb-2">بيانات تقنية</h3>

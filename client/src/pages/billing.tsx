@@ -19,7 +19,7 @@ import {
   Building2,
   Loader2,
   ExternalLink,
-  Coins,
+  BrainCircuit,
   ToggleLeft,
   ToggleRight,
   Receipt,
@@ -208,7 +208,7 @@ export default function BillingPage() {
             {lang === "ar" ? "الفوترة والاشتراك" : "Billing & Subscription"}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {lang === "ar" ? "إدارة خطتك ونقاطك" : "Manage your plan and credits"}
+            {lang === "ar" ? "إدارة خطتك ورصيد الذكاء" : "Manage your plan and AI credits"}
           </p>
         </div>
 
@@ -233,17 +233,17 @@ export default function BillingPage() {
 
           <Card className="p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                <Coins className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <BrainCircuit className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="font-semibold" data-testid="text-credits-balance">
-                  {lang === "ar" ? "رصيد النقاط" : "Credits Balance"}
+                  {lang === "ar" ? "رصيد الذكاء" : "AI Credits"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {lang === "ar"
-                    ? `${subscription?.credits ?? 5} نقطة متاحة`
-                    : `${subscription?.credits ?? 5} credits available`}
+                    ? `${subscription?.credits ?? 5} جلسة ذكاء متاحة`
+                    : `${subscription?.credits ?? 5} AI sessions available`}
                 </p>
               </div>
             </div>
@@ -255,21 +255,26 @@ export default function BillingPage() {
 
         <div className="p-4 rounded-lg bg-muted/50 border">
           <h3 className="text-sm font-medium mb-2 flex items-center gap-2">
-            <Coins className="w-4 h-4 text-amber-500" />
-            {lang === "ar" ? "كيف تعمل النقاط؟" : "How do credits work?"}
+            <BrainCircuit className="w-4 h-4 text-violet-500" />
+            {lang === "ar" ? "كيف يعمل رصيد الذكاء؟" : "How do AI credits work?"}
           </h3>
+          <p className="text-xs text-muted-foreground mb-3">
+            {lang === "ar"
+              ? "كل تفاعل مع الذكاء الاصطناعي يُستهلك جلسة ذكاء واحدة — سواء إنشاء موقع، تعديل ذكي، أو توليد محتوى تسويقي."
+              : "Every AI interaction consumes one AI session — whether generating a site, AI editing, or creating marketing content."}
+          </p>
           <div className="grid sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "إنشاء موقع" : "Generate website"}</p>
-              <p>{lang === "ar" ? "1 نقطة لكل إنشاء" : "1 credit per generation"}</p>
+              <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
             </div>
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "تعديل بالذكاء الاصطناعي" : "AI editing"}</p>
-              <p>{lang === "ar" ? "1 نقطة لكل تعديل" : "1 credit per edit"}</p>
+              <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
             </div>
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "تسويق بالذكاء الاصطناعي" : "AI marketing"}</p>
-              <p>{lang === "ar" ? "1 نقطة لكل منشور" : "1 credit per post"}</p>
+              <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
             </div>
           </div>
         </div>
@@ -282,10 +287,10 @@ export default function BillingPage() {
             </div>
             <div>
               <h3 className="font-semibold text-base">
-                {lang === "ar" ? "شراء نقاط إضافية" : "Buy Extra Credits"}
+                {lang === "ar" ? "شراء جلسات ذكاء إضافية" : "Buy Extra AI Sessions"}
               </h3>
               <p className="text-xs text-muted-foreground">
-                {lang === "ar" ? "1 نقطة = 1 ريال سعودي • الحد الأدنى 50 نقطة" : "1 credit = 1 SAR • Minimum 50 credits"}
+                {lang === "ar" ? "1 جلسة = 1 ريال سعودي • الحد الأدنى 50 جلسة" : "1 session = 1 SAR • Minimum 50 sessions"}
               </p>
             </div>
           </div>
@@ -310,7 +315,7 @@ export default function BillingPage() {
                 data-testid="input-credit-amount"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                {lang === "ar" ? "نقطة" : "credits"}
+                {lang === "ar" ? "جلسة ذكاء" : "AI sessions"}
               </p>
             </div>
             <button
@@ -334,7 +339,7 @@ export default function BillingPage() {
                 }`}
                 data-testid={`button-preset-${preset}`}
               >
-                {preset} {lang === "ar" ? "نقطة" : "cr"}
+                {preset} {lang === "ar" ? "جلسة" : "s"}
               </button>
             ))}
           </div>
@@ -343,7 +348,7 @@ export default function BillingPage() {
 
           <div className="space-y-1.5 text-sm mb-4">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{lang === "ar" ? `${creditAmount} نقطة` : `${creditAmount} credits`}</span>
+              <span className="text-muted-foreground">{lang === "ar" ? `${creditAmount} جلسة ذكاء` : `${creditAmount} AI sessions`}</span>
               <span className="font-medium">{creditAmount} ر.س</span>
             </div>
             <div className="flex justify-between">
@@ -375,8 +380,8 @@ export default function BillingPage() {
               <ShoppingCart className="w-4 h-4 me-2" />
             )}
             {lang === "ar"
-              ? `شراء ${creditAmount} نقطة مقابل ${(creditAmount * 1.15).toFixed(2)} ر.س`
-              : `Buy ${creditAmount} credits for SAR ${(creditAmount * 1.15).toFixed(2)}`}
+              ? `شراء ${creditAmount} جلسة ذكاء مقابل ${(creditAmount * 1.15).toFixed(2)} ر.س`
+              : `Buy ${creditAmount} AI sessions for SAR ${(creditAmount * 1.15).toFixed(2)}`}
             <ExternalLink className="w-3.5 h-3.5 ms-2 opacity-70" />
           </Button>
         </Card>
@@ -456,8 +461,8 @@ export default function BillingPage() {
                     )}
                     <div className="mt-2">
                       <Badge variant="outline" className="text-xs">
-                        <Coins className="w-3 h-3 me-1" />
-                        {lang === "ar" ? `${plan.credits} نقطة/شهرياً` : `${plan.credits} credits/month`}
+                        <BrainCircuit className="w-3 h-3 me-1" />
+                        {lang === "ar" ? `${plan.credits} جلسة ذكاء/شهرياً` : `${plan.credits} AI sessions/month`}
                       </Badge>
                     </div>
                   </div>
@@ -671,7 +676,7 @@ export default function BillingPage() {
             <div className="flex items-center gap-2 mb-4">
               <History className="w-5 h-5 text-violet-600" />
               <h3 className="font-semibold">
-                {lang === "ar" ? "سجل شراء النقاط" : "Credit Purchase History"}
+                {lang === "ar" ? "سجل شراء جلسات الذكاء" : "AI Session Purchase History"}
               </h3>
             </div>
             <div className="space-y-2">
@@ -687,11 +692,11 @@ export default function BillingPage() {
                   <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm" data-testid={`row-credit-${p.id}`}>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
-                        <Coins className="w-4 h-4 text-violet-600" />
+                        <BrainCircuit className="w-4 h-4 text-violet-600" />
                       </div>
                       <div>
                         <p className="font-medium">
-                          +{p.credits} {lang === "ar" ? "نقطة" : "credits"}
+                          +{p.credits} {lang === "ar" ? "جلسة ذكاء" : "AI sessions"}
                         </p>
                         <p className="text-xs text-muted-foreground">{date}</p>
                       </div>

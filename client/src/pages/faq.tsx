@@ -75,14 +75,14 @@ export default function FAQPage() {
       category: "الحساب والتسجيل",
       items: [
         { q: "كيف أسجل في المنصة؟", a: "يمكنك التسجيل بسهولة عبر حساب جوجل بنقرة واحدة، أو إنشاء حساب جديد بالبريد الإلكتروني وكلمة المرور." },
-        { q: "هل التسجيل مجاني؟", a: "نعم، التسجيل مجاني تماماً. تحصل على 5 أرصدة مجانية شهرياً مع الخطة المجانية لتجربة المنصة." },
+        { q: "هل التسجيل مجاني؟", a: "نعم، التسجيل مجاني تماماً. تحصل على 5 جلسات ذكاء مجانية شهرياً مع الخطة المجانية لتجربة المنصة." },
         { q: "هل يمكنني تغيير خطتي لاحقاً؟", a: "نعم، يمكنك ترقية أو تغيير خطتك في أي وقت من صفحة الفوترة في لوحة التحكم." },
       ],
     },
     {
       category: "الأسعار والدفع",
       items: [
-        { q: "ما هي خطط الأسعار المتاحة؟", a: "نوفر ثلاث خطط: المجانية (5 أرصدة/شهر)، الاحترافية بـ 49 ر.س/شهر (50 رصيد)، وخطة الأعمال بـ 99 ر.س/شهر (200 رصيد). جميع الأسعار لا تشمل ضريبة القيمة المضافة 15%." },
+        { q: "ما هي خطط الأسعار المتاحة؟", a: "نوفر ثلاث خطط: المجانية (5 جلسات ذكاء/شهر)، الاحترافية بـ 49 ر.س/شهر (50 جلسة ذكاء)، وخطة الأعمال بـ 99 ر.س/شهر (200 جلسة ذكاء). جميع الأسعار لا تشمل ضريبة القيمة المضافة 15%." },
         { q: "ما هي طرق الدفع المتاحة؟", a: "ندعم الدفع بالبطاقات الائتمانية (فيزا، ماستركارد)، مدى، وأبل باي." },
         { q: "هل يتم إضافة ضريبة القيمة المضافة؟", a: "نعم، تُضاف ضريبة القيمة المضافة (15%) عند إتمام عملية الدفع وفقاً لأنظمة هيئة الزكاة والضريبة والجمارك (ZATCA). الأسعار المعروضة لا تشمل الضريبة." },
         { q: "هل يمكنني الحصول على فاتورة ضريبية؟", a: "نعم، يتم إصدار فاتورة ضريبية متوافقة مع نظام ZATCA لكل عملية دفع. يمكنك تنزيلها من صفحة الفوترة." },
@@ -90,18 +90,18 @@ export default function FAQPage() {
       ],
     },
     {
-      category: "نظام الرصيد (الكريدت)",
+      category: "رصيد الذكاء",
       items: [
-        { q: "ما هو نظام الرصيد؟", a: "كل عملية ذكاء اصطناعي (مثل إنشاء موقع أو محتوى تسويقي) تستهلك رصيداً واحداً. التعديلات المجانية لكل موقع مدرجة ضمن خطتك، وأي تعديل إضافي يخصم كريدت واحد." },
-        { q: "ماذا يحدث عند نفاد الرصيد؟", a: "عند نفاد رصيدك، يمكنك الانتظار حتى التجديد الشهري أو ترقية خطتك للحصول على أرصدة أكثر." },
-        { q: "هل تُرحّل الأرصدة غير المستخدمة؟", a: "لا، الأرصدة غير المستخدمة لا تُرحّل إلى الشهر التالي. يتم تجديد رصيدك بالكامل في بداية كل دورة فوترة." },
+        { q: "ما هو رصيد الذكاء؟", a: "رصيد الذكاء هو نظام جلسات الذكاء الاصطناعي في عربي ويب. كل تفاعل مع الذكاء الاصطناعي (مثل إنشاء موقع، تعديل ذكي، أو توليد محتوى تسويقي) يستهلك جلسة ذكاء واحدة. التعديلات المجانية لكل موقع مدرجة ضمن خطتك، وأي تعديل إضافي يخصم جلسة ذكاء واحدة." },
+        { q: "ماذا يحدث عند نفاد رصيد الذكاء؟", a: "عند نفاد رصيدك، يمكنك شراء جلسات إضافية أو الانتظار حتى التجديد الشهري أو ترقية خطتك للحصول على جلسات أكثر." },
+        { q: "هل تُرحّل الجلسات غير المستخدمة؟", a: "لا، الجلسات غير المستخدمة لا تُرحّل إلى الشهر التالي. يتم تجديد رصيد الذكاء بالكامل في بداية كل دورة فوترة." },
       ],
     },
     {
       category: "التعديلات على المواقع",
       items: [
-        { q: "كم عدد التعديلات المجانية لكل موقع؟", a: "لكل موقع حد مجاني للتعديلات حسب الخطة:\n• الخطة المجانية: تعديلان (2) مجانيان لكل موقع\n• الخطة الاحترافية: 5 تعديلات مجانية لكل موقع\n• خطة الأعمال: 10 تعديلات مجانية لكل موقع\nبعد الاستنفاد يُخصم كريدت واحد لكل تعديل إضافي." },
-        { q: "هل التعديلات الإضافية مدفوعة؟", a: "نعم، بعد استنفاد التعديلات المجانية لكل موقع، يتم خصم كريدت واحد من رصيدك لكل تعديل إضافي. إذا لم يكن لديك رصيد كافٍ ستحتاج لشراء رصيد أو ترقية خطتك." },
+        { q: "كم عدد التعديلات المجانية لكل موقع؟", a: "لكل موقع حد مجاني للتعديلات حسب الخطة:\n• الخطة المجانية: تعديلان (2) مجانيان لكل موقع\n• الخطة الاحترافية: 5 تعديلات مجانية لكل موقع\n• خطة الأعمال: 10 تعديلات مجانية لكل موقع\nبعد الاستنفاد تُخصم جلسة ذكاء واحدة لكل تعديل إضافي." },
+        { q: "هل التعديلات الإضافية مدفوعة؟", a: "نعم، بعد استنفاد التعديلات المجانية لكل موقع، تُخصم جلسة ذكاء واحدة من رصيدك لكل تعديل إضافي. إذا لم يكن لديك رصيد كافٍ ستحتاج لشراء جلسات إضافية أو ترقية خطتك." },
         { q: "هل التعديلات محسوبة لكل موقع أم للحساب كله؟", a: "التعديلات المجانية محسوبة لكل موقع على حدة. كل موقع جديد تنشئه يبدأ بعدد التعديلات المجانية كاملاً حسب خطتك." },
       ],
     },
@@ -131,14 +131,14 @@ export default function FAQPage() {
       category: "Account & Registration",
       items: [
         { q: "How do I sign up?", a: "You can easily sign up with your Google account in one click, or create a new account with email and password." },
-        { q: "Is registration free?", a: "Yes, registration is completely free. You get 5 free credits per month with the Free plan to try the platform." },
+        { q: "Is registration free?", a: "Yes, registration is completely free. You get 5 free AI sessions per month with the Free plan to try the platform." },
         { q: "Can I change my plan later?", a: "Yes, you can upgrade or change your plan at any time from the Billing page in your dashboard." },
       ],
     },
     {
       category: "Pricing & Payment",
       items: [
-        { q: "What pricing plans are available?", a: "We offer three plans: Free (5 credits/month), Pro at 49 SAR/month (50 credits), and Business at 99 SAR/month (200 credits). All prices are exclusive of 15% VAT." },
+        { q: "What pricing plans are available?", a: "We offer three plans: Free (5 AI sessions/month), Pro at 49 SAR/month (50 AI sessions), and Business at 99 SAR/month (200 AI sessions). All prices are exclusive of 15% VAT." },
         { q: "What payment methods are supported?", a: "We support credit cards (Visa, Mastercard), Mada, and Apple Pay." },
         { q: "Is VAT added to the prices?", a: "Yes, VAT (15%) is added at checkout in compliance with ZATCA regulations. Displayed prices are exclusive of VAT." },
         { q: "Can I get a tax invoice?", a: "Yes, a ZATCA-compliant tax invoice is issued for every payment. You can download it from the Billing page." },
@@ -146,18 +146,18 @@ export default function FAQPage() {
       ],
     },
     {
-      category: "Credit System",
+      category: "AI Credits",
       items: [
-        { q: "How does the credit system work?", a: "Each AI operation (creating a website or marketing content) consumes one credit. Free edits per project are included in your plan; extra edits beyond the limit cost 1 credit each." },
-        { q: "What happens when I run out of credits?", a: "When your credits run out, you can wait for the monthly renewal or upgrade your plan for more credits." },
-        { q: "Do unused credits roll over?", a: "No, unused credits do not roll over to the next month. Your credits are fully renewed at the start of each billing cycle." },
+        { q: "How do AI credits work?", a: "Each AI interaction (creating a website, AI editing, or marketing content) consumes one AI session. Free edits per project are included in your plan; extra edits beyond the limit cost 1 AI session each." },
+        { q: "What happens when I run out of AI credits?", a: "When your AI credits run out, you can purchase extra sessions, wait for the monthly renewal, or upgrade your plan for more sessions." },
+        { q: "Do unused AI sessions roll over?", a: "No, unused AI sessions do not roll over to the next month. Your credits are fully renewed at the start of each billing cycle." },
       ],
     },
     {
       category: "Website Edits",
       items: [
-        { q: "How many free edits does each website get?", a: "Each website has a free-edit limit based on your plan:\n• Free Plan: 2 free edits per site\n• Pro Plan: 5 free edits per site\n• Business Plan: 10 free edits per site\nAfter the free edits are used, each additional edit costs 1 credit." },
-        { q: "Are extra edits paid?", a: "Yes, once the free edits for a site are used up, each additional edit deducts 1 credit from your balance. If you're low on credits, you can purchase more or upgrade your plan." },
+        { q: "How many free edits does each website get?", a: "Each website has a free-edit limit based on your plan:\n• Free Plan: 2 free edits per site\n• Pro Plan: 5 free edits per site\n• Business Plan: 10 free edits per site\nAfter the free edits are used, each additional edit costs 1 AI session." },
+        { q: "Are extra edits paid?", a: "Yes, once the free edits for a site are used up, each additional edit deducts 1 AI session from your balance. If you're low on AI credits, you can purchase more sessions or upgrade your plan." },
         { q: "Are edit limits per site or per account?", a: "Edit limits are per site. Every new site you create starts fresh with the full number of free edits for your plan." },
       ],
     },

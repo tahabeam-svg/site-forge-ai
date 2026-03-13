@@ -32,7 +32,7 @@ import {
   Github,
   Upload,
   Crown,
-  Zap,
+  BrainCircuit,
   User,
 } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
@@ -161,8 +161,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className={`rounded-xl p-3 space-y-2 ${credits <= 0 ? "bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800" : credits <= 2 ? "bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800" : "bg-sidebar-accent/60"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Zap className={`w-3.5 h-3.5 ${credits <= 0 ? "text-red-500" : credits <= 2 ? "text-amber-500" : "text-emerald-500"}`} />
-                    <span className="text-[11px] font-semibold">{lang === "ar" ? "الكريدتس" : "Credits"}</span>
+                    <BrainCircuit className={`w-3.5 h-3.5 ${credits <= 0 ? "text-red-500" : credits <= 2 ? "text-amber-500" : "text-emerald-500"}`} />
+                    <span className="text-[11px] font-semibold">{lang === "ar" ? "رصيد الذكاء" : "AI Credits"}</span>
                   </div>
                   <Badge className={`text-[9px] h-4 px-1.5 text-white ${planColor}`}>
                     {plan === "pro" && <Crown className="w-2.5 h-2.5 me-0.5" />}
@@ -176,8 +176,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="flex justify-between items-center">
                   <span className={`text-[10px] font-medium ${credits <= 0 ? "text-red-600 dark:text-red-400" : credits <= 2 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
                     {credits <= 0
-                      ? (lang === "ar" ? "نفد الرصيد!" : "No credits!")
-                      : `${credits.toLocaleString()} ${lang === "ar" ? "متبقية" : "left"}`}
+                      ? (lang === "ar" ? "نفد رصيد الذكاء!" : "AI credits empty!")
+                      : `${credits.toLocaleString()} ${lang === "ar" ? "جلسة متبقية" : "sessions left"}`}
                   </span>
                   <button
                     onClick={() => navigate("/billing")}

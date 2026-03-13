@@ -451,8 +451,8 @@ export default function DashboardPage() {
           const isCreditsErr = errData.message === "insufficient_credits";
           toast({
             title: lang === "ar"
-              ? (isCreditsErr ? "نفد رصيد الكريدت" : "تحتاج إلى ترقية الخطة")
-              : (isCreditsErr ? "Credits Depleted" : "Upgrade Required"),
+              ? (isCreditsErr ? "نفد رصيد الذكاء" : "تحتاج إلى ترقية الخطة")
+              : (isCreditsErr ? "AI Credits Depleted" : "Upgrade Required"),
             description: lang === "ar"
               ? (errData.messageAr || errData.message)
               : (errData.messageEn || errData.message),
