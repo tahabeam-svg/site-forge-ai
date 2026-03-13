@@ -258,20 +258,20 @@ export default function AIMarketingPage() {
               <div className="space-y-3">
                 {[
                   {
-                    name: lang === "ar" ? "المبتدئ" : "Starter",
-                    price: "$9",
-                    posts: lang === "ar" ? "20 منشور/شهر" : "20 posts/month",
+                    name: lang === "ar" ? "مجاني" : "Free",
+                    price: lang === "ar" ? "مجاناً" : "Free",
+                    posts: lang === "ar" ? "تسويق أساسي" : "Basic marketing",
                   },
                   {
-                    name: lang === "ar" ? "النمو" : "Growth",
-                    price: "$19",
-                    posts: lang === "ar" ? "60 منشور/شهر" : "60 posts/month",
+                    name: lang === "ar" ? "احترافي" : "Pro",
+                    price: lang === "ar" ? "49 ر.س" : "49 SAR",
+                    posts: lang === "ar" ? "تسويق متقدم + حملات" : "Advanced marketing + campaigns",
                     popular: true,
                   },
                   {
-                    name: lang === "ar" ? "احترافي" : "Pro Marketing",
-                    price: "$39",
-                    posts: lang === "ar" ? "غير محدود" : "Unlimited posts",
+                    name: lang === "ar" ? "أعمال" : "Business",
+                    price: lang === "ar" ? "99 ر.س" : "99 SAR",
+                    posts: lang === "ar" ? "تسويق غير محدود" : "Unlimited marketing",
                   },
                 ].map((plan, i) => (
                   <div

@@ -430,7 +430,7 @@ export default function BillingPage() {
                       {lang === "ar" ? "الحالية" : "Current"}
                     </Badge>
                   )}
-                  {isYearly && plan.id !== "free" && (
+                  {isYearly && plan.id !== "free" && !isCurrent && (
                     <Badge className="absolute -top-2.5 end-4 bg-amber-500">
                       {lang === "ar" ? "وفّر 20%" : "Save 20%"}
                     </Badge>

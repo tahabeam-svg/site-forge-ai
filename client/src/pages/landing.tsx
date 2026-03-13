@@ -638,29 +638,29 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-4xl mx-auto">
             {[
               {
-                name: lang === "ar" ? "المبتدئ" : "Starter",
-                price: lang === "ar" ? "35 ر.س" : "$9",
-                yearly: lang === "ar" ? "336 ر.س" : "$86",
+                name: lang === "ar" ? "مجاني" : "Free",
+                price: lang === "ar" ? "مجاناً" : "Free",
+                yearly: "",
                 features: lang === "ar"
-                  ? ["20 منشور شهرياً", "تعليقات وهاشتاقات", "أفكار تسويقية أساسية"]
-                  : ["20 posts/month", "Captions & hashtags", "Basic marketing ideas"],
+                  ? ["موقع واحد", "10 تعديلات ذكاء مجانية", "تسويق أساسي بالذكاء الاصطناعي"]
+                  : ["1 website", "10 free AI edits", "Basic AI marketing"],
               },
               {
-                name: lang === "ar" ? "النمو" : "Growth",
-                price: lang === "ar" ? "69 ر.س" : "$19",
-                yearly: lang === "ar" ? "662 ر.س" : "$182",
+                name: lang === "ar" ? "احترافي" : "Pro",
+                price: lang === "ar" ? "49 ر.س" : "49 SAR",
+                yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
                 popular: true,
                 features: lang === "ar"
-                  ? ["60 منشور شهرياً", "تقويم محتوى", "أفكار حملات", "محتوى تفاعلي"]
-                  : ["60 posts/month", "Content calendar", "Campaign ideas", "Engagement content"],
+                  ? ["10 مواقع", "تسويق ذكاء متقدم", "محتوى لجميع المنصات", "حملات إطلاق منتجات"]
+                  : ["10 websites", "Advanced AI marketing", "All platforms content", "Product launch campaigns"],
               },
               {
-                name: lang === "ar" ? "احترافي" : "Pro Marketing",
-                price: lang === "ar" ? "149 ر.س" : "$39",
-                yearly: lang === "ar" ? "1,430 ر.س" : "$374",
+                name: lang === "ar" ? "أعمال" : "Business",
+                price: lang === "ar" ? "99 ر.س" : "99 SAR",
+                yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
                 features: lang === "ar"
-                  ? ["منشورات غير محدودة", "نصوص تسويقية متقدمة", "حملات إطلاق منتجات", "استراتيجيات تسويقية"]
-                  : ["Unlimited posts", "Advanced copy", "Product launch campaigns", "Marketing strategies"],
+                  ? ["30 موقعاً", "تسويق غير محدود", "استراتيجيات متكاملة", "دعم أولوية 24/7"]
+                  : ["30 websites", "Unlimited AI marketing", "Full strategies", "Priority 24/7 support"],
               },
             ].map((plan, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
