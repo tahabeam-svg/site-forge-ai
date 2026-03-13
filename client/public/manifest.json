@@ -1,0 +1,30 @@
+{
+  "name": "ArabyWeb.net - بناء مواقع مجانية بالذكاء الاصطناعي",
+  "short_name": "ArabyWeb",
+  "description": "أنشئ موقعك الإلكتروني المجاني أو متجرك بالذكاء الاصطناعي في دقيقتين",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "lang": "ar",
+  "dir": "rtl",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

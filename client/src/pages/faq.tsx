@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowRight, ArrowLeft, Globe2, ChevronUp, ChevronDown } from "lucide-react";
+import { useSEO } from "@/hooks/use-seo";
 
 function getLang(): "ar" | "en" {
   if (typeof window !== "undefined") {
@@ -44,6 +45,51 @@ export default function FAQPage() {
   const [lang, setLang] = useState<"ar" | "en">(getLang);
   const [showTop, setShowTop] = useState(false);
   const isRTL = lang === "ar";
+
+  useSEO({
+    title: lang === "ar"
+      ? "الأسئلة الشائعة — عربي ويب | بناء مواقع مجانية بالذكاء الاصطناعي"
+      : "FAQ — ArabyWeb | Free AI Website Builder",
+    description: lang === "ar"
+      ? "إجابات على جميع أسئلتك حول منصة عربي ويب: الأسعار، رصيد الذكاء، التعديلات، النشر، وطرق الدفع. بناء موقع مجاني في السعودية."
+      : "Answers to all your questions about ArabyWeb: pricing, AI credits, edits, publishing, and payment. Build a free website in Saudi Arabia.",
+    keywords: lang === "ar"
+      ? "أسئلة شائعة عربي ويب، أسعار بناء موقع، رصيد ذكاء، بناء موقع مجاني، استفسارات المنصة"
+      : "ArabyWeb FAQ, website builder pricing, AI credits, free website Saudi Arabia",
+    lang,
+    canonical: "https://arabyweb.net/faq",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "ما هي منصة عربي ويب؟",
+          "acceptedAnswer": { "@type": "Answer", "text": "عربي ويب هي منصة لبناء المواقع الإلكترونية بالذكاء الاصطناعي، مصممة خصيصاً للسوق العربي والسعودي." }
+        },
+        {
+          "@type": "Question",
+          "name": "هل بناء الموقع مجاني؟",
+          "acceptedAnswer": { "@type": "Answer", "text": "نعم، التسجيل وبناء المواقع مجاني. تحصل على 5 جلسات ذكاء مجانية شهرياً مع الخطة المجانية." }
+        },
+        {
+          "@type": "Question",
+          "name": "ما هي أسعار خطط عربي ويب؟",
+          "acceptedAnswer": { "@type": "Answer", "text": "الخطة المجانية: 5 جلسات/شهر. الاحترافية: 49 ر.س/شهر (50 جلسة). الأعمال: 99 ر.س/شهر (200 جلسة). جميع الأسعار لا تشمل VAT 15%." }
+        },
+        {
+          "@type": "Question",
+          "name": "هل تحتاج خبرة برمجية؟",
+          "acceptedAnswer": { "@type": "Answer", "text": "لا، لا تحتاج أي خبرة برمجية. فقط صف ما تريده وسيبني الذكاء الاصطناعي موقعك تلقائياً." }
+        },
+        {
+          "@type": "Question",
+          "name": "هل يمكنني ربط نطاق خاص؟",
+          "acceptedAnswer": { "@type": "Answer", "text": "نعم، يمكنك ربط دومين خاص بموقعك من خلال إعدادات النشر في لوحة التحكم." }
+        }
+      ]
+    }
+  });
 
   useEffect(() => {
     document.documentElement.dir = isRTL ? "rtl" : "ltr";

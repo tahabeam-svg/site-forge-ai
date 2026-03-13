@@ -223,6 +223,9 @@ Allow: /contact
 Allow: /about
 Allow: /privacy
 Allow: /terms
+Allow: /faq
+Allow: /free-website
+Allow: /free-store
 Allow: /blog
 Disallow: /dashboard
 Disallow: /admin
@@ -230,6 +233,11 @@ Disallow: /auth
 Disallow: /billing
 Disallow: /api/
 Disallow: /payment-test
+Disallow: /payment-methods
+Disallow: /reset-password
+Disallow: /settings
+Disallow: /deploy-guide
+Disallow: /github-deploy
 
 Sitemap: https://arabyweb.net/sitemap.xml
 
@@ -237,6 +245,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
 User-agent: GPTBot
 Allow: /
 Allow: /templates
+Allow: /faq
+Allow: /free-website
+Allow: /free-store
 
 User-agent: ClaudeBot
 Allow: /
@@ -247,6 +258,13 @@ Allow: /
 
 User-agent: CCBot
 Allow: /
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
 `);
   });
 
@@ -293,7 +311,17 @@ Allow: /
     <priority>0.7</priority>
   </url>
 
-  <!-- Blog landing keywords -->
+  <!-- FAQ - high value SEO page -->
+  <url>
+    <loc>${base}/faq</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/faq" />
+    <xhtml:link rel="alternate" hreflang="en" href="${base}/faq?lang=en" />
+  </url>
+
+  <!-- Free landing pages (high traffic keywords) -->
   <url>
     <loc>${base}/free-website</loc>
     <lastmod>${now}</lastmod>
