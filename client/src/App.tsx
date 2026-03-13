@@ -20,6 +20,7 @@ import SettingsPage from "@/pages/settings";
 import AnalyticsPage from "@/pages/analytics";
 import PaymentMethodsPage from "@/pages/payment-methods";
 import GitHubDeployPage from "@/pages/github-deploy";
+import DomainsPage from "@/pages/domains";
 import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
 import FAQPage from "@/pages/faq";
@@ -67,6 +68,8 @@ function Router() {
       <Route path="/admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
       <Route path="/secure-admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
       <Route path="/marketing">{() => <ProtectedRoute component={AIMarketingPage} />}</Route>
+      <Route path="/ai-marketing">{() => <ProtectedRoute component={AIMarketingPage} />}</Route>
+      <Route path="/domains">{() => <ProtectedRoute component={DomainsPage} />}</Route>
       <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
       <Route path="/github-deploy">{() => <ProtectedRoute component={GitHubDeployPage} />}</Route>

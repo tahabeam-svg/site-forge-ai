@@ -143,8 +143,8 @@ export default function BillingPage() {
   const isYearly = billingCycle === "yearly";
   const discount = 0.8;
 
-  const proMonthly = 99;
-  const businessMonthly = 199;
+  const proMonthly = 49;
+  const businessMonthly = 99;
   const proYearly = Math.round(proMonthly * 12 * discount);
   const businessYearly = Math.round(businessMonthly * 12 * discount);
   const proYearlyPerMonth = Math.round(proYearly / 12);
