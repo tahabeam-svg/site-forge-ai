@@ -292,6 +292,7 @@ export default function DashboardPage() {
   const [instantDialogOpen, setInstantDialogOpen] = useState(false);
   const [wizardForm, setWizardForm] = useState<WizardForm>(defaultWizardForm);
   const [wizardStep, setWizardStep] = useState<1 | 2>(1);
+  const [wizardTemplate, setWizardTemplate] = useState<Template | null>(null);
   const [instantProgress, setInstantProgress] = useState(0);
   const [instantStep, setInstantStep] = useState(0);
   const [isInstantGenerating, setIsInstantGenerating] = useState(false);
@@ -426,10 +427,13 @@ export default function DashboardPage() {
     startProgressAnimation();
 
     try {
-      const createRes = await apiRequest("POST", "/api/projects", {
+      const createPayload: Record<string, unknown> = {
         name: projectName,
         description: structuredDesc,
-      });
+      };
+      if (wizardTemplate) createPayload.templateId = wizardTemplate.id;
+
+      const createRes = await apiRequest("POST", "/api/projects", createPayload);
       const project: Project = await createRes.json();
 
       const genPayload: Record<string, unknown> = {
@@ -455,6 +459,7 @@ export default function DashboardPage() {
       setWizardForm(defaultWizardForm);
       setWizardStep(1);
       setInstantProgress(0);
+      setWizardTemplate(null);
 
       navigate(`/editor/${project.id}`);
       toast({
@@ -511,17 +516,7 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5 h-8 text-xs border-violet-400/40 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10"
-              onClick={() => setInstantDialogOpen(true)}
-              data-testid="button-instant-generate"
-            >
-              <Zap className="w-3.5 h-3.5" />
-              {lang === "ar" ? "إنشاء فوري" : "Instant AI"}
-            </Button>
-            <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setShowNewProject(true)} data-testid="button-new-project">
+            <Button size="sm" className="gap-1.5 h-8 text-xs bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90" onClick={() => setInstantDialogOpen(true)} data-testid="button-new-project">
               <Plus className="w-3.5 h-3.5" />
               {t("newProject", lang)}
             </Button>
@@ -588,16 +583,12 @@ export default function DashboardPage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Button
-                className="gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-90 shadow-sm shadow-emerald-500/25"
+                className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 shadow-sm shadow-violet-500/25"
                 onClick={() => setInstantDialogOpen(true)}
                 data-testid="button-instant-first"
               >
-                <Zap className="w-4 h-4" />
-                {lang === "ar" ? "أنشئ موقعاً فوراً ✨" : "Generate Site Instantly ✨"}
-              </Button>
-              <Button variant="outline" onClick={() => setShowNewProject(true)} data-testid="button-create-first">
-                <Plus className="w-4 h-4 me-2" />
-                {t("startFromScratch", lang)}
+                <Plus className="w-4 h-4" />
+                {lang === "ar" ? "أنشئ موقعك الآن ✨" : "Create Your Website ✨"}
               </Button>
               <Button variant="ghost" onClick={() => navigate("/templates")} data-testid="button-browse-templates">
                 <LayoutTemplate className="w-4 h-4 me-2" />
@@ -812,7 +803,7 @@ export default function DashboardPage() {
       <Dialog open={instantDialogOpen} onOpenChange={(open) => {
         if (!isInstantGenerating) {
           setInstantDialogOpen(open);
-          if (!open) { setInstantProgress(0); setInstantStep(0); setWizardStep(1); }
+          if (!open) { setInstantProgress(0); setInstantStep(0); setWizardStep(1); setWizardTemplate(null); }
         }
       }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -821,12 +812,12 @@ export default function DashboardPage() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-white" />
               </div>
-              {lang === "ar" ? "إنشاء موقع فوري" : "Instant Website Generator"}
+              {lang === "ar" ? "إنشاء موقع جديد" : "Create New Website"}
             </DialogTitle>
             <DialogDescription>
               {lang === "ar"
-                ? "املأ البيانات أدناه وسيبني الذكاء الاصطناعي موقعك الاحترافي خلال ثوانٍ"
-                : "Fill in your details below and AI will build your professional website in seconds"}
+                ? "أجب على بعض الأسئلة وسيبني الذكاء الاصطناعي موقعك الاحترافي خلال ثوانٍ"
+                : "Answer a few questions and AI will build your professional website in seconds"}
             </DialogDescription>
           </DialogHeader>
 
@@ -863,6 +854,66 @@ export default function DashboardPage() {
               {/* ───── STEP 1: Basic Info ───── */}
               {wizardStep === 1 && (
                 <div className="space-y-4">
+
+                  {/* Optional Template Picker */}
+                  {dialogTemplates.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                        <LayoutTemplate className="w-3.5 h-3.5" />
+                        {lang === "ar" ? "ابدأ من قالب (اختياري)" : "Start from a template (optional)"}
+                      </Label>
+                      <div className="grid grid-cols-5 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setWizardTemplate(null)}
+                          className={`aspect-video rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all text-[10px] font-medium ${
+                            !wizardTemplate
+                              ? "border-violet-500 bg-violet-50 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400"
+                              : "border-border hover:border-violet-300 text-muted-foreground"
+                          }`}
+                        >
+                          <Sparkles className={`w-4 h-4 ${!wizardTemplate ? "text-violet-500" : "text-muted-foreground"}`} />
+                          {lang === "ar" ? "ذكاء اصطناعي" : "AI Only"}
+                        </button>
+                        {dialogTemplates.slice(0, 3).map((tpl) => (
+                          <button
+                            type="button"
+                            key={tpl.id}
+                            onClick={() => setWizardTemplate(tpl)}
+                            className={`aspect-video rounded-lg border-2 overflow-hidden relative transition-all ${
+                              wizardTemplate?.id === tpl.id
+                                ? "border-violet-500 shadow-md shadow-violet-500/20"
+                                : "border-border hover:border-violet-300"
+                            }`}
+                          >
+                            <img src={tpl.thumbnail || ""} alt={lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name} className="w-full h-full object-cover" />
+                            {wizardTemplate?.id === tpl.id && (
+                              <div className="absolute inset-0 bg-violet-500/25 flex items-center justify-center">
+                                <div className="bg-violet-500 rounded-full p-0.5">
+                                  <Check className="w-3 h-3 text-white" />
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => { setInstantDialogOpen(false); navigate("/templates"); }}
+                          className="aspect-video rounded-lg border-2 border-dashed border-border hover:border-violet-400/60 flex flex-col items-center justify-center gap-1 transition-all text-[10px] text-muted-foreground hover:text-foreground"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          {lang === "ar" ? "المزيد" : "More"}
+                        </button>
+                      </div>
+                      {wizardTemplate && (
+                        <p className="text-xs text-violet-600 dark:text-violet-400 flex items-center gap-1">
+                          <Check className="w-3 h-3" />
+                          {lang === "ar" ? `قالب مختار: ${wizardTemplate.nameAr || wizardTemplate.name}` : `Template: ${wizardTemplate.name}`}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {/* Activity Type */}
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5 text-sm font-medium">
