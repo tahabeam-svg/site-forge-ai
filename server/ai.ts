@@ -44,6 +44,43 @@ function detectWebsiteCategory(description: string): WebsiteCategory {
   return "business";
 }
 
+const MOBILE_RESPONSIVE_MANDATORY = `
+═══════════════════════════════════════
+MOBILE RESPONSIVE — NON-NEGOTIABLE RULES
+═══════════════════════════════════════
+Your CSS MUST include these rules EXACTLY:
+
+* { box-sizing: border-box; }
+body { overflow-x: hidden; }
+img { max-width: 100%; height: auto; display: block; }
+
+/* Prevent card text overflow in grid cells */
+[class*="grid"] > * { min-width: 0; overflow-wrap: break-word; word-break: break-word; }
+.card, .service-card, .feature-card, [class*="-card"] { overflow: hidden; word-break: break-word; }
+
+@media (max-width: 768px) {
+  /* EVERY multi-column grid collapses to 1 column — NO EXCEPTIONS */
+  [class*="grid"], [class*="-grid"], .services-grid, .gallery-grid,
+  .features-grid, .cards-wrap, .two-col, .about-grid, .stats-grid,
+  .contact-grid, .footer-grid, .speakers-grid, .schedule-grid {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+  }
+  /* Two-column flex/grid layouts also collapse */
+  .about-wrap, .contact-wrap, .footer-wrap { grid-template-columns: 1fr !important; }
+  /* No horizontal padding cuts off text */
+  .container, .wrapper, [class*="container"], [class*="section"] { padding-left: 1rem !important; padding-right: 1rem !important; }
+  /* Hamburger visible, desktop nav hidden */
+  .nav-links, .desktop-nav { display: none !important; }
+  #aw-menu-btn { display: block !important; }
+}
+
+@media (max-width: 480px) {
+  h1, .hero-title { font-size: clamp(1.75rem, 8vw, 2.5rem) !important; }
+  h2, .sec-title { font-size: clamp(1.4rem, 6vw, 2rem) !important; }
+}
+`;
+
 function buildPromptByCategory(category: WebsiteCategory, description: string, isArabic: boolean, dirAttr: string): string {
   const dir = isArabic ? "rtl" : "ltr";
   const lang = isArabic
@@ -73,7 +110,7 @@ REQUIRED SECTIONS (IN ORDER):
 
 3. ABOUT (id="about"): "من هي [الاسم]" or "About [Name]" — A beautiful 2-column section. Left: elegant portrait-style image (Unsplash beautiful person/nature). Right: personal description — her personality traits, what makes her special, her hobbies. Style with a large decorative quote mark. NO bullet points about experience.
 
-4. MEMORIES GALLERY (id="memories"): Title "لحظاتنا الجميلة" or "Beautiful Memories". A 3-column masonry-style grid of 6 beautiful romantic/nature Unsplash photos. Each with hover overlay and heart icon.
+4. MEMORIES GALLERY (id="memories"): Title "لحظاتنا الجميلة" or "Beautiful Memories". A responsive photo grid: 3 columns on desktop, 2 on tablet (max-width:768px), 1 on mobile (max-width:480px). Use 6 real Unsplash photo URLs with ?w=600&h=400&fit=crop&q=75 parameters. Each with hover overlay and heart icon. NEVER use gradient placeholders instead of images.
 
 5. LOVE MESSAGES (id="messages"): Title "رسائل من القلب" or "From the Heart". 3 beautiful cards with romantic messages/quotes. Dark section, glassmorphism cards with heart icons. Soft poetic text.
 
@@ -109,8 +146,10 @@ IMAGES (Unsplash):
 - Soft portrait/bokeh: photo-1529626455594-4ff0802cfb7e, photo-1524504388940-b1c1722653e1, photo-1488426862026-3ee34a7d66df
 - Flowers/romantic: photo-1518199266791-5375a83190b7, photo-1487530811015-780eb9d5ee98, photo-1455661f47f62baef40b3c9ac76a93f
 
+${MOBILE_RESPONSIVE_MANDATORY}
+
 Return EXACTLY this JSON (no markdown, no explanation):
-{"html":"complete HTML (no html/head/body tags, use ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS with font imports, all animations, mobile responsive","seoTitle":"${isArabic ? "Arabic" : "English"} title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+{"html":"complete HTML (no html/head/body tags, use ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS: Google Fonts @import, full reset (box-sizing:border-box, overflow-x:hidden), all components, all animations, MANDATORY mobile breakpoints @media(max-width:768px) collapsing ALL grids to 1 column, @media(max-width:480px) font size fixes. Include MOBILE_RESPONSIVE_MANDATORY rules.","seoTitle":"${isArabic ? "Arabic" : "English"} title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
   }
 
   if (category === "portfolio") {
@@ -131,9 +170,10 @@ DESIGN: Modern, clean, professional. Color: based on their field (tech=violet/cy
 Language: ${lang}
 Font: ${font}
 Mobile hamburger: ${mobileMenu}
+${MOBILE_RESPONSIVE_MANDATORY}
 
 Return EXACTLY this JSON (no markdown):
-{"html":"complete HTML","css":"complete CSS","seoTitle":"title","seoDescription":"description","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS: Google Fonts @import, full reset, all components, animations, MANDATORY @media(max-width:768px) collapsing ALL grids/columns to 1 column, @media(max-width:480px) font fixes. overflow-x:hidden on body.","seoTitle":"title max 60 chars","seoDescription":"description 150-160 chars","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
   }
 
   if (category === "event") {
@@ -155,9 +195,10 @@ DESIGN: Elegant, exciting, event-appropriate. Use colors fitting the event type.
 Language: ${lang}
 Font: ${font}
 Mobile hamburger: ${mobileMenu}
+${MOBILE_RESPONSIVE_MANDATORY}
 
 Return EXACTLY this JSON (no markdown):
-{"html":"complete HTML","css":"complete CSS","seoTitle":"title","seoDescription":"description","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS: Google Fonts @import, full reset, all components, animations, MANDATORY @media(max-width:768px) all grids collapse to 1 column, @media(max-width:480px) font fixes. overflow-x:hidden on body.","seoTitle":"title max 60 chars","seoDescription":"description 150-160 chars","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
   }
 
   // Default: business
@@ -305,10 +346,12 @@ Dark background for: hero, stats bar, testimonials section, footer
 Light/white background for: about, services
 Subtle gray (#f8fafc) for alternating sections
 
+${MOBILE_RESPONSIVE_MANDATORY}
+
 Return EXACTLY this JSON object (no markdown, no explanation):
 {
   "html": "Complete HTML (no <html>/<head>/<body> tags). Use ${dirAttr} on root div. Include WhatsApp float button. Include inline <script> at bottom for animations.",
-  "css": "Complete CSS: font imports, reset, all components, animations (@keyframes fadeUp, @keyframes countUp), responsive breakpoints @media(max-width:1024px) and @media(max-width:768px) and @media(max-width:480px). MUST include .aw-reveal and .aw-visible classes.",
+  "css": "Complete CSS: Google Fonts @import at top, full reset (box-sizing:border-box on *, overflow-x:hidden on body, img max-width:100%), all components, animations (@keyframes fadeUp, @keyframes countUp, @keyframes orbFloat), MANDATORY breakpoints: @media(max-width:1024px){services/gallery → 2 cols} @media(max-width:768px){ALL grids/multi-col → 1 col !important, nav-links display:none, hamburger display:block, padding 1rem} @media(max-width:480px){font sizes clamped}. MUST include .aw-reveal and .aw-visible classes. MUST include min-width:0 on all grid children to prevent overflow.",
   "seoTitle": "${isArabic ? "Arabic" : "English"} SEO title (max 60 chars)",
   "seoDescription": "${isArabic ? "Arabic" : "English"} meta description (150-160 chars)",
   "sections": ["${isArabic ? "Arabic" : "English"} section names list"],
