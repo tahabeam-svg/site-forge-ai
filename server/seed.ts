@@ -34,19 +34,17 @@ export async function seedDatabase() {
     console.error("Migration warning (anti-fraud):", e.message);
   }
 
-  // Migrate pricing to new values: Pro 9900 halalas (99 SAR), Business 19900 halalas (199 SAR)
+  // Correct pricing: Pro 4900 halalas (49 SAR), Business 9900 halalas (99 SAR)
   try {
     await db.execute(sql`
-      INSERT INTO platform_settings (key, value) VALUES ('price_pro', '9900')
-      ON CONFLICT (key) DO UPDATE SET value = '9900'
-      WHERE platform_settings.value IN ('4900', '4500', '3900')
+      INSERT INTO platform_settings (key, value) VALUES ('price_pro', '4900')
+      ON CONFLICT (key) DO UPDATE SET value = '4900'
     `);
     await db.execute(sql`
-      INSERT INTO platform_settings (key, value) VALUES ('price_business', '19900')
-      ON CONFLICT (key) DO UPDATE SET value = '19900'
-      WHERE platform_settings.value IN ('9900', '8900', '7900')
+      INSERT INTO platform_settings (key, value) VALUES ('price_business', '9900')
+      ON CONFLICT (key) DO UPDATE SET value = '9900'
     `);
-    console.log("Migration: pricing updated to Pro=99 SAR, Business=199 SAR");
+    console.log("Migration: pricing set to Pro=49 SAR, Business=99 SAR");
   } catch (e: any) {
     console.error("Pricing migration warning:", e.message);
   }

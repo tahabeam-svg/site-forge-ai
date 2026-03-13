@@ -1167,12 +1167,12 @@ export async function registerRoutes(
         endDate.setMonth(endDate.getMonth() + 1);
         await storage.updateSubscription(Number(subId), {
           status: "active",
-          startDate: now.toISOString(),
-          endDate: endDate.toISOString(),
+          startDate: now,
+          endDate: endDate,
           paymobTransactionId: `TEST-TXN-${Date.now()}`,
         });
         const planCredits = plan === "business" ? 200 : 50;
-        await db.update(users).set({ plan, credits: planCredits } as any).where(eq(users.id, userId));
+        await db.execute(sql`UPDATE users SET plan = ${plan}, credits = ${planCredits} WHERE id = ${userId}`);
         return res.json({ success: true, message: "تم تفعيل الاشتراك بنجاح" });
       }
 
