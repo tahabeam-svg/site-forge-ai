@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Loader2, ShieldCheck, CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, ShieldCheck, CreditCard, CheckCircle2, AlertCircle, Receipt } from "lucide-react";
 
 export default function PaymentTestPage() {
   const [, setLocation] = useLocation();
@@ -24,6 +24,10 @@ export default function PaymentTestPage() {
   const purchaseId = params.get("purchaseId");
   const credits = params.get("credits");
   const amount = params.get("amount") || "0";
+
+  const baseAmount = parseFloat(amount) || 0;
+  const vatAmount = parseFloat((baseAmount * 0.15).toFixed(2));
+  const totalAmount = parseFloat((baseAmount * 1.15).toFixed(2));
 
   const [cardNumber, setCardNumber] = useState("5123 4567 8901 2346");
   const [expiry, setExpiry] = useState("12/28");
@@ -48,6 +52,8 @@ export default function PaymentTestPage() {
     },
     onSuccess: () => {
       setDone(true);
+      qc.invalidateQueries({ queryKey: ["/api/me"] });
+      qc.invalidateQueries({ queryKey: ["/api/auth/user"] });
       qc.invalidateQueries({ queryKey: ["/api/subscription"] });
       qc.invalidateQueries({ queryKey: ["/api/credits"] });
       qc.invalidateQueries({ queryKey: ["/api/payments/credit-history"] });
@@ -101,6 +107,51 @@ export default function PaymentTestPage() {
                 : `${credits} AI Sessions — ${amount} SAR`}
           </p>
         </div>
+
+        {/* Invoice Breakdown */}
+        <Card className="bg-zinc-900 border-zinc-700 p-5 mb-4">
+          <div className="flex items-center gap-2 mb-4">
+            <Receipt className="w-4 h-4 text-emerald-400" />
+            <span className="text-white font-medium text-sm">
+              {lang === "ar" ? "تفاصيل الفاتورة" : "Invoice Details"}
+            </span>
+          </div>
+          <div className="space-y-2.5 text-sm">
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400">
+                {type === "plan"
+                  ? lang === "ar" ? `خطة ${planNames[plan]?.ar || plan} (شهري)` : `${planNames[plan]?.en || plan} Plan (Monthly)`
+                  : lang === "ar" ? `${credits} جلسة ذكاء اصطناعي` : `${credits} AI Sessions`}
+              </span>
+              <span className="text-white font-medium">{baseAmount.toFixed(2)} {lang === "ar" ? "ر.س" : "SAR"}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-zinc-400">
+                {lang === "ar" ? "ضريبة القيمة المضافة (15%)" : "VAT (15%)"}
+              </span>
+              <span className="text-white">{vatAmount.toFixed(2)} {lang === "ar" ? "ر.س" : "SAR"}</span>
+            </div>
+            <div className="border-t border-zinc-700 pt-2.5 flex justify-between items-center">
+              <span className="text-white font-bold">
+                {lang === "ar" ? "الإجمالي شامل الضريبة" : "Total incl. VAT"}
+              </span>
+              <span className="text-emerald-400 font-bold text-base">{totalAmount.toFixed(2)} {lang === "ar" ? "ر.س" : "SAR"}</span>
+            </div>
+          </div>
+          <div className="mt-3 pt-3 border-t border-zinc-800 space-y-1">
+            <p className="text-[11px] text-zinc-500">
+              {lang === "ar" ? "البائع: مؤسسة الهدف الممتاز للمعارض والمؤتمرات" : "Seller: Al-Hadaf Al-Mumtaz Institution"}
+            </p>
+            <p className="text-[11px] text-zinc-500" dir="ltr">
+              {lang === "ar" ? "الرقم الضريبي: 310268220900003" : "VAT No: 310268220900003"}
+            </p>
+            <p className="text-[11px] text-zinc-500">
+              {lang === "ar"
+                ? "الأسعار المعروضة لا تشمل ضريبة القيمة المضافة. تُضاف الضريبة (15%) عند الدفع وفقاً لأنظمة هيئة الزكاة والضريبة والجمارك في المملكة العربية السعودية."
+                : "Prices shown exclude VAT. 15% VAT is added at checkout per Saudi ZATCA regulations."}
+            </p>
+          </div>
+        </Card>
 
         <Card className="bg-zinc-900 border-zinc-700 p-6">
           <div className="flex items-center gap-2 mb-5">
@@ -181,7 +232,7 @@ export default function PaymentTestPage() {
             {completeMutation.isPending ? (
               <Loader2 className="w-5 h-5 animate-spin me-2" />
             ) : null}
-            {lang === "ar" ? `ادفع ${amount} ر.س` : `Pay ${amount} SAR`}
+            {lang === "ar" ? `ادفع ${totalAmount.toFixed(2)} ر.س` : `Pay ${totalAmount.toFixed(2)} SAR`}
           </Button>
 
           <div className="flex items-center justify-center gap-1.5 mt-3">
