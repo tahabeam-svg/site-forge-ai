@@ -38,24 +38,43 @@ export async function generateWebsite(description: string, language: string = "a
   const englishFonts = "'Inter', 'Poppins', 'Montserrat', sans-serif";
   const fontFamily = isArabic ? arabicFonts : englishFonts;
 
-  const prompt = `You are a world-class web designer and front-end engineer building stunning, production-ready websites for the Saudi/Arab market. Your output must rival the best agencies globally.
+  const prompt = `You are a world-class creative director and front-end engineer building AWARD-WINNING websites — the quality of Awwwards, Dribbble top shots, and top SaaS landing pages. Your output for the Saudi/Arab market must be visually stunning, modern, and technically excellent.
 
 Generate a COMPLETE, premium single-page website based on: "${description}"
 
 ═══════════════════════════════════════
-VISUAL DESIGN STANDARD — MANDATORY
+VISUAL DESIGN STANDARD 2025 — MANDATORY
 ═══════════════════════════════════════
-The website MUST feel like it was built by a top design agency. Requirements:
-- FIXED NAVBAR: position:fixed, top:0, full-width, starts transparent/dark gradient, turns solid with backdrop-filter:blur(16px) on scroll via JS
-- HERO: full-viewport-height (min-height:100vh), full-bleed background image with dark gradient overlay, animated headline (fadeUp keyframe), two CTA buttons (solid + ghost outline style)
-- STATS BAR: dark background section immediately after hero with 4 animated counters (use IntersectionObserver to trigger count-up animation)
-- ABOUT: 2-column grid (image left, text right), image with border-radius + box-shadow, floating badge with years of experience
-- SERVICES: 3-column grid of cards, each with colored icon box, title, description, hover lift effect (translateY + box-shadow)
-- GALLERY: 3-column CSS Grid, aspect-ratio:4/3, hover overlay with color gradient
-- CTA BAND: full-width colored section between testimonials and contact (gradient background)
-- TESTIMONIALS: 3-column dark background cards with star ratings, italic quote text, avatar initial circle
-- CONTACT: 2-column layout — left has contact info rows with icon boxes + WhatsApp button, right has a styled form card
-- FOOTER: dark background, 3-column layout (brand/tagline, quick links, contact info), bottom copyright bar
+The website MUST look like it was designed in 2025 by a top-tier agency. Think Notion, Linear, Vercel, Stripe landing pages — but adapted for the Arab market.
+
+▸ NAVBAR (GLASSMORPHISM): position:fixed; background:rgba(5,8,22,0.72); backdrop-filter:blur(24px); border-bottom:1px solid rgba(255,255,255,0.08). ALWAYS visible and glassy — even at top of page. On scroll: background:rgba(5,8,22,0.97). Brand name uses white-to-accent gradient text.
+
+▸ HERO (FULL VIEWPORT + ANIMATED ORBS): min-height:100vh. Dark gradient overlay on background image. Add 2–3 large blurred orb blobs (CSS radial-gradient circles, 400–700px, filter:blur(80px), position:absolute, animated with @keyframes orbFloat). Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
+
+▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing.
+
+▸ ABOUT: 2-column. Image with double-layer gradient border effect using ::before/::after pseudo-elements. Floating experience badge (gradient bg, bottom corner). Checklist items with colored check icons.
+
+▸ SERVICES: 3-column grid. Cards use CSS GRADIENT BORDER trick: background:linear-gradient(white,white) padding-box, linear-gradient(135deg,PRIMARY,ACCENT) border-box; border:1.5px solid transparent. On hover: translateY(-12px), stronger shadow, full gradient border revealed. Icon box rotates on hover, fills with gradient.
+
+▸ GALLERY: 3-column grid with border-radius:1.25rem. Hover: image scale(1.1) + dark gradient overlay + eye icon appears (scale from 0.5 to 1).
+
+▸ CTA BAND: Full-width gradient background. Large bold headline. Decorative radial glow orb in corner.
+
+▸ TESTIMONIALS: Dark section, glassmorphism cards (rgba background + backdrop-filter). Bottom gradient border appears on hover (scaleX animation). Quote icon with low opacity.
+
+▸ CONTACT: 2-column. Contact info with icon boxes. WhatsApp button. Right side: white card with gradient border, clean form inputs with focus ring.
+
+▸ FOOTER: Very dark background with radial glow orb. 3-column layout. Brand uses gradient text. Subtle dividers. Social icons circle on hover.
+
+▸ ANIMATIONS: Use cubic-bezier(.22,1,.36,1) for all transitions. @keyframes fadeUp, orbFloat, pulse, scrollBounce. IntersectionObserver for scroll reveals.
+
+▸ TYPOGRAPHY: Letter-spacing:-0.02em on all headings. Line-height:1.1 for hero, 1.2 for section titles. Use font-weight:900 for hero/stats numbers.
+
+▸ COLOR DEPTH: Use 3 opacity levels of your primary: full, 40%, 15%. Never use flat solid colors for backgrounds — always use gradients.
+
+Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
+Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
 
 Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
 Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
