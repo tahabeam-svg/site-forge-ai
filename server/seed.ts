@@ -205,10 +205,12 @@ export async function seedDatabase() {
     console.error("Invoice columns migration warning:", e.message);
   }
 
-  // Fix credits ADD bug: pro users with 55 credits should have 50, business with 205 should have 200
+  // Fix credits ADD bug: any user with 55 credits has free(5)+pro(50) = ADD bug, reset appropriately
   try {
     await db.execute(sql`UPDATE users SET credits = 50 WHERE plan = 'pro' AND credits = 55`);
     await db.execute(sql`UPDATE users SET credits = 200 WHERE plan = 'business' AND credits = 205`);
+    await db.execute(sql`UPDATE users SET credits = 5 WHERE plan = 'free' AND credits = 55`);
+    await db.execute(sql`UPDATE users SET credits = 5 WHERE plan = 'free' AND credits = 205`);
     console.log("Migration: credits correction applied (ADD→SET bug fix)");
   } catch (e: any) {
     console.error("Credits correction migration warning:", e.message);

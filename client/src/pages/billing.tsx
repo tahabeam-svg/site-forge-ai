@@ -600,7 +600,8 @@ export default function BillingPage() {
                   <Button
                     size="sm"
                     className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-xs"
-                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    onClick={() => handleUpgrade("pro")}
+                    disabled={upgradeMutation.isPending}
                     data-testid="button-upgrade-for-support"
                   >
                     {lang === "ar" ? "ترقية للوصول" : "Upgrade to Access"}
