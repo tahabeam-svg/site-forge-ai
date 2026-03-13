@@ -663,71 +663,101 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-4xl mx-auto">
-            {[
-              {
-                name: lang === "ar" ? "مجاني" : "Free",
-                price: lang === "ar" ? "مجاناً" : "Free",
-                yearly: "",
-                features: lang === "ar"
-                  ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "لا وصول لأداة التسويق"]
-                  : ["1 website", "2 free AI edits/site", "No marketing tool access"],
-              },
-              {
-                name: lang === "ar" ? "احترافي" : "Pro",
-                price: lang === "ar" ? "49 ر.س" : "49 SAR",
-                yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
-                popular: true,
-                features: lang === "ar"
-                  ? ["10 مواقع", "5 تعديلات مجانية/موقع", "تسويق AI — كل المنصات 🚀", "50 كريديت/شهر"]
-                  : ["10 websites", "5 free AI edits/site", "AI Marketing — all platforms 🚀", "50 credits/month"],
-              },
-              {
-                name: lang === "ar" ? "أعمال" : "Business",
-                price: lang === "ar" ? "99 ر.س" : "99 SAR",
-                yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
-                features: lang === "ar"
-                  ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "تسويق AI غير محدود 🚀", "200 كريديت/شهر + دعم أولوية"]
-                  : ["30 websites", "10 free AI edits/site", "Unlimited AI Marketing 🚀", "200 credits/month + priority support"],
-              },
-            ].map((plan, i) => (
-              <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
-                <Card className={`p-5 h-full relative overflow-visible ${plan.popular ? "border-2 border-purple-500 shadow-lg shadow-purple-500/10 mt-4" : ""}`} data-testid={`card-marketing-plan-${i}`}>
-                  {plan.popular && (
-                    <Badge className="absolute -top-3 start-3 sm:start-auto sm:left-1/2 sm:-translate-x-1/2 px-3 bg-gradient-to-r from-purple-500 to-indigo-600 whitespace-nowrap">
-                      <Star className="w-3 h-3 me-1" />
-                      {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
-                    </Badge>
-                  )}
-                  <div className="text-center mb-4">
-                    <h4 className="font-semibold mb-1">{plan.name}</h4>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-3xl font-bold">{plan.price}</span>
-                      <span className="text-muted-foreground text-sm">{lang === "ar" ? "/شهرياً" : "/mo"}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {`${plan.yearly}${lang === "ar" ? "/سنوياً" : "/yr"}`}
-                    </p>
-                  </div>
-                  <div className="space-y-2 mb-4">
-                    {plan.features.map((f, j) => (
-                      <div key={j} className="flex items-center justify-center sm:justify-start gap-2 text-sm">
-                        <Check className="w-3.5 h-3.5 text-purple-500 shrink-0" />
-                        <span>{f}</span>
+          {/* ── Unified Pricing ── */}
+          <div id="pricing" className="pt-4">
+            <div className="text-center mb-8">
+              <h3 className="text-lg sm:text-2xl font-bold mb-2" data-testid="text-pricing-title">
+                {lang === "ar" ? "الأسعار — موقع + تسويق في باقة واحدة" : "Pricing — Website & Marketing in One Plan"}
+              </h3>
+              <p className="text-muted-foreground text-sm">
+                {lang === "ar" ? "أسعار تنافسية تناسب جميع الأعمال السعودية" : "Competitive pricing for all Saudi businesses"}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+              {[
+                {
+                  id: "free",
+                  name: lang === "ar" ? "مجاني" : "Free",
+                  price: lang === "ar" ? "مجاناً" : "Free",
+                  desc: lang === "ar" ? "للبدء والتجربة" : "Perfect for getting started",
+                  yearly: "",
+                  features: lang === "ar"
+                    ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "❌ لا وصول لأداة التسويق", "يتضمن شعار عربي ويب"]
+                    : ["1 website", "2 free AI edits/site", "❌ No AI marketing access", "ArabyWeb badge on site"],
+                  cta: lang === "ar" ? "ابدأ مجاناً" : "Get Started Free",
+                  popular: false,
+                },
+                {
+                  id: "pro",
+                  name: lang === "ar" ? "احترافي" : "Pro",
+                  price: lang === "ar" ? "49 ر.س" : "49 SAR",
+                  desc: lang === "ar" ? "بناء مواقع + تسويق AI مشمول" : "Website builder + AI marketing included",
+                  yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
+                  popular: true,
+                  features: lang === "ar"
+                    ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — كل المنصات", "50 كريديت/شهر", "لوحة تحليلات · دعم 24/7", "بدون شعار عربي ويب"]
+                    : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — all platforms", "50 credits/month", "Analytics · 24/7 support", "No ArabyWeb badge"],
+                  cta: lang === "ar" ? "اشترك الآن" : "Subscribe Now",
+                },
+                {
+                  id: "business",
+                  name: lang === "ar" ? "أعمال" : "Business",
+                  price: lang === "ar" ? "99 ر.س" : "99 SAR",
+                  desc: lang === "ar" ? "قوة كاملة — تسويق AI غير محدود" : "Full power — unlimited AI marketing",
+                  yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
+                  features: lang === "ar"
+                    ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI غير محدود", "200 كريديت/شهر", "قوالب حصرية · دعم أولوية 24/7", "بدون شعار عربي ويب"]
+                    : ["30 websites", "10 free AI edits/site", "🚀 Unlimited AI Marketing", "200 credits/month", "Premium templates · Priority 24/7 support", "No ArabyWeb badge"],
+                  cta: lang === "ar" ? "اشترك الآن" : "Subscribe Now",
+                  popular: false,
+                },
+              ].map((plan, i) => (
+                <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
+                  <Card className={`p-6 h-full relative overflow-visible hover:shadow-lg transition-shadow ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 mt-4" : ""}`} data-testid={`card-plan-${i}`}>
+                    {plan.popular && (
+                      <Badge className="absolute -top-3 start-3 sm:start-auto sm:left-1/2 sm:-translate-x-1/2 px-3 bg-gradient-to-r from-emerald-500 to-teal-600 whitespace-nowrap">
+                        <Star className="w-3 h-3 me-1" />
+                        {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
+                      </Badge>
+                    )}
+                    <div className="text-center mb-6">
+                      <h4 className="text-lg font-semibold mb-1">{plan.name}</h4>
+                      <p className="text-xs text-muted-foreground mb-3">{plan.desc}</p>
+                      <div className="flex items-baseline justify-center gap-1">
+                        <span className="text-4xl font-bold">{plan.price}</span>
+                        {plan.id !== "free" && <span className="text-muted-foreground text-sm">{lang === "ar" ? "/شهرياً" : "/mo"}</span>}
                       </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant={plan.popular ? "default" : "outline"}
-                    className={`w-full ${plan.popular ? "bg-gradient-to-r from-purple-500 to-indigo-600" : ""}`}
-                    onClick={handleMarketingCTA}
-                    data-testid={`button-marketing-plan-${i}`}
-                  >
-                    {lang === "ar" ? "ابدأ التسويق" : "Start Marketing"}
-                  </Button>
-                </Card>
-              </motion.div>
-            ))}
+                      {plan.id !== "free" && (
+                        <>
+                          <p className="text-xs text-muted-foreground mt-1">{plan.yearly}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">{lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة ١٥٪" : "* Excl. 15% VAT"}</p>
+                        </>
+                      )}
+                    </div>
+                    <div className="space-y-2.5 mb-6">
+                      {plan.features.map((f, j) => (
+                        <div key={j} className="flex items-center gap-2 text-sm">
+                          {f.startsWith("❌") ? (
+                            <span className="w-4 h-4 shrink-0 text-center text-xs">❌</span>
+                          ) : (
+                            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
+                          )}
+                          <span>{f.replace("❌ ", "")}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      variant={plan.popular ? "default" : "outline"}
+                      className={`w-full ${plan.popular ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" : ""}`}
+                      onClick={() => handlePlanCTA(plan.id)}
+                      data-testid={`button-plan-${i}`}
+                    >
+                      {plan.cta}
+                    </Button>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -761,103 +791,6 @@ export default function LandingPage() {
                   </div>
                   <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">{feature.title}</h3>
                   <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className="py-14 sm:py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-16">
-            <motion.h2 custom={0} variants={fadeUp} className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" data-testid="text-pricing-title">
-              {t("pricing", lang)}
-            </motion.h2>
-            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-sm sm:text-lg max-w-xl mx-auto leading-relaxed">
-              {lang === "ar"
-                ? "أسعار تنافسية تناسب جميع الأعمال السعودية"
-                : "Competitive pricing for all Saudi businesses"}
-            </motion.p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 max-w-5xl mx-auto">
-            {[
-              {
-                id: "free",
-                name: t("freePlan", lang),
-                price: t("freePlanPrice", lang),
-                desc: t("freePlanDesc", lang),
-                features: [t("free1", lang), t("free2", lang), t("free3", lang), t("free4", lang)],
-                cta: t("currentPlan", lang),
-                popular: false,
-              },
-              {
-                id: "pro",
-                name: t("proPlan", lang),
-                price: t("proPlanPrice", lang),
-                desc: t("proPlanDesc", lang),
-                features: [t("pro1", lang), t("pro2", lang), t("pro3", lang), t("pro4", lang)],
-                cta: t("upgrade", lang),
-                popular: true,
-              },
-              {
-                id: "business",
-                name: t("businessPlan", lang),
-                price: t("businessPlanPrice", lang),
-                desc: t("businessPlanDesc", lang),
-                features: [t("business1", lang), t("business2", lang), t("business3", lang), t("business4", lang)],
-                cta: t("upgrade", lang),
-                popular: false,
-              },
-            ].map((plan, i) => (
-              <motion.div
-                key={i}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={scaleIn}
-              >
-                <Card
-                  className={`p-6 h-full relative overflow-visible hover:shadow-lg transition-shadow ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 mt-4" : ""}`}
-                  data-testid={`card-plan-${i}`}
-                >
-                  {plan.popular && (
-                    <Badge className="absolute -top-3 start-3 sm:start-auto sm:left-1/2 sm:-translate-x-1/2 px-3 bg-gradient-to-r from-emerald-500 to-teal-600 whitespace-nowrap">
-                      <Star className="w-3 h-3 me-1" />
-                      {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
-                    </Badge>
-                  )}
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold mb-1">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{plan.desc}</p>
-                    <div className="flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold">{plan.price}</span>
-                      {plan.id !== "free" && <span className="text-muted-foreground">{t("perMonth", lang)}</span>}
-                    </div>
-                    {plan.id !== "free" && (
-                      <p className="text-[10px] text-muted-foreground">
-                        {lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة" : "* Excl. VAT"}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-3 mb-6">
-                    {plan.features.map((f, j) => (
-                      <div key={j} className="flex items-center justify-center sm:justify-start gap-2 text-sm">
-                        <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span>{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant={plan.popular ? "default" : "outline"}
-                    className={`w-full ${plan.popular ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" : ""}`}
-                    onClick={() => handlePlanCTA(plan.id)}
-                    data-testid={`button-plan-${i}`}
-                  >
-                    {plan.cta}
-                  </Button>
                 </Card>
               </motion.div>
             ))}
