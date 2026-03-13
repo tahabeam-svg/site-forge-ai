@@ -12,7 +12,7 @@ import { db } from "../../db";
 import { users } from "@shared/models/auth";
 import { passwordResetTokens } from "@shared/schema";
 import { eq, sql, and, gte } from "drizzle-orm";
-import { sendPasswordResetEmail } from "../../email";
+import { sendPasswordResetEmail, sendWelcomeEmail, sendGoogleWelcomeEmail, sendEmailVerificationEmail } from "../../email";
 
 const MemoryStore = memorystore(session);
 
