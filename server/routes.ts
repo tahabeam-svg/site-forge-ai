@@ -68,13 +68,13 @@ const upload = multer({
 
 // Per-plan free edit limits per project (after which credits are consumed)
 const PLAN_EDIT_LIMITS: Record<string, number> = {
-  free: 2,
+  free: 10,
   pro: 5,
   business: 10,
 };
 
 // Free plan: max projects a free user can create
-const FREE_PLAN_MAX_PROJECTS = 3;
+const FREE_PLAN_MAX_PROJECTS = 1;
 
 // ─── Chatbot Rate Limiter (IP-based, in-memory) ───────────────────────────────
 const chatbotRateMap = new Map<string, { count: number; resetAt: number }>();
@@ -303,8 +303,8 @@ export async function registerRoutes(
         if (userProjects.length >= FREE_PLAN_MAX_PROJECTS) {
           return res.status(402).json({
             message: "upgrade_required",
-            messageAr: `وصلت للحد الأقصى (${FREE_PLAN_MAX_PROJECTS} مشاريع) في الخطة المجانية. اشترك الآن لإنشاء مشاريع غير محدودة.`,
-            messageEn: `You've reached the free plan limit (${FREE_PLAN_MAX_PROJECTS} projects). Upgrade now for unlimited projects.`,
+            messageAr: `الخطة المجانية تتيح موقعاً واحداً فقط. اشترك الآن لإنشاء مواقع غير محدودة.`,
+            messageEn: `Free plan allows 1 website only. Upgrade now for unlimited websites.`,
           });
         }
       }

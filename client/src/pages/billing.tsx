@@ -167,8 +167,8 @@ export default function BillingPage() {
       icon: Zap,
       credits: 5,
       features: lang === "ar"
-        ? ["موقع واحد", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع", "يتضمن شعار عربي ويب"]
-        : ["1 website", "Basic AI generation", "Community support", "ArabyWeb badge on site"],
+        ? ["موقع واحد", "10 تعديلات مجانية بالذكاء الاصطناعي", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع", "يتضمن شعار عربي ويب"]
+        : ["1 website", "10 free AI edits", "Basic AI generation", "Community support", "ArabyWeb badge on site"],
     },
     {
       id: "pro",
