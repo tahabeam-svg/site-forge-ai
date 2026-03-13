@@ -145,8 +145,8 @@ export async function verifyHmac(
 }
 
 export const PLAN_PRICES: Record<string, number> = {
-  pro: 9900,      // 99 SAR in halalas
-  business: 19900, // 199 SAR in halalas
+  pro: 4900,      // 49 SAR in halalas
+  business: 9900, // 99 SAR in halalas
 };
 
 export async function initPricesFromDB(storage: any) {
