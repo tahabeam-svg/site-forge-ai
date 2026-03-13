@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import DashboardLayout from "@/components/dashboard-layout";
@@ -23,9 +23,11 @@ import {
   Linkedin,
   Twitter,
   Youtube,
-  Zap,
   Crown,
   Lock,
+  BrainCircuit,
+  ShoppingCart,
+  AlertTriangle,
 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 
@@ -60,19 +62,27 @@ export default function AIMarketingPage() {
   const lang = language;
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const qc = useQueryClient();
   const [topic, setTopic] = useState("");
   const [selectedPlatform, setSelectedPlatform] = useState("instagram");
   const [selectedTone, setSelectedTone] = useState("professional");
   const [result, setResult] = useState<SocialContent | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
-  const { data: subscription } = useQuery<{ plan: string; isAdmin?: boolean }>({
+  const { data: subscription } = useQuery<{ plan: string; credits: number; isAdmin?: boolean }>({
     queryKey: ["/api/subscription"],
+  });
+
+  const { data: creditsData } = useQuery<{ credits: number; plan: string; isAdmin?: boolean }>({
+    queryKey: ["/api/credits"],
   });
 
   const isFreePlan = !subscription?.plan || subscription.plan === "free";
   const isAdmin = subscription?.isAdmin === true;
   const needsUpgrade = isFreePlan && !isAdmin;
+  const credits = creditsData?.credits ?? subscription?.credits ?? 0;
+  const isLowCredits = !isAdmin && credits <= 5 && credits > 0;
+  const noCredits = !isAdmin && credits <= 0 && !isFreePlan;
 
   const generateMutation = useMutation({
     mutationFn: async () => {
@@ -90,8 +100,12 @@ export default function AIMarketingPage() {
     },
     onSuccess: (data: SocialContent) => {
       setResult(data);
+      qc.invalidateQueries({ queryKey: ["/api/credits"] });
+      qc.invalidateQueries({ queryKey: ["/api/subscription"] });
+      qc.invalidateQueries({ queryKey: ["/api/me"] });
       toast({
         title: lang === "ar" ? "تم إنشاء المحتوى!" : "Content generated!",
+        description: lang === "ar" ? "تم خصم جلسة ذكاء واحدة من رصيدك." : "1 AI session deducted from your balance.",
       });
     },
     onError: (err: any) => {
@@ -101,6 +115,13 @@ export default function AIMarketingPage() {
           description: lang === "ar" ? err.messageAr : err.messageEn,
           variant: "destructive",
         });
+      } else if (err?.message === "insufficient_credits") {
+        toast({
+          title: lang === "ar" ? "رصيدك منتهٍ" : "Credits Depleted",
+          description: lang === "ar" ? err.messageAr : err.messageEn,
+          variant: "destructive",
+        });
+        setTimeout(() => setLocation("/billing"), 1500);
       } else {
         toast({
           title: lang === "ar" ? "فشل إنشاء المحتوى" : "Failed to generate content",
@@ -161,6 +182,28 @@ export default function AIMarketingPage() {
                   {lang === "ar" ? "العودة للرئيسية" : "Go to Dashboard"}
                 </Button>
               </div>
+            </div>
+          </Card>
+        )}
+
+        {noCredits && (
+          <Card className="p-5 border-amber-300 bg-amber-50 dark:bg-amber-950/30" data-testid="card-no-credits-marketing">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold text-amber-800 dark:text-amber-200">
+                  {lang === "ar" ? "انتهى رصيد جلسات الذكاء" : "AI Credits Depleted"}
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-0.5">
+                  {lang === "ar"
+                    ? "اشحن رصيدك لمتابعة توليد المحتوى التسويقي. كل توليد يخصم جلسة ذكاء واحدة."
+                    : "Top up your AI credits to continue generating marketing content. Each generation costs 1 session."}
+                </p>
+              </div>
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white shrink-0" onClick={() => setLocation("/billing")} data-testid="button-buy-credits-marketing">
+                <ShoppingCart className="w-3.5 h-3.5 me-1.5" />
+                {lang === "ar" ? "شراء رصيد" : "Buy Credits"}
+              </Button>
             </div>
           </Card>
         )}
@@ -232,7 +275,7 @@ export default function AIMarketingPage() {
 
               <Button
                 onClick={() => generateMutation.mutate()}
-                disabled={!topic.trim() || generateMutation.isPending}
+                disabled={!topic.trim() || generateMutation.isPending || noCredits}
                 className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
                 data-testid="button-generate-content"
               >
@@ -245,108 +288,61 @@ export default function AIMarketingPage() {
                   <>
                     <Sparkles className="w-4 h-4 me-2" />
                     {lang === "ar" ? "إنشاء المحتوى" : "Generate Content"}
+                    {!isAdmin && (
+                      <span className="ms-2 text-xs opacity-75 flex items-center gap-0.5">
+                        (<BrainCircuit className="w-3 h-3" /> 1)
+                      </span>
+                    )}
                   </>
                 )}
               </Button>
             </Card>
 
-            <Card className="p-5">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                {lang === "ar" ? "خطط التسويق" : "Marketing Plans"}
-              </h3>
-              <div className="space-y-3">
-                {[
-                  {
-                    id: "free",
-                    name: lang === "ar" ? "مجاني" : "Free",
-                    price: lang === "ar" ? "مجاناً" : "Free",
-                    priceNum: 0,
-                    posts: lang === "ar" ? "تسويق أساسي" : "Basic marketing",
-                  },
-                  {
-                    id: "pro",
-                    name: lang === "ar" ? "احترافي" : "Pro",
-                    price: lang === "ar" ? "49 ر.س" : "49 SAR",
-                    priceNum: 49,
-                    posts: lang === "ar" ? "تسويق متقدم + حملات" : "Advanced marketing + campaigns",
-                    popular: true,
-                  },
-                  {
-                    id: "business",
-                    name: lang === "ar" ? "أعمال" : "Business",
-                    price: lang === "ar" ? "99 ر.س" : "99 SAR",
-                    priceNum: 99,
-                    posts: lang === "ar" ? "تسويق غير محدود" : "Unlimited marketing",
-                  },
-                ].map((plan, i) => {
-                  const currentPlan = subscription?.plan || "free";
-                  const isCurrent = currentPlan === plan.id || (isAdmin && plan.id === "business");
-                  const planLevel = (p: string) => p === "business" ? 2 : p === "pro" ? 1 : 0;
-                  const canUpgrade = plan.priceNum > 0 && !isCurrent && planLevel(plan.id) > planLevel(currentPlan);
-                  return (
-                    <div
-                      key={i}
-                      className={`p-3 rounded-lg border transition-all ${
-                        isCurrent
-                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950 ring-1 ring-emerald-400"
-                          : plan.popular
-                          ? "border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30"
-                          : "border-border"
-                      }`}
-                      data-testid={`card-marketing-plan-${i}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-sm">{plan.name}</span>
-                            {isCurrent && (
-                              <Badge className="bg-emerald-600 text-white text-xs">
-                                {lang === "ar" ? "خطتك الحالية" : "Current"}
-                              </Badge>
-                            )}
-                            {!isCurrent && plan.popular && (
-                              <Badge className="bg-amber-500 text-white text-xs">
-                                {lang === "ar" ? "الأكثر شعبية" : "Popular"}
-                              </Badge>
-                            )}
-                          </div>
-                          <span className="text-xs text-muted-foreground">{plan.posts}</span>
-                        </div>
-                        <div className="text-end">
-                          <div className="font-bold text-emerald-600 text-sm">
-                            {plan.price}{plan.priceNum > 0 ? `/${lang === "ar" ? "شهر" : "mo"}` : ""}
-                          </div>
-                          {plan.priceNum > 0 && (
-                            <div className="text-[10px] text-muted-foreground">
-                              {lang === "ar"
-                                ? `+ ضريبة 15% = ${(plan.priceNum * 1.15).toFixed(0)} ر.س`
-                                : `+15% VAT = ${(plan.priceNum * 1.15).toFixed(0)} SAR`}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      {canUpgrade && (
-                        <Button
-                          size="sm"
-                          className="w-full mt-2 h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                          onClick={() => setLocation("/billing")}
-                          data-testid={`button-upgrade-to-${plan.id}`}
-                        >
-                          <Crown className="w-3 h-3 me-1" />
-                          {lang === "ar" ? `ترقية إلى ${plan.name}` : `Upgrade to ${plan.name}`}
-                        </Button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-3">
-                {lang === "ar"
-                  ? "* الأسعار لا تشمل ضريبة القيمة المضافة 15%"
-                  : "* Prices exclude 15% VAT"}
-              </p>
-            </Card>
+            {!needsUpgrade && (
+              <Card className="p-4" data-testid="card-credits-marketing">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BrainCircuit className="w-4 h-4 text-violet-600" />
+                    <span className="text-sm font-medium">
+                      {lang === "ar" ? "رصيد الذكاء المتبقي" : "Remaining AI Credits"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isAdmin ? (
+                      <Badge className="bg-violet-600 text-white">∞</Badge>
+                    ) : (
+                      <Badge className={`${isLowCredits || noCredits ? "bg-red-500" : "bg-emerald-600"} text-white`}>
+                        {credits}
+                      </Badge>
+                    )}
+                    {!isAdmin && !isFreePlan && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs"
+                        onClick={() => setLocation("/billing")}
+                        data-testid="button-topup-credits"
+                      >
+                        <ShoppingCart className="w-3 h-3 me-1" />
+                        {lang === "ar" ? "شراء رصيد" : "Buy Credits"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                {isLowCredits && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    {lang === "ar"
+                      ? `⚠️ رصيدك منخفض (${credits} جلسة متبقية). اشحن الآن قبل النفاذ.`
+                      : `⚠️ Low credits (${credits} remaining). Top up before they run out.`}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  {lang === "ar"
+                    ? "• كل توليد محتوى تسويقي يخصم جلسة ذكاء واحدة من رصيدك المشترك مع منشئ المواقع"
+                    : "• Each marketing content generation costs 1 AI session, shared with the website builder"}
+                </p>
+              </Card>
+            )}
           </div>
 
           <div>

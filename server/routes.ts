@@ -1132,7 +1132,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
   app.post("/api/marketing/generate", isAuthenticated, async (req: any, res) => {
     try {
-      const { isFreePlan, isUserAdmin } = await getUserPlanInfo(req.user.id);
+      const { isFreePlan, isUserAdmin, credits } = await getUserPlanInfo(req.user.id);
+
       if (isFreePlan && !isUserAdmin) {
         return res.status(402).json({
           message: "upgrade_required",
@@ -1140,10 +1141,27 @@ Sitemap: https://arabyweb.net/sitemap.xml
           messageEn: "AI Marketing Tool is available on paid plans only. Upgrade now to access it.",
         });
       }
+
+      if (!isUserAdmin && credits <= 0) {
+        return res.status(402).json({
+          message: "insufficient_credits",
+          messageAr: "انتهى رصيد جلسات الذكاء. اشحن رصيدك لمتابعة توليد المحتوى التسويقي.",
+          messageEn: "Your AI credits are depleted. Top up to continue generating marketing content.",
+        });
+      }
+
       const parsed = socialContentSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
       const { topic, platform, language, tone } = parsed.data;
       const content = await generateSocialContent(topic, platform, language || "ar", tone || "professional");
+
+      if (!isUserAdmin) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, true).catch(() => {});
+        });
+      }
+
       res.json(content);
     } catch (err) {
       console.error("Marketing generation error:", err);
