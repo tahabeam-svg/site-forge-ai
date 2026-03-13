@@ -1500,36 +1500,75 @@ export default function EditorPage() {
           )}
         </div>
 
-        <div className={`flex-1 bg-muted/30 flex items-start justify-center p-4 overflow-auto ${mobileView === "panel" ? "hidden md:flex" : "flex"}`}>
-          {project.generatedHtml ? (
-            <div
-              className="bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-300"
-              style={{ width: viewportWidth, maxWidth: "100%", height: "calc(100vh - 8rem)" }}
-            >
-              <iframe
-                ref={iframeRef}
-                src={previewSrc}
-                className="w-full h-full border-0"
-                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-                title="Website Preview"
-                data-testid="iframe-preview"
-              />
+        {/* ─── Live Preview Pane ─── */}
+        <div className={`flex-1 flex flex-col overflow-hidden bg-[#1e1e2e] ${mobileView === "panel" ? "hidden md:flex" : "flex"}`}>
+          {/* Browser Chrome Bar */}
+          <div className="shrink-0 flex items-center gap-2 px-3 py-2 bg-[#2a2a3d] border-b border-white/10">
+            {/* Window dots */}
+            <div className="hidden md:flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
+              <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
+              <div className="w-3 h-3 rounded-full bg-[#28c840]" />
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full w-full">
-              <div className="text-center text-muted-foreground">
-                <Sparkles className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                <p className="text-lg font-medium mb-1">
-                  {lang === "ar" ? "ابدأ بإنشاء موقعك" : "Start by generating your website"}
-                </p>
-                <p className="text-sm opacity-70">
-                  {lang === "ar"
-                    ? "استخدم اللوحة الجانبية لوصف موقعك"
-                    : "Use the sidebar panel to describe your website"}
-                </p>
+            {/* URL bar */}
+            <div className="flex-1 flex items-center gap-2 bg-[#1e1e2e]/80 rounded-md px-3 py-1 border border-white/10 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+              <span className="text-xs text-white/50 font-mono truncate">
+                {project.status === "published" && project.publishedUrl
+                  ? project.publishedUrl
+                  : lang === "ar" ? "معاينة مباشرة — موقعك" : "Live Preview — your site"}
+              </span>
+            </div>
+            {/* Live badge + reload */}
+            <div className="hidden md:flex items-center gap-2 shrink-0">
+              <Badge className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 h-auto">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 inline-block animate-pulse" />
+                {lang === "ar" ? "مباشر" : "Live"}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-white/40 hover:text-white hover:bg-white/10"
+                onClick={() => { if (iframeRef.current) iframeRef.current.src = iframeRef.current.src; }}
+                title={lang === "ar" ? "تحديث" : "Reload"}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </Button>
+            </div>
+          </div>
+
+          {/* Preview area */}
+          <div className="flex-1 flex items-start justify-center p-4 overflow-auto bg-[#1e1e2e]">
+            {project.generatedHtml ? (
+              <div
+                className="bg-white rounded-lg shadow-2xl overflow-hidden transition-all duration-300 border border-white/10"
+                style={{ width: viewportWidth, maxWidth: "100%", height: "calc(100vh - 10rem)" }}
+              >
+                <iframe
+                  ref={iframeRef}
+                  src={previewSrc}
+                  className="w-full h-full border-0"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                  title="Website Preview"
+                  data-testid="iframe-preview"
+                />
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-center h-full w-full">
+                <div className="text-center">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Sparkles className="w-10 h-10 text-emerald-400 opacity-60" />
+                  </div>
+                  <p className="text-base font-medium text-white/50 mb-1">
+                    {lang === "ar" ? "ابدأ بإنشاء موقعك" : "Start by generating your website"}
+                  </p>
+                  <p className="text-sm text-white/30">
+                    {lang === "ar" ? "استخدم اللوحة الجانبية لوصف موقعك" : "Use the sidebar panel to describe your website"}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
