@@ -258,44 +258,94 @@ export default function AIMarketingPage() {
               <div className="space-y-3">
                 {[
                   {
+                    id: "free",
                     name: lang === "ar" ? "مجاني" : "Free",
                     price: lang === "ar" ? "مجاناً" : "Free",
+                    priceNum: 0,
                     posts: lang === "ar" ? "تسويق أساسي" : "Basic marketing",
                   },
                   {
+                    id: "pro",
                     name: lang === "ar" ? "احترافي" : "Pro",
                     price: lang === "ar" ? "49 ر.س" : "49 SAR",
+                    priceNum: 49,
                     posts: lang === "ar" ? "تسويق متقدم + حملات" : "Advanced marketing + campaigns",
                     popular: true,
                   },
                   {
+                    id: "business",
                     name: lang === "ar" ? "أعمال" : "Business",
                     price: lang === "ar" ? "99 ر.س" : "99 SAR",
+                    priceNum: 99,
                     posts: lang === "ar" ? "تسويق غير محدود" : "Unlimited marketing",
                   },
-                ].map((plan, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      plan.popular ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950" : "border-border"
-                    }`}
-                    data-testid={`card-marketing-plan-${i}`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm">{plan.name}</span>
-                        {plan.popular && (
-                          <Badge className="bg-emerald-500 text-white text-xs">
-                            {lang === "ar" ? "الأكثر شعبية" : "Popular"}
-                          </Badge>
-                        )}
+                ].map((plan, i) => {
+                  const currentPlan = subscription?.plan || "free";
+                  const isCurrent = currentPlan === plan.id || (isAdmin && plan.id === "business");
+                  const planLevel = (p: string) => p === "business" ? 2 : p === "pro" ? 1 : 0;
+                  const canUpgrade = plan.priceNum > 0 && !isCurrent && planLevel(plan.id) > planLevel(currentPlan);
+                  return (
+                    <div
+                      key={i}
+                      className={`p-3 rounded-lg border transition-all ${
+                        isCurrent
+                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950 ring-1 ring-emerald-400"
+                          : plan.popular
+                          ? "border-emerald-300 bg-emerald-50/50 dark:bg-emerald-950/30"
+                          : "border-border"
+                      }`}
+                      data-testid={`card-marketing-plan-${i}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm">{plan.name}</span>
+                            {isCurrent && (
+                              <Badge className="bg-emerald-600 text-white text-xs">
+                                {lang === "ar" ? "خطتك الحالية" : "Current"}
+                              </Badge>
+                            )}
+                            {!isCurrent && plan.popular && (
+                              <Badge className="bg-amber-500 text-white text-xs">
+                                {lang === "ar" ? "الأكثر شعبية" : "Popular"}
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">{plan.posts}</span>
+                        </div>
+                        <div className="text-end">
+                          <div className="font-bold text-emerald-600 text-sm">
+                            {plan.price}{plan.priceNum > 0 ? `/${lang === "ar" ? "شهر" : "mo"}` : ""}
+                          </div>
+                          {plan.priceNum > 0 && (
+                            <div className="text-[10px] text-muted-foreground">
+                              {lang === "ar"
+                                ? `+ ضريبة 15% = ${(plan.priceNum * 1.15).toFixed(0)} ر.س`
+                                : `+15% VAT = ${(plan.priceNum * 1.15).toFixed(0)} SAR`}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <span className="text-xs text-muted-foreground">{plan.posts}</span>
+                      {canUpgrade && (
+                        <Button
+                          size="sm"
+                          className="w-full mt-2 h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                          onClick={() => setLocation("/billing")}
+                          data-testid={`button-upgrade-to-${plan.id}`}
+                        >
+                          <Crown className="w-3 h-3 me-1" />
+                          {lang === "ar" ? `ترقية إلى ${plan.name}` : `Upgrade to ${plan.name}`}
+                        </Button>
+                      )}
                     </div>
-                    <span className="font-bold text-emerald-600">{plan.price}/{lang === "ar" ? "شهر" : "mo"}</span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+              <p className="text-[11px] text-muted-foreground mt-3">
+                {lang === "ar"
+                  ? "* الأسعار لا تشمل ضريبة القيمة المضافة 15%"
+                  : "* Prices exclude 15% VAT"}
+              </p>
             </Card>
           </div>
 
