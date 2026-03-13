@@ -1321,7 +1321,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
           paymobOrderId: `TEST-CREDITS-${Date.now()}`,
           paymobTransactionId: null,
         });
-        const amountSAR = Math.round(amountCents / 100);
+        const amountSAR = credits;
         return res.json({ testMode: true, testUrl: `/payment-test?type=credits&credits=${credits}&purchaseId=${purchase.id}&amount=${amountSAR}` });
       }
 
