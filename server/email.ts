@@ -17,12 +17,14 @@ type SenderKey = keyof typeof SENDERS;
 
 async function getSmtpConfig() {
   // Prefer env vars (more secure for production)
-  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+  // EMAIL_PASS takes priority over SMTP_PASS (SMTP_PASS may be corrupted)
+  const smtpPass = process.env.EMAIL_PASS || process.env.SMTP_PASS;
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && smtpPass) {
     return {
       host: process.env.SMTP_HOST,
       port: parseInt(process.env.SMTP_PORT || "587", 10),
       user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
+      pass: smtpPass,
     };
   }
   // Fall back to DB settings (configured from admin panel)
