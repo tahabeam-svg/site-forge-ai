@@ -1514,8 +1514,8 @@ export default function EditorPage() {
             <div className="flex-1 flex items-center gap-2 bg-[#1e1e2e]/80 rounded-md px-3 py-1 border border-white/10 min-w-0">
               <div className="w-2 h-2 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
               <span className="text-xs text-white/50 font-mono truncate">
-                {project.status === "published" && project.publishedUrl
-                  ? project.publishedUrl
+                {project.status === "published" && (project as any).publishedUrl
+                  ? (project as any).publishedUrl
                   : lang === "ar" ? "معاينة مباشرة — موقعك" : "Live Preview — your site"}
               </span>
             </div>

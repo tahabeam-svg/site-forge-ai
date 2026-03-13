@@ -359,6 +359,7 @@ export async function registerRoutes(
         colorPalette: generated.colorPalette,
         sections: generated.sections,
         status: "generated",
+        editCount: 0,
       });
 
       if (!isFreePlan && !isUserAdmin) {
@@ -440,7 +441,7 @@ export async function registerRoutes(
         status: "generated",
         editCount: 0,
         websiteLanguage,
-      } as any);
+      });
 
       if (!isFreePlan2 && !isUserAdmin2) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
@@ -471,7 +472,7 @@ export async function registerRoutes(
       const { isUserAdmin: isAdminEdit, planName: planNameEdit, credits: userCreditsEdit } = await getUserPlanInfo(userId);
       const isFreePlanEdit = planNameEdit === "free";
       const editLimit = PLAN_EDIT_LIMITS[planNameEdit] ?? PLAN_EDIT_LIMITS.free;
-      const currentEditCount = (project as any).editCount ?? 0;
+      const currentEditCount = project.editCount ?? 0;
       const isOverLimit = currentEditCount >= editLimit;
 
       if (!isAdminEdit && isOverLimit) {
@@ -571,7 +572,7 @@ export async function registerRoutes(
         generatedHtml: finalEditHtml,
         generatedCss: result.css,
         editCount: newEditCount,
-      } as any);
+      });
 
       res.json(updated);
     } catch (err: any) {

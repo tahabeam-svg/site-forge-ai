@@ -977,6 +977,16 @@ export default function AdminPage() {
               <ChatbotAdminSection lang={lang} toast={toast} />
             )}
 
+            {/* ─── Feedback Section ─────────────────────────────────────────── */}
+            {activeSection === "feedback" && (
+              <FeedbackAdminSection
+                items={feedbackItems}
+                loading={feedbackLoading}
+                lang={lang}
+                onRefresh={() => { refetchFeedback(); queryClient.invalidateQueries({ queryKey: ["/api/admin/feedback/count"] }); }}
+              />
+            )}
+
             {/* ─── Anti-Fraud Section ───────────────────────────────────────── */}
             {activeSection === "fraud" && (
               <div className="space-y-6">
@@ -1524,15 +1534,6 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
         </Card>
       )}
 
-      {/* ─── Feedback Section ─── */}
-      {activeSection === "feedback" && (
-        <FeedbackAdminSection
-          items={feedbackItems}
-          loading={feedbackLoading}
-          lang={lang}
-          onRefresh={() => { refetchFeedback(); queryClient.invalidateQueries({ queryKey: ["/api/admin/feedback/count"] }); }}
-        />
-      )}
 
     </div>
   );

@@ -95,7 +95,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 
 - `users` - id (varchar, UUID), email, password (bcrypt hash), firstName, lastName, profileImageUrl, googleId, isAdmin, credits (integer, default 5), plan (varchar, default 'free'), githubToken, githubUsername, createdAt, updatedAt
 - `sessions` - sid (varchar PK), sess (jsonb), expire (timestamp)
-- `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), createdAt, updatedAt
+- `projects` - id (serial), userId (varchar), name, description, status, templateId, generatedHtml, generatedCss, seoTitle, seoDescription, colorPalette (jsonb), sections (jsonb), editCount (integer default 0), websiteLanguage (varchar default 'ar'), createdAt, updatedAt
 - `templates` - id (serial), name, nameAr, description, descriptionAr, category, thumbnail, previewHtml, previewCss, isPremium, createdAt
 - `chat_messages` - id (serial), projectId (integer), role (text), content (text), createdAt
 - `coupons` - id (serial), code (text, unique), discountType (text), discountValue (integer), maxUses (integer), usedCount (integer), expiresAt (timestamp), isActive (boolean), createdAt
@@ -154,7 +154,22 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Business: 99 SAR/month — 200 credits/month (up to 50 websites, up to 100 marketing posts)
 - Yearly billing: 20% discount (Pro: 470 SAR/year, Business: 950 SAR/year)
 
-Credits usage: 1 credit per AI generation, 1 per AI edit, 1 per AI marketing post
+Credits usage: 1 credit per AI generation, 1 per AI marketing post. AI edits: Free plan=2 free edits/site then 1 credit each; Pro=5 free edits/site; Business=10 free edits/site. Admins bypass all limits.
+
+## Edit Limits per Plan (PLAN_EDIT_LIMITS in server/routes.ts)
+
+- Free: 2 free edits per project
+- Pro: 5 free edits per project
+- Business: 10 free edits per project
+- After limit: 1 credit deducted per edit (if credits available), else 402 error
+- editCount stored on projects table, reset to 0 on new generation
+
+## Website Language Support
+
+- 7 languages supported: ar (العربية), en (English), fr (Français), tr (Türkçe), ru (Русский), de (Deutsch), zh (中文)
+- Stored as websiteLanguage on project record
+- Language directive injected into AI prompt via buildStructuredPrompt()
+- Language selected via button UI in wizard Step 1 (flag + native name buttons)
 
 ## Language Default
 
