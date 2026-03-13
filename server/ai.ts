@@ -768,7 +768,8 @@ const EXTRA_LANG_NAMES: Record<string, string> = {
 export async function generateInstantWebsite(
   prompt: string,
   language: string = "ar",
-  languages: string[] = ["ar"]
+  languages: string[] = ["ar"],
+  primaryWebsiteLang: string = "ar"
 ): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
   const emailSlug = prompt.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10) || "business";
@@ -939,13 +940,16 @@ Rules:
     };
   }
 
-  const { html, css } = buildInstantWebsite(bilingualContent, isArabic, extraLang ? [extraLang] : undefined);
+  const { html, css } = buildInstantWebsite(bilingualContent, primaryWebsiteLang, extraLang ? [extraLang] : undefined);
 
+  const isPrimaryAr = primaryWebsiteLang === "ar";
+  const isPrimaryEn = primaryWebsiteLang === "en";
+  const seoContent = isPrimaryAr ? bilingualContent.ar : isPrimaryEn ? bilingualContent.en : (extraLang?.content ?? bilingualContent.ar);
   return {
     html,
     css,
-    seoTitle: isArabic ? bilingualContent.ar.seo_title : bilingualContent.en.seo_title,
-    seoDescription: isArabic ? bilingualContent.ar.seo_description : bilingualContent.en.seo_description,
+    seoTitle: seoContent.seo_title,
+    seoDescription: seoContent.seo_description,
     sections: ["الرئيسية", "من نحن", "خدماتنا", "تواصل معنا"],
     colorPalette: {
       primary: bilingualContent.primary_color || "#059669",

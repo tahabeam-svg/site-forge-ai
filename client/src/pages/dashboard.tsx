@@ -401,7 +401,12 @@ export default function DashboardPage() {
       };
       if (wizardTemplate) createPayload.templateId = wizardTemplate.id;
 
-      const createRes = await apiRequest("POST", "/api/projects", createPayload);
+      const createRes = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(createPayload),
+        credentials: "include",
+      });
       const createData = await createRes.json();
 
       if (createRes.status === 402) {
@@ -417,7 +422,9 @@ export default function DashboardPage() {
         return;
       }
 
-      if (!createRes.ok) throw new Error(createData.message || "Failed to create project");
+      if (!createRes.ok) {
+        throw new Error(createData.detail || createData.message || "Failed to create project");
+      }
       const project: Project = createData;
 
       const allLangs = [wizardForm.websiteLanguage, ...wizardForm.websiteExtraLangs].filter(Boolean);
@@ -429,10 +436,15 @@ export default function DashboardPage() {
       };
       if (wizardForm.logoDataUrl) genPayload.logoDataUrl = wizardForm.logoDataUrl;
 
-      const genRes = await apiRequest("POST", `/api/projects/${project.id}/generate-instant`, genPayload);
+      const genRes = await fetch(`/api/projects/${project.id}/generate-instant`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(genPayload),
+        credentials: "include",
+      });
       if (!genRes.ok) {
-        const errData = await genRes.json();
-        throw new Error(errData.message || "Generation failed");
+        const errData = await genRes.json().catch(() => ({}));
+        throw new Error(errData.detail || errData.message || "Generation failed");
       }
 
       stopProgressAnimation();

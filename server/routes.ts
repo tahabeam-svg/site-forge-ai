@@ -280,7 +280,7 @@ export async function registerRoutes(
 
   const createProjectSchema = z.object({
     name: z.string().min(1).max(200),
-    description: z.string().max(2000).optional(),
+    description: z.string().max(8000).optional(),
     templateId: z.number().optional(),
   });
 
@@ -323,8 +323,9 @@ export async function registerRoutes(
         sections: null,
       });
       res.status(201).json(project);
-    } catch (err) {
-      res.status(500).json({ message: "Failed to create project" });
+    } catch (err: any) {
+      console.error("Create project error:", err?.message || err);
+      res.status(500).json({ message: "Failed to create project", detail: err?.message || "Unknown error" });
     }
   });
 
@@ -405,7 +406,7 @@ export async function registerRoutes(
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
-      const generated = await generateInstantWebsite(description, language, websiteLanguages);
+      const generated = await generateInstantWebsite(description, language, websiteLanguages, websiteLanguage);
 
       const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2 } = await getUserPlanInfo(req.user.id);
       let baseHtml = generated.html;

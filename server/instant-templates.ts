@@ -225,18 +225,19 @@ export interface ExtraLang {
 
 export function buildInstantWebsite(
   content: BilingualBusinessContent,
-  isRTL: boolean,
+  primaryLang: string,
   extraLangs?: ExtraLang[]
 ): { html: string; css: string } {
   const config = BUSINESS_CONFIGS[content.business_type] || BUSINESS_CONFIGS.general;
   const primary = content.primary_color || config.primary;
   const accent = content.accent_color || config.accent;
   const dark = config.dark;
-  const dir = "rtl";
+  const isPrimaryAr = primaryLang === "ar";
+  const dir = isPrimaryAr ? "rtl" : "ltr";
   const ar = content.ar;
   const en = content.en;
 
-  // Extra language (up to 1 additional beyond ar+en, or 2 if primary is not ar/en)
+  // Extra language (up to 1 additional beyond ar+en)
   const e3: ExtraLang | undefined = extraLangs?.[0];
   const e3code = e3?.code;
 
@@ -278,7 +279,7 @@ export function buildInstantWebsite(
   const statsHtml = config.stats.map(s => `
     <div class="stat-item" data-aos>
       <span class="stat-num" data-target="${s.num}">${s.num}</span>
-      <span class="stat-label" ${dDyn(s.label_ar, s.label_en, e3code ? (MULTILANG_UI[e3code]?.exp || s.label_en) : undefined)}>${s.label_ar}</span>
+      <span class="stat-label" ${dDyn(s.label_ar, s.label_en, e3code ? s.label_en : undefined)}>${s.label_ar}</span>
     </div>`).join("");
 
   const galleryHtml = config.gallery_images.map((url, i) => `
@@ -303,23 +304,28 @@ export function buildInstantWebsite(
 
   const whatsappNum = content.phone.replace(/\D/g, "");
 
-  // Language order for switcher: primary first (always ar for Saudi market), then others
-  const langOrder = ["ar", "en", ...(e3code ? [e3code] : [])];
+  // Language order for switcher: primary language first, then others
+  const knownLangs = ["ar", "en", ...(e3code ? [e3code] : [])];
+  // Put primary language first, then maintain order
+  const langOrder = [primaryLang, ...knownLangs.filter(l => l !== primaryLang)];
+  // Initial content to display (matches primaryLang)
+  const initContent = primaryLang === "ar" ? ar : primaryLang === "en" ? en : (e3?.content ?? ar);
+  const initName = primaryLang === "ar" ? content.business_name_ar : primaryLang === "en" ? content.business_name_en : (e3?.businessName || content.business_name_en);
   // Initial button shows next language to switch to
   const initialBtnLabel = langOrder[1] === "ar" ? "عر" : langOrder[1].toUpperCase();
 
-  const html = `<div dir="rtl" class="aw-site" id="aw-root" lang="ar">
+  const html = `<div dir="${dir}" class="aw-site" id="aw-root" lang="${primaryLang}">
 
 <!-- ===== NAV ===== -->
 <nav class="aw-nav" id="aw-nav">
   <div class="aw-nav-inner">
-    <a href="#" class="aw-brand" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName || e3?.content.hero_title?.split(" ").slice(0,2).join(" "))}>${content.business_name_ar}</a>
+    <a href="#" class="aw-brand" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName || e3?.content.hero_title?.split(" ").slice(0,2).join(" "))}>${initName}</a>
     <div class="aw-nav-links">
-      <a href="#about" ${dUI("من نحن", "About", "nav_about")}>من نحن</a>
-      <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>خدماتنا</a>
-      <a href="#gallery" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>أعمالنا</a>
-      <a href="#testimonials" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>آراء العملاء</a>
-      <a href="#contact" class="aw-nav-cta" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
+      <a href="#about" ${dUI("من نحن", "About", "nav_about")}>${MULTILANG_UI[primaryLang]?.nav_about || (isPrimaryAr ? "من نحن" : "About")}</a>
+      <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>${MULTILANG_UI[primaryLang]?.nav_services || (isPrimaryAr ? "خدماتنا" : "Services")}</a>
+      <a href="#gallery" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>${MULTILANG_UI[primaryLang]?.nav_gallery || (isPrimaryAr ? "أعمالنا" : "Gallery")}</a>
+      <a href="#testimonials" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>${MULTILANG_UI[primaryLang]?.nav_reviews || (isPrimaryAr ? "آراء العملاء" : "Reviews")}</a>
+      <a href="#contact" class="aw-nav-cta" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</a>
     </div>
     <div style="display:flex;align-items:center;gap:0.5rem;">
       <button id="aw-lang-btn" onclick="awCycleLang()" title="Switch Language" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:0.35rem 0.75rem;border-radius:2rem;font-size:0.8rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;font-family:inherit;">${initialBtnLabel}</button>
@@ -329,11 +335,11 @@ export function buildInstantWebsite(
     </div>
   </div>
   <div id="aw-mobile-menu" style="display:none;flex-direction:column;padding:1rem 1.5rem;gap:0.25rem;border-top:1px solid rgba(255,255,255,0.1);">
-    <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("من نحن", "About", "nav_about")}>من نحن</a>
-    <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("خدماتنا", "Services", "nav_services")}>خدماتنا</a>
-    <a href="#gallery" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>أعمالنا</a>
-    <a href="#testimonials" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>آراء العملاء</a>
-    <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-cta-link" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
+    <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("من نحن", "About", "nav_about")}>${MULTILANG_UI[primaryLang]?.nav_about || (isPrimaryAr ? "من نحن" : "About")}</a>
+    <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("خدماتنا", "Services", "nav_services")}>${MULTILANG_UI[primaryLang]?.nav_services || (isPrimaryAr ? "خدماتنا" : "Services")}</a>
+    <a href="#gallery" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>${MULTILANG_UI[primaryLang]?.nav_gallery || (isPrimaryAr ? "أعمالنا" : "Gallery")}</a>
+    <a href="#testimonials" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>${MULTILANG_UI[primaryLang]?.nav_reviews || (isPrimaryAr ? "آراء العملاء" : "Reviews")}</a>
+    <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-cta-link" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</a>
   </div>
 </nav>
 
@@ -345,12 +351,12 @@ export function buildInstantWebsite(
     <div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div>
   </div>
   <div class="aw-container hero-body">
-    <div class="hero-badge" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</div>
-    <h1 class="hero-h1" ${dDyn(ar.hero_title, en.hero_title, e3?.content.hero_title)}>${ar.hero_title}</h1>
-    <p class="hero-sub" ${dDyn(ar.hero_subtitle, en.hero_subtitle, e3?.content.hero_subtitle)}>${ar.hero_subtitle}</p>
+    <div class="hero-badge" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${initName}</div>
+    <h1 class="hero-h1" ${dDyn(ar.hero_title, en.hero_title, e3?.content.hero_title)}>${initContent.hero_title}</h1>
+    <p class="hero-sub" ${dDyn(ar.hero_subtitle, en.hero_subtitle, e3?.content.hero_subtitle)}>${initContent.hero_subtitle}</p>
     <div class="hero-actions">
-      <a href="#contact" class="btn-glow" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
-      <a href="#services" class="btn-ghost" ${dUI("اكتشف المزيد", "Discover More", "discover")}>اكتشف المزيد
+      <a href="#contact" class="btn-glow" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</a>
+      <a href="#services" class="btn-ghost" ${dUI("اكتشف المزيد", "Discover More", "discover")}>${MULTILANG_UI[primaryLang]?.discover || (isPrimaryAr ? "اكتشف المزيد" : "Discover More")}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
@@ -568,19 +574,17 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="p
   function awGetNextLabel(nextCode){
     return nextCode === 'ar' ? 'عر' : nextCode.toUpperCase();
   }
-  window.awCycleLang = function(){
-    awLangIdx = (awLangIdx + 1) % AW_LANG_ORDER.length;
-    var lang = AW_LANG_ORDER[awLangIdx];
-    var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
+  function awApplyLang(lang){
     var root = document.getElementById('aw-root');
     var btn = document.getElementById('aw-lang-btn');
     var isAr = lang === 'ar';
     root.setAttribute('dir', isAr ? 'rtl' : 'ltr');
     root.setAttribute('lang', lang);
+    var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
     btn.textContent = awGetNextLabel(nextCode);
     // Switch all translatable text elements
     document.querySelectorAll('[data-ar]').forEach(function(el){
-      var val = el.getAttribute('data-' + lang);
+      var val = el.getAttribute('data-' + lang) || el.getAttribute('data-ar');
       if(val !== null) el.textContent = val;
     });
     // Switch placeholders
@@ -593,7 +597,13 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="p
     document.querySelectorAll('.hero-h1,.sec-title,.cta-h2,.form-title,.aw-brand,.footer-logo,.service-card h3,.stat-num').forEach(function(el){
       el.style.fontFamily = isAr ? "${fontHeadingAr}" : "${fontHeadingEn}";
     });
+  }
+  window.awCycleLang = function(){
+    awLangIdx = (awLangIdx + 1) % AW_LANG_ORDER.length;
+    awApplyLang(AW_LANG_ORDER[awLangIdx]);
   };
+  // Initialize to primary language on page load (no-op if already ar)
+  ${primaryLang !== "ar" ? `awLangIdx = ${langOrder.indexOf(primaryLang)}; awApplyLang('${primaryLang}');` : ""}
   // Keep legacy alias for any existing calls
   window.awToggleLang = window.awCycleLang;
 })();
