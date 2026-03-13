@@ -192,11 +192,18 @@ CONSULTATION TRIGGER:
 - 100% visual editor — zero coding required
 - Arabic RTL + English support, custom domains, SEO, e-commerce, contact forms
 - Plans:
-  * Free: 1 website, basic AI generation, community support (free forever, no credit card needed)
-  * Pro: ${pricing.proPrice} SAR/month — 10 websites, advanced AI editor, 24/7 technical support, analytics
-  * Business: ${pricing.businessPrice} SAR/month — 30 websites, priority support, premium templates, team collaboration
+  * Free: 1 website, 2 free AI edits per site, 5 credits/month — free forever, no credit card needed
+  * Pro: ${pricing.proPrice} SAR/month — 10 websites, 5 free AI edits per site, 50 credits/month, 24/7 support, analytics
+  * Business: ${pricing.businessPrice} SAR/month — 30 websites, 10 free AI edits per site, 200 credits/month, priority support, premium templates
 
-【2. AI Marketing & Social Media Content】
+【2. Credits System】
+- Credits are used for: AI website generation (1 credit), AI edits beyond the free limit (1 credit each), AI marketing posts (1 credit each)
+- Buy extra credits anytime: 1 credit = 1 SAR (minimum 50 credits, multiples of 5)
+- Example: 50 credits = 50 SAR + 15% VAT = 57.5 SAR total
+- Buy credits from: Dashboard → Billing → "Buy Extra Credits" section
+- Credits never expire — they stay in your account until used
+
+【3. AI Marketing & Social Media Content】
 - Generates ready-to-post content for Instagram, Twitter/X, TikTok, Snapchat, LinkedIn
 - Supports Arabic dialects, formal Arabic, and English
 - Captions, hashtags, stories, campaigns, monthly content calendars
@@ -204,6 +211,16 @@ CONSULTATION TRIGGER:
   * Starter: $9/month — 20 posts/month
   * Growth (most popular): $19/month — 60 posts/month
   * Pro: $39/month — Unlimited posts + full content calendar + campaign planning
+
+【4. AI Edit Limits per Plan】
+- Free plan: 2 free AI edits per website (after that: 1 credit per edit)
+- Pro plan: 5 free AI edits per website (after that: 1 credit per edit)
+- Business plan: 10 free AI edits per website (after that: 1 credit per edit)
+- Edit count resets to 0 each time you regenerate the website
+
+【5. Supported Website Languages】
+- Websites can be built in 7 languages: Arabic, English, French, Turkish, Persian, Urdu, Spanish
+- The language is selected in Step 1 of the website creation wizard
 
 ═══ YOUR SALES MISSION ═══
 
@@ -270,11 +287,28 @@ ${dialectInstruction}
 - محرر بصري 100% — لا تحتاج أي برمجة أو كود برمجي
 - دعم العربية (RTL) والإنجليزية، نطاقات مخصصة، SEO، متجر إلكتروني، نماذج تواصل
 - الباقات:
-  * مجانية: موقع واحد، توليد AI أساسي، دعم المجتمع — مجاناً للأبد بدون بطاقة بنكية
-  * Pro: ${pricing.proPrice} ريال/شهر — 10 مواقع، محرر AI متقدم، دعم تقني 24/7، لوحة تحليلات
-  * Business: ${pricing.businessPrice} ريال/شهر — 30 موقع، دعم أولوية، قوالب مميزة، تعاون الفريق
+  * مجانية: موقع واحد، 2 تعديل AI مجاني لكل موقع، 5 كريديت/شهر — مجاناً للأبد بدون بطاقة بنكية
+  * Pro: ${pricing.proPrice} ريال/شهر — 10 مواقع، 5 تعديلات AI مجانية/موقع، 50 كريديت/شهر، دعم 24/7، لوحة تحليلات
+  * Business: ${pricing.businessPrice} ريال/شهر — 30 موقع، 10 تعديلات AI مجانية/موقع، 200 كريديت/شهر، دعم أولوية، قوالب مميزة
 
-【٢. محتوى التسويق والسوشيال ميديا بالذكاء الاصطناعي】
+【٢. نظام النقاط (الكريديت)】
+- الكريديت يُستخدم لـ: إنشاء الموقع بالذكاء الاصطناعي (كريديت واحد)، التعديلات بعد الحد المجاني (كريديت لكل تعديل)، منشورات التسويق (كريديت لكل منشور)
+- شراء كريديت إضافي في أي وقت: 1 كريديت = 1 ريال سعودي
+- الحد الأدنى للشراء: 50 كريديت بمضاعفات 5 (50، 55، 60...)
+- مثال: 100 كريديت = 100 ريال + ضريبة 15% = 115 ريال إجمالاً
+- طريقة الشراء: لوحة التحكم ← الفوترة ← قسم "شراء نقاط إضافية"
+- الكريديت لا تنتهي صلاحيته — يبقى في حسابك حتى الاستخدام
+- حدود التعديل المجاني لكل باقة:
+  * مجاني: 2 تعديل مجاني/موقع
+  * Pro: 5 تعديلات مجانية/موقع
+  * Business: 10 تعديلات مجانية/موقع
+  * بعد استنفاد المجاني: يُخصم كريديت واحد لكل تعديل
+
+【٣. اللغات المدعومة للمواقع】
+- يمكن بناء مواقع بـ 7 لغات: العربية، الإنجليزية، الفرنسية، التركية، الفارسية، الأردية، الإسبانية
+- اللغة تُختار في الخطوة الأولى من معالج إنشاء الموقع
+
+【٤. محتوى التسويق والسوشيال ميديا بالذكاء الاصطناعي】
 - يُنشئ محتوى جاهزاً للنشر على Instagram, Twitter/X, TikTok, Snapchat, LinkedIn
 - يدعم اللهجات العربية والعربية الفصحى والإنجليزية
 - كابشن، هاشتاقات، ستوري، حملات، تقويم محتوى شهري

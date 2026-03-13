@@ -26,7 +26,7 @@ export interface TemplateParams {
   heroSubtitle: string;
   ctaText: string;
   services: { name: string; desc: string }[];
-  testimonials: { name: string; role: string; text: string }[];
+  testimonials: { name: string; role: string; text: string; photo?: string; gender?: "m" | "f" }[];
   galleryImages: string[];
   heroImageId: string;
   gradient: string;
@@ -49,9 +49,12 @@ export function generateFullTemplate(p: TemplateParams): string {
     `<div style="background:#fff;border-radius:1rem;padding:2rem;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,0.06);transition:transform 0.3s,box-shadow 0.3s;" onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 16px rgba(0,0,0,0.06)'"><div style="width:60px;height:60px;border-radius:1rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">${getIcon(i + p.variant)}</div><h3 style="font-family:'Cairo',sans-serif;font-weight:700;font-size:1.15rem;color:#1e293b;margin-bottom:0.5rem;">${s.name}</h3><p style="font-family:'Tajawal',sans-serif;color:#64748b;font-size:0.95rem;line-height:1.7;">${s.desc}</p></div>`
   ).join("");
 
-  const testimonialsHtml = p.testimonials.map((t, i) =>
-    `<div style="background:#fff;border-radius:1rem;padding:2rem;box-shadow:0 2px 12px rgba(0,0,0,0.05);border-right:4px solid ${p.accent};"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;"><div style="width:48px;height:48px;border-radius:50%;background:${p.accent}20;color:${p.accent};display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-weight:700;font-size:1.1rem;">${t.name.charAt(0)}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#1e293b;">${t.name}</div><div style="font-family:'Tajawal',sans-serif;font-size:0.85rem;color:#94a3b8;">${t.role}</div></div></div><p style="font-family:'Tajawal',sans-serif;color:#475569;line-height:1.8;font-size:0.95rem;">"${t.text}"</p><div style="margin-top:0.75rem;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>`
-  ).join("");
+  const testimonialsHtml = p.testimonials.map((t, i) => {
+    const avatarHtml = t.photo
+      ? `<img src="https://images.unsplash.com/${t.photo}?w=96&h=96&fit=crop&crop=face&q=80" alt="${t.name}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid ${p.accent}30;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" loading="lazy"/><div style="display:none;width:48px;height:48px;border-radius:50%;background:${p.accent}20;color:${p.accent};align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-weight:700;font-size:1.1rem;">${t.name.charAt(0)}</div>`
+      : `<div style="width:48px;height:48px;border-radius:50%;background:${p.accent}20;color:${p.accent};display:flex;align-items:center;justify-content:center;font-family:'Cairo',sans-serif;font-weight:700;font-size:1.1rem;">${t.name.charAt(0)}</div>`;
+    return `<div style="background:#fff;border-radius:1rem;padding:2rem;box-shadow:0 2px 12px rgba(0,0,0,0.05);border-right:4px solid ${p.accent};"><div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">${avatarHtml}<div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#1e293b;">${t.name}</div><div style="font-family:'Tajawal',sans-serif;font-size:0.85rem;color:#94a3b8;">${t.role}</div></div></div><p style="font-family:'Tajawal',sans-serif;color:#475569;line-height:1.8;font-size:0.95rem;">"${t.text}"</p><div style="margin-top:0.75rem;color:#f59e0b;">&#9733;&#9733;&#9733;&#9733;&#9733;</div></div>`;
+  }).join("");
 
   const layoutVariant = p.variant % 3;
   const heroAlign = layoutVariant === 0 ? "center" : layoutVariant === 1 ? "right" : "center";

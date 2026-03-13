@@ -1,8 +1,8 @@
 import { db } from "./db";
-import { sql } from "drizzle-orm";
-import { templates } from "@shared/schema";
+import { sql, eq } from "drizzle-orm";
+import { templates, platformSettings } from "@shared/schema";
 import { generateFullTemplate } from "./template-generator";
-import { allCategories, gradients, accents } from "./seed-data";
+import { allCategories, gradients, accents, commonTestimonials } from "./seed-data";
 
 export async function seedDatabase() {
   try {
@@ -192,8 +192,27 @@ export async function seedDatabase() {
     console.error("Credit purchases migration warning:", e.message);
   }
 
-  const existing = await db.select().from(templates);
-  if (existing.length > 0) return;
+  // Template versioning — bump TEMPLATE_VERSION to force regeneration
+  const TEMPLATE_VERSION = "v3-gulf-avatars";
+  try {
+    const [versionRow] = await db.select().from(platformSettings).where(eq(platformSettings.key, "template_version"));
+    const currentVersion = versionRow?.value ?? null;
+    if (currentVersion === TEMPLATE_VERSION) {
+      const [firstTemplate] = await db.select({ id: templates.id }).from(templates).limit(1);
+      if (firstTemplate) {
+        console.log("Templates already at version:", TEMPLATE_VERSION);
+        return;
+      }
+    } else {
+      // Clear old templates for regeneration
+      await db.delete(templates);
+      console.log("Templates cleared for regeneration to version:", TEMPLATE_VERSION);
+    }
+  } catch {
+    // If version check fails, check if templates exist
+    const [firstTemplate] = await db.select({ id: templates.id }).from(templates).limit(1);
+    if (firstTemplate) return;
+  }
 
   const allTemplates: any[] = [];
 
@@ -248,5 +267,10 @@ export async function seedDatabase() {
     await db.insert(templates).values(batch);
   }
 
-  console.log(`Database seeded with ${allTemplates.length} templates across ${allCategories.length} categories`);
+  // Save template version
+  await db.insert(platformSettings)
+    .values({ key: "template_version", value: TEMPLATE_VERSION })
+    .onConflictDoUpdate({ target: platformSettings.key, set: { value: TEMPLATE_VERSION } });
+
+  console.log(`Database seeded with ${allTemplates.length} templates across ${allCategories.length} categories (${TEMPLATE_VERSION})`);
 }

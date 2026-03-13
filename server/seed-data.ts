@@ -6,7 +6,7 @@ export interface CategoryConfig {
   heroSubtitles: string[];
   ctaTexts: string[];
   services: { name: string; desc: string }[][];
-  testimonials: { name: string; role: string; text: string }[];
+  testimonials: { name: string; role: string; text: string; photo: string; gender: "m" | "f" }[];
   heroImages: string[];
   galleryImages: string[];
 }
@@ -57,13 +57,39 @@ export const accents = [
   { color: "#f87171", dark: "#dc2626" },
 ];
 
-const commonTestimonials: { name: string; role: string; text: string }[] = [
-  { name: "أحمد المطيري", role: "مدير تنفيذي", text: "خدمة ممتازة وفريق عمل محترف جداً، أنصح بالتعامل معهم بشدة" },
-  { name: "سارة الحربي", role: "رائدة أعمال", text: "تجربة رائعة من البداية للنهاية، نتائج تفوق التوقعات" },
-  { name: "محمد العتيبي", role: "صاحب شركة", text: "جودة عمل استثنائية والتزام تام بالمواعيد، شكراً لكم" },
-  { name: "نورة القحطاني", role: "مديرة مشاريع", text: "احترافية عالية في التنفيذ وسرعة في الاستجابة للملاحظات" },
-  { name: "خالد الشمري", role: "مستثمر", text: "أفضل قرار اتخذته هو التعاون مع هذا الفريق المميز" },
-  { name: "فاطمة الدوسري", role: "مصممة", text: "إبداع وتميز في كل تفصيلة، عمل يستحق الإشادة" },
+export const commonTestimonials: { name: string; role: string; text: string; photo: string; gender: "m" | "f" }[] = [
+  { name: "أحمد المطيري", role: "مدير تنفيذي", text: "خدمة ممتازة وفريق عمل محترف جداً، أنصح بالتعامل معهم بشدة", photo: "photo-1507003211169-0a1dd7228f2d", gender: "m" },
+  { name: "سارة الحربي", role: "رائدة أعمال", text: "تجربة رائعة من البداية للنهاية، نتائج تفوق التوقعات", photo: "photo-1494790108377-be9c29b29330", gender: "f" },
+  { name: "محمد العتيبي", role: "صاحب شركة", text: "جودة عمل استثنائية والتزام تام بالمواعيد، شكراً لكم", photo: "photo-1560250097-0b93528c311a", gender: "m" },
+  { name: "نورة القحطاني", role: "مديرة مشاريع", text: "احترافية عالية في التنفيذ وسرعة في الاستجابة للملاحظات", photo: "photo-1580489944761-15a19d654956", gender: "f" },
+  { name: "خالد الشمري", role: "مستثمر", text: "أفضل قرار اتخذته هو التعاون مع هذا الفريق المميز", photo: "photo-1519085360753-af0119f7cbe7", gender: "m" },
+  { name: "فاطمة الدوسري", role: "مصممة", text: "إبداع وتميز في كل تفصيلة، عمل يستحق الإشادة", photo: "photo-1534528741775-53994a69daeb", gender: "f" },
+  { name: "عبدالله الرشيد", role: "رجل أعمال", text: "منصة احترافية بكل المقاييس، وفّرت علينا الكثير من الوقت والجهد", photo: "photo-1566492031773-4f4e44671857", gender: "m" },
+  { name: "منى الغامدي", role: "مديرة تسويق", text: "النتائج فاقت توقعاتنا بمراحل، سرعة وجودة واحترافية", photo: "photo-1531123897727-8f129e1688ce", gender: "f" },
+  { name: "سلطان الزهراني", role: "مدير مبيعات", text: "تعاملت مع كثير من الشركات ولم أجد مثل هذا المستوى من الاحترافية", photo: "photo-1570295999919-56ceb5ecca61", gender: "m" },
+  { name: "ريم العسيري", role: "صاحبة مشروع", text: "موقعنا أصبح أجمل بكثير وارتفعت مبيعاتنا بشكل ملحوظ", photo: "photo-1508214751196-bcfd4ca60f91", gender: "f" },
+  { name: "فيصل الأحمدي", role: "مقاول عام", text: "التزام بالمواعيد وجودة لا تقبل المساومة، شكراً لكم", photo: "photo-1542909168-82c3e7fdca5c", gender: "m" },
+  { name: "هنوف الشهري", role: "طبيبة أسنان", text: "موقعنا المهني أصبح مرجعاً للمرضى في المنطقة", photo: "photo-1524504388940-b1c1722653e1", gender: "f" },
+];
+
+// Curated Gulf/Arab-appropriate hero images for people-heavy categories
+export const gulfMedicalHeroImages = [
+  "photo-1666214280557-f1b5022eb634", "photo-1576091160550-2173dba999ef", "photo-1559757148-5c350d0d3c56",
+  "photo-1579684385127-1ef15d508118", "photo-1612349317150-e413f6a5b16d", "photo-1516549655169-df83a0774514",
+  "photo-1585435557343-3b092031a831", "photo-1504439468489-c8920d796a29", "photo-1519494026892-80bbd2d6fd0d",
+  "photo-1538108149393-fbbd81895907",
+];
+export const gulfBeautyHeroImages = [
+  "photo-1560066984-138dadb4c035", "photo-1522335789203-aabd1fc54bc9", "photo-1487412947147-5cebf100ffc2",
+  "photo-1570172619644-dfd03ed5d881", "photo-1616394584738-fc6e612e71b9", "photo-1595476108010-b4d1f102b1b1",
+  "photo-1562322140-8baeececf3df", "photo-1512290923902-8a9f81dc236c", "photo-1520975661595-6453be3f7070",
+  "photo-1580618672591-eb180b1a973f",
+];
+export const gulfFitnessHeroImages = [
+  "photo-1534438327276-14e5300c3a48", "photo-1517836357463-d25dfeac3438", "photo-1576678927484-cc907957088c",
+  "photo-1571019613454-1cb2f99b2d8b", "photo-1544033527-b192daee1f5b", "photo-1540497077202-7c8a3999166f",
+  "photo-1593079831268-3381b0db4a77", "photo-1605296867304-46d5465a13f1", "photo-1526506118085-60ce8714f8c5",
+  "photo-1574680096145-d05b474e2155",
 ];
 
 export const allCategories: CategoryConfig[] = [
