@@ -93,6 +93,25 @@ At the bottom of the HTML, include a <script> tag with:
    - On IntersectionObserver trigger, animate number from 0 to target value over 1500ms
 
 ═══════════════════════════════════════
+ICONS — FONT AWESOME 6 FREE (MANDATORY)
+═══════════════════════════════════════
+Include Font Awesome 6 CDN in the HTML: <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous"/>
+Use Font Awesome icons (<i class="fa-solid fa-[icon]">) for:
+- Service card icons (fa-bullseye, fa-chart-line, fa-palette, fa-code, fa-mobile-screen, fa-globe, fa-star, fa-gem, etc.) — pick relevant icons for the business
+- Contact section: fa-phone, fa-envelope, fa-location-dot
+- Checklist items: fa-circle-check or fa-check
+- Footer social links: fa-instagram, fa-twitter, fa-linkedin (if applicable)
+- Testimonial cards: fa-quote-right decorative icon (position:absolute, opacity:0.15, font-size:3rem)
+- Hero CTA arrow: fa-arrow-left (for RTL) or fa-arrow-right (for LTR)
+- Gallery hover overlay icon: fa-eye
+- Stats icons above numbers: fa-trophy, fa-users, fa-star, fa-clock etc.
+Service icon CSS:
+.service-icon-wrap{width:68px;height:68px;background:linear-gradient(135deg,PRIMARY15,ACCENT15);border-radius:1.25rem;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;transition:all 0.35s;}
+.service-icon-wrap i{font-size:1.65rem;color:PRIMARY;transition:all 0.35s;}
+.service-card:hover .service-icon-wrap{background:linear-gradient(135deg,PRIMARY,ACCENT);box-shadow:0 8px 20px PRIMARY40;}
+.service-card:hover .service-icon-wrap i{color:#fff;}
+
+═══════════════════════════════════════
 STOCK IMAGES — HIGH QUALITY UNSPLASH
 ═══════════════════════════════════════
 Choose images that PRECISELY match the business topic. Use ?w=1600&h=900&fit=crop&q=85 for hero, ?w=800&h=600&fit=crop&q=80 for about, ?w=600&h=400&fit=crop&q=75 for gallery.

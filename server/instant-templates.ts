@@ -46,11 +46,13 @@ const BUSINESS_CONFIGS: Record<string, {
   primary: string; accent: string; dark: string;
   hero_image: string; about_image: string;
   gallery_images: string[];
+  icons: string[];
   stats: { num: string; label_ar: string; label_en: string }[];
   testimonials: { name: string; role_ar: string; role_en: string; text_ar: string; text_en: string }[];
 }> = {
   restaurant: {
     primary: "#c0392b", accent: "#e67e22", dark: "#1a0a00",
+    icons: ["fa-utensils","fa-wine-glass","fa-star","fa-clock","fa-fire","fa-leaf"],
     hero_image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&h=900&fit=crop&q=85",
     about_image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&h=600&fit=crop&q=80",
     gallery_images: [
@@ -75,6 +77,7 @@ const BUSINESS_CONFIGS: Record<string, {
   },
   agency: {
     primary: "#2563eb", accent: "#7c3aed", dark: "#030712",
+    icons: ["fa-bullseye","fa-chart-line","fa-palette","fa-code","fa-mobile-screen","fa-magnifying-glass"],
     hero_image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=900&fit=crop&q=85",
     about_image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop&q=80",
     gallery_images: [
@@ -99,6 +102,7 @@ const BUSINESS_CONFIGS: Record<string, {
   },
   startup: {
     primary: "#7c3aed", accent: "#06b6d4", dark: "#0a0015",
+    icons: ["fa-rocket","fa-lightbulb","fa-gears","fa-shield","fa-cloud","fa-chart-bar"],
     hero_image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=1600&h=900&fit=crop&q=85",
     about_image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop&q=80",
     gallery_images: [
@@ -123,6 +127,7 @@ const BUSINESS_CONFIGS: Record<string, {
   },
   portfolio: {
     primary: "#d97706", accent: "#dc2626", dark: "#0a0805",
+    icons: ["fa-pen-nib","fa-camera","fa-film","fa-desktop","fa-wand-magic-sparkles","fa-layer-group"],
     hero_image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1600&h=900&fit=crop&q=85",
     about_image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=600&fit=crop&q=80",
     gallery_images: [
@@ -147,6 +152,7 @@ const BUSINESS_CONFIGS: Record<string, {
   },
   medical: {
     primary: "#0d9488", accent: "#0284c7", dark: "#001a18",
+    icons: ["fa-heart-pulse","fa-user-doctor","fa-microscope","fa-pills","fa-hospital","fa-stethoscope"],
     hero_image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1600&h=900&fit=crop&q=85",
     about_image: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=800&h=600&fit=crop&q=80",
     gallery_images: [
@@ -171,6 +177,7 @@ const BUSINESS_CONFIGS: Record<string, {
   },
   general: {
     primary: "#059669", accent: "#0284c7", dark: "#00100a",
+    icons: ["fa-gem","fa-handshake","fa-trophy","fa-globe","fa-bolt","fa-crown"],
     hero_image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1600&h=900&fit=crop&q=85",
     about_image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop&q=80",
     gallery_images: [
@@ -195,14 +202,7 @@ const BUSINESS_CONFIGS: Record<string, {
   },
 };
 
-const SERVICE_ICONS = [
-  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>`,
-  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>`,
-  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`,
-  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
-  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
-  `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-];
+const FALLBACK_ICONS = ["fa-gem","fa-handshake","fa-trophy","fa-globe","fa-bolt","fa-crown"];
 
 const STAR_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
@@ -224,9 +224,12 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
   const fontHeading = fontHeadingAr;
   const fontBody = fontBodyAr;
 
+  const svcIcons = config.icons || FALLBACK_ICONS;
   const servicesHtml = ar.services.slice(0, 6).map((s, i) => `
-    <div class="service-card" data-aos>
-      <div class="service-icon-wrap">${SERVICE_ICONS[i % SERVICE_ICONS.length]}</div>
+    <div class="service-card" data-aos style="animation-delay:${i * 0.08}s">
+      <div class="service-icon-wrap">
+        <i class="fa-solid ${svcIcons[i % svcIcons.length]}"></i>
+      </div>
       <h3 data-ar="${s.title}" data-en="${en.services[i]?.title || s.title}">${s.title}</h3>
       <p data-ar="${s.desc}" data-en="${en.services[i]?.desc || s.desc}">${s.desc}</p>
     </div>`).join("");
@@ -245,6 +248,7 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 
   const testimonialsHtml = config.testimonials.map((t, i) => `
     <div class="testi-card" data-aos style="animation-delay:${i * 0.12}s">
+      <div class="testi-quote-icon"><i class="fa-solid fa-quote-right"></i></div>
       <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
       <p class="testi-text" data-ar='"${t.text_ar}"' data-en='"${t.text_en}"'>"${t.text_ar}"</p>
       <div class="testi-author">
@@ -479,6 +483,12 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
   <div class="footer-bottom">
     <div class="aw-container footer-bottom-inner">
       <p>© 2026 <span data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</span>. <span data-ar="جميع الحقوق محفوظة." data-en="All Rights Reserved.">جميع الحقوق محفوظة.</span></p>
+      <div class="footer-socials">
+        ${content.phone ? `<a href="https://wa.me/${whatsappNum}" target="_blank" aria-label="WhatsApp" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>` : ""}
+        <a href="#" aria-label="Instagram" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" aria-label="Twitter/X" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
+        <a href="#" aria-label="LinkedIn" class="social-icon"><i class="fa-brands fa-linkedin-in"></i></a>
+      </div>
     </div>
   </div>
 </footer>
@@ -632,20 +642,26 @@ img{max-width:100%;display:block;object-fit:cover;}
 .services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.75rem;}
 .service-card{background:#fff;border:1px solid #e2e8f0;border-radius:1.5rem;padding:2.5rem;transition:all 0.35s;position:relative;overflow:hidden;}
 .service-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,${primary}08,${accent}08);opacity:0;transition:opacity 0.35s;}
-.service-card:hover{transform:translateY(-8px);box-shadow:0 25px 60px rgba(0,0,0,0.12);border-color:${primary}40;}
+.service-card::after{content:'';position:absolute;top:0;inset-inline-start:0;width:100%;height:3px;background:linear-gradient(90deg,${primary},${accent});transform:scaleX(0);transform-origin:inset-inline-start;transition:transform 0.35s;}
+.service-card:hover{transform:translateY(-8px);box-shadow:0 25px 60px rgba(0,0,0,0.12);border-color:${primary}30;}
 .service-card:hover::before{opacity:1;}
-.service-icon-wrap{width:64px;height:64px;background:linear-gradient(135deg,${primary}18,${accent}18);border-radius:1.25rem;display:flex;align-items:center;justify-content:center;color:${primary};margin-bottom:1.5rem;transition:transform 0.3s;}
-.service-card:hover .service-icon-wrap{transform:scale(1.1) rotate(-5deg);}
+.service-card:hover::after{transform:scaleX(1);}
+.service-icon-wrap{width:68px;height:68px;background:linear-gradient(135deg,${primary}15,${accent}15);border-radius:1.25rem;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;transition:all 0.35s;position:relative;}
+.service-icon-wrap i{font-size:1.65rem;color:${primary};transition:all 0.35s;line-height:1;}
+.service-card:hover .service-icon-wrap{transform:scale(1.1) rotate(-5deg);background:linear-gradient(135deg,${primary},${accent});box-shadow:0 8px 20px ${primary}40;}
+.service-card:hover .service-icon-wrap i{color:#fff;}
 .service-card h3{font-family:${fontHeading};font-size:1.15rem;font-weight:800;color:#0f172a;margin-bottom:0.75rem;}
 .service-card p{color:#64748b;line-height:1.75;font-size:0.95rem;}
 
 /* === GALLERY === */
 .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
-.gallery-item{position:relative;border-radius:1rem;overflow:hidden;aspect-ratio:4/3;}
+.gallery-item{position:relative;border-radius:1rem;overflow:hidden;aspect-ratio:4/3;cursor:pointer;}
 .gallery-item img{width:100%;height:100%;transition:transform 0.5s ease;}
-.gallery-overlay{position:absolute;inset:0;background:linear-gradient(135deg,${primary}90,${accent}70);opacity:0;transition:opacity 0.4s;}
+.gallery-overlay{position:absolute;inset:0;background:linear-gradient(135deg,${primary}90,${accent}70);opacity:0;transition:opacity 0.4s;display:flex;align-items:center;justify-content:center;}
+.gallery-overlay::after{content:'\f06e';font-family:'Font Awesome 6 Free';font-weight:900;color:#fff;font-size:2rem;transform:scale(0.5);transition:transform 0.4s;}
 .gallery-item:hover img{transform:scale(1.08);}
 .gallery-item:hover .gallery-overlay{opacity:1;}
+.gallery-item:hover .gallery-overlay::after{transform:scale(1);}
 
 /* === CTA BAND === */
 .cta-band{padding:5rem 0;}
@@ -657,14 +673,17 @@ img{max-width:100%;display:block;object-fit:cover;}
 
 /* === TESTIMONIALS === */
 .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.75rem;}
-.testi-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:1.5rem;padding:2.25rem;backdrop-filter:blur(4px);transition:all 0.35s;}
-.testi-card:hover{background:rgba(255,255,255,0.08);transform:translateY(-5px);}
-.testi-stars{display:flex;gap:2px;margin-bottom:1.25rem;}
-.testi-text{color:rgba(255,255,255,0.8);font-size:1rem;line-height:1.85;margin-bottom:1.75rem;font-style:italic;}
+.testi-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:1.5rem;padding:2.25rem;backdrop-filter:blur(8px);transition:all 0.35s;position:relative;overflow:hidden;}
+.testi-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,${primary}12,transparent 60%);opacity:0;transition:opacity 0.35s;}
+.testi-card:hover{background:rgba(255,255,255,0.08);transform:translateY(-5px);border-color:${primary}40;}
+.testi-card:hover::before{opacity:1;}
+.testi-quote-icon{position:absolute;top:1.25rem;inset-inline-end:1.5rem;color:${accent};opacity:0.25;font-size:3rem;line-height:1;}
+.testi-stars{display:flex;gap:3px;margin-bottom:1.25rem;}
+.testi-text{color:rgba(255,255,255,0.82);font-size:1rem;line-height:1.85;margin-bottom:1.75rem;font-style:italic;}
 .testi-author{display:flex;align-items:center;gap:1rem;}
-.testi-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.2rem;font-weight:800;flex-shrink:0;}
+.testi-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.2rem;font-weight:800;flex-shrink:0;box-shadow:0 4px 12px ${primary}60;}
 .testi-name{color:#fff;font-weight:700;font-size:0.95rem;}
-.testi-role{color:rgba(255,255,255,0.5);font-size:0.82rem;margin-top:0.2rem;}
+.testi-role{color:rgba(255,255,255,0.45);font-size:0.82rem;margin-top:0.2rem;}
 
 /* === CONTACT === */
 .contact-wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:5rem;align-items:start;}
@@ -695,9 +714,12 @@ img{max-width:100%;display:block;object-fit:cover;}
 .footer-links-col,.footer-contact-col{display:flex;flex-direction:column;gap:0.75rem;}
 .footer-links-col a,.footer-contact-col a,.footer-contact-col span{color:rgba(255,255,255,0.5);font-size:0.9rem;transition:color 0.2s;}
 .footer-links-col a:hover,.footer-contact-col a:hover{color:#fff;}
-.footer-bottom{padding:1.5rem 0;}
-.footer-bottom-inner{display:flex;align-items:center;justify-content:center;}
+.footer-bottom{padding:1.5rem 0;border-top:1px solid rgba(255,255,255,0.06);}
+.footer-bottom-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
 .footer-bottom p{color:rgba(255,255,255,0.25);font-size:0.85rem;}
+.footer-socials{display:flex;align-items:center;gap:0.75rem;}
+.social-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.25s;}
+.social-icon:hover{background:${primary};border-color:${primary};color:#fff;transform:translateY(-3px);}
 
 /* === RESPONSIVE === */
 @media(max-width:1024px){
