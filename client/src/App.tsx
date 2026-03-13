@@ -25,6 +25,7 @@ import TermsPage from "@/pages/terms";
 import PrivacyPage from "@/pages/privacy";
 import FAQPage from "@/pages/faq";
 import DeployGuidePage from "@/pages/deploy-guide";
+import ResetPasswordPage from "@/pages/reset-password";
 
 import { useEffect } from "react";
 
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/faq" component={FAQPage} />
       <Route path="/deploy-guide">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
       <Route path="/deploy-guide/:id">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -4,17 +4,14 @@ import DashboardLayout from "@/components/dashboard-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import {
   Globe,
-  Plus,
-  ExternalLink,
+  Lock,
   Shield,
-  AlertCircle,
   CheckCircle2,
-  Copy,
+  ExternalLink,
   Loader2,
+  Clock,
 } from "lucide-react";
 
 interface Project {
@@ -26,21 +23,12 @@ interface Project {
 export default function DomainsPage() {
   const { language } = useAuth();
   const lang = language;
-  const [showAddDomain, setShowAddDomain] = useState(false);
-  const [newDomain, setNewDomain] = useState("");
-  const [copied, setCopied] = useState(false);
 
   const { data: projects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
 
   const publishedProjects = projects.filter((p) => p.status === "published");
-
-  const copyText = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   if (isLoading) {
     return (
@@ -55,89 +43,67 @@ export default function DomainsPage() {
   return (
     <DashboardLayout>
       <div className="p-6 max-w-4xl mx-auto space-y-6">
+
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold flex items-center gap-2" data-testid="text-domains-title">
               <Globe className="w-6 h-6 text-emerald-600" />
               {lang === "ar" ? "النطاقات" : "Domains"}
+              <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 text-[11px] px-2 py-0.5 ms-1">
+                <Clock className="w-3 h-3 me-1" />
+                {lang === "ar" ? "قريباً" : "Coming Soon"}
+              </Badge>
             </h1>
             <p className="text-muted-foreground mt-1">
               {lang === "ar" ? "إدارة نطاقات مواقعك المنشورة" : "Manage domains for your published websites"}
             </p>
           </div>
+
           <Button
-            onClick={() => setShowAddDomain(!showAddDomain)}
-            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+            disabled
+            className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white opacity-50 cursor-not-allowed"
             data-testid="button-add-domain"
           >
-            <Plus className="w-4 h-4 me-1" />
+            <Lock className="w-4 h-4 me-1" />
             {lang === "ar" ? "إضافة نطاق" : "Add Domain"}
           </Button>
         </div>
 
-        {showAddDomain && (
-          <Card className="p-5 space-y-4 border-emerald-200 dark:border-emerald-800" data-testid="card-add-domain-form">
-            <h3 className="font-semibold">
-              {lang === "ar" ? "ربط نطاق مخصص" : "Connect Custom Domain"}
-            </h3>
-            <div className="flex gap-2">
-              <Input
-                value={newDomain}
-                onChange={(e) => setNewDomain(e.target.value)}
-                placeholder={lang === "ar" ? "example.sa" : "example.sa"}
-                className="flex-1"
-                data-testid="input-custom-domain"
-              />
-              <Button className="bg-emerald-600" data-testid="button-connect-domain">
-                {lang === "ar" ? "ربط" : "Connect"}
-              </Button>
+        {/* Coming Soon Banner */}
+        <Card className="p-6 border-amber-200 dark:border-amber-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30" data-testid="card-coming-soon">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
+              <Clock className="w-6 h-6 text-white" />
             </div>
-
-            <div className="bg-muted rounded-lg p-4 space-y-3">
-              <h4 className="text-sm font-medium flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-500" />
-                {lang === "ar" ? "إعدادات DNS المطلوبة" : "Required DNS Settings"}
-              </h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex items-center justify-between p-2 bg-background rounded border">
-                  <div>
-                    <span className="text-muted-foreground">{lang === "ar" ? "النوع:" : "Type:"}</span>{" "}
-                    <span className="font-mono font-medium">CNAME</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">{lang === "ar" ? "القيمة:" : "Value:"}</span>{" "}
-                    <span className="font-mono font-medium">proxy.arabyweb.net</span>
-                    <Button variant="ghost" size="sm" className="ms-1 h-6 w-6 p-0" onClick={() => copyText("proxy.arabyweb.net")}>
-                      {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between p-2 bg-background rounded border">
-                  <div>
-                    <span className="text-muted-foreground">{lang === "ar" ? "النوع:" : "Type:"}</span>{" "}
-                    <span className="font-mono font-medium">A</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">{lang === "ar" ? "القيمة:" : "Value:"}</span>{" "}
-                    <span className="font-mono font-medium">76.76.21.21</span>
-                    <Button variant="ghost" size="sm" className="ms-1 h-6 w-6 p-0" onClick={() => copyText("76.76.21.21")}>
-                      {copied ? <CheckCircle2 className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-                    </Button>
-                  </div>
-                </div>
+            <div>
+              <h3 className="font-bold text-lg text-amber-800 dark:text-amber-300">
+                {lang === "ar" ? "ميزة النطاقات المخصصة قادمة قريباً!" : "Custom Domains Feature Coming Soon!"}
+              </h3>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1 leading-relaxed">
+                {lang === "ar"
+                  ? "نعمل حالياً على تفعيل ميزة ربط النطاقات المخصصة (.sa، .com، .net) مع شهادة SSL مجانية. سيتم الإشعار فور الإطلاق."
+                  : "We're currently working on enabling custom domain connections (.sa, .com, .net) with free SSL certificates. You'll be notified upon launch."}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {(lang === "ar"
+                  ? ["ربط نطاق مخصص", "SSL مجاني", "إدارة DNS تلقائية", "نطاقات .sa"]
+                  : ["Custom domain linking", "Free SSL", "Automatic DNS management", ".sa domains"]
+                ).map((feat) => (
+                  <Badge key={feat} variant="outline" className="text-xs border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400">
+                    {feat}
+                  </Badge>
+                ))}
               </div>
             </div>
+          </div>
+        </Card>
 
-            <Badge variant="outline" className="text-xs">
-              <Shield className="w-3 h-3 me-1" />
-              {lang === "ar" ? "SSL مجاني يتم تفعيله تلقائياً" : "Free SSL automatically enabled"}
-            </Badge>
-          </Card>
-        )}
-
-        <Card className="p-5" data-testid="card-active-domains">
-          <h3 className="font-semibold mb-4">
+        {/* Active Domains (preview — locked) */}
+        <Card className="p-5 opacity-60 select-none" data-testid="card-active-domains">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
             {lang === "ar" ? "النطاقات النشطة" : "Active Domains"}
+            <Lock className="w-4 h-4 text-muted-foreground" />
           </h3>
           {publishedProjects.length === 0 ? (
             <div className="text-center py-8">
@@ -172,7 +138,7 @@ export default function DomainsPage() {
                       <CheckCircle2 className="w-3 h-3 me-1" />
                       {lang === "ar" ? "نشط" : "Active"}
                     </Badge>
-                    <Button variant="ghost" size="sm" data-testid={`button-visit-${project.id}`}>
+                    <Button variant="ghost" size="sm" disabled data-testid={`button-visit-${project.id}`}>
                       <ExternalLink className="w-4 h-4" />
                     </Button>
                   </div>
@@ -182,6 +148,7 @@ export default function DomainsPage() {
           )}
         </Card>
 
+        {/* Upgrade card */}
         <Card className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 border-emerald-200 dark:border-emerald-800" data-testid="card-domain-upgrade">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
@@ -202,6 +169,7 @@ export default function DomainsPage() {
             </div>
           </div>
         </Card>
+
       </div>
     </DashboardLayout>
   );

@@ -6,6 +6,7 @@ import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInst
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
+import { sendPaymentSuccessEmail, sendLowCreditsEmail } from "./email";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -385,6 +386,10 @@ export async function registerRoutes(
 
       if (!isFreePlan && !isUserAdmin) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
+        // Fire-and-forget: notify user if credits hit 0
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, userId)).then(([u]) => {
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, true).catch(() => {});
+        }).catch(() => {});
       }
 
       res.json(updated);
@@ -1159,6 +1164,14 @@ export async function registerRoutes(
             .set({ credits: sql`credits + ${creditPurchase.credits}`, updatedAt: new Date() })
             .where(eq(users.id, creditPurchase.userId));
           console.log(`[Credits] Added ${creditPurchase.credits} credits to user ${creditPurchase.userId}`);
+          // Send payment success email (fire-and-forget)
+          try {
+            const [buyer] = await db.select({ email: users.email }).from(users).where(eq(users.id, creditPurchase.userId));
+            if (buyer?.email) {
+              const amountSar = (creditPurchase.amountCents || 0) / 100;
+              sendPaymentSuccessEmail(buyer.email, creditPurchase.credits, amountSar, true).catch(() => {});
+            }
+          } catch { /* non-critical */ }
         } else {
           await storage.updateCreditPurchase(creditPurchase.id, {
             status: "failed",
@@ -1189,9 +1202,16 @@ export async function registerRoutes(
         });
         const planCredits: Record<string, number> = { pro: 50, business: 200 };
         const addedCredits = planCredits[sub.plan] || 5;
-        const [existingUser] = await db.select({ credits: users.credits }).from(users).where(eq(users.id, sub.userId));
+        const [existingUser] = await db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, sub.userId));
         const totalCredits = (existingUser?.credits || 0) + addedCredits;
         await db.update(users).set({ plan: sub.plan, credits: totalCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
+        // Send subscription success email (fire-and-forget)
+        try {
+          if (existingUser?.email) {
+            const amountSar = (sub.amountCents || 0) / 100;
+            sendPaymentSuccessEmail(existingUser.email, addedCredits, amountSar, true).catch(() => {});
+          }
+        } catch { /* non-critical */ }
       } else {
         await storage.updateSubscription(sub.id, {
           status: "failed",

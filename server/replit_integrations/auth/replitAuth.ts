@@ -7,9 +7,12 @@ import memorystore from "memorystore";
 import { Pool } from "pg";
 import type { Express, RequestHandler } from "express";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { db } from "../../db";
 import { users } from "@shared/models/auth";
+import { passwordResetTokens } from "@shared/schema";
 import { eq, sql, and, gte } from "drizzle-orm";
+import { sendPasswordResetEmail } from "../../email";
 
 const MemoryStore = memorystore(session);
 
@@ -415,6 +418,96 @@ export async function setupAuth(app: Express) {
         res.redirect("/");
       });
     });
+  });
+
+  // ── Profile update ────────────────────────────────────────────────────────
+  app.patch("/api/me/profile", async (req: any, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    const { firstName, lastName } = req.body;
+    if (typeof firstName !== "string" || typeof lastName !== "string") {
+      return res.status(400).json({ message: "بيانات غير صالحة" });
+    }
+    try {
+      const [updated] = await db
+        .update(users)
+        .set({ firstName: firstName.trim(), lastName: lastName.trim(), updatedAt: new Date() })
+        .where(eq(users.id, req.user.id))
+        .returning();
+      const { password: _, ...safe } = updated;
+      res.json(safe);
+    } catch (err) {
+      console.error("Profile update error:", err);
+      res.status(500).json({ message: "حدث خطأ أثناء التحديث" });
+    }
+  });
+
+  // ── Password change ───────────────────────────────────────────────────────
+  app.patch("/api/me/password", async (req: any, res) => {
+    if (!req.isAuthenticated()) return res.status(401).json({ message: "Unauthorized" });
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "كلمة المرور الحالية والجديدة مطلوبتان" });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل" });
+    }
+    try {
+      const [dbUser] = await db.select().from(users).where(eq(users.id, req.user.id));
+      if (!dbUser?.password) {
+        return res.status(400).json({ message: "هذا الحساب مسجل عبر Google، لا يمكن تغيير كلمة المرور" });
+      }
+      const isValid = await bcrypt.compare(currentPassword, dbUser.password);
+      if (!isValid) return res.status(400).json({ message: "كلمة المرور الحالية غير صحيحة" });
+      const hashed = await bcrypt.hash(newPassword, 12);
+      await db.update(users).set({ password: hashed, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+      res.json({ message: "تم تغيير كلمة المرور بنجاح" });
+    } catch (err) {
+      console.error("Password change error:", err);
+      res.status(500).json({ message: "حدث خطأ أثناء تغيير كلمة المرور" });
+    }
+  });
+
+  // ── Forgot password ───────────────────────────────────────────────────────
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "البريد الإلكتروني مطلوب" });
+    try {
+      const [user] = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
+      if (!user || !user.password) {
+        // Don't reveal whether account exists
+        return res.json({ message: "إذا كان البريد مسجلاً، سيصلك رابط إعادة التعيين" });
+      }
+      const token = crypto.randomBytes(48).toString("hex");
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+      await db.insert(passwordResetTokens).values({ token, userId: user.id, expiresAt });
+      const baseUrl = process.env.DOMAIN ? `https://${process.env.DOMAIN}` : "https://arabyweb.net";
+      const resetUrl = `${baseUrl}/reset-password?token=${token}`;
+      await sendPasswordResetEmail(user.email!, resetUrl, true);
+      res.json({ message: "إذا كان البريد مسجلاً، سيصلك رابط إعادة التعيين" });
+    } catch (err) {
+      console.error("Forgot password error:", err);
+      res.status(500).json({ message: "حدث خطأ، حاول مجدداً" });
+    }
+  });
+
+  // ── Reset password ────────────────────────────────────────────────────────
+  app.post("/api/auth/reset-password", async (req, res) => {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ message: "بيانات ناقصة" });
+    if (password.length < 6) return res.status(400).json({ message: "كلمة المرور يجب أن تكون 6 أحرف على الأقل" });
+    try {
+      const [record] = await db.select().from(passwordResetTokens).where(eq(passwordResetTokens.token, token));
+      if (!record) return res.status(400).json({ message: "الرابط غير صالح أو منتهي الصلاحية" });
+      if (record.isUsed) return res.status(400).json({ message: "تم استخدام هذا الرابط مسبقاً" });
+      if (new Date() > record.expiresAt) return res.status(400).json({ message: "الرابط منتهي الصلاحية، اطلب رابطاً جديداً" });
+      const hashed = await bcrypt.hash(password, 12);
+      await db.update(users).set({ password: hashed, updatedAt: new Date() }).where(eq(users.id, record.userId));
+      await db.update(passwordResetTokens).set({ isUsed: true }).where(eq(passwordResetTokens.id, record.id));
+      res.json({ message: "تم إعادة تعيين كلمة المرور بنجاح" });
+    } catch (err) {
+      console.error("Reset password error:", err);
+      res.status(500).json({ message: "حدث خطأ، حاول مجدداً" });
+    }
   });
 }
 

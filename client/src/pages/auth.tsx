@@ -162,6 +162,9 @@ export default function AuthPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [mounted, setMounted] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -211,6 +214,17 @@ export default function AuthPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       setLocation("/");
     },
+    onError: (err: Error) => {
+      toast({ title: isAr ? "خطأ" : "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
+  const forgotMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/auth/forgot-password", { email: forgotEmail });
+      return res.json();
+    },
+    onSuccess: () => { setForgotSent(true); },
     onError: (err: Error) => {
       toast({ title: isAr ? "خطأ" : "Error", description: err.message, variant: "destructive" });
     },
@@ -362,7 +376,7 @@ export default function AuthPage() {
             </p>
           </div>
 
-          <div className="bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-2xl flex gap-1 mb-8">
+          {!forgotMode && <div className="bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-2xl flex gap-1 mb-8">
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold transition-all duration-200 ${
@@ -387,9 +401,82 @@ export default function AuthPage() {
             >
               {isAr ? "حساب جديد" : "Sign Up"}
             </button>
-          </div>
+          </div>}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* ── Forgot Password Flow ───────────────────────────────── */}
+          {forgotMode && (
+            <div className="space-y-4">
+              {forgotSent ? (
+                <div className="text-center space-y-4 py-6">
+                  <CheckCircle2 className="w-14 h-14 text-emerald-500 mx-auto" />
+                  <h3 className="font-bold text-lg" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                    {isAr ? "تم إرسال الرابط!" : "Link Sent!"}
+                  </h3>
+                  <p className="text-muted-foreground text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                    {isAr
+                      ? "إذا كان البريد مسجلاً، ستستلم رابط إعادة تعيين كلمة المرور خلال دقائق."
+                      : "If this email is registered, you'll receive a password reset link shortly."}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-xl"
+                    onClick={() => { setForgotMode(false); setForgotSent(false); setForgotEmail(""); }}
+                    style={{ fontFamily: "'Cairo', sans-serif" }}
+                  >
+                    {isAr ? "العودة لتسجيل الدخول" : "Back to Sign In"}
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <h3 className="font-bold text-lg mb-1" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                      {isAr ? "نسيت كلمة المرور؟" : "Forgot Password?"}
+                    </h3>
+                    <p className="text-muted-foreground text-sm" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                      {isAr ? "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين." : "Enter your email and we'll send you a reset link."}
+                    </p>
+                  </div>
+                  <div className="relative group">
+                    <Mail className="absolute start-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400 group-focus-within:text-emerald-500 transition-colors" />
+                    <Input
+                      type="email"
+                      placeholder={isAr ? "البريد الإلكتروني" : "Email Address"}
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      className="ps-11 h-[52px] rounded-xl bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 focus:border-emerald-500 focus:ring-emerald-500/20 text-base"
+                      style={{ fontFamily: "'Cairo', sans-serif" }}
+                      dir="ltr"
+                      required
+                      data-testid="input-forgot-email"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    className="w-full h-[52px] rounded-xl text-base font-bold bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                    style={{ fontFamily: "'Cairo', sans-serif" }}
+                    disabled={forgotMutation.isPending || !forgotEmail}
+                    onClick={() => forgotMutation.mutate()}
+                    data-testid="button-send-reset"
+                  >
+                    {forgotMutation.isPending ? <Loader2 className="w-5 h-5 animate-spin me-2" /> : <Mail className="w-5 h-5 me-2" />}
+                    {isAr ? "إرسال رابط إعادة التعيين" : "Send Reset Link"}
+                  </Button>
+                  <button
+                    type="button"
+                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    style={{ fontFamily: "'Cairo', sans-serif" }}
+                    onClick={() => { setForgotMode(false); setForgotEmail(""); }}
+                  >
+                    {isAr ? "← العودة لتسجيل الدخول" : "← Back to Sign In"}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ── Login / Register Form ──────────────────────────────── */}
+          {!forgotMode && <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="grid grid-cols-2 gap-3">
                 <div className="relative group">
@@ -450,7 +537,13 @@ export default function AuthPage() {
 
             {isLogin && (
               <div className="flex justify-end">
-                <button type="button" className="text-xs text-emerald-600 hover:text-emerald-700 font-medium" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                <button
+                  type="button"
+                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium"
+                  style={{ fontFamily: "'Cairo', sans-serif" }}
+                  onClick={() => { setForgotMode(true); setForgotEmail(email); }}
+                  data-testid="button-forgot-password"
+                >
                   {isAr ? "نسيت كلمة المرور؟" : "Forgot password?"}
                 </button>
               </div>
@@ -473,36 +566,38 @@ export default function AuthPage() {
                 : isAr ? "إنشاء حساب" : "Create Account"
               }
             </Button>
-          </form>
+          </form>}
 
-          <div className="relative my-7">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200 dark:border-gray-800" />
+          {!forgotMode && <>
+            <div className="relative my-7">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200 dark:border-gray-800" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white dark:bg-gray-950 px-4 text-xs text-muted-foreground uppercase tracking-wider" style={{ fontFamily: "'Cairo', sans-serif" }}>
+                  {isAr ? "أو" : "or"}
+                </span>
+              </div>
             </div>
-            <div className="relative flex justify-center">
-              <span className="bg-white dark:bg-gray-950 px-4 text-xs text-muted-foreground uppercase tracking-wider" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                {isAr ? "أو" : "or"}
-              </span>
-            </div>
-          </div>
 
-          <Button
-            variant="outline"
-            className="w-full h-[52px] rounded-xl gap-3 text-base font-semibold border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-300 transition-all duration-200"
-            style={{ fontFamily: "'Cairo', sans-serif" }}
-            onClick={() => { window.location.href = "/api/auth/google"; }}
-            data-testid="button-google-login"
-          >
-            <SiGoogle className="w-5 h-5" style={{ color: "#4285F4" }} />
-            {isAr ? "المتابعة بحساب Google" : "Continue with Google"}
-          </Button>
+            <Button
+              variant="outline"
+              className="w-full h-[52px] rounded-xl gap-3 text-base font-semibold border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-300 transition-all duration-200"
+              style={{ fontFamily: "'Cairo', sans-serif" }}
+              onClick={() => { window.location.href = "/api/auth/google"; }}
+              data-testid="button-google-login"
+            >
+              <SiGoogle className="w-5 h-5" style={{ color: "#4285F4" }} />
+              {isAr ? "المتابعة بحساب Google" : "Continue with Google"}
+            </Button>
 
-          <p className="text-center text-xs text-muted-foreground mt-8" style={{ fontFamily: "'Cairo', sans-serif" }}>
-            {isAr
-              ? "بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية"
-              : "By continuing, you agree to our Terms of Service and Privacy Policy"
-            }
-          </p>
+            <p className="text-center text-xs text-muted-foreground mt-8" style={{ fontFamily: "'Cairo', sans-serif" }}>
+              {isAr
+                ? "بالمتابعة، أنت توافق على شروط الاستخدام وسياسة الخصوصية"
+                : "By continuing, you agree to our Terms of Service and Privacy Policy"
+              }
+            </p>
+          </>}
         </div>
       </div>
     </div>
