@@ -17,6 +17,31 @@ export interface BusinessContent {
   accent_color: string;
 }
 
+export interface LangContent {
+  hero_title: string;
+  hero_subtitle: string;
+  about_title: string;
+  about_text: string;
+  services: { title: string; desc: string }[];
+  cta_text: string;
+  contact_description: string;
+  address: string;
+  seo_title: string;
+  seo_description: string;
+}
+
+export interface BilingualBusinessContent {
+  business_name_ar: string;
+  business_name_en: string;
+  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general";
+  ar: LangContent;
+  en: LangContent;
+  phone: string;
+  email: string;
+  primary_color: string;
+  accent_color: string;
+}
+
 const BUSINESS_CONFIGS: Record<string, {
   primary: string; accent: string; dark: string;
   hero_image: string; about_image: string;
@@ -181,29 +206,35 @@ const SERVICE_ICONS = [
 
 const STAR_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
-export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): { html: string; css: string } {
+export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: boolean): { html: string; css: string } {
   const config = BUSINESS_CONFIGS[content.business_type] || BUSINESS_CONFIGS.general;
   const primary = content.primary_color || config.primary;
   const accent = content.accent_color || config.accent;
   const dark = config.dark;
-  const dir = isRTL ? "rtl" : "ltr";
-  const fontImport = isRTL
-    ? `@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap');`
-    : `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap');`;
-  const fontHeading = isRTL ? "'Cairo', sans-serif" : "'Montserrat', 'Inter', sans-serif";
-  const fontBody = isRTL ? "'Tajawal', 'Cairo', sans-serif" : "'Inter', sans-serif";
+  // Always start in Arabic (RTL) for Saudi market
+  const dir = "rtl";
+  const ar = content.ar;
+  const en = content.en;
+  const fontImport = `@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Tajawal:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap');`;
+  const fontHeadingAr = "'Cairo', sans-serif";
+  const fontBodyAr = "'Tajawal', 'Cairo', sans-serif";
+  const fontHeadingEn = "'Montserrat', 'Inter', sans-serif";
+  const fontBodyEn = "'Inter', sans-serif";
+  // Use Arabic as default for initial CSS
+  const fontHeading = fontHeadingAr;
+  const fontBody = fontBodyAr;
 
-  const servicesHtml = content.services.slice(0, 6).map((s, i) => `
+  const servicesHtml = ar.services.slice(0, 6).map((s, i) => `
     <div class="service-card" data-aos>
       <div class="service-icon-wrap">${SERVICE_ICONS[i % SERVICE_ICONS.length]}</div>
-      <h3>${s.title}</h3>
-      <p>${s.desc}</p>
+      <h3 data-ar="${s.title}" data-en="${en.services[i]?.title || s.title}">${s.title}</h3>
+      <p data-ar="${s.desc}" data-en="${en.services[i]?.desc || s.desc}">${s.desc}</p>
     </div>`).join("");
 
   const statsHtml = config.stats.map(s => `
     <div class="stat-item" data-aos>
       <span class="stat-num" data-target="${s.num}">${s.num}</span>
-      <span class="stat-label">${isRTL ? s.label_ar : s.label_en}</span>
+      <span class="stat-label" data-ar="${s.label_ar}" data-en="${s.label_en}">${s.label_ar}</span>
     </div>`).join("");
 
   const galleryHtml = config.gallery_images.map((url, i) => `
@@ -215,41 +246,44 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
   const testimonialsHtml = config.testimonials.map((t, i) => `
     <div class="testi-card" data-aos style="animation-delay:${i * 0.12}s">
       <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
-      <p class="testi-text">"${isRTL ? t.text_ar : t.text_en}"</p>
+      <p class="testi-text" data-ar='"${t.text_ar}"' data-en='"${t.text_en}"'>"${t.text_ar}"</p>
       <div class="testi-author">
         <div class="testi-avatar">${t.name.charAt(0)}</div>
         <div>
           <div class="testi-name">${t.name}</div>
-          <div class="testi-role">${isRTL ? t.role_ar : t.role_en}</div>
+          <div class="testi-role" data-ar="${t.role_ar}" data-en="${t.role_en}">${t.role_ar}</div>
         </div>
       </div>
     </div>`).join("");
 
   const whatsappNum = content.phone.replace(/\D/g, "");
 
-  const html = `<div dir="${dir}" class="aw-site">
+  const html = `<div dir="rtl" class="aw-site" id="aw-root" lang="ar">
 
 <!-- ===== NAV ===== -->
 <nav class="aw-nav" id="aw-nav">
   <div class="aw-nav-inner">
-    <a href="#" class="aw-brand">${content.business_name}</a>
+    <a href="#" class="aw-brand" data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</a>
     <div class="aw-nav-links">
-      <a href="#about">${isRTL ? "من نحن" : "About"}</a>
-      <a href="#services">${isRTL ? "خدماتنا" : "Services"}</a>
-      <a href="#gallery">${isRTL ? "أعمالنا" : "Gallery"}</a>
-      <a href="#testimonials">${isRTL ? "آراء العملاء" : "Testimonials"}</a>
-      <a href="#contact" class="aw-nav-cta">${content.cta_text}</a>
+      <a href="#about" data-ar="من نحن" data-en="About">من نحن</a>
+      <a href="#services" data-ar="خدماتنا" data-en="Services">خدماتنا</a>
+      <a href="#gallery" data-ar="أعمالنا" data-en="Gallery">أعمالنا</a>
+      <a href="#testimonials" data-ar="آراء العملاء" data-en="Reviews">آراء العملاء</a>
+      <a href="#contact" class="aw-nav-cta" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
     </div>
-    <button id="aw-menu-btn" aria-label="Menu" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var open=m.style.display==='flex';m.style.display=open?'none':'flex';document.getElementById('aw-menu-btn').setAttribute('data-open',open?'':'true');})()" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:#fff;line-height:1;">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <button id="aw-lang-btn" onclick="awToggleLang()" title="Switch Language" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:0.35rem 0.75rem;border-radius:2rem;font-size:0.8rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;font-family:inherit;">EN</button>
+      <button id="aw-menu-btn" aria-label="Menu" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var open=m.style.display==='flex';m.style.display=open?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:#fff;line-height:1;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
   </div>
   <div id="aw-mobile-menu" style="display:none;flex-direction:column;padding:1rem 1.5rem;gap:0.25rem;border-top:1px solid rgba(255,255,255,0.1);">
-    <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link">${isRTL ? "من نحن" : "About"}</a>
-    <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link">${isRTL ? "خدماتنا" : "Services"}</a>
-    <a href="#gallery" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link">${isRTL ? "أعمالنا" : "Gallery"}</a>
-    <a href="#testimonials" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link">${isRTL ? "آراء العملاء" : "Testimonials"}</a>
-    <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-cta-link">${content.cta_text}</a>
+    <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="من نحن" data-en="About">من نحن</a>
+    <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="خدماتنا" data-en="Services">خدماتنا</a>
+    <a href="#gallery" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="أعمالنا" data-en="Gallery">أعمالنا</a>
+    <a href="#testimonials" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="آراء العملاء" data-en="Reviews">آراء العملاء</a>
+    <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-cta-link" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
   </div>
 </nav>
 
@@ -261,12 +295,12 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
     <div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div>
   </div>
   <div class="aw-container hero-body">
-    <div class="hero-badge">${content.business_name}</div>
-    <h1 class="hero-h1">${content.hero_title}</h1>
-    <p class="hero-sub">${content.hero_subtitle}</p>
+    <div class="hero-badge" data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</div>
+    <h1 class="hero-h1" data-ar="${ar.hero_title}" data-en="${en.hero_title}">${ar.hero_title}</h1>
+    <p class="hero-sub" data-ar="${ar.hero_subtitle}" data-en="${en.hero_subtitle}">${ar.hero_subtitle}</p>
     <div class="hero-actions">
-      <a href="#contact" class="btn-glow">${content.cta_text}</a>
-      <a href="#services" class="btn-ghost">${isRTL ? "اكتشف المزيد" : "Discover More"}
+      <a href="#contact" class="btn-glow" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
+      <a href="#services" class="btn-ghost" data-ar="اكتشف المزيد" data-en="Discover More">اكتشف المزيد
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
@@ -288,33 +322,33 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
   <div class="aw-container about-wrap">
     <div class="about-img-col" data-aos>
       <div class="about-img-frame">
-        <img src="${config.about_image}" alt="${content.business_name}" loading="lazy"/>
+        <img src="${config.about_image}" alt="${content.business_name_ar}" loading="lazy"/>
         <div class="about-exp-badge">
           <span class="exp-num">10+</span>
-          <span class="exp-txt">${isRTL ? "سنة خبرة" : "Years"}</span>
+          <span class="exp-txt" data-ar="سنة خبرة" data-en="Years Exp.">سنة خبرة</span>
         </div>
       </div>
     </div>
     <div class="about-content" data-aos style="animation-delay:0.15s">
-      <span class="eyebrow">${isRTL ? "من نحن" : "About Us"}</span>
-      <h2 class="sec-title">${content.about_title}</h2>
+      <span class="eyebrow" data-ar="من نحن" data-en="About Us">من نحن</span>
+      <h2 class="sec-title" data-ar="${ar.about_title}" data-en="${en.about_title}">${ar.about_title}</h2>
       <div class="title-line"></div>
-      <p class="about-para">${content.about_text}</p>
+      <p class="about-para" data-ar="${ar.about_text}" data-en="${en.about_text}">${ar.about_text}</p>
       <div class="about-checks">
         <div class="check-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>${isRTL ? "جودة لا تُضاهى" : "Unmatched Quality"}</span>
+          <span data-ar="جودة لا تُضاهى" data-en="Unmatched Quality">جودة لا تُضاهى</span>
         </div>
         <div class="check-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>${isRTL ? "فريق محترف ومتخصص" : "Professional Expert Team"}</span>
+          <span data-ar="فريق محترف ومتخصص" data-en="Professional Expert Team">فريق محترف ومتخصص</span>
         </div>
         <div class="check-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span>${isRTL ? "خدمة عملاء متميزة" : "Outstanding Customer Service"}</span>
+          <span data-ar="خدمة عملاء متميزة" data-en="Outstanding Customer Service">خدمة عملاء متميزة</span>
         </div>
       </div>
-      <a href="#contact" class="btn-primary-solid">${isRTL ? "تواصل معنا" : "Get In Touch"}</a>
+      <a href="#contact" class="btn-primary-solid" data-ar="تواصل معنا" data-en="Get In Touch">تواصل معنا</a>
     </div>
   </div>
 </section>
@@ -323,10 +357,10 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
 <section id="services" class="aw-section bg-light">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow">${isRTL ? "خدماتنا" : "Services"}</span>
-      <h2 class="sec-title">${isRTL ? "ما نقدمه لك" : "What We Offer"}</h2>
+      <span class="eyebrow" data-ar="خدماتنا" data-en="Services">خدماتنا</span>
+      <h2 class="sec-title" data-ar="ما نقدمه لك" data-en="What We Offer">ما نقدمه لك</h2>
       <div class="title-line center"></div>
-      <p class="sec-sub">${isRTL ? "نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك" : "We provide comprehensive solutions that meet your needs and exceed your expectations"}</p>
+      <p class="sec-sub" data-ar="نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك" data-en="We provide comprehensive solutions that meet your needs and exceed your expectations">نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك</p>
     </div>
     <div class="services-grid">
       ${servicesHtml}
@@ -338,8 +372,8 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
 <section id="gallery" class="aw-section">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow">${isRTL ? "معرض الأعمال" : "Portfolio"}</span>
-      <h2 class="sec-title">${isRTL ? "أعمالنا المميزة" : "Our Featured Work"}</h2>
+      <span class="eyebrow" data-ar="معرض الأعمال" data-en="Portfolio">معرض الأعمال</span>
+      <h2 class="sec-title" data-ar="أعمالنا المميزة" data-en="Our Featured Work">أعمالنا المميزة</h2>
       <div class="title-line center"></div>
     </div>
     <div class="gallery-grid">
@@ -352,10 +386,10 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
 <section class="cta-band" style="background:linear-gradient(135deg,${primary} 0%,${accent} 100%)">
   <div class="aw-container cta-inner" data-aos>
     <div>
-      <h2 class="cta-h2">${isRTL ? "هل أنت مستعد للبدء؟" : "Ready to Get Started?"}</h2>
-      <p class="cta-p">${isRTL ? "تواصل معنا اليوم وابدأ رحلة نجاحك" : "Contact us today and start your success journey"}</p>
+      <h2 class="cta-h2" data-ar="هل أنت مستعد للبدء؟" data-en="Ready to Get Started?">هل أنت مستعد للبدء؟</h2>
+      <p class="cta-p" data-ar="تواصل معنا اليوم وابدأ رحلة نجاحك" data-en="Contact us today and start your success journey">تواصل معنا اليوم وابدأ رحلة نجاحك</p>
     </div>
-    <a href="#contact" class="btn-white">${content.cta_text}</a>
+    <a href="#contact" class="btn-white" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
   </div>
 </section>
 
@@ -363,8 +397,8 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
 <section id="testimonials" class="aw-section bg-dark">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow" style="color:${accent}">${isRTL ? "آراء العملاء" : "Testimonials"}</span>
-      <h2 class="sec-title" style="color:#fff">${isRTL ? "ماذا يقول عملاؤنا" : "What Our Clients Say"}</h2>
+      <span class="eyebrow" style="color:${accent}" data-ar="آراء العملاء" data-en="Testimonials">آراء العملاء</span>
+      <h2 class="sec-title" style="color:#fff" data-ar="ماذا يقول عملاؤنا" data-en="What Our Clients Say">ماذا يقول عملاؤنا</h2>
       <div class="title-line center"></div>
     </div>
     <div class="testi-grid">
@@ -377,45 +411,45 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
 <section id="contact" class="aw-section">
   <div class="aw-container contact-wrap">
     <div class="contact-left" data-aos>
-      <span class="eyebrow">${isRTL ? "تواصل معنا" : "Contact Us"}</span>
-      <h2 class="sec-title">${isRTL ? "نسعد بخدمتك" : "We'd Love to Help"}</h2>
+      <span class="eyebrow" data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</span>
+      <h2 class="sec-title" data-ar="نسعد بخدمتك" data-en="We'd Love to Help">نسعد بخدمتك</h2>
       <div class="title-line"></div>
-      <p class="contact-desc">${content.contact_description}</p>
+      <p class="contact-desc" data-ar="${ar.contact_description}" data-en="${en.contact_description}">${ar.contact_description}</p>
       <div class="contact-details">
         ${content.phone ? `<a href="tel:${content.phone}" class="contact-row">
           <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.9a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.07 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.72-.72a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           </div>
-          <div><div class="ci-label">${isRTL ? "الهاتف" : "Phone"}</div><div class="ci-val" dir="ltr">${content.phone}</div></div>
+          <div><div class="ci-label" data-ar="الهاتف" data-en="Phone">الهاتف</div><div class="ci-val" dir="ltr">${content.phone}</div></div>
         </a>` : ""}
         ${content.email ? `<a href="mailto:${content.email}" class="contact-row">
           <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </div>
-          <div><div class="ci-label">${isRTL ? "البريد" : "Email"}</div><div class="ci-val" dir="ltr">${content.email}</div></div>
+          <div><div class="ci-label" data-ar="البريد" data-en="Email">البريد</div><div class="ci-val" dir="ltr">${content.email}</div></div>
         </a>` : ""}
-        ${content.address ? `<div class="contact-row">
+        ${ar.address ? `<div class="contact-row">
           <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
-          <div><div class="ci-label">${isRTL ? "العنوان" : "Address"}</div><div class="ci-val">${content.address}</div></div>
+          <div><div class="ci-label" data-ar="العنوان" data-en="Address">العنوان</div><div class="ci-val" data-ar="${ar.address}" data-en="${en.address}">${ar.address}</div></div>
         </div>` : ""}
       </div>
       ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" class="wa-btn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-        ${isRTL ? "تواصل عبر واتساب" : "WhatsApp Us"}
+        <span data-ar="تواصل عبر واتساب" data-en="WhatsApp Us">تواصل عبر واتساب</span>
       </a>` : ""}
     </div>
     <div class="contact-right" data-aos style="animation-delay:0.15s">
-      <form class="contact-form" onsubmit="this.querySelector('.form-submit').textContent='${isRTL ? "تم الإرسال ✓" : "Sent ✓"}';this.querySelector('.form-submit').style.background='#10b981';event.preventDefault();">
-        <h3 class="form-title">${isRTL ? "أرسل رسالتك" : "Send a Message"}</h3>
+      <form class="contact-form" onsubmit="var b=this.querySelector('.form-submit');b.textContent=document.getElementById('aw-root').getAttribute('lang')==='ar'?'تم الإرسال ✓':'Sent ✓';b.style.background='#10b981';event.preventDefault();">
+        <h3 class="form-title" data-ar="أرسل رسالتك" data-en="Send a Message">أرسل رسالتك</h3>
         <div class="form-row">
-          <input type="text" placeholder="${isRTL ? "الاسم الكامل" : "Full Name"}" class="form-inp" required/>
-          <input type="email" placeholder="${isRTL ? "البريد الإلكتروني" : "Email"}" class="form-inp" required/>
+          <input type="text" placeholder="الاسم الكامل" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name" class="form-inp" required/>
+          <input type="email" placeholder="البريد الإلكتروني" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address" class="form-inp" required/>
         </div>
-        <input type="tel" placeholder="${isRTL ? "رقم الجوال" : "Phone Number"}" class="form-inp" dir="ltr"/>
-        <textarea placeholder="${isRTL ? "رسالتك..." : "Your message..."}" class="form-inp form-ta" rows="4"></textarea>
-        <button type="submit" class="form-submit">${content.cta_text}</button>
+        <input type="tel" placeholder="رقم الجوال" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number" class="form-inp" dir="ltr"/>
+        <textarea placeholder="رسالتك..." data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..." class="form-inp form-ta" rows="4"></textarea>
+        <button type="submit" class="form-submit" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</button>
       </form>
     </div>
   </div>
@@ -425,50 +459,77 @@ export function buildInstantWebsite(content: BusinessContent, isRTL: boolean): {
 <footer class="aw-footer">
   <div class="aw-container footer-wrap">
     <div class="footer-brand-col">
-      <span class="footer-logo">${content.business_name}</span>
-      <p class="footer-tagline">${content.hero_subtitle.slice(0, 80)}</p>
+      <span class="footer-logo" data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</span>
+      <p class="footer-tagline" data-ar="${ar.hero_subtitle.slice(0, 80)}" data-en="${en.hero_subtitle.slice(0, 80)}">${ar.hero_subtitle.slice(0, 80)}</p>
     </div>
     <div class="footer-links-col">
-      <div class="fl-heading">${isRTL ? "روابط سريعة" : "Quick Links"}</div>
-      <a href="#about">${isRTL ? "من نحن" : "About"}</a>
-      <a href="#services">${isRTL ? "خدماتنا" : "Services"}</a>
-      <a href="#gallery">${isRTL ? "أعمالنا" : "Gallery"}</a>
-      <a href="#contact">${isRTL ? "تواصل معنا" : "Contact"}</a>
+      <div class="fl-heading" data-ar="روابط سريعة" data-en="Quick Links">روابط سريعة</div>
+      <a href="#about" data-ar="من نحن" data-en="About">من نحن</a>
+      <a href="#services" data-ar="خدماتنا" data-en="Services">خدماتنا</a>
+      <a href="#gallery" data-ar="أعمالنا" data-en="Gallery">أعمالنا</a>
+      <a href="#contact" data-ar="تواصل معنا" data-en="Contact">تواصل معنا</a>
     </div>
     <div class="footer-contact-col">
-      <div class="fl-heading">${isRTL ? "تواصل معنا" : "Get In Touch"}</div>
+      <div class="fl-heading" data-ar="تواصل معنا" data-en="Get In Touch">تواصل معنا</div>
       ${content.phone ? `<a href="tel:${content.phone}" dir="ltr">${content.phone}</a>` : ""}
       ${content.email ? `<a href="mailto:${content.email}" dir="ltr">${content.email}</a>` : ""}
-      ${content.address ? `<span>${content.address}</span>` : ""}
+      ${ar.address ? `<span data-ar="${ar.address}" data-en="${en.address}">${ar.address}</span>` : ""}
     </div>
   </div>
   <div class="footer-bottom">
     <div class="aw-container footer-bottom-inner">
-      <p>© 2026 ${content.business_name}. ${isRTL ? "جميع الحقوق محفوظة." : "All Rights Reserved."}</p>
+      <p>© 2026 <span data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</span>. <span data-ar="جميع الحقوق محفوظة." data-en="All Rights Reserved.">جميع الحقوق محفوظة.</span></p>
     </div>
   </div>
 </footer>
+
+<!-- WhatsApp Float -->
+${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="position:fixed;bottom:1.75rem;left:1.75rem;z-index:999;background:#25D366;color:#fff;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,0.5);transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'" aria-label="WhatsApp">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+</a>` : ""}
 
 </div>
 
 <script>
 (function(){
-  // Scroll-triggered animations
+  // ===== SCROLL ANIMATIONS =====
   var observer = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
-      if(e.isIntersecting){
-        e.target.classList.add('aw-visible');
-        observer.unobserve(e.target);
-      }
+      if(e.isIntersecting){e.target.classList.add('aw-visible');observer.unobserve(e.target);}
     });
   },{threshold:0.12});
   document.querySelectorAll('[data-aos]').forEach(function(el){observer.observe(el);});
 
-  // Navbar scroll effect
+  // ===== NAVBAR SCROLL =====
   var nav = document.getElementById('aw-nav');
   window.addEventListener('scroll',function(){
     nav.classList.toggle('aw-nav-scrolled', window.scrollY > 60);
   },{passive:true});
+
+  // ===== BILINGUAL TOGGLE =====
+  var currentLang = 'ar';
+  window.awToggleLang = function(){
+    currentLang = currentLang === 'ar' ? 'en' : 'ar';
+    var root = document.getElementById('aw-root');
+    var btn = document.getElementById('aw-lang-btn');
+    var isAr = currentLang === 'ar';
+    root.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+    root.setAttribute('lang', currentLang);
+    btn.textContent = isAr ? 'EN' : 'عر';
+    // Switch all text elements
+    document.querySelectorAll('[data-ar][data-en]').forEach(function(el){
+      el.textContent = isAr ? el.getAttribute('data-ar') : el.getAttribute('data-en');
+    });
+    // Switch placeholders
+    document.querySelectorAll('[data-placeholder-ar]').forEach(function(el){
+      el.placeholder = isAr ? el.getAttribute('data-placeholder-ar') : el.getAttribute('data-placeholder-en');
+    });
+    // Switch fonts
+    document.body.style.fontFamily = isAr ? "${fontBodyAr}" : "${fontBodyEn}";
+    document.querySelectorAll('.hero-h1,.sec-title,.cta-h2,.form-title,.aw-brand,.footer-logo,.service-card h3,.stat-num').forEach(function(el){
+      el.style.fontFamily = isAr ? "${fontHeadingAr}" : "${fontHeadingEn}";
+    });
+  };
 })();
 </script>`;
 

@@ -572,52 +572,74 @@ No markdown, no code blocks, no explanation outside the JSON.`;
   }
 }
 
-import { buildInstantWebsite, type BusinessContent } from "./instant-templates";
+import { buildInstantWebsite, type BilingualBusinessContent } from "./instant-templates";
 
 export async function generateInstantWebsite(
   prompt: string,
   language: string = "ar"
 ): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
+  const emailSlug = prompt.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10) || "business";
 
-  const systemPrompt = `You are a fast website content generator. Extract business info and generate website copy from a user prompt.
+  const systemPrompt = `You are a bilingual website content generator for Saudi/Arab businesses. Generate professional website copy in BOTH Arabic and English from a user prompt.
 Return ONLY valid JSON, no markdown, no explanation.`;
 
   const userPrompt = `User prompt: "${prompt}"
-Language: ${isArabic ? "Arabic" : "English"}
 
-Return this exact JSON structure:
+Generate complete bilingual website content. Return this EXACT JSON structure:
 {
-  "business_name": "brand/business name from prompt (in ${isArabic ? "Arabic" : "English"})",
+  "business_name_ar": "brand name in Arabic",
+  "business_name_en": "brand name in English",
   "business_type": "one of: restaurant, agency, startup, portfolio, medical, general",
-  "hero_title": "compelling headline (in ${isArabic ? "Arabic" : "English"}, max 8 words)",
-  "hero_subtitle": "engaging subtitle (in ${isArabic ? "Arabic" : "English"}, 1-2 sentences)",
-  "about_title": "about section heading (in ${isArabic ? "Arabic" : "English"})",
-  "about_text": "2-3 sentences about the business (in ${isArabic ? "Arabic" : "English"})",
-  "services": [
-    {"title": "service name", "desc": "short description"},
-    {"title": "service name", "desc": "short description"},
-    {"title": "service name", "desc": "short description"},
-    {"title": "service name", "desc": "short description"},
-    {"title": "service name", "desc": "short description"},
-    {"title": "service name", "desc": "short description"}
-  ],
-  "cta_text": "call to action button text (in ${isArabic ? "Arabic" : "English"}, 2-4 words)",
-  "contact_description": "1-2 sentences inviting contact (in ${isArabic ? "Arabic" : "English"})",
+  "ar": {
+    "hero_title": "compelling Arabic headline, max 8 words",
+    "hero_subtitle": "engaging Arabic subtitle, 1-2 sentences",
+    "about_title": "Arabic about section heading",
+    "about_text": "2-3 Arabic sentences about the business",
+    "services": [
+      {"title": "Arabic service name", "desc": "Arabic short description"},
+      {"title": "Arabic service name", "desc": "Arabic short description"},
+      {"title": "Arabic service name", "desc": "Arabic short description"},
+      {"title": "Arabic service name", "desc": "Arabic short description"},
+      {"title": "Arabic service name", "desc": "Arabic short description"},
+      {"title": "Arabic service name", "desc": "Arabic short description"}
+    ],
+    "cta_text": "Arabic CTA button text, 2-4 words",
+    "contact_description": "1-2 Arabic sentences inviting contact",
+    "address": "المملكة العربية السعودية",
+    "seo_title": "Arabic SEO title max 60 chars",
+    "seo_description": "Arabic meta description 150-155 chars"
+  },
+  "en": {
+    "hero_title": "compelling English headline, max 8 words",
+    "hero_subtitle": "engaging English subtitle, 1-2 sentences",
+    "about_title": "English about section heading",
+    "about_text": "2-3 English sentences about the business",
+    "services": [
+      {"title": "English service name", "desc": "English short description"},
+      {"title": "English service name", "desc": "English short description"},
+      {"title": "English service name", "desc": "English short description"},
+      {"title": "English service name", "desc": "English short description"},
+      {"title": "English service name", "desc": "English short description"},
+      {"title": "English service name", "desc": "English short description"}
+    ],
+    "cta_text": "English CTA button text, 2-4 words",
+    "contact_description": "1-2 English sentences inviting contact",
+    "address": "Saudi Arabia",
+    "seo_title": "English SEO title max 60 chars",
+    "seo_description": "English meta description 150-155 chars"
+  },
   "phone": "+966 5X XXX XXXX",
-  "email": "info@${prompt.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10) || "business"}.sa",
-  "address": "${isArabic ? "المملكة العربية السعودية" : "Saudi Arabia"}",
-  "seo_title": "SEO page title (in ${isArabic ? "Arabic" : "English"}, max 60 chars)",
-  "seo_description": "meta description (in ${isArabic ? "Arabic" : "English"}, max 155 chars)",
-  "primary_color": "#hexcolor",
-  "accent_color": "#hexcolor"
+  "email": "info@${emailSlug}.sa",
+  "primary_color": "#hexcolor that fits the business type",
+  "accent_color": "#hexcolor complementary accent"
 }
 
 Rules:
-- All text must be in ${isArabic ? "Arabic" : "English"}
-- Choose colors that fit the business type
-- Make hero_title exciting and relevant
-- Services must be specific to the business type`;
+- business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general
+- Colors must match the business personality (warm for restaurant, professional for agency, etc.)
+- ALL services must be specific to this exact business type, not generic
+- hero_title must be exciting and benefit-driven`;
 
   const model = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-5.2" : "gpt-4.1-mini";
   console.log("Instant generation using model:", model);
@@ -634,51 +656,72 @@ Rules:
   });
 
   const raw = response.choices[0]?.message?.content || "{}";
-  let content: BusinessContent;
+  let bilingualContent: BilingualBusinessContent;
   try {
-    content = JSON.parse(raw) as BusinessContent;
+    bilingualContent = JSON.parse(raw) as BilingualBusinessContent;
+    if (!bilingualContent.ar || !bilingualContent.en) throw new Error("Missing language sections");
   } catch {
-    content = {
-      business_name: prompt.slice(0, 30),
+    bilingualContent = {
+      business_name_ar: prompt.slice(0, 30),
+      business_name_en: prompt.slice(0, 30),
       business_type: "general",
-      hero_title: isArabic ? "مرحباً بكم في موقعنا" : "Welcome to Our Website",
-      hero_subtitle: isArabic ? "نقدم أفضل الخدمات والحلول الاحترافية" : "We provide the best professional services",
-      about_title: isArabic ? "من نحن" : "About Us",
-      about_text: isArabic ? "نحن نقدم خدمات احترافية عالية الجودة لعملائنا في المملكة العربية السعودية." : "We provide high-quality professional services to our clients.",
-      services: [
-        { title: isArabic ? "خدمة احترافية" : "Professional Service", desc: isArabic ? "نقدم حلولاً مبتكرة" : "Innovative solutions" },
-        { title: isArabic ? "جودة عالية" : "High Quality", desc: isArabic ? "معايير جودة متميزة" : "Premium quality standards" },
-        { title: isArabic ? "دعم متواصل" : "Continuous Support", desc: isArabic ? "نحن هنا دائماً لمساعدتك" : "We are always here to help" },
-        { title: isArabic ? "خبرة واسعة" : "Vast Experience", desc: isArabic ? "سنوات من الخبرة في المجال" : "Years of industry experience" },
-        { title: isArabic ? "تسليم سريع" : "Fast Delivery", desc: isArabic ? "نلتزم بالمواعيد دائماً" : "Always on time" },
-        { title: isArabic ? "أسعار تنافسية" : "Competitive Pricing", desc: isArabic ? "أفضل الأسعار في السوق" : "Best prices in the market" },
-      ],
-      cta_text: isArabic ? "تواصل معنا" : "Contact Us",
-      contact_description: isArabic ? "نسعد بالتواصل معك والإجابة على جميع استفساراتك." : "We are happy to hear from you and answer all your questions.",
+      ar: {
+        hero_title: "مرحباً بكم في موقعنا",
+        hero_subtitle: "نقدم أفضل الخدمات والحلول الاحترافية",
+        about_title: "من نحن",
+        about_text: "نحن نقدم خدمات احترافية عالية الجودة لعملائنا في المملكة العربية السعودية.",
+        services: [
+          { title: "خدمة احترافية", desc: "نقدم حلولاً مبتكرة" },
+          { title: "جودة عالية", desc: "معايير جودة متميزة" },
+          { title: "دعم متواصل", desc: "نحن هنا دائماً" },
+          { title: "خبرة واسعة", desc: "سنوات من الخبرة" },
+          { title: "تسليم سريع", desc: "نلتزم بالمواعيد" },
+          { title: "أسعار تنافسية", desc: "أفضل الأسعار" },
+        ],
+        cta_text: "تواصل معنا",
+        contact_description: "نسعد بالتواصل معك والإجابة على جميع استفساراتك.",
+        address: "الرياض، المملكة العربية السعودية",
+        seo_title: prompt.slice(0, 60),
+        seo_description: prompt.slice(0, 155),
+      },
+      en: {
+        hero_title: "Welcome to Our Website",
+        hero_subtitle: "We provide the best professional services and innovative solutions.",
+        about_title: "About Us",
+        about_text: "We provide high-quality professional services to our clients across Saudi Arabia.",
+        services: [
+          { title: "Professional Service", desc: "Innovative solutions" },
+          { title: "High Quality", desc: "Premium quality standards" },
+          { title: "Continuous Support", desc: "Always here to help" },
+          { title: "Vast Experience", desc: "Years of industry experience" },
+          { title: "Fast Delivery", desc: "Always on time" },
+          { title: "Competitive Pricing", desc: "Best prices in the market" },
+        ],
+        cta_text: "Contact Us",
+        contact_description: "We are happy to hear from you and answer all your questions.",
+        address: "Riyadh, Saudi Arabia",
+        seo_title: prompt.slice(0, 60),
+        seo_description: prompt.slice(0, 155),
+      },
       phone: "+966 50 000 0000",
       email: "info@business.sa",
-      address: isArabic ? "الرياض، المملكة العربية السعودية" : "Riyadh, Saudi Arabia",
-      seo_title: prompt.slice(0, 60),
-      seo_description: prompt.slice(0, 155),
       primary_color: "#059669",
       accent_color: "#0284c7",
     };
   }
 
-  const { html, css } = buildInstantWebsite(content, isArabic);
+  const { html, css } = buildInstantWebsite(bilingualContent, isArabic);
 
   return {
     html,
     css,
-    seoTitle: content.seo_title,
-    seoDescription: content.seo_description,
-    sections: isArabic
-      ? ["الرئيسية", "من نحن", "خدماتنا", "تواصل معنا"]
-      : ["Hero", "About", "Services", "Contact"],
+    seoTitle: isArabic ? bilingualContent.ar.seo_title : bilingualContent.en.seo_title,
+    seoDescription: isArabic ? bilingualContent.ar.seo_description : bilingualContent.en.seo_description,
+    sections: ["الرئيسية", "من نحن", "خدماتنا", "تواصل معنا"],
     colorPalette: {
-      primary: content.primary_color || "#059669",
-      secondary: content.accent_color || "#0284c7",
-      accent: content.accent_color || "#0284c7",
+      primary: bilingualContent.primary_color || "#059669",
+      secondary: bilingualContent.accent_color || "#0284c7",
+      accent: bilingualContent.accent_color || "#0284c7",
       background: "#ffffff",
       text: "#1a1a2a",
     },
