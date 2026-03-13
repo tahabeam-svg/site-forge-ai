@@ -311,8 +311,8 @@ export function buildInstantWebsite(
   // Initial content to display (matches primaryLang)
   const initContent = primaryLang === "ar" ? ar : primaryLang === "en" ? en : (e3?.content ?? ar);
   const initName = primaryLang === "ar" ? content.business_name_ar : primaryLang === "en" ? content.business_name_en : (e3?.businessName || content.business_name_en);
-  // Initial button shows next language to switch to
-  const initialBtnLabel = langOrder[1] === "ar" ? "عر" : langOrder[1].toUpperCase();
+  // Initial button shows next language to switch to (always uppercase code: AR, EN, FR, etc.)
+  const initialBtnLabel = langOrder[1].toUpperCase();
 
   const html = `<div dir="${dir}" class="aw-site" id="aw-root" lang="${primaryLang}">
 
@@ -572,7 +572,7 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="p
   var AW_LANG_ORDER = ${JSON.stringify(langOrder)};
   var awLangIdx = 0;
   function awGetNextLabel(nextCode){
-    return nextCode === 'ar' ? 'عر' : nextCode.toUpperCase();
+    return nextCode.toUpperCase();
   }
   function awApplyLang(lang){
     var root = document.getElementById('aw-root');
