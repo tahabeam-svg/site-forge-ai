@@ -27,6 +27,7 @@ import FAQPage from "@/pages/faq";
 import DeployGuidePage from "@/pages/deploy-guide";
 import ResetPasswordPage from "@/pages/reset-password";
 import PaymentTestPage from "@/pages/payment-test";
+import IncidentResponsePage from "@/pages/incident-response";
 
 import { useEffect } from "react";
 
@@ -79,6 +80,7 @@ function Router() {
       <Route path="/pricing" component={PricingRedirect} />
       <Route path="/terms" component={TermsPage} />
       <Route path="/privacy" component={PrivacyPage} />
+      <Route path="/incident-response" component={IncidentResponsePage} />
       <Route path="/faq" component={FAQPage} />
       <Route path="/deploy-guide">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
       <Route path="/deploy-guide/:id">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
