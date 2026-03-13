@@ -62,6 +62,17 @@ export default function BillingPage() {
 
   const currentPlan = subscription?.plan || "free";
 
+  const parseErrMsg = (err: any): string => {
+    try {
+      const raw: string = err?.message || "";
+      const jsonPart = raw.slice(raw.indexOf("{"));
+      const parsed = JSON.parse(jsonPart);
+      return parsed?.message || raw;
+    } catch {
+      return err?.message || (lang === "ar" ? "حدث خطأ غير متوقع" : "An unexpected error occurred");
+    }
+  };
+
   const upgradeMutation = useMutation({
     mutationFn: async (plan: string) => {
       const res = await apiRequest("POST", "/api/payments/initiate", {
@@ -82,7 +93,7 @@ export default function BillingPage() {
     onError: (err: any) => {
       toast({
         title: lang === "ar" ? "فشل بدء الدفع" : "Payment initiation failed",
-        description: err.message,
+        description: parseErrMsg(err),
         variant: "destructive",
       });
       setUpgradingPlan(null);
@@ -113,7 +124,7 @@ export default function BillingPage() {
     onError: (err: any) => {
       toast({
         title: lang === "ar" ? "فشل بدء الدفع" : "Payment failed",
-        description: err.message,
+        description: parseErrMsg(err),
         variant: "destructive",
       });
     },

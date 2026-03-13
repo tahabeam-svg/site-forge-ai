@@ -1534,10 +1534,10 @@ Sitemap: https://arabyweb.net/sitemap.xml
           endDate,
         });
         const planCredits: Record<string, number> = { pro: 50, business: 200 };
-        const addedCredits = planCredits[sub.plan] || 5;
+        const newCredits = planCredits[sub.plan] || 5;
         const [existingUser] = await db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, sub.userId));
-        const totalCredits = (existingUser?.credits || 0) + addedCredits;
-        await db.update(users).set({ plan: sub.plan, credits: totalCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
+        // SET credits to plan allocation (not ADD) so free→pro gives exactly 50, not 55
+        await db.update(users).set({ plan: sub.plan, credits: newCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
         // Send Saudi VAT invoice email for subscription (fire-and-forget)
         try {
           if (existingUser?.email) {
