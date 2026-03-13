@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import { SUPPORT_WHATSAPP_URL } from "@/lib/constants";
 import {
   CreditCard,
   Crown,
@@ -27,6 +28,12 @@ import {
   History,
   Plus,
   Minus,
+  MessageCircle,
+  Server,
+  Database,
+  Store,
+  Lock,
+  HeadphonesIcon,
 } from "lucide-react";
 
 export default function BillingPage() {
@@ -484,6 +491,66 @@ export default function BillingPage() {
             })}
           </div>
         </div>
+
+        {/* ── Technical Support Card ── */}
+        <Card className="p-5 border-2 border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50/60 to-teal-50/40 dark:from-emerald-950/30 dark:to-teal-950/20" data-testid="card-tech-support">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shrink-0">
+              <HeadphonesIcon className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-base mb-0.5">
+                {lang === "ar" ? "دعم فني متخصص من فريق عربي ويب" : "Dedicated Technical Support from ArabyWeb Team"}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {lang === "ar"
+                  ? "فريقنا مستعد لمساعدتك في رفع موقعك على الاستضافة، وبناء المنصات المعقدة والمتاجر الإلكترونية الضخمة التي تحتاج إلى قواعد بيانات متطورة."
+                  : "Our team is ready to help you deploy your site to hosting, build complex platforms and large e-commerce stores that require advanced databases."}
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {[
+                  { icon: Server, label: lang === "ar" ? "رفع على الاستضافة" : "Hosting Deployment" },
+                  { icon: Store, label: lang === "ar" ? "متاجر إلكترونية" : "E-commerce Stores" },
+                  { icon: Database, label: lang === "ar" ? "قواعد بيانات معقدة" : "Complex Databases" },
+                ].map((item, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 text-xs bg-white dark:bg-zinc-800 border border-emerald-200 dark:border-emerald-700 rounded-full px-3 py-1 font-medium text-emerald-700 dark:text-emerald-400">
+                    <item.icon className="w-3 h-3" />
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              {currentPlan !== "free" ? (
+                <a
+                  href={SUPPORT_WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20b858] text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+                  data-testid="link-whatsapp-support"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  {lang === "ar" ? "تواصل عبر واتساب" : "Chat on WhatsApp"}
+                </a>
+              ) : (
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <div className="inline-flex items-center gap-2 bg-muted border border-dashed border-muted-foreground/30 text-muted-foreground text-sm px-5 py-2.5 rounded-xl">
+                    <Lock className="w-4 h-4" />
+                    {lang === "ar" ? "متاح للمشتركين المدفوعين" : "For paid subscribers"}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-xs"
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    data-testid="button-upgrade-for-support"
+                  >
+                    {lang === "ar" ? "ترقية للوصول" : "Upgrade to Access"}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
 
         {currentPlan !== "free" || true ? (
           <Card className="p-5" data-testid="card-invoice-details">

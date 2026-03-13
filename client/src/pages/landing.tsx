@@ -37,8 +37,15 @@ import {
   Linkedin,
   Instagram,
   Youtube,
+  MessageCircle,
+  Server,
+  Database,
+  Store,
+  Lock,
+  HeadphonesIcon,
 } from "lucide-react";
 import { SiGoogle, SiX } from "react-icons/si";
+import { SUPPORT_WHATSAPP_URL } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -70,6 +77,13 @@ export default function LandingPage() {
     queryKey: ["/api/templates"],
     staleTime: 10 * 60 * 1000,
   });
+  const { data: meData } = useQuery<{ plan: string }>({
+    queryKey: ["/api/me"],
+    enabled: isAuthenticated,
+    staleTime: 60 * 1000,
+  });
+  const userPlan = meData?.plan || "free";
+  const isPaidUser = isAuthenticated && userPlan !== "free";
   const featuredTemplates = allTemplates.slice(0, 10);
   const lang = language;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -820,6 +834,94 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── Technical Support Section ── */}
+      <section className="py-12 sm:py-16 bg-white dark:bg-zinc-900 border-t border-border">
+        <div className="max-w-5xl mx-auto px-5 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-8">
+            <Badge className="mb-3 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700">
+              <HeadphonesIcon className="w-3 h-3 me-1.5" />
+              {lang === "ar" ? "دعم فني متخصص" : "Expert Technical Support"}
+            </Badge>
+            <motion.h2 custom={0} variants={fadeUp} className="text-xl sm:text-3xl font-bold mb-3" data-testid="text-tech-support-title">
+              {lang === "ar" ? "فريقنا معك في كل خطوة" : "Our Team Is With You Every Step"}
+            </motion.h2>
+            <motion.p custom={1} variants={fadeUp} className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+              {lang === "ar"
+                ? "نقدم خدمات دعم فني شاملة لرفع مواقعك على الاستضافات، وبناء المنصات الرقمية المعقدة والمتاجر الإلكترونية الضخمة التي تحتاج إلى قواعد بيانات متطورة."
+                : "We offer comprehensive technical support services for deploying your websites to hosting, building complex digital platforms and large e-commerce stores requiring advanced databases."}
+            </motion.p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            {[
+              {
+                icon: Server,
+                title: lang === "ar" ? "رفع على الاستضافة" : "Hosting Deployment",
+                desc: lang === "ar" ? "نساعدك في نقل موقعك ورفعه على أي استضافة باحترافية" : "We help you migrate and deploy your site to any hosting professionally",
+                gradient: "from-blue-500 to-cyan-600",
+              },
+              {
+                icon: Store,
+                title: lang === "ar" ? "متاجر إلكترونية ضخمة" : "Large E-commerce Stores",
+                desc: lang === "ar" ? "بناء متاجر إلكترونية متكاملة بكل الميزات والمتطلبات" : "Build full-featured e-commerce stores with all requirements",
+                gradient: "from-emerald-500 to-teal-600",
+              },
+              {
+                icon: Database,
+                title: lang === "ar" ? "منصات معقدة" : "Complex Platforms",
+                desc: lang === "ar" ? "تصميم وتطوير منصات رقمية بقواعد بيانات متطورة ومعقدة" : "Design and develop digital platforms with advanced complex databases",
+                gradient: "from-violet-500 to-purple-600",
+              },
+            ].map((item, i) => (
+              <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}>
+                <Card className="p-5 h-full text-center hover:shadow-md transition-shadow">
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mx-auto mb-3`}>
+                    <item.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <h4 className="font-semibold mb-2 text-sm">{item.title}</h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col items-center gap-3">
+            {isPaidUser ? (
+              <>
+                <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+                  {lang === "ar" ? "أنت مشترك — تواصل معنا مباشرة:" : "You're subscribed — contact us directly:"}
+                </p>
+                <a
+                  href={SUPPORT_WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2.5 bg-[#25D366] hover:bg-[#20b858] text-white font-semibold px-6 py-3 rounded-xl transition-colors shadow-md text-sm"
+                  data-testid="link-landing-whatsapp"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  {lang === "ar" ? "تواصل عبر واتساب الآن" : "Chat on WhatsApp Now"}
+                </a>
+              </>
+            ) : (
+              <>
+                <div className="inline-flex items-center gap-2 text-sm text-muted-foreground bg-muted px-4 py-2 rounded-full border border-dashed border-muted-foreground/30">
+                  <Lock className="w-3.5 h-3.5" />
+                  {lang === "ar" ? "رقم واتساب متاح للمشتركين بالباقات المدفوعة فقط" : "WhatsApp number available to paid plan subscribers only"}
+                </div>
+                <Button
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                  onClick={() => navigate(isAuthenticated ? "/billing" : "/auth")}
+                  data-testid="button-upgrade-support"
+                >
+                  {lang === "ar" ? "اشترك للوصول للدعم المباشر" : "Subscribe for Direct Support"}
+                  <ArrowRight className="w-4 h-4 ms-1.5" />
+                </Button>
+              </>
+            )}
+          </motion.div>
         </div>
       </section>
 
