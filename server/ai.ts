@@ -38,94 +38,105 @@ export async function generateWebsite(description: string, language: string = "a
   const englishFonts = "'Inter', 'Poppins', 'Montserrat', sans-serif";
   const fontFamily = isArabic ? arabicFonts : englishFonts;
 
-  const prompt = `You are a world-class web designer specializing in modern, premium Arabic and English websites for the Saudi market.
+  const prompt = `You are a world-class web designer and front-end engineer building stunning, production-ready websites for the Saudi/Arab market. Your output must rival the best agencies globally.
 
-Generate a complete, production-quality, single-page website based on this description: "${description}"
+Generate a COMPLETE, premium single-page website based on: "${description}"
 
-CRITICAL REQUIREMENTS:
-- Language: ${isArabic ? "Arabic (RTL layout with dir='rtl')" : "English (LTR layout)"}
-- Must be fully responsive (mobile-first)
-- Premium, modern, clean design with attention to detail
-- Use beautiful gradients, subtle shadows, smooth animations
-- Include professional stock images from Unsplash using URLs like: https://images.unsplash.com/photo-{ID}?w=800&h=600&fit=crop
-  * Choose images that match the website topic
-  * Use at least 3-4 relevant high-quality images
-- Use Lucide-style SVG icons inline (simple line icons)
-- Use Google Fonts: ${isArabic ? "Cairo (headings), Tajawal (body)" : "Montserrat (headings), Inter (body)"}
+═══════════════════════════════════════
+VISUAL DESIGN STANDARD — MANDATORY
+═══════════════════════════════════════
+The website MUST feel like it was built by a top design agency. Requirements:
+- FIXED NAVBAR: position:fixed, top:0, full-width, starts transparent/dark gradient, turns solid with backdrop-filter:blur(16px) on scroll via JS
+- HERO: full-viewport-height (min-height:100vh), full-bleed background image with dark gradient overlay, animated headline (fadeUp keyframe), two CTA buttons (solid + ghost outline style)
+- STATS BAR: dark background section immediately after hero with 4 animated counters (use IntersectionObserver to trigger count-up animation)
+- ABOUT: 2-column grid (image left, text right), image with border-radius + box-shadow, floating badge with years of experience
+- SERVICES: 3-column grid of cards, each with colored icon box, title, description, hover lift effect (translateY + box-shadow)
+- GALLERY: 3-column CSS Grid, aspect-ratio:4/3, hover overlay with color gradient
+- CTA BAND: full-width colored section between testimonials and contact (gradient background)
+- TESTIMONIALS: 3-column dark background cards with star ratings, italic quote text, avatar initial circle
+- CONTACT: 2-column layout — left has contact info rows with icon boxes + WhatsApp button, right has a styled form card
+- FOOTER: dark background, 3-column layout (brand/tagline, quick links, contact info), bottom copyright bar
 
-SINGLE-PAGE NAVIGATION — ABSOLUTELY MANDATORY:
-- This is a SINGLE-PAGE website. ALL navigation links MUST use anchor href (e.g. href="#about", href="#services") — NEVER use href="/about" or href="/services" or any path-based links.
-- Every anchor link in the navigation MUST have a matching section with that exact id attribute in the HTML.
-- Required sections and their EXACT ids (use these exact ids, no variations):
-  * id="about"       → ${isArabic ? "من نحن" : "About Us"} section
-  * id="services"    → ${isArabic ? "خدماتنا" : "Services"} section
-  * id="gallery"     → ${isArabic ? "معرض الأعمال" : "Gallery/Portfolio"} section
-  * id="testimonials"→ ${isArabic ? "آراء العملاء" : "Testimonials"} section
-  * id="contact"     → ${isArabic ? "تواصل معنا" : "Contact Us"} section
-- The navigation bar MUST contain links to: #about, #services, #gallery, #testimonials, #contact
-- Add to CSS: html { scroll-behavior: smooth; }
-- NEVER generate href links that start with "/" or "http" in the navigation menu.
-- NEVER use the words "نشر", "معاينة", "تعديل", "نشر الآن", or "publish" as navigation link text — these words belong to the ArabyWeb platform UI and confuse users. Use business navigation links like "الرئيسية", "خدماتنا", "من نحن", "تواصل معنا", "المنتجات", "معرض الأعمال", "احجز الآن".
+Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
+Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
 
-MOBILE HAMBURGER MENU — MANDATORY (this is NOT optional, ALWAYS include):
-- The navbar MUST have a hamburger menu button that appears only on mobile (hidden on desktop)
-- Use this EXACT pattern for the hamburger button:
-  <button id="aw-menu-btn" onclick="var m=document.getElementById('aw-mobile-menu');m.style.display=m.style.display==='flex'?'none':'flex'" style="display:none;background:none;border:none;cursor:pointer;padding:8px;">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-- The mobile menu div MUST have id="aw-mobile-menu" and be hidden by default (display:none)
-- When links in mobile menu are clicked, add onclick="document.getElementById('aw-mobile-menu').style.display='none'" to each link
-- In CSS, add: @media(max-width:768px){ #aw-menu-btn{display:block !important;} .aw-nav-links{display:none !important;} }
-- The mobile menu (id="aw-mobile-menu") must have: position:absolute; top:100%; left:0; right:0; flex-direction:column; background:white (or nav background color); padding:1rem; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:1000;
-- The nav container must have position:relative
-- DO NOT use media query classes for the hamburger. Always use inline styles + the @media override above.
-- This hamburger menu is CRITICAL for mobile usability. Never skip it.
+═══════════════════════════════════════
+NAVIGATION — SINGLE-PAGE ANCHORS ONLY
+═══════════════════════════════════════
+- ALL nav links MUST use anchor href: #about, #services, #gallery, #testimonials, #contact
+- NEVER use /path links in navigation
+- Nav links: ${isArabic ? "من نحن (#about), خدماتنا (#services), أعمالنا (#gallery), آراء العملاء (#testimonials)" : "About (#about), Services (#services), Gallery (#gallery), Testimonials (#testimonials)"} + CTA button → #contact
+- NEVER use "نشر", "معاينة", "تعديل", "publish", "preview", "edit" as nav text
 
-SECTIONS TO INCLUDE (ALL REQUIRED — do not skip any):
-1. Hero/Header   — Bold headline, subtitle, CTA button, full-screen hero image with dark overlay
-2. About (#about)       — Company/brand story with image, key stats or highlights
-3. Services (#services) — Grid of 4-6 cards with inline SVG icons, each with name + description
-4. Gallery (#gallery)   — Responsive image grid (3 columns on desktop, 1 on mobile) with hover zoom
-5. Testimonials (#testimonials) — 3 customer reviews with names, roles, star ratings
-6. Contact (#contact)   — Contact form (name, email, phone, message) + address info + Google Maps iframe
-7. Footer       — Logo, nav links anchors, copyright
+═══════════════════════════════════════
+MOBILE HAMBURGER MENU — REQUIRED
+═══════════════════════════════════════
+Add EXACTLY this hamburger button pattern inside the nav:
+<button id="aw-menu-btn" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var o=m.style.display==='flex';m.style.display=o?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;padding:8px;color:inherit;">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+Mobile menu div: id="aw-mobile-menu", style="display:none;flex-direction:column;..." — each link closes menu on click.
+CSS: @media(max-width:768px){ .aw-nav-links{display:none!important;} #aw-menu-btn{display:block!important;} }
 
-DESIGN GUIDELINES:
-- Use a cohesive, professional color palette (avoid generic blue)
-- For luxury/premium sites: use dark backgrounds with gold/amber accents
-- For corporate sites: use clean whites with professional accent colors
-- For food/restaurant: use warm, inviting colors
-- Include CSS animations (fadeIn, slideUp) for sections
-- html { scroll-behavior: smooth; }
-- Hover effects on buttons and cards
-- Box shadows for depth
-- Border-radius for modern feel
-- Proper spacing and typography hierarchy
+═══════════════════════════════════════
+JAVASCRIPT — MANDATORY INLINE SCRIPT
+═══════════════════════════════════════
+At the bottom of the HTML, include a <script> tag with:
+1. Scroll-triggered animations using IntersectionObserver:
+   - Add class "aw-reveal" to elements you want animated
+   - Observer adds class "aw-visible" when element enters viewport
+   - CSS: .aw-reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease;} .aw-visible{opacity:1;transform:translateY(0);}
+2. Navbar scroll effect:
+   - On scroll > 60px: add class "scrolled" to nav element
+   - CSS .nav.scrolled: background:rgba(15,23,42,0.97);backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.25)
+3. Counter animation for stats:
+   - On IntersectionObserver trigger, animate number from 0 to target value over 1500ms
 
-STOCK IMAGES - Use these Unsplash photo IDs based on topic:
-- Business/Corporate: photo-1497366216548-37526070297c, photo-1486406146926-c627a92ad1ab
-- Restaurant/Food: photo-1517248135467-4c7edcad34c4, photo-1414235077428-338989a2e8c0
-- Perfume/Luxury: photo-1541643600914-78b084683601, photo-1523293182086-7651a899d37f
-- Exhibition/Events: photo-1540575467063-178a50c2df87, photo-1505236858219-8359eb29e329
-- Technology: photo-1518770660439-4636190af475, photo-1451187580459-43490279c0fa
-- Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947304-fd86f028f716
-- Fashion: photo-1558618666-fcd25c85f82e, photo-1445205170230-053b83016050
-- General/Startup: photo-1522071820081-009f0129c71c, photo-1552664730-d307ca884978
+═══════════════════════════════════════
+STOCK IMAGES — HIGH QUALITY UNSPLASH
+═══════════════════════════════════════
+Choose images that PRECISELY match the business topic. Use ?w=1600&h=900&fit=crop&q=85 for hero, ?w=800&h=600&fit=crop&q=80 for about, ?w=600&h=400&fit=crop&q=75 for gallery.
+- Restaurant/Cafe: photo-1517248135467-4c7edcad34c4, photo-1414235077428-338989a2e8c0, photo-1565299624946-b28f40a0ae38
+- Business/Corporate: photo-1497366216548-37526070297c, photo-1486406146926-c627a92ad1ab, photo-1542744173-8e7e53415bb0
+- Luxury/Perfume: photo-1541643600914-78b084683601, photo-1523293182086-7651a899d37f, photo-1588776814546-1ffbb7c4f58a
+- Technology/Startup: photo-1518770660439-4636190af475, photo-1552664730-d307ca884978, photo-1451187580459-43490279c0fa
+- Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947304-fd86f028f716, photo-1512917774080-9991f1c4c750
+- Medical/Health: photo-1576091160399-112ba8d25d1d, photo-1579684385127-1ef15d508118, photo-1631217868264-e5b90bb7e133
+- Fashion/Retail: photo-1558618666-fcd25c85f82e, photo-1445205170230-053b83016050, photo-1490481651871-ab68de25d43d
+- Events/Exhibition: photo-1540575467063-178a50c2df87, photo-1505236858219-8359eb29e329
+- Use at least 6 relevant Unsplash images throughout the page
 
-Return a JSON object with exactly these fields:
+═══════════════════════════════════════
+WHATSAPP BUTTON — REQUIRED FOR ARAB MARKET
+═══════════════════════════════════════
+Add a WhatsApp floating button (bottom-right, fixed position) AND a WhatsApp link in the contact section.
+Pattern: <a href="https://wa.me/966500000000" target="_blank" style="position:fixed;bottom:1.75rem;${isArabic ? "left" : "right"}:1.75rem;z-index:999;background:#25D366;color:#fff;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,0.5);transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+</a>
+
+═══════════════════════════════════════
+COLOR PALETTE GUIDELINES
+═══════════════════════════════════════
+Pick a unique, business-appropriate palette. Avoid cliché generic blue (#2196f3 type):
+- Restaurant: warm reds/oranges (#c0392b + #e67e22)
+- Luxury/Perfume: near-black dark with gold (#0a0a0a + #d4a843)
+- Medical: teal/cyan (#0d9488 + #0284c7)
+- Tech/Startup: violet/purple (#7c3aed + #06b6d4)
+- Corporate/Agency: deep navy/royal (#1e3a5f + #2563eb)
+- Beauty/Fashion: rose/mauve (#be185d + #f43f5e)
+- Real Estate: charcoal/emerald (#1a2e1a + #059669)
+Dark background for: hero, stats bar, testimonials section, footer
+Light/white background for: about, services
+Subtle gray (#f8fafc) for alternating sections
+
+Return EXACTLY this JSON object (no markdown, no explanation):
 {
-  "html": "Complete HTML body content (no <html>, <head>, or <body> tags). Use ${dirAttr} on root div. Use font-family: ${fontFamily}. Include real Unsplash image URLs.",
-  "css": "Complete CSS with responsive breakpoints, animations (@keyframes), hover effects, gradients, shadows. Include font imports.",
-  "seoTitle": "SEO-optimized title in ${isArabic ? 'Arabic' : 'English'}",
-  "seoDescription": "SEO meta description (150-160 chars) in ${isArabic ? 'Arabic' : 'English'}",
-  "sections": ["list", "of", "section", "names", "in", "${isArabic ? 'Arabic' : 'English'}"],
-  "colorPalette": {
-    "primary": "#hex",
-    "secondary": "#hex",
-    "accent": "#hex",
-    "background": "#hex",
-    "text": "#hex"
-  }
+  "html": "Complete HTML (no <html>/<head>/<body> tags). Use ${dirAttr} on root div. Include WhatsApp float button. Include inline <script> at bottom for animations.",
+  "css": "Complete CSS: font imports, reset, all components, animations (@keyframes fadeUp, @keyframes countUp), responsive breakpoints @media(max-width:1024px) and @media(max-width:768px) and @media(max-width:480px). MUST include .aw-reveal and .aw-visible classes.",
+  "seoTitle": "${isArabic ? "Arabic" : "English"} SEO title (max 60 chars)",
+  "seoDescription": "${isArabic ? "Arabic" : "English"} meta description (150-160 chars)",
+  "sections": ["${isArabic ? "Arabic" : "English"} section names list"],
+  "colorPalette": {"primary": "#hex", "secondary": "#hex", "accent": "#hex", "background": "#hex", "text": "#hex"}
 }
 
 IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanation.`;
