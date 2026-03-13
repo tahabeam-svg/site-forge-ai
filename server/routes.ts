@@ -213,6 +213,174 @@ export async function registerRoutes(
     res.json({ status: "ok", version: BUILD_VERSION, timestamp: new Date().toISOString() });
   });
 
+  // ── SEO: robots.txt ────────────────────────────────────────────────────────
+  app.get("/robots.txt", (_req, res) => {
+    res.type("text/plain").send(`User-agent: *
+Allow: /
+Allow: /templates
+Allow: /pricing
+Allow: /contact
+Allow: /about
+Allow: /privacy
+Allow: /terms
+Allow: /blog
+Disallow: /dashboard
+Disallow: /admin
+Disallow: /auth
+Disallow: /billing
+Disallow: /api/
+Disallow: /payment-test
+
+Sitemap: https://arabyweb.net/sitemap.xml
+
+# AI Agents
+User-agent: GPTBot
+Allow: /
+Allow: /templates
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /templates
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+`);
+  });
+
+  // ── SEO: sitemap.xml ────────────────────────────────────────────────────────
+  app.get("/sitemap.xml", (_req, res) => {
+    const base = "https://arabyweb.net";
+    const now = new Date().toISOString().split("T")[0];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Home -->
+  <url>
+    <loc>${base}/</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/" />
+    <xhtml:link rel="alternate" hreflang="en" href="${base}/?lang=en" />
+  </url>
+
+  <!-- Templates -->
+  <url>
+    <loc>${base}/templates</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Pricing -->
+  <url>
+    <loc>${base}/pricing</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- About -->
+  <url>
+    <loc>${base}/about</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Blog landing keywords -->
+  <url>
+    <loc>${base}/free-website</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>${base}/free-store</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Legal -->
+  <url>
+    <loc>${base}/privacy</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>${base}/terms</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>`;
+    res.type("application/xml").send(xml);
+  });
+
+  // ── AI Agents: llms.txt ────────────────────────────────────────────────────
+  app.get("/llms.txt", (_req, res) => {
+    res.type("text/plain; charset=utf-8").send(`# ArabyWeb.net — AI-Powered Arabic Website Builder
+
+## About
+ArabyWeb.net is the first AI-powered website and online store builder for the Arab world and Saudi Arabia.
+We help businesses, restaurants, clinics, and individuals create professional websites for free in under 2 minutes — no coding required.
+
+## Key Features
+- Free website creation using AI
+- Free online store builder
+- RTL Arabic + LTR English support (bilingual websites)
+- 50+ professional templates
+- One-click publishing
+- AI marketing content generation
+- Saudi Arabia & GCC market focused
+- Compliant with Saudi PDPL and SAMA regulations
+
+## Services
+- Free Plan: Build unlimited AI websites, 5 AI sessions/month
+- Pro Plan (49 SAR/month): 50 AI sessions, priority publishing
+- Business Plan (99 SAR/month): 200 AI sessions, advanced analytics
+
+## Target Keywords (Arabic)
+موقع مجاني، بناء موقع الكتروني مجاني، انشاء موقع مجاني، متجر مجاني، متاجر مجانية، موقع بالذكاء الاصطناعي، بناء موقع بدون برمجة، موقع احترافي مجاني، استضافة مجانية، منصة بناء مواقع السعودية
+
+## Target Keywords (English)
+free website Saudi Arabia, Arabic website builder, AI website builder Arabic, free online store builder Saudi, RTL website builder, no-code website builder Arabic
+
+## Contact
+- Website: https://arabyweb.net
+- Email: support@arabyweb.net
+- Region: Saudi Arabia (Primary), Arab World
+
+## Content Policy
+- This service does NOT generate adult content, gambling, or illegal materials
+- All generated websites must comply with Saudi regulations
+- User data is protected per PDPL/SAMA standards
+
+## API
+- Public templates: GET https://arabyweb.net/api/templates
+- Pricing info: GET https://arabyweb.net/api/payments/config
+
+## Structured Data
+Full JSON-LD schema available at: https://arabyweb.net/
+Sitemap: https://arabyweb.net/sitemap.xml
+`);
+  });
+
+  // ── SEO: OpenGraph image placeholder ───────────────────────────────────────
+  app.get("/og-image.png", (_req, res) => {
+    res.redirect("/favicon.png");
+  });
+
   // ── Load dynamic plan prices from DB on startup so they survive server restarts ──
   try {
     const proPrice = await storage.getSetting("price_pro");

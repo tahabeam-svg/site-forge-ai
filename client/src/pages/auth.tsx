@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -157,6 +158,13 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
+
+  useSEO({
+    title: "تسجيل الدخول أو إنشاء حساب مجاني",
+    description: "سجّل دخولك أو أنشئ حسابك المجاني في ArabyWeb.net وابدأ في بناء موقعك الإلكتروني بالذكاء الاصطناعي.",
+    noindex: true,
+    lang: "ar",
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");

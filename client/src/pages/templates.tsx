@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useLocation } from "wouter";
@@ -25,6 +26,18 @@ export default function TemplatesPage() {
   const { toast } = useToast();
   const lang = language;
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const isAr = lang !== "en";
+
+  useSEO({
+    title: isAr ? "قوالب مواقع مجانية احترافية - مطاعم، متاجر، شركات" : "Free Professional Website Templates - Restaurants, Stores, Companies",
+    description: isAr
+      ? "اختر من أكثر من 50 قالب موقع إلكتروني مجاني احترافي: مطاعم، متاجر إلكترونية، شركات، عيادات، ومزيد. صمم موقعك في دقيقتين بالذكاء الاصطناعي."
+      : "Choose from 50+ free professional website templates: restaurants, online stores, companies, clinics, and more. Build your site in 2 minutes with AI.",
+    keywords: isAr
+      ? "قوالب مواقع مجانية، قالب موقع مطعم، قالب متجر الكتروني، قالب موقع شركة، تصميم مواقع مجاني، قوالب عربية"
+      : "free website templates Arabic, restaurant website template, store template, company website template",
+    lang: isAr ? "ar" : "en",
+  });
 
   const { data: templates = [], isLoading } = useQuery<Template[]>({
     queryKey: ["/api/templates"],

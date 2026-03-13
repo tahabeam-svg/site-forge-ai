@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSEO } from "@/hooks/use-seo";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
@@ -72,6 +73,33 @@ const scaleIn = {
 export default function LandingPage() {
   const { isAuthenticated, language } = useAuth();
   const [, navigate] = useLocation();
+  const isAr = language !== "en";
+
+  useSEO({
+    title: isAr
+      ? "بناء موقع إلكتروني مجاني بالذكاء الاصطناعي في السعودية"
+      : "Free AI Website Builder for Saudi Arabia & Arab World",
+    description: isAr
+      ? "أنشئ موقعك الإلكتروني المجاني أو متجرك الإلكتروني المجاني بالذكاء الاصطناعي في أقل من دقيقتين. بدون برمجة، بدون تكلفة. الأول في السعودية."
+      : "Build your free website or free online store with AI in under 2 minutes. No coding needed. Saudi Arabia's #1 AI website builder.",
+    keywords: isAr
+      ? "موقع مجاني، بناء موقع الكتروني مجاني، انشاء موقع مجاني، متجر مجاني، متاجر مجانية، موقع بالذكاء الاصطناعي، بناء موقع بدون برمجة، موقع احترافي مجاني، استضافة مجانية، منصة بناء مواقع، موقع للشركات السعودية"
+      : "free website Saudi Arabia, AI website builder Arabic, free online store, website builder no code, free website builder",
+    lang: isAr ? "ar" : "en",
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": isAr ? "بناء موقع مجاني بالذكاء الاصطناعي" : "Free AI Website Builder",
+      "url": "https://arabyweb.net/",
+      "description": isAr
+        ? "المنصة الأولى لبناء المواقع المجانية بالذكاء الاصطناعي في السعودية والعالم العربي"
+        : "Saudi Arabia's first free AI website builder",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://arabyweb.net/" }]
+      }
+    }
+  });
 
   const { data: allTemplates = [] } = useQuery<Template[]>({
     queryKey: ["/api/templates"],

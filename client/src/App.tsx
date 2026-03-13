@@ -28,6 +28,8 @@ import DeployGuidePage from "@/pages/deploy-guide";
 import ResetPasswordPage from "@/pages/reset-password";
 import PaymentTestPage from "@/pages/payment-test";
 import IncidentResponsePage from "@/pages/incident-response";
+import FreeWebsitePage from "@/pages/free-website";
+import FreeStorePage from "@/pages/free-store";
 
 import { useEffect } from "react";
 
@@ -86,6 +88,8 @@ function Router() {
       <Route path="/deploy-guide/:id">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/payment-test">{() => <ProtectedRoute component={PaymentTestPage} />}</Route>
+      <Route path="/free-website" component={FreeWebsitePage} />
+      <Route path="/free-store" component={FreeStorePage} />
       <Route component={NotFound} />
     </Switch>
   );
