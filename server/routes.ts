@@ -378,6 +378,7 @@ export async function registerRoutes(
 
       const language = req.body.language || "ar";
       const description = req.body.description || project.description || project.name;
+      const logoDataUrl: string | undefined = req.body.logoDataUrl;
 
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
@@ -385,9 +386,30 @@ export async function registerRoutes(
       const generated = await generateInstantWebsite(description, language);
 
       const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2 } = await getUserPlanInfo(req.user.id);
+      let baseHtml = generated.html;
+
+      // Inject user logo into the site if provided
+      if (logoDataUrl && logoDataUrl.startsWith("data:image/")) {
+        // Try to inject logo image into the brand/nav element
+        // Replace existing aw-brand text with img + text, or inject img into the brand anchor
+        if (baseHtml.includes('class="aw-brand"') || baseHtml.includes("class='aw-brand'")) {
+          // Insert logo img before the brand text
+          baseHtml = baseHtml.replace(
+            /(<a[^>]*class=["']aw-brand["'][^>]*>)/gi,
+            `$1<img src="${logoDataUrl}" alt="logo" style="height:36px;width:auto;object-fit:contain;vertical-align:middle;margin-inline-end:8px;">`
+          );
+        } else if (baseHtml.includes("__AW_IMG_001__")) {
+          baseHtml = baseHtml.replace(/__AW_IMG_001__/g, logoDataUrl);
+        } else {
+          // Inject as a floating logo in the hero section
+          const heroImgTag = `<img src="${logoDataUrl}" alt="logo" style="height:64px;width:auto;object-fit:contain;margin:0 auto 16px;display:block;">`;
+          baseHtml = baseHtml.replace(/(<section[^>]*class=["'][^"']*aw-hero[^"']*["'][^>]*>)/i, `$1${heroImgTag}`);
+        }
+      }
+
       const finalHtml2 = (isFreePlan2 && !isUserAdmin2)
-        ? injectFreePlanWatermark(generated.html)
-        : removeFreePlanWatermark(generated.html);
+        ? injectFreePlanWatermark(baseHtml)
+        : removeFreePlanWatermark(baseHtml);
 
       const freePlanNote2 = isFreePlan2 && !isUserAdmin2
         ? (language === "ar"

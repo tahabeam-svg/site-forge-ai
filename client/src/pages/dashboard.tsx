@@ -12,6 +12,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +59,15 @@ import {
   Globe2,
   Clock,
   TrendingUp,
+  ChevronRight,
+  ChevronLeft,
+  ImageIcon,
+  X,
+  Phone,
+  Mail,
+  MapPin,
+  AtSign,
+  Building2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -62,7 +79,7 @@ import {
 
 const INSTANT_STEPS = {
   ar: [
-    "جاري تحليل وصف موقعك...",
+    "جاري تحليل بيانات موقعك...",
     "اخترنا تصميماً مناسباً لنشاطك...",
     "نكتب محتوى الصفحة الرئيسية...",
     "نبني قسم الخدمات والمميزات...",
@@ -72,7 +89,7 @@ const INSTANT_STEPS = {
     "الموقع جاهز! 🎉",
   ],
   en: [
-    "Analyzing your website description...",
+    "Analyzing your website data...",
     "Picking the perfect design for you...",
     "Writing the hero section content...",
     "Building services & features section...",
@@ -82,6 +99,163 @@ const INSTANT_STEPS = {
     "Your website is ready! 🎉",
   ],
 };
+
+const ACTIVITY_TYPES_AR = [
+  { value: "personal", label: "موقع شخصي" },
+  { value: "romantic", label: "رومانسي / هدية" },
+  { value: "restaurant", label: "مطعم وكافيه" },
+  { value: "medical", label: "عيادة وصحة" },
+  { value: "realestate", label: "عقارات" },
+  { value: "tech", label: "تقنية ومتاجر إلكترونية" },
+  { value: "design", label: "تصميم وإبداع" },
+  { value: "beauty", label: "تجميل وعناية" },
+  { value: "education", label: "تعليم وتدريب" },
+  { value: "events", label: "فعاليات ومناسبات" },
+  { value: "services", label: "خدمات وأعمال حرة" },
+  { value: "legal", label: "محاماة واستشارات" },
+  { value: "other", label: "أخرى" },
+];
+
+const ACTIVITY_TYPES_EN = [
+  { value: "personal", label: "Personal Website" },
+  { value: "romantic", label: "Romantic / Gift" },
+  { value: "restaurant", label: "Restaurant & Cafe" },
+  { value: "medical", label: "Medical & Healthcare" },
+  { value: "realestate", label: "Real Estate" },
+  { value: "tech", label: "Tech & E-commerce" },
+  { value: "design", label: "Design & Creative" },
+  { value: "beauty", label: "Beauty & Salon" },
+  { value: "education", label: "Education & Training" },
+  { value: "events", label: "Events & Occasions" },
+  { value: "services", label: "Services & Business" },
+  { value: "legal", label: "Legal & Consulting" },
+  { value: "other", label: "Other" },
+];
+
+const ACTIVITY_TYPE_MAP_AR: Record<string, string> = {
+  personal: "موقع شخصي",
+  romantic: "موقع رومانسي / هدية",
+  restaurant: "مطعم وكافيه",
+  medical: "عيادة وطب",
+  realestate: "عقارات",
+  tech: "تقنية ومتاجر إلكترونية",
+  design: "تصميم وإبداع",
+  beauty: "تجميل وعناية",
+  education: "تعليم وتدريب",
+  events: "فعاليات ومناسبات",
+  services: "خدمات وأعمال",
+  legal: "محاماة واستشارات",
+  other: "نشاط تجاري",
+};
+
+const ACTIVITY_TYPE_MAP_EN: Record<string, string> = {
+  personal: "Personal Website",
+  romantic: "Romantic / Gift Website",
+  restaurant: "Restaurant & Cafe",
+  medical: "Medical & Healthcare",
+  realestate: "Real Estate",
+  tech: "Tech & E-commerce",
+  design: "Design & Creative",
+  beauty: "Beauty & Salon",
+  education: "Education & Training",
+  events: "Events & Occasions",
+  services: "Services & Business",
+  legal: "Legal & Consulting",
+  other: "Business",
+};
+
+interface WizardForm {
+  siteName: string;
+  activityType: string;
+  phone: string;
+  email: string;
+  city: string;
+  instagram: string;
+  twitterX: string;
+  tiktok: string;
+  snapchat: string;
+  youtube: string;
+  linkedin: string;
+  extraNotes: string;
+  logoDataUrl: string;
+  logoPreview: string;
+}
+
+const defaultWizardForm: WizardForm = {
+  siteName: "",
+  activityType: "",
+  phone: "",
+  email: "",
+  city: "",
+  instagram: "",
+  twitterX: "",
+  tiktok: "",
+  snapchat: "",
+  youtube: "",
+  linkedin: "",
+  extraNotes: "",
+  logoDataUrl: "",
+  logoPreview: "",
+};
+
+function buildStructuredPrompt(form: WizardForm, isArabic: boolean): string {
+  const lines: string[] = [];
+  const typeMapAr = ACTIVITY_TYPE_MAP_AR;
+  const typeMapEn = ACTIVITY_TYPE_MAP_EN;
+  const actType = form.activityType
+    ? (isArabic ? typeMapAr[form.activityType] : typeMapEn[form.activityType]) || form.activityType
+    : "";
+
+  if (actType) lines.push(isArabic ? `نوع النشاط: ${actType}` : `Activity type: ${actType}`);
+  if (form.siteName) lines.push(isArabic ? `الاسم: ${form.siteName}` : `Name: ${form.siteName}`);
+  if (form.city) lines.push(isArabic ? `المدينة: ${form.city}` : `City: ${form.city}`);
+  if (form.phone) lines.push(isArabic ? `الهاتف/واتساب: ${form.phone}` : `Phone/WhatsApp: ${form.phone}`);
+  if (form.email) lines.push(isArabic ? `البريد الإلكتروني: ${form.email}` : `Email: ${form.email}`);
+
+  const socials: string[] = [];
+  if (form.instagram) socials.push(`Instagram: @${form.instagram.replace(/^@/, "")}`);
+  if (form.twitterX) socials.push(`Twitter/X: @${form.twitterX.replace(/^@/, "")}`);
+  if (form.tiktok) socials.push(`TikTok: @${form.tiktok.replace(/^@/, "")}`);
+  if (form.snapchat) socials.push(`Snapchat: @${form.snapchat.replace(/^@/, "")}`);
+  if (form.youtube) socials.push(`YouTube: ${form.youtube}`);
+  if (form.linkedin) socials.push(`LinkedIn: ${form.linkedin}`);
+  if (socials.length > 0) {
+    lines.push(isArabic ? `\nحسابات التواصل الاجتماعي:\n${socials.join("\n")}` : `\nSocial media:\n${socials.join("\n")}`);
+  }
+
+  if (form.logoDataUrl) {
+    lines.push(isArabic ? "الشعار: مُرفق (ضعه في مكان بارز في الموقع)" : "Logo: attached (place it prominently on the website)");
+  }
+
+  if (form.extraNotes) {
+    lines.push(isArabic ? `\nتفاصيل إضافية: ${form.extraNotes}` : `\nAdditional details: ${form.extraNotes}`);
+  }
+
+  return lines.join("\n");
+}
+
+function compressImageForUpload(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 600;
+        let { width, height } = img;
+        if (width > MAX) { height = Math.round((height * MAX) / width); width = MAX; }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.75));
+      };
+      img.onerror = reject;
+      img.src = ev.target!.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 export default function DashboardPage() {
   const { language } = useAuth();
@@ -95,11 +269,26 @@ export default function DashboardPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
   const [instantDialogOpen, setInstantDialogOpen] = useState(false);
-  const [instantPrompt, setInstantPrompt] = useState("");
+  const [wizardForm, setWizardForm] = useState<WizardForm>(defaultWizardForm);
+  const [wizardStep, setWizardStep] = useState<1 | 2>(1);
   const [instantProgress, setInstantProgress] = useState(0);
   const [instantStep, setInstantStep] = useState(0);
   const [isInstantGenerating, setIsInstantGenerating] = useState(false);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  function updateWizard(field: keyof WizardForm, value: string) {
+    setWizardForm((prev) => ({ ...prev, [field]: value }));
+  }
+
+  async function handleLogoUpload(file: File) {
+    try {
+      const compressed = await compressImageForUpload(file);
+      setWizardForm((prev) => ({ ...prev, logoDataUrl: compressed, logoPreview: compressed }));
+    } catch {
+      toast({ title: lang === "ar" ? "خطأ" : "Error", description: lang === "ar" ? "تعذّر رفع الشعار" : "Failed to upload logo", variant: "destructive" });
+    }
+  }
 
   const { data: rawProjects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
@@ -206,23 +395,26 @@ export default function DashboardPage() {
   }, []);
 
   async function handleInstantGenerate() {
-    if (!instantPrompt.trim()) return;
+    if (!wizardForm.siteName.trim()) return;
+
+    const isAr = lang === "ar";
+    const structuredDesc = buildStructuredPrompt(wizardForm, isAr);
+    const projectName = wizardForm.siteName.trim().slice(0, 60);
 
     setIsInstantGenerating(true);
     startProgressAnimation();
 
     try {
-      const projectName = instantPrompt.trim().slice(0, 50);
       const createRes = await apiRequest("POST", "/api/projects", {
         name: projectName,
-        description: instantPrompt.trim(),
+        description: structuredDesc,
       });
       const project: Project = await createRes.json();
 
-      const genRes = await apiRequest("POST", `/api/projects/${project.id}/generate-instant`, {
-        description: instantPrompt.trim(),
-        language: lang,
-      });
+      const genPayload: Record<string, unknown> = { description: structuredDesc, language: lang };
+      if (wizardForm.logoDataUrl) genPayload.logoDataUrl = wizardForm.logoDataUrl;
+
+      const genRes = await apiRequest("POST", `/api/projects/${project.id}/generate-instant`, genPayload);
       if (!genRes.ok) {
         const errData = await genRes.json();
         throw new Error(errData.message || "Generation failed");
@@ -235,7 +427,8 @@ export default function DashboardPage() {
 
       setIsInstantGenerating(false);
       setInstantDialogOpen(false);
-      setInstantPrompt("");
+      setWizardForm(defaultWizardForm);
+      setWizardStep(1);
       setInstantProgress(0);
 
       navigate(`/editor/${project.id}`);
@@ -590,9 +783,14 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Instant Generate Dialog */}
-      <Dialog open={instantDialogOpen} onOpenChange={(open) => { if (!isInstantGenerating) { setInstantDialogOpen(open); if (!open) { setInstantProgress(0); setInstantStep(0); } } }}>
-        <DialogContent className="max-w-lg">
+      {/* Instant Generate Dialog — Structured Wizard */}
+      <Dialog open={instantDialogOpen} onOpenChange={(open) => {
+        if (!isInstantGenerating) {
+          setInstantDialogOpen(open);
+          if (!open) { setInstantProgress(0); setInstantStep(0); setWizardStep(1); }
+        }
+      }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center">
@@ -602,55 +800,275 @@ export default function DashboardPage() {
             </DialogTitle>
             <DialogDescription>
               {lang === "ar"
-                ? "صف نشاطك التجاري بجملة أو جملتين وسنبني موقعاً كاملاً في ثوانٍ"
-                : "Describe your business in 1-2 sentences and we'll build a complete website in seconds"}
+                ? "املأ البيانات أدناه وسيبني الذكاء الاصطناعي موقعك الاحترافي خلال ثوانٍ"
+                : "Fill in your details below and AI will build your professional website in seconds"}
             </DialogDescription>
           </DialogHeader>
 
           {!isInstantGenerating ? (
-            <div className="space-y-4 pt-2">
-              <Textarea
-                value={instantPrompt}
-                onChange={(e) => setInstantPrompt(e.target.value)}
-                placeholder={
-                  lang === "ar"
-                    ? "مثال: مطعم مشويات سعودي في الرياض يقدم أفضل المشويات والوجبات الشعبية بأسعار معقولة"
-                    : "Example: A modern digital marketing agency in Dubai specializing in social media and SEO services for SMEs"
-                }
-                className="resize-none min-h-[110px]"
-                rows={4}
-                data-testid="input-instant-prompt"
-                disabled={isInstantGenerating}
-              />
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-violet-500/10 border border-violet-500/20">
-                <Sparkles className="w-4 h-4 text-violet-500 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  {lang === "ar"
-                    ? "سيتم إنشاء موقع كامل مع تصميم احترافي وقسم خدمات وتواصل خلال 15-20 ثانية"
-                    : "A full website with professional design, services & contact section will be ready in 15-20 seconds"}
-                </p>
+            <div dir={lang === "ar" ? "rtl" : "ltr"} className="space-y-5 pt-1">
+
+              {/* Step Indicator */}
+              <div className="flex items-center gap-2">
+                {[1, 2].map((s) => (
+                  <div key={s} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => { if (s === 2 && !wizardForm.siteName.trim()) return; setWizardStep(s as 1 | 2); }}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                        wizardStep === s
+                          ? "bg-violet-600 text-white shadow-md shadow-violet-500/30"
+                          : s < wizardStep
+                          ? "bg-emerald-500 text-white"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {s < wizardStep ? <Check className="w-3.5 h-3.5" /> : s}
+                    </button>
+                    <span className={`text-xs font-medium ${wizardStep === s ? "text-foreground" : "text-muted-foreground"}`}>
+                      {s === 1
+                        ? (lang === "ar" ? "المعلومات الأساسية" : "Basic Info")
+                        : (lang === "ar" ? "التواصل والشعار" : "Social & Logo")}
+                    </span>
+                    {s < 2 && <div className="flex-1 h-px bg-border w-8" />}
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setInstantDialogOpen(false)} data-testid="button-cancel-instant">
-                  {t("cancel", lang)}
-                </Button>
-                <Button
-                  disabled={!instantPrompt.trim()}
-                  onClick={handleInstantGenerate}
-                  className="bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 gap-2"
-                  data-testid="button-confirm-instant"
-                >
-                  <Zap className="w-4 h-4" />
-                  {lang === "ar" ? "أنشئ موقعي الآن" : "Generate My Website"}
-                </Button>
-              </div>
+
+              {/* ───── STEP 1: Basic Info ───── */}
+              {wizardStep === 1 && (
+                <div className="space-y-4">
+                  {/* Activity Type */}
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5 text-sm font-medium">
+                      <Building2 className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "نوع النشاط" : "Activity Type"}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={wizardForm.activityType}
+                      onValueChange={(v) => updateWizard("activityType", v)}
+                    >
+                      <SelectTrigger data-testid="select-activity-type" className="w-full">
+                        <SelectValue placeholder={lang === "ar" ? "اختر نوع النشاط..." : "Select activity type..."} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(lang === "ar" ? ACTIVITY_TYPES_AR : ACTIVITY_TYPES_EN).map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Site Name */}
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5 text-sm font-medium">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "اسم الموقع / المشروع / الشخص" : "Website / Project / Person Name"}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      value={wizardForm.siteName}
+                      onChange={(e) => updateWizard("siteName", e.target.value)}
+                      placeholder={lang === "ar" ? "مثال: مطعم البيك — د. أحمد الغامدي — متجر سلة" : "e.g. Al Baik Restaurant — Ahmed's Studio — Salla Store"}
+                      data-testid="input-site-name"
+                      className="text-base"
+                    />
+                  </div>
+
+                  {/* City & Phone in a row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5 text-sm font-medium">
+                        <MapPin className="w-3.5 h-3.5 text-violet-500" />
+                        {lang === "ar" ? "المدينة" : "City"}
+                      </Label>
+                      <Input
+                        value={wizardForm.city}
+                        onChange={(e) => updateWizard("city", e.target.value)}
+                        placeholder={lang === "ar" ? "الرياض، جدة..." : "Riyadh, Jeddah..."}
+                        data-testid="input-city"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5 text-sm font-medium">
+                        <Phone className="w-3.5 h-3.5 text-violet-500" />
+                        {lang === "ar" ? "رقم الهاتف / واتساب" : "Phone / WhatsApp"}
+                      </Label>
+                      <Input
+                        value={wizardForm.phone}
+                        onChange={(e) => updateWizard("phone", e.target.value)}
+                        placeholder="+966 5X XXX XXXX"
+                        data-testid="input-phone"
+                        dir="ltr"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5 text-sm font-medium">
+                      <Mail className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "البريد الإلكتروني" : "Email Address"}
+                    </Label>
+                    <Input
+                      value={wizardForm.email}
+                      onChange={(e) => updateWizard("email", e.target.value)}
+                      placeholder="info@example.com"
+                      data-testid="input-email"
+                      dir="ltr"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <Button
+                      disabled={!wizardForm.siteName.trim()}
+                      onClick={() => setWizardStep(2)}
+                      className="bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 gap-2"
+                      data-testid="button-next-step"
+                    >
+                      {lang === "ar" ? "التالي" : "Next"}
+                      {lang === "ar" ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* ───── STEP 2: Socials + Logo + Notes ───── */}
+              {wizardStep === 2 && (
+                <div className="space-y-4">
+                  {/* Social Media */}
+                  <div>
+                    <Label className="flex items-center gap-1.5 text-sm font-semibold mb-3">
+                      <AtSign className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "حسابات التواصل الاجتماعي" : "Social Media Accounts"}
+                      <span className="text-xs font-normal text-muted-foreground ms-1">({lang === "ar" ? "اختياري" : "optional"})</span>
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { field: "instagram" as const, label: "Instagram", placeholder: "@username", icon: "📸" },
+                        { field: "twitterX" as const, label: "Twitter / X", placeholder: "@username", icon: "🐦" },
+                        { field: "tiktok" as const, label: "TikTok", placeholder: "@username", icon: "🎵" },
+                        { field: "snapchat" as const, label: "Snapchat", placeholder: "@username", icon: "👻" },
+                        { field: "youtube" as const, label: "YouTube", placeholder: lang === "ar" ? "رابط القناة" : "Channel URL", icon: "▶️" },
+                        { field: "linkedin" as const, label: "LinkedIn", placeholder: lang === "ar" ? "رابط الملف" : "Profile URL", icon: "💼" },
+                      ].map(({ field, label, placeholder, icon }) => (
+                        <div key={field} className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">{icon} {label}</Label>
+                          <Input
+                            value={wizardForm[field]}
+                            onChange={(e) => updateWizard(field, e.target.value)}
+                            placeholder={placeholder}
+                            dir="ltr"
+                            className="text-sm h-9"
+                            data-testid={`input-social-${field}`}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Logo Upload */}
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5 text-sm font-semibold">
+                      <ImageIcon className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "شعار الموقع (اختياري)" : "Website Logo (optional)"}
+                    </Label>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      data-testid="input-logo-upload"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleLogoUpload(file);
+                      }}
+                    />
+                    {wizardForm.logoPreview ? (
+                      <div className="relative inline-block">
+                        <img
+                          src={wizardForm.logoPreview}
+                          alt="logo preview"
+                          className="h-20 w-auto max-w-[200px] object-contain rounded-lg border bg-white p-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setWizardForm((p) => ({ ...p, logoDataUrl: "", logoPreview: "" }))}
+                          className="absolute -top-2 -end-2 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        className="w-full h-20 rounded-xl border-2 border-dashed border-violet-300 dark:border-violet-700 hover:border-violet-500 hover:bg-violet-500/5 transition-all flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-violet-600 group"
+                        data-testid="button-upload-logo"
+                      >
+                        <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                        <span className="text-xs">{lang === "ar" ? "انقر لرفع الشعار" : "Click to upload logo"}</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Extra Notes */}
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5 text-sm font-medium">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "تفاصيل إضافية (اختياري)" : "Additional Details (optional)"}
+                    </Label>
+                    <Textarea
+                      value={wizardForm.extraNotes}
+                      onChange={(e) => updateWizard("extraNotes", e.target.value)}
+                      placeholder={
+                        lang === "ar"
+                          ? "أي معلومات إضافية تريد إضافتها... خدماتك، رسالتك، شعارك..."
+                          : "Any extra info... your services, mission, tagline..."
+                      }
+                      className="resize-none min-h-[80px] text-sm"
+                      rows={3}
+                      data-testid="input-extra-notes"
+                    />
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-between pt-1">
+                    <Button
+                      variant="outline"
+                      onClick={() => setWizardStep(1)}
+                      className="gap-2"
+                      data-testid="button-prev-step"
+                    >
+                      {lang === "ar" ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+                      {lang === "ar" ? "السابق" : "Back"}
+                    </Button>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={() => setInstantDialogOpen(false)} data-testid="button-cancel-instant">
+                        {t("cancel", lang)}
+                      </Button>
+                      <Button
+                        disabled={!wizardForm.siteName.trim()}
+                        onClick={handleInstantGenerate}
+                        className="bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 gap-2"
+                        data-testid="button-confirm-instant"
+                      >
+                        <Zap className="w-4 h-4" />
+                        {lang === "ar" ? "أنشئ موقعي الآن" : "Generate My Website"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
+            /* ───── GENERATING STATE ───── */
             <div className="space-y-6 py-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-medium text-violet-600 dark:text-violet-400">
-                    {instantSteps[instantStep]}
+                    {(INSTANT_STEPS[lang as "ar" | "en"] || INSTANT_STEPS.ar)[instantStep]}
                   </span>
                   <span className="text-muted-foreground font-mono">{Math.round(instantProgress)}%</span>
                 </div>
@@ -658,7 +1076,7 @@ export default function DashboardPage() {
               </div>
 
               <div className="space-y-2">
-                {instantSteps.map((step, i) => (
+                {(INSTANT_STEPS[lang as "ar" | "en"] || INSTANT_STEPS.ar).map((step, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, x: lang === "ar" ? 10 : -10 }}
@@ -667,11 +1085,7 @@ export default function DashboardPage() {
                     className={`flex items-center gap-2 text-sm ${i <= instantStep ? "text-foreground" : "text-muted-foreground"}`}
                   >
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      i < instantStep
-                        ? "bg-emerald-500"
-                        : i === instantStep
-                        ? "bg-violet-500"
-                        : "bg-muted"
+                      i < instantStep ? "bg-emerald-500" : i === instantStep ? "bg-violet-500" : "bg-muted"
                     }`}>
                       {i < instantStep ? (
                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
