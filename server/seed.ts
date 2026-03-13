@@ -192,6 +192,20 @@ export async function seedDatabase() {
     console.error("Credit purchases migration warning:", e.message);
   }
 
+  // Projects table column migrations
+  try {
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS edit_count INTEGER DEFAULT 0`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS website_language VARCHAR DEFAULT 'ar'`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS color_palette JSONB`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS sections JSONB`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_title TEXT`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_description TEXT`);
+    await db.execute(sql`UPDATE projects SET edit_count = 0 WHERE edit_count IS NULL`);
+    console.log("Migration: projects table columns ensured");
+  } catch (e: any) {
+    console.error("Projects migration warning:", e.message);
+  }
+
   // Template versioning — bump TEMPLATE_VERSION to force regeneration
   const TEMPLATE_VERSION = "v3-gulf-avatars";
   try {
