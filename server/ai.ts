@@ -31,6 +31,141 @@ export interface GeneratedWebsite {
   colorPalette: { primary: string; secondary: string; accent: string; background: string; text: string };
 }
 
+type WebsiteCategory = "romantic" | "portfolio" | "event" | "business";
+
+function detectWebsiteCategory(description: string): WebsiteCategory {
+  const d = description.toLowerCase();
+  const romantic = ["حبيبت","حبيبي","حبيبه","عشيقت","زوجت","زوجي","girlfriend","boyfriend","lover","sweetheart","my love","بحبك","احبك","أحبك","ذكرى زواج","عيد زواج","عيد حب","valentine","anniversary","قلبي","رفيقت","رفيقي","لحبيبي","لحبيبتي","لزوجتي","لزوجي","أميرت","أميرتي","نغم","نور","ريم","لين","روان","ريان","هند","سارة","مريم","فاطمة","ياسمين","لحبيب","صديقتي","girlfriend website","love website"];
+  const portfolio = ["بورتفوليو","portfolio","أعمالي","موهبتي","مصور","مصمم","فنان","معلم","مدرس","طبيب","مهندس","محامي","شخصي","personal","resume","cv","سيرة ذاتية","شاعر","كاتب","موسيقي"];
+  const event = ["حفل","مناسبة","زفاف","خطوبة","عقد قران","حفلة","wedding","party","event","exhibition","معرض","مهرجان","festival","سوق","قرن","ختان","تخرج","graduation","عيد ميلاد موقع","birthday website"];
+  if (romantic.some(k => d.includes(k))) return "romantic";
+  if (portfolio.some(k => d.includes(k))) return "portfolio";
+  if (event.some(k => d.includes(k))) return "event";
+  return "business";
+}
+
+function buildPromptByCategory(category: WebsiteCategory, description: string, isArabic: boolean, dirAttr: string): string {
+  const dir = isArabic ? "rtl" : "ltr";
+  const lang = isArabic
+    ? "Arabic RTL — dir='rtl' on root element. ALL text in Arabic."
+    : "English LTR — ALL text in English.";
+  const font = isArabic
+    ? "Import Cairo (headings 700-900) + Tajawal (body) from Google Fonts"
+    : "Import Montserrat (headings 700-900) + Inter (body) from Google Fonts";
+  const mobileMenu = `<button id="aw-menu-btn" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var o=m.style.display==='flex';m.style.display=o?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;padding:8px;color:inherit;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>`;
+
+  if (category === "romantic") {
+    return `You are a world-class creative web designer specializing in personal romantic & love websites. Build an emotionally beautiful, elegant, deeply personal website — NOT a business website.
+
+Request: "${description}"
+
+CRITICAL RULES — MANDATORY:
+- This is a PERSONAL/ROMANTIC website, NOT a business. NEVER add: "years of experience", "clients count", "stats bar", "our services", "testimonials", "WhatsApp business button", pricing, or any corporate sections.
+- The subject is a PERSON (likely a loved one). Treat them with warmth, love, and personalization.
+- Extract the person's name from the request if mentioned. Use it throughout lovingly.
+
+═══════════════════════════════════
+REQUIRED SECTIONS (IN ORDER):
+═══════════════════════════════════
+1. NAVBAR: Fixed, glassmorphism (backdrop-filter:blur(20px); background:rgba(15,5,30,0.7)). Nav links: About, Memories, Messages, Wishes. Brand = person's name in gradient text. Mobile hamburger menu required.
+
+2. HERO: Full viewport (min-height:100vh). Background: beautiful Unsplash romantic/nature image with deep dark overlay. Large animated title with the person's name in gradient text (use pink/rose/purple palette). Subtitle = a romantic sentence. One CTA button (gradient, rounded) → #memories. Animated floating heart particles or soft orb glows.
+
+3. ABOUT (id="about"): "من هي [الاسم]" or "About [Name]" — A beautiful 2-column section. Left: elegant portrait-style image (Unsplash beautiful person/nature). Right: personal description — her personality traits, what makes her special, her hobbies. Style with a large decorative quote mark. NO bullet points about experience.
+
+4. MEMORIES GALLERY (id="memories"): Title "لحظاتنا الجميلة" or "Beautiful Memories". A 3-column masonry-style grid of 6 beautiful romantic/nature Unsplash photos. Each with hover overlay and heart icon.
+
+5. LOVE MESSAGES (id="messages"): Title "رسائل من القلب" or "From the Heart". 3 beautiful cards with romantic messages/quotes. Dark section, glassmorphism cards with heart icons. Soft poetic text.
+
+6. WISHES (id="wishes"): Full-width gradient section with a large personal wish/dedication. Decorative elements. One share button.
+
+7. FOOTER: Dark, minimal. Name + tagline. Social media icons (Instagram, Twitter, Snapchat). Small copyright.
+
+═══════════════════════════════════
+DESIGN STYLE:
+═══════════════════════════════════
+- Color palette: Romantic — deep rose (#be185d), soft pink (#f9a8d4), purple (#7c3aed), with near-black backgrounds (#0f0818)
+- Fonts: ${font}
+- Hero title: clamp(3rem,7vw,6rem), font-weight:900, gradient text (rose to purple)
+- Animated floating hearts in hero using CSS @keyframes floatHeart
+- All transitions: cubic-bezier(.22,1,.36,1)
+- Glassmorphism cards in messages section
+- NO stats, NO services, NO testimonials, NO WhatsApp, NO business contact form
+
+Language: ${lang}
+
+MOBILE HAMBURGER (required inside nav):
+${mobileMenu}
+Mobile menu div: id="aw-mobile-menu"
+CSS: @media(max-width:768px){ nav-links{display:none!important;} #aw-menu-btn{display:block!important;} }
+
+JS (inline <script> at bottom):
+- IntersectionObserver for scroll reveal (.aw-reveal → .aw-visible)
+- Navbar scroll effect (add class on scroll > 60px)
+- Floating heart animation trigger
+
+IMAGES (Unsplash):
+- Romantic/nature hero: photo-1518895949257-7621c3c786d7, photo-1490750967868-88df5691cc6c, photo-1529333166437-7750a6dd5a70
+- Soft portrait/bokeh: photo-1529626455594-4ff0802cfb7e, photo-1524504388940-b1c1722653e1, photo-1488426862026-3ee34a7d66df
+- Flowers/romantic: photo-1518199266791-5375a83190b7, photo-1487530811015-780eb9d5ee98, photo-1455661f47f62baef40b3c9ac76a93f
+
+Return EXACTLY this JSON (no markdown, no explanation):
+{"html":"complete HTML (no html/head/body tags, use ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS with font imports, all animations, mobile responsive","seoTitle":"${isArabic ? "Arabic" : "English"} title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+  }
+
+  if (category === "portfolio") {
+    return `You are a world-class creative director building a stunning personal portfolio website. Style: modern 2025, minimal yet impactful — like top Dribbble portfolios.
+
+Request: "${description}"
+
+SECTIONS (in order):
+1. NAVBAR: Fixed glassmorphism. Links: About, Skills, Portfolio, Contact. Brand = person's name. Mobile menu required.
+2. HERO: Full viewport. Animated gradient background (no photo needed — use CSS mesh gradient). Large name + title/role in gradient text. Short tagline. Two CTAs: "أعمالي" + "تواصل معي". Animated orb blobs.
+3. ABOUT (id="about"): 2-column. Professional photo left. Bio right with skills summary and a fun fact about them.
+4. SKILLS (id="skills"): Grid of skill badges with icons. Animated progress bars or percentage badges. NO "years of experience" count unless they mention it.
+5. PORTFOLIO (id="portfolio"): 3-column grid of work cards. Each with image, title, tag badges, hover overlay.
+6. CONTACT (id="contact"): Simple clean contact section with social links and a minimal form.
+7. FOOTER: Minimal dark footer.
+
+DESIGN: Modern, clean, professional. Color: based on their field (tech=violet/cyan, design=pink/orange, etc.)
+Language: ${lang}
+Font: ${font}
+Mobile hamburger: ${mobileMenu}
+
+Return EXACTLY this JSON (no markdown):
+{"html":"complete HTML","css":"complete CSS","seoTitle":"title","seoDescription":"description","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+  }
+
+  if (category === "event") {
+    return `You are a world-class event website designer. Build a premium event/occasion website.
+
+Request: "${description}"
+
+SECTIONS:
+1. NAVBAR: Fixed glassmorphism. Links: About Event, Schedule, Gallery, Register. Mobile menu required.
+2. HERO: Full viewport with event imagery. Countdown timer if it's a future event. Event name in large bold gradient text. Date and location prominently displayed. CTA: "سجّل الآن".
+3. ABOUT EVENT: 2-column. Event description with beautiful imagery. Key highlights.
+4. SCHEDULE/PROGRAM: Timeline of event activities with icons and times.
+5. GALLERY: Photo grid of past events or preparation photos.
+6. SPEAKERS/HOSTS (if applicable): Card grid with photos, names, titles.
+7. REGISTER/CONTACT: Registration form or contact details.
+8. FOOTER: Dark, event branding.
+
+DESIGN: Elegant, exciting, event-appropriate. Use colors fitting the event type.
+Language: ${lang}
+Font: ${font}
+Mobile hamburger: ${mobileMenu}
+
+Return EXACTLY this JSON (no markdown):
+{"html":"complete HTML","css":"complete CSS","seoTitle":"title","seoDescription":"description","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+  }
+
+  // Default: business
+  return `You are a world-class creative director and front-end engineer building AWARD-WINNING business websites — the quality of Awwwards, Dribbble top shots, and top SaaS landing pages. Your output for the Saudi/Arab market must be visually stunning, modern, and technically excellent.
+
+Generate a COMPLETE, premium single-page website based on: "${description}"`;
+}
+
 export async function generateWebsite(description: string, language: string = "ar"): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
   const dirAttr = isArabic ? 'dir="rtl"' : 'dir="ltr"';
@@ -38,7 +173,13 @@ export async function generateWebsite(description: string, language: string = "a
   const englishFonts = "'Inter', 'Poppins', 'Montserrat', sans-serif";
   const fontFamily = isArabic ? arabicFonts : englishFonts;
 
-  const prompt = `You are a world-class creative director and front-end engineer building AWARD-WINNING websites — the quality of Awwwards, Dribbble top shots, and top SaaS landing pages. Your output for the Saudi/Arab market must be visually stunning, modern, and technically excellent.
+  const category = detectWebsiteCategory(description);
+  console.log(`[AI] Website category detected: ${category} for: "${description.slice(0, 60)}"`);
+  const isSpecialCategory = category !== "business";
+
+  const basePrompt = isSpecialCategory
+    ? buildPromptByCategory(category, description, isArabic, dirAttr)
+    : `You are a world-class creative director and front-end engineer building AWARD-WINNING websites — the quality of Awwwards, Dribbble top shots, and top SaaS landing pages. Your output for the Saudi/Arab market must be visually stunning, modern, and technically excellent.
 
 Generate a COMPLETE, premium single-page website based on: "${description}"
 
@@ -72,9 +213,6 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 ▸ TYPOGRAPHY: Letter-spacing:-0.02em on all headings. Line-height:1.1 for hero, 1.2 for section titles. Use font-weight:900 for hero/stats numbers.
 
 ▸ COLOR DEPTH: Use 3 opacity levels of your primary: full, 40%, 15%. Never use flat solid colors for backgrounds — always use gradients.
-
-Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
-Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
 
 Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
 Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
@@ -179,8 +317,9 @@ Return EXACTLY this JSON object (no markdown, no explanation):
 
 IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanation.`;
 
+  const prompt = basePrompt;
   const model = getModel();
-  console.log("Using AI model:", model);
+  console.log("Using AI model:", model, "| Category:", category);
   const response = await openai.chat.completions.create({
     model,
     messages: [{ role: "user", content: prompt }],
