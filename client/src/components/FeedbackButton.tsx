@@ -51,11 +51,15 @@ export default function FeedbackButton({ lang = "ar", page }: Props) {
 
   return (
     <>
-      {/* Floating trigger button */}
+      {/* Floating trigger button — hidden on mobile inside editor (too cramped) */}
       <button
         onClick={() => setOpen(true)}
         data-testid="button-feedback"
-        className="fixed bottom-20 end-4 z-50 md:bottom-6 flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-xs font-semibold px-3 py-2.5 rounded-full shadow-lg shadow-violet-500/30 transition-all hover:scale-105 active:scale-95"
+        className={`fixed z-50 flex items-center gap-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-xs font-semibold px-3 py-2.5 rounded-full shadow-lg shadow-violet-500/30 transition-all hover:scale-105 active:scale-95 ${
+          page === "editor"
+            ? "hidden md:flex md:bottom-6 md:end-4"
+            : "bottom-6 end-4 flex"
+        }`}
         style={{ fontFamily: lang === "ar" ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}
       >
         <MessageSquarePlus className="w-4 h-4 shrink-0" />

@@ -47,6 +47,7 @@ import {
   LayoutTemplate,
   Check,
   Filter,
+  Download,
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
@@ -503,43 +504,49 @@ export default function EditorPage() {
       />
 
       {/* ─── Mobile Header ─── */}
-      <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12">
+      <header className="md:hidden flex items-center gap-2 px-2 border-b bg-background shrink-0 h-11">
+        {/* Back */}
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => navigate("/dashboard")} data-testid="button-back">
           {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
         </Button>
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <span className="shrink-0 w-5 h-5 rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[8px] font-black text-white leading-none">AW</span>
-          <h1 className="text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
-        </div>
+
+        {/* Project name — takes remaining space */}
+        <h1 className="flex-1 min-w-0 text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
+
         {project.generatedHtml && (
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
+          <>
+            {/* Preview / Edit toggle — icon only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`shrink-0 h-8 w-8 ${mobileView === "preview" ? "text-emerald-600" : "text-muted-foreground"}`}
               onClick={() => setMobileView(mobileView === "panel" ? "preview" : "panel")}
-              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                mobileView === "preview"
-                  ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 text-emerald-700 dark:text-emerald-400"
-                  : "bg-muted border-border text-muted-foreground"
-              }`}
               data-testid="button-mobile-toggle"
             >
-              {mobileView === "panel" ? <><Eye className="w-3.5 h-3.5 me-1" />{lang === "ar" ? "معاينة" : "Preview"}</> : <><Wand2 className="w-3.5 h-3.5 me-1" />{lang === "ar" ? "تعديل" : "Edit"}</>}
-            </button>
+              {mobileView === "panel" ? <Eye className="w-4 h-4" /> : <Wand2 className="w-4 h-4" />}
+            </Button>
+
+            {/* Publish / Live — compact */}
             {project.status === "published" ? (
-              <Badge className="bg-emerald-500 text-[11px] px-2 h-6" data-testid="badge-published">
-                {lang === "ar" ? "منشور" : "Live"}
+              <Badge className="bg-emerald-500 text-[10px] px-1.5 h-5 shrink-0" data-testid="badge-published">
+                <span className="w-1.5 h-1.5 rounded-full bg-white me-1 animate-pulse inline-block" />
+                {lang === "ar" ? "مباشر" : "Live"}
               </Badge>
             ) : (
               <Button
                 size="sm"
-                className="h-7 text-xs px-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                className="shrink-0 h-7 text-xs px-2.5 bg-gradient-to-r from-emerald-500 to-teal-600"
                 onClick={() => publishMutation.mutate()}
                 disabled={publishMutation.isPending}
                 data-testid="button-publish"
               >
-                {publishMutation.isPending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Rocket className="w-3.5 h-3.5 me-1" />{lang === "ar" ? "نشر" : "Publish"}</>}
+                {publishMutation.isPending
+                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  : <><Rocket className="w-3 h-3 me-1" />{lang === "ar" ? "نشر" : "Publish"}</>
+                }
               </Button>
             )}
-          </div>
+          </>
         )}
       </header>
 
@@ -594,6 +601,21 @@ export default function EditorPage() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">{lang === "ar" ? "معاينة الموقع في نافذة جديدة" : "Preview site in full screen"}</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => window.open(`/api/projects/${project.id}/export?type=static`, "_blank")}
+                    data-testid="button-download-desktop"
+                    className="hover:border-blue-400 hover:text-blue-600"
+                  >
+                    <Download className="w-4 h-4 me-1" />
+                    {lang === "ar" ? "تحميل" : "Download"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">{lang === "ar" ? "تحميل الموقع كملف HTML" : "Download site as HTML file"}</TooltipContent>
               </Tooltip>
               {project.status !== "published" && (
                 <Tooltip>
