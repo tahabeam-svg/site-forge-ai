@@ -140,6 +140,54 @@ function removeFreePlanWatermark(html: string): string {
   return injectAwScripts(result);
 }
 
+const GOOGLE_FONTS_URL = "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Noto+Sans+Arabic:wght@300;400;500;600;700;800&family=Amiri:wght@400;700&family=Readex+Pro:wght@300;400;500;600;700&family=El+Messiri:wght@400;500;600;700&family=Almarai:wght@300;400;700;800&family=Reem+Kufi:wght@400;500;600;700&family=Lateef:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800&family=Raleway:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=Nunito:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Josefin+Sans:wght@300;400;500;600;700&display=swap";
+
+function buildPreviewHtml(project: { generatedHtml: string | null; generatedCss: string | null; seoTitle: string | null; seoDescription: string | null; name: string }): string {
+  const rawStored = project.generatedHtml || "";
+
+  // Strip any previously injected scripts so we can inspect the actual content
+  let rawHtml = rawStored
+    .replace(/<style id="aw-overflow-fix">[\s\S]*?<\/style>/gi, "")
+    .replace(/<script id="aw-mobile-nav">[\s\S]*?<\/script>/gi, "")
+    .trim();
+
+  // Detect language from HTML attributes
+  const isArabic = /dir=["']rtl["']|lang=["']ar/.test(rawHtml) || /[\u0600-\u06FF]/.test(rawHtml.slice(0, 500));
+  const lang = isArabic ? "ar" : "en";
+  const dir = isArabic ? "rtl" : "ltr";
+  const fontFamily = isArabic ? "'Cairo', 'Tajawal', 'IBM Plex Sans Arabic'" : "'Inter', 'Poppins', 'Montserrat'";
+
+  // If stored HTML is already a full document, re-inject scripts and return
+  if (rawHtml.startsWith("<!DOCTYPE") || rawHtml.startsWith("<html")) {
+    return injectAwScripts(rawHtml);
+  }
+
+  // Build complete HTML document from fragment
+  return `<!DOCTYPE html>
+<html lang="${lang}" dir="${dir}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${project.seoTitle || project.name}</title>
+<meta name="description" content="${(project.seoDescription || "").replace(/"/g, "&quot;")}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="${GOOGLE_FONTS_URL}" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+body { font-family: ${fontFamily}, sans-serif; }
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; text-decoration: none; }
+${project.generatedCss || ""}
+</style>
+${OVERFLOW_FIX_CSS}
+${MOBILE_NAV_SCRIPT}
+</head>
+<body>
+${rawHtml}
+</body>
+</html>`;
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -183,6 +231,24 @@ export async function registerRoutes(
       res.json(project);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch project" });
+    }
+  });
+
+  // Preview HTML endpoint — serves complete HTML document directly (avoids srcDoc issues on mobile)
+  app.get("/api/projects/:id/preview-html", isAuthenticated, async (req: any, res) => {
+    try {
+      const project = await storage.getProject(parseInt(req.params.id));
+      if (!project) return res.status(404).send("Not found");
+      const userId = req.user.id;
+      if (project.userId !== userId) return res.status(403).send("Forbidden");
+      if (!project.generatedHtml) return res.status(404).send("No preview available");
+      const html = buildPreviewHtml(project);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      res.setHeader("X-Content-Type-Options", "nosniff");
+      res.send(html);
+    } catch (err) {
+      res.status(500).send("Failed to build preview");
     }
   });
 
@@ -379,8 +445,15 @@ export async function registerRoutes(
 
       await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
 
+      // Strip injected ArabyWeb scripts before sending to AI — the AI should only see the website content
+      const cleanHtmlForAI = (project.generatedHtml || "")
+        .replace(/<style id="aw-overflow-fix">[\s\S]*?<\/style>/gi, "")
+        .replace(/<script id="aw-mobile-nav">[\s\S]*?<\/script>/gi, "")
+        .replace(/<div id="aw-free-badge"[\s\S]*?<\/div>/gi, "")
+        .trim();
+
       const result = await editWebsiteWithAI(
-        project.generatedHtml || "",
+        cleanHtmlForAI,
         project.generatedCss || "",
         command,
         lang,
@@ -1218,26 +1291,8 @@ export async function registerRoutes(
 
       archive.pipe(res);
 
-      const isFullDoc = project.generatedHtml!.trimStart().startsWith('<!DOCTYPE');
-      // Detect language from stored HTML: if it has Arabic text, use RTL; otherwise LTR
-      const hasArabicContent = /[\u0600-\u06FF]/.test(project.generatedHtml!);
-      const exportLang = hasArabicContent ? "ar" : "en";
-      const exportDir = hasArabicContent ? "rtl" : "ltr";
-      const fullHtml = isFullDoc ? project.generatedHtml! : `<!DOCTYPE html>
-<html lang="${exportLang}" dir="${exportDir}">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${project.seoTitle || project.name}</title>
-  <meta name="description" content="${project.seoDescription || ""}">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-${project.generatedHtml}
-</body>
-</html>`;
+      // Build clean export HTML using buildPreviewHtml for consistent output
+      const fullHtml = buildPreviewHtml(project);
 
       archive.append(fullHtml, { name: "website/index.html" });
       archive.append(project.generatedCss || "", { name: "website/css/style.css" });
