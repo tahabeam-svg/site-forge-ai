@@ -1421,7 +1421,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
               companyName: (subRow as any).invoiceCompanyName || undefined,
               taxNumber: (subRow as any).invoiceTaxNumber || undefined,
               description: `اشتراك خطة ${planNameAr} — ArabyWeb.net (شهري)`,
-              amountWithVatSar: amountSar,
+              amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
               invoiceType: "subscription",
               planOrCredits: planNameAr,
             };
@@ -1452,7 +1452,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
               companyName: (purchase as any).invoiceCompanyName || undefined,
               taxNumber: (purchase as any).invoiceTaxNumber || undefined,
               description: `شراء ${purchase.credits} جلسة ذكاء اصطناعي — ArabyWeb.net`,
-              amountWithVatSar: amountSar,
+              amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
               invoiceType: "credits",
               planOrCredits: `${purchase.credits} جلسة`,
             };
@@ -1526,7 +1526,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
                 companyName: (creditPurchase as any).invoiceCompanyName || undefined,
                 taxNumber: (creditPurchase as any).invoiceTaxNumber || undefined,
                 description: `شراء ${creditPurchase.credits} جلسة ذكاء اصطناعي — ArabyWeb.net`,
-                amountWithVatSar: amountSar,
+                amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
                 invoiceType: "credits",
                 planOrCredits: `${creditPurchase.credits} جلسة`,
               };
@@ -1580,7 +1580,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
               companyName: (sub as any).invoiceCompanyName || undefined,
               taxNumber: (sub as any).invoiceTaxNumber || undefined,
               description: `اشتراك خطة ${planNameAr} — ArabyWeb.net (شهري)`,
-              amountWithVatSar: amountSar,
+              amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
               invoiceType: "subscription",
               planOrCredits: planNameAr,
             };
