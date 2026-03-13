@@ -444,6 +444,23 @@ export default function DashboardPage() {
       });
       if (!genRes.ok) {
         const errData = await genRes.json().catch(() => ({}));
+        if (genRes.status === 402) {
+          stopProgressAnimation();
+          setIsInstantGenerating(false);
+          setInstantDialogOpen(false);
+          const isCreditsErr = errData.message === "insufficient_credits";
+          toast({
+            title: lang === "ar"
+              ? (isCreditsErr ? "نفد رصيد الكريدت" : "تحتاج إلى ترقية الخطة")
+              : (isCreditsErr ? "Credits Depleted" : "Upgrade Required"),
+            description: lang === "ar"
+              ? (errData.messageAr || errData.message)
+              : (errData.messageEn || errData.message),
+            variant: "destructive",
+          });
+          navigate("/billing");
+          return;
+        }
         throw new Error(errData.detail || errData.message || "Generation failed");
       }
 
@@ -451,6 +468,8 @@ export default function DashboardPage() {
 
       await new Promise((r) => setTimeout(r, 700));
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
 
       setIsInstantGenerating(false);
       setInstantDialogOpen(false);

@@ -344,9 +344,18 @@ export async function registerRoutes(
 
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
-      const generated = await generateWebsite(description, language);
+      // ─── Credit check for paid users before generation ───────────────────────
+      const { isFreePlan, isUserAdmin, credits: userCreditsGen } = await getUserPlanInfo(userId);
+      if (!isFreePlan && !isUserAdmin && userCreditsGen <= 0) {
+        await storage.updateProject(project.id, { status: "error" });
+        return res.status(402).json({
+          message: "insufficient_credits",
+          messageAr: "نفد رصيدك من الكريدت. يرجى شراء كريدت إضافي أو ترقية خطتك.",
+          messageEn: "Your credits are depleted. Please top up credits or upgrade your plan.",
+        });
+      }
 
-      const { isFreePlan, isUserAdmin } = await getUserPlanInfo(userId);
+      const generated = await generateWebsite(description, language);
       const finalHtml = (isFreePlan && !isUserAdmin)
         ? injectFreePlanWatermark(generated.html)
         : removeFreePlanWatermark(generated.html);
@@ -403,12 +412,20 @@ export async function registerRoutes(
       const description = req.body.description || project.description || project.name;
       const logoDataUrl: string | undefined = req.body.logoDataUrl;
 
+      // ─── Credit check for paid users before generation ───────────────────────
+      const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2, credits: userCreditsInst } = await getUserPlanInfo(req.user.id);
+      if (!isFreePlan2 && !isUserAdmin2 && userCreditsInst <= 0) {
+        return res.status(402).json({
+          message: "insufficient_credits",
+          messageAr: "نفد رصيدك من الكريدت. يرجى شراء كريدت إضافي أو ترقية خطتك.",
+          messageEn: "Your credits are depleted. Please top up credits or upgrade your plan.",
+        });
+      }
+
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
       const generated = await generateInstantWebsite(description, language, websiteLanguages, websiteLanguage);
-
-      const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2 } = await getUserPlanInfo(req.user.id);
       let baseHtml = generated.html;
 
       // Inject user logo into the site if provided
@@ -967,6 +984,27 @@ export async function registerRoutes(
     }
   });
 
+  // /api/me — quick user info for sidebar (credits, plan)
+  app.get("/api/me", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        plan: user.isAdmin ? "business" : (user.plan || "free"),
+        credits: user.isAdmin ? 999999 : (user.credits ?? 0),
+        isAdmin: user.isAdmin ?? false,
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch user info" });
+    }
+  });
+
   app.get("/api/credits", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -1044,8 +1082,8 @@ export async function registerRoutes(
       if (!parsed.success) return res.status(400).json({ message: "كمية الكريديت يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
 
       const { credits } = parsed.data;
-      // 1 credit = 1 SAR = 100 halalas
-      const amountCents = credits * 100;
+      // 1 credit = 1 SAR + 15% VAT = 1.15 SAR = 115 halalas
+      const amountCents = Math.round(credits * 1.15 * 100);
       const userId = req.user.id;
 
       const [user] = await db.select().from(users).where(eq(users.id, userId));

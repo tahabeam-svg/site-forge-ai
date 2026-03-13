@@ -54,8 +54,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
 
   const credits = me?.credits ?? user?.credits ?? 0;
-  const plan = me?.subscriptionPlan ?? user?.subscriptionPlan ?? "free";
-  const maxCredits = plan === "pro" ? 500 : plan === "business" ? 2000 : 100;
+  const plan = me?.plan ?? user?.plan ?? "free";
+  const maxCredits = plan === "pro" ? 50 : plan === "business" ? 200 : 5;
   const creditsPercent = Math.min((credits / maxCredits) * 100, 100);
 
   const menuItems = [
@@ -158,10 +158,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <SidebarFooter className="p-3 border-t border-sidebar-border space-y-3">
               {/* Credits bar */}
-              <div className="rounded-xl bg-sidebar-accent/60 p-3 space-y-2">
+              <div className={`rounded-xl p-3 space-y-2 ${credits <= 0 ? "bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800" : credits <= 2 ? "bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800" : "bg-sidebar-accent/60"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                    <Zap className={`w-3.5 h-3.5 ${credits <= 0 ? "text-red-500" : credits <= 2 ? "text-amber-500" : "text-emerald-500"}`} />
                     <span className="text-[11px] font-semibold">{lang === "ar" ? "الكريدتس" : "Credits"}</span>
                   </div>
                   <Badge className={`text-[9px] h-4 px-1.5 text-white ${planColor}`}>
@@ -169,18 +169,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {planLabel}
                   </Badge>
                 </div>
-                <Progress value={creditsPercent} className="h-1.5" />
+                <Progress
+                  value={creditsPercent}
+                  className={`h-1.5 ${credits <= 0 ? "[&>div]:bg-red-500" : credits <= 2 ? "[&>div]:bg-amber-500" : ""}`}
+                />
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] text-muted-foreground">{credits.toLocaleString()} {lang === "ar" ? "متبقية" : "left"}</span>
-                  {plan === "free" && (
-                    <button
-                      onClick={() => navigate("/billing")}
-                      className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
-                    >
-                      {lang === "ar" ? "ترقية" : "Upgrade"}
-                    </button>
-                  )}
+                  <span className={`text-[10px] font-medium ${credits <= 0 ? "text-red-600 dark:text-red-400" : credits <= 2 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+                    {credits <= 0
+                      ? (lang === "ar" ? "نفد الرصيد!" : "No credits!")
+                      : `${credits.toLocaleString()} ${lang === "ar" ? "متبقية" : "left"}`}
+                  </span>
+                  <button
+                    onClick={() => navigate("/billing")}
+                    className={`text-[10px] font-semibold hover:underline ${credits <= 0 ? "text-red-600 dark:text-red-400" : "text-emerald-600 dark:text-emerald-400"}`}
+                  >
+                    {credits <= 0
+                      ? (lang === "ar" ? "اشحن الآن" : "Top up")
+                      : (lang === "ar" ? "ترقية" : "Upgrade")}
+                  </button>
                 </div>
+                {credits <= 0 && (
+                  <p className="text-[10px] text-red-600 dark:text-red-400 leading-tight">
+                    {lang === "ar" ? "لا يمكنك إنشاء مواقع جديدة" : "Cannot generate new sites"}
+                  </p>
+                )}
               </div>
 
               {/* User info + logout */}
