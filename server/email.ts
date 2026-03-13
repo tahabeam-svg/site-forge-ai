@@ -57,9 +57,20 @@ async function sendMail(to: string, subject: string, html: string, sender: Sende
       port: cfg.port,
       secure: cfg.port === 465,
       auth: { user: cfg.user, pass: cfg.pass },
+      tls: { rejectUnauthorized: false },
     });
-    await transport.sendMail({ from: SENDERS[sender], to, subject, html });
-    console.log(`[EMAIL] ✓ [${SENDERS[sender]}] "${subject}" → ${to}`);
+    // Use SMTP user as the actual from address (required by most hosting providers)
+    // but keep a friendly display name based on sender type
+    const displayNames: Record<SenderKey, string> = {
+      noreply: "ArabyWeb",
+      bills:   "ArabyWeb Bills",
+      support: "ArabyWeb Support",
+      info:    "ArabyWeb",
+      privacy: "ArabyWeb Privacy",
+    };
+    const fromAddress = `${displayNames[sender]} <${cfg.user}>`;
+    await transport.sendMail({ from: fromAddress, to, subject, html });
+    console.log(`[EMAIL] ✓ [${fromAddress}] "${subject}" → ${to}`);
     return true;
   } catch (err: any) {
     console.error(`[EMAIL] ✗ Failed "${subject}" → ${to}:`, err.message);
