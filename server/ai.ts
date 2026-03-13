@@ -490,16 +490,22 @@ TECHNICAL GUIDELINES:
 - Use inline SVG Lucide-style icons when adding icons
 - Preserve responsive design (add @media queries for new content)
 - Keep all existing sections unless explicitly asked to remove
-${imageDataUrl ? `- IMAGE ATTACHED: Embed the EXACT data URL provided under "IMAGE_DATA_URL:" as the src of the appropriate element. Do NOT use a placeholder.` : ""}
+${imageDataUrl ? `- IMAGE ATTACHED: Replace the src of the logo <img> (or hero image if there is no logo) with the exact string __AW_IMG_001__ — the system will automatically replace it with the real image. Example: <img src="__AW_IMG_001__" alt="logo" style="height:48px;object-fit:contain;">` : ""}
 
-MOBILE HAMBURGER MENU — CHECK AND FIX:
-- If the existing website navbar does NOT already have a hamburger menu (id="aw-menu-btn" or similar), ADD one to the navbar.
-- The hamburger pattern to use:
-  * Add a button with onclick: "var m=document.getElementById('aw-mobile-menu');m.style.display=m.style.display==='flex'?'none':'flex'"
-  * Wrap the desktop nav links in a div with class="aw-nav-links"
-  * Add a mobile menu div with id="aw-mobile-menu" style="display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:#fff;padding:1rem;box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:1000"
-  * In CSS add: @media(max-width:768px){.aw-nav-links{display:none!important;}#aw-menu-btn{display:block!important;}}
-- If the navbar already has a hamburger menu, leave it as-is and focus on the requested change.
+PRESERVE CRITICAL ELEMENTS (NEVER REMOVE OR MODIFY):
+- NEVER remove or change the element with id="aw-lang-btn" (language toggle button). It must stay in the navbar exactly as-is.
+- NEVER remove or change the element with id="aw-menu-btn" (hamburger button). It must stay in the navbar exactly as-is.
+- NEVER remove or change the element with id="aw-mobile-menu" (mobile nav overlay). It must stay exactly as-is.
+- If these elements don't exist in the current HTML, you may add them — but if they DO exist, preserve them completely.
+
+MOBILE HAMBURGER MENU RULES:
+- If the navbar ALREADY has id="aw-menu-btn" → do NOT touch it, do NOT add another hamburger anywhere.
+- If the navbar does NOT have id="aw-menu-btn" → add hamburger ONLY to the <nav> element:
+  * The <nav> MUST have style="position:fixed;top:0;left:0;right:0;z-index:9999"
+  * Add: <button id="aw-menu-btn" style="display:none;background:none;border:none;cursor:pointer;padding:8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+  * Add: <div id="aw-mobile-menu" style="display:none;position:fixed;top:60px;left:0;right:0;background:#fff;padding:0.5rem 0;z-index:9998;box-shadow:0 8px 24px rgba(0,0,0,0.15)"></div>
+  * In CSS: @media(max-width:768px){.aw-nav-links{display:none!important;}#aw-menu-btn{display:block!important;}}
+  * NEVER place the hamburger button or mobile menu outside the navbar or in page content sections.
 
 Return ONLY a JSON object with these 3 fields:
 {
@@ -510,9 +516,9 @@ Return ONLY a JSON object with these 3 fields:
 
 No markdown, no code blocks, no explanation outside the JSON.`;
 
-  const userContent = imageDataUrl
-    ? `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${enhancedCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}\n\nIMAGE_DATA_URL: ${imageDataUrl}`
-    : `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${enhancedCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}`;
+  // NOTE: We use a placeholder __AW_IMG_001__ instead of embedding the raw base64 data URL
+  // in the prompt. The server replaces the placeholder with the real image after AI responds.
+  const userContent = `Current HTML:\n${currentHtml}\n\nCurrent CSS:\n${currentCss}\n\nEdit instruction: "${enhancedCommand}"\n\nLanguage: ${isArabic ? "Arabic (RTL)" : "English (LTR)"}${imageDataUrl ? "\n\n[IMAGE ATTACHED — use src='__AW_IMG_001__' for it as instructed in the system prompt]" : ""}`;
 
   // Try primary model, fall back to gpt-4o on failure
   let rawContent = "";

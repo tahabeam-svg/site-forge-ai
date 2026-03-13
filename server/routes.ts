@@ -471,8 +471,14 @@ export async function registerRoutes(
         project.description || ""
       );
 
+      // Replace image placeholder with actual data URL (server-side, keeps AI prompt compact)
+      let editedHtml = result.html;
+      if (imageDataUrl && editedHtml.includes("__AW_IMG_001__")) {
+        editedHtml = editedHtml.replace(/__AW_IMG_001__/g, imageDataUrl);
+      }
+
       // Maintain free-plan watermark in edited HTML
-      let finalEditHtml = result.html;
+      let finalEditHtml = editedHtml;
       if (isFreePlanEdit && !isAdminEdit) {
         finalEditHtml = injectFreePlanWatermark(finalEditHtml);
       } else {
