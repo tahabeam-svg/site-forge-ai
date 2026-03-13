@@ -351,7 +351,7 @@ export async function registerRoutes(
         return res.status(402).json({
           message: "insufficient_credits",
           messageAr: "نفد رصيد الذكاء لديك. يرجى شراء جلسات إضافية أو ترقية خطتك.",
-          messageEn: "Your AI credits are depleted. Please top up AI sessions or upgrade your plan.",
+          messageEn: "Your AI credits are depleted. Please top up AI credits or upgrade your plan.",
         });
       }
 
@@ -418,7 +418,7 @@ export async function registerRoutes(
         return res.status(402).json({
           message: "insufficient_credits",
           messageAr: "نفد رصيد الذكاء لديك. يرجى شراء جلسات إضافية أو ترقية خطتك.",
-          messageEn: "Your AI credits are depleted. Please top up AI sessions or upgrade your plan.",
+          messageEn: "Your AI credits are depleted. Please top up AI credits or upgrade your plan.",
         });
       }
 
@@ -514,7 +514,7 @@ export async function registerRoutes(
           const limitMsgs: Record<string, Record<string, string>> = {
             free: {
               ar: `وصلت للحد المجاني (${editLimit} تعديلات) لهذا الموقع. اشحن رصيد الذكاء أو اشترك للحصول على جلسات إضافية.`,
-              en: `You've used your ${editLimit} free edits for this website. Top up AI sessions or upgrade to continue editing.`,
+              en: `You've used your ${editLimit} free edits for this website. Top up AI credits or upgrade to continue editing.`,
             },
             pro: {
               ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطتك الاحترافية. كل تعديل إضافي يخصم جلسة ذكاء واحدة. اشحن رصيدك للمتابعة.`,

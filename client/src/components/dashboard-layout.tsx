@@ -176,7 +176,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <div className="flex justify-between items-center">
                   <span className={`text-[10px] font-medium ${credits <= 0 ? "text-red-600 dark:text-red-400" : credits <= 2 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
                     {credits <= 0
-                      ? (lang === "ar" ? "نفد رصيد الذكاء!" : "AI credits empty!")
+                      ? (lang === "ar" ? "نفد رصيد الذكاء!" : "AI Credits Empty!")
                       : `${credits.toLocaleString()} ${lang === "ar" ? "جلسة متبقية" : "sessions left"}`}
                   </span>
                   <button
