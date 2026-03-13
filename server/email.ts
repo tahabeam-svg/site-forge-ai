@@ -640,7 +640,7 @@ export interface InvoiceData {
 export async function sendInvoiceEmail(data: InvoiceData, isAr = true): Promise<boolean> {
   const SELLER_NAME = "مؤسسة الهدف الممتاز للمعارض والمؤتمرات";
   const SELLER_NAME_EN = "Al-Hadaf Al-Mumtaz Foundation for Exhibitions & Conferences";
-  const SELLER_VAT = "310000000000003";
+  const SELLER_VAT = "310268220900003";
   const SELLER_ADDRESS_AR = "الرياض، المملكة العربية السعودية";
   const SELLER_ADDRESS_EN = "Riyadh, Saudi Arabia";
   const PLATFORM_NAME = "ArabyWeb.net";
