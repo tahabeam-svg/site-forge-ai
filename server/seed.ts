@@ -190,6 +190,21 @@ export async function seedDatabase() {
     console.error("Credit purchases migration warning:", e.message);
   }
 
+  // Invoice columns for subscriptions & credit_purchases
+  try {
+    await db.execute(sql`ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS invoice_is_company BOOLEAN DEFAULT false`);
+    await db.execute(sql`ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS invoice_company_name VARCHAR`);
+    await db.execute(sql`ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS invoice_tax_number VARCHAR`);
+    await db.execute(sql`ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS invoice_customer_name VARCHAR`);
+    await db.execute(sql`ALTER TABLE credit_purchases ADD COLUMN IF NOT EXISTS invoice_is_company BOOLEAN DEFAULT false`);
+    await db.execute(sql`ALTER TABLE credit_purchases ADD COLUMN IF NOT EXISTS invoice_company_name VARCHAR`);
+    await db.execute(sql`ALTER TABLE credit_purchases ADD COLUMN IF NOT EXISTS invoice_tax_number VARCHAR`);
+    await db.execute(sql`ALTER TABLE credit_purchases ADD COLUMN IF NOT EXISTS invoice_customer_name VARCHAR`);
+    console.log("Migration: invoice columns ensured for subscriptions & credit_purchases");
+  } catch (e: any) {
+    console.error("Invoice columns migration warning:", e.message);
+  }
+
   // Projects table column migrations
   try {
     await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS edit_count INTEGER DEFAULT 0`);
