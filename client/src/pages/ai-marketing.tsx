@@ -42,12 +42,19 @@ interface SocialContent {
 
 const platforms = [
   { id: "instagram", label: "Instagram", labelAr: "إنستغرام", icon: Instagram, color: "from-pink-500 to-purple-600" },
-  { id: "facebook", label: "Facebook", labelAr: "فيسبوك", icon: Facebook, color: "from-blue-600 to-blue-700" },
-  { id: "linkedin", label: "LinkedIn", labelAr: "لينكدإن", icon: Linkedin, color: "from-blue-500 to-blue-600" },
-  { id: "twitter", label: "X / Twitter", labelAr: "إكس / تويتر", icon: Twitter, color: "from-gray-700 to-gray-900" },
   { id: "tiktok", label: "TikTok", labelAr: "تيك توك", icon: SiTiktok, color: "from-gray-900 to-gray-800" },
+  { id: "facebook", label: "Facebook", labelAr: "فيسبوك", icon: Facebook, color: "from-blue-600 to-blue-700" },
+  { id: "twitter", label: "X / Twitter", labelAr: "إكس / تويتر", icon: Twitter, color: "from-gray-700 to-gray-900" },
+  { id: "linkedin", label: "LinkedIn", labelAr: "لينكدإن", icon: Linkedin, color: "from-blue-500 to-blue-600" },
   { id: "youtube", label: "YouTube", labelAr: "يوتيوب", icon: Youtube, color: "from-red-500 to-red-700" },
 ];
+
+// Platforms allowed per plan (mirrors server/routes.ts MARKETING_PLATFORMS)
+const ALLOWED_PLATFORMS: Record<string, string[]> = {
+  free: [],
+  pro: ["instagram", "tiktok"],
+  business: ["instagram", "tiktok", "facebook"],
+};
 
 const tones = [
   { id: "professional", label: "Professional", labelAr: "احترافي" },
@@ -79,10 +86,14 @@ export default function AIMarketingPage() {
 
   const isFreePlan = !subscription?.plan || subscription.plan === "free";
   const isAdmin = subscription?.isAdmin === true;
+  const planName = subscription?.plan || "free";
   const needsUpgrade = isFreePlan && !isAdmin;
   const credits = creditsData?.credits ?? subscription?.credits ?? 0;
   const isLowCredits = !isAdmin && credits <= 5 && credits > 0;
   const noCredits = !isAdmin && credits <= 0 && !isFreePlan;
+
+  // Compute allowed platforms for this user's plan
+  const allowedPlatforms = isAdmin ? platforms.map((p) => p.id) : (ALLOWED_PLATFORMS[planName] ?? []);
 
   const generateMutation = useMutation({
     mutationFn: async () => {
@@ -216,22 +227,60 @@ export default function AIMarketingPage() {
                   {lang === "ar" ? "اختر المنصة" : "Select Platform"}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {platforms.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => setSelectedPlatform(p.id)}
-                      className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-sm ${
-                        selectedPlatform === p.id
-                          ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
-                          : "border-border hover:border-emerald-300"
-                      }`}
-                      data-testid={`button-platform-${p.id}`}
-                    >
-                      <p.icon className="w-4 h-4" />
-                      <span className="truncate">{lang === "ar" ? p.labelAr : p.label}</span>
-                    </button>
-                  ))}
+                  {platforms.map((p) => {
+                    const isLocked = !needsUpgrade && !isAdmin && !allowedPlatforms.includes(p.id);
+                    const isActive = selectedPlatform === p.id;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          if (isLocked) {
+                            setLocation("/billing");
+                          } else {
+                            setSelectedPlatform(p.id);
+                          }
+                        }}
+                        title={
+                          isLocked
+                            ? lang === "ar"
+                              ? `هذه المنصة غير متاحة في خطتك — قم بالترقية`
+                              : `Not available in your plan — upgrade to unlock`
+                            : undefined
+                        }
+                        className={`relative flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-sm ${
+                          isLocked
+                            ? "border-border opacity-50 cursor-not-allowed bg-muted"
+                            : isActive
+                            ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
+                            : "border-border hover:border-emerald-300"
+                        }`}
+                        data-testid={`button-platform-${p.id}`}
+                      >
+                        {isLocked ? (
+                          <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
+                        ) : (
+                          <p.icon className="w-4 h-4 shrink-0" />
+                        )}
+                        <span className="truncate">{lang === "ar" ? p.labelAr : p.label}</span>
+                        {isLocked && (
+                          <Crown className="w-3 h-3 text-amber-500 absolute top-1 end-1" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+                {!isAdmin && !isFreePlan && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {lang === "ar"
+                      ? planName === "pro"
+                        ? "خطتك: Instagram + TikTok — قم بالترقية للأعمال لإضافة Facebook"
+                        : "خطتك: Instagram + TikTok + Facebook"
+                      : planName === "pro"
+                        ? "Your plan: Instagram + TikTok — upgrade to Business to add Facebook"
+                        : "Your plan: Instagram + TikTok + Facebook"
+                    }
+                  </p>
+                )}
               </div>
 
               <div>

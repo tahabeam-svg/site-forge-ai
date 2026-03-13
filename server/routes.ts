@@ -1130,9 +1130,16 @@ Sitemap: https://arabyweb.net/sitemap.xml
     tone: z.string().optional(),
   });
 
+  // Allowed platforms per plan
+  const MARKETING_PLATFORMS: Record<string, string[]> = {
+    free: [],
+    pro: ["instagram", "tiktok"],
+    business: ["instagram", "tiktok", "facebook"],
+  };
+
   app.post("/api/marketing/generate", isAuthenticated, async (req: any, res) => {
     try {
-      const { isFreePlan, isUserAdmin, credits } = await getUserPlanInfo(req.user.id);
+      const { isFreePlan, isUserAdmin, planName, credits } = await getUserPlanInfo(req.user.id);
 
       if (isFreePlan && !isUserAdmin) {
         return res.status(402).json({
@@ -1148,6 +1155,23 @@ Sitemap: https://arabyweb.net/sitemap.xml
           messageAr: "انتهى رصيد جلسات الذكاء. اشحن رصيدك لمتابعة توليد المحتوى التسويقي.",
           messageEn: "Your AI credits are depleted. Top up to continue generating marketing content.",
         });
+      }
+
+      // Platform restriction per plan
+      if (!isUserAdmin) {
+        const allowedPlatforms = MARKETING_PLATFORMS[planName] || [];
+        const requestedPlatform = (req.body?.platform || "").toLowerCase();
+        if (!allowedPlatforms.includes(requestedPlatform)) {
+          const planLabel = planName === "pro"
+            ? { ar: "الاحترافية (Instagram + TikTok)", en: "Pro (Instagram + TikTok)" }
+            : { ar: "الأعمال (Instagram + TikTok + Facebook)", en: "Business (Instagram + TikTok + Facebook)" };
+          return res.status(403).json({
+            message: "platform_not_allowed",
+            messageAr: `هذه المنصة غير متاحة في خطتك الحالية. خطة ${planLabel.ar} تتيح لك المنصات المحددة فقط. قم بالترقية للوصول إلى المزيد.`,
+            messageEn: `This platform is not available in your current plan. The ${planLabel.en} plan includes specific platforms only. Upgrade to access more.`,
+            allowedPlatforms,
+          });
+        }
       }
 
       const parsed = socialContentSchema.safeParse(req.body);

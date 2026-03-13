@@ -209,8 +209,8 @@ CONSULTATION TRIGGER:
 - Captions, hashtags, stories, campaigns, monthly content calendars
 - INCLUDED in paid plans — no separate marketing subscription needed:
   * Free plan: NO access to AI marketing tool (must upgrade)
-  * Pro (${pricing.proPrice} SAR/month): full AI marketing access on all platforms
-  * Business (${pricing.businessPrice} SAR/month): full AI marketing access + 200 credits/month
+  * Pro (${pricing.proPrice} SAR/month): AI marketing on 2 platforms — Instagram + TikTok only
+  * Business (${pricing.businessPrice} SAR/month): AI marketing on 3 platforms — Instagram + TikTok + Facebook + 200 credits/month
 - Each marketing generation costs 1 credit (SAME shared credit pool as website editing)
 - When credits run out: paid users (Pro/Business) can buy more — free users cannot
 
@@ -316,8 +316,8 @@ ${dialectInstruction}
 - كابشن، هاشتاقات، ستوري، حملات، تقويم محتوى شهري
 - مشمول في الباقات المدفوعة — لا توجد باقة تسويق منفصلة:
   * الباقة المجانية: لا وصول لأداة التسويق (يجب الترقية)
-  * Pro (${pricing.proPrice} ر.س/شهر): وصول كامل للتسويق على جميع المنصات
-  * Business (${pricing.businessPrice} ر.س/شهر): وصول كامل + 200 كريديت/شهر
+  * Pro (${pricing.proPrice} ر.س/شهر): تسويق AI على منصتين — Instagram + TikTok فقط
+  * Business (${pricing.businessPrice} ر.س/شهر): تسويق AI على 3 منصات — Instagram + TikTok + Facebook + 200 كريديت/شهر
 - كل توليد محتوى تسويقي يخصم كريديت واحد (نفس مجموعة الكريديت المشتركة مع المواقع)
 - عند نفاذ الكريديت: المشتركون في الباقات المدفوعة يستطيعون شراء المزيد — الباقة المجانية لا تستطيع
 

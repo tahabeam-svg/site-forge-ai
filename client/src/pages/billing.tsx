@@ -207,8 +207,8 @@ export default function BillingPage() {
       icon: Crown,
       credits: 50,
       features: lang === "ar"
-        ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — كل المنصات", "50 كريديت/شهر", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
-        : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — all platforms", "50 credits/month", "Analytics dashboard", "No ArabyWeb badge"],
+        ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + تيك توك", "50 كريديت/شهر", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
+        : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — Instagram + TikTok", "50 credits/month", "Analytics dashboard", "No ArabyWeb badge"],
     },
     {
       id: "business",
@@ -221,8 +221,8 @@ export default function BillingPage() {
       icon: Building2,
       credits: 200,
       features: lang === "ar"
-        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI غير محدود", "200 كريديت/شهر", "دعم أولوية 24/7", "قوالب حصرية وتعاون الفريق", "بدون شعار عربي ويب"]
-        : ["30 websites", "10 free AI edits/site", "🚀 Unlimited AI Marketing", "200 credits/month", "Priority 24/7 support", "Premium templates & team collaboration", "No ArabyWeb badge"],
+        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + تيك توك + فيسبوك", "200 كريديت/شهر", "دعم أولوية 24/7", "قوالب حصرية وتعاون الفريق", "بدون شعار عربي ويب"]
+        : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — Instagram + TikTok + Facebook", "200 credits/month", "Priority 24/7 support", "Premium templates & team collaboration", "No ArabyWeb badge"],
     },
   ];
 
