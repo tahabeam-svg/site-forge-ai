@@ -176,6 +176,7 @@ interface WizardForm {
   siteName: string;
   activityType: string;
   websiteLanguage: string;
+  websiteExtraLangs: string[];
   phone: string;
   email: string;
   city: string;
@@ -194,6 +195,7 @@ const defaultWizardForm: WizardForm = {
   siteName: "",
   activityType: "",
   websiteLanguage: "ar",
+  websiteExtraLangs: [],
   phone: "",
   email: "",
   city: "",
@@ -418,10 +420,12 @@ export default function DashboardPage() {
       if (!createRes.ok) throw new Error(createData.message || "Failed to create project");
       const project: Project = createData;
 
+      const allLangs = [wizardForm.websiteLanguage, ...wizardForm.websiteExtraLangs].filter(Boolean);
       const genPayload: Record<string, unknown> = {
         description: structuredDesc,
         language: lang,
         websiteLanguage: wizardForm.websiteLanguage || "ar",
+        websiteLanguages: allLangs.length > 0 ? allLangs : [wizardForm.websiteLanguage || "ar"],
       };
       if (wizardForm.logoDataUrl) genPayload.logoDataUrl = wizardForm.logoDataUrl;
 
@@ -919,29 +923,89 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Website Language */}
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Label className="flex items-center gap-1.5 text-sm font-medium">
                       <Globe2 className="w-3.5 h-3.5 text-violet-500" />
-                      {lang === "ar" ? "لغة الموقع" : "Website Language"}
+                      {lang === "ar" ? "لغات الموقع" : "Website Languages"}
                       <span className="text-red-500">*</span>
                     </Label>
-                    <div className="flex flex-wrap gap-2" data-testid="group-website-language">
-                      {WEBSITE_LANGUAGES.map((wl) => (
-                        <button
-                          key={wl.code}
-                          type="button"
-                          onClick={() => updateWizard("websiteLanguage", wl.code)}
-                          data-testid={`button-lang-${wl.code}`}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
-                            wizardForm.websiteLanguage === wl.code
-                              ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-500/30"
-                              : "border-border bg-background text-foreground hover:border-violet-400 hover:text-violet-600"
-                          }`}
-                        >
-                          <span>{wl.flag}</span>
-                          <span>{wl.native}</span>
-                        </button>
-                      ))}
+                    {/* Primary Language */}
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">{lang === "ar" ? "اللغة الرئيسية" : "Primary Language"}</p>
+                      <div className="flex flex-wrap gap-2" data-testid="group-website-language">
+                        {WEBSITE_LANGUAGES.map((wl) => (
+                          <button
+                            key={wl.code}
+                            type="button"
+                            onClick={() => {
+                              // Remove new primary from extra langs if it was there
+                              const newExtra = wizardForm.websiteExtraLangs.filter(c => c !== wl.code);
+                              setWizardForm(prev => ({ ...prev, websiteLanguage: wl.code, websiteExtraLangs: newExtra }));
+                            }}
+                            data-testid={`button-lang-${wl.code}`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                              wizardForm.websiteLanguage === wl.code
+                                ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-500/30"
+                                : "border-border bg-background text-foreground hover:border-violet-400 hover:text-violet-600"
+                            }`}
+                          >
+                            <span>{wl.flag}</span>
+                            <span>{wl.native}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Additional Languages */}
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        {lang === "ar"
+                          ? `لغات إضافية (اختياري — حتى لغتين)`
+                          : `Additional Languages (optional — up to 2)`}
+                        {wizardForm.websiteExtraLangs.length > 0 && (
+                          <span className="ml-1 rtl:mr-1 text-violet-500 font-medium">
+                            {" "}· {lang === "ar" ? `${wizardForm.websiteExtraLangs.length} مختارة` : `${wizardForm.websiteExtraLangs.length} selected`}
+                          </span>
+                        )}
+                      </p>
+                      <div className="flex flex-wrap gap-2" data-testid="group-extra-languages">
+                        {WEBSITE_LANGUAGES.filter(wl => wl.code !== wizardForm.websiteLanguage).map((wl) => {
+                          const isSelected = wizardForm.websiteExtraLangs.includes(wl.code);
+                          const isMaxed = wizardForm.websiteExtraLangs.length >= 2 && !isSelected;
+                          return (
+                            <button
+                              key={wl.code}
+                              type="button"
+                              disabled={isMaxed}
+                              onClick={() => {
+                                if (isSelected) {
+                                  setWizardForm(prev => ({ ...prev, websiteExtraLangs: prev.websiteExtraLangs.filter(c => c !== wl.code) }));
+                                } else if (!isMaxed) {
+                                  setWizardForm(prev => ({ ...prev, websiteExtraLangs: [...prev.websiteExtraLangs, wl.code] }));
+                                }
+                              }}
+                              data-testid={`button-extra-lang-${wl.code}`}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm transition-all ${
+                                isSelected
+                                  ? "bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-500/30"
+                                  : isMaxed
+                                    ? "border-border bg-muted text-muted-foreground opacity-50 cursor-not-allowed"
+                                    : "border-border bg-background text-foreground hover:border-emerald-400 hover:text-emerald-600"
+                              }`}
+                            >
+                              <span>{wl.flag}</span>
+                              <span>{wl.native}</span>
+                              {isSelected && <span className="text-xs">✓</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {wizardForm.websiteExtraLangs.length > 0 && (
+                        <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5">
+                          {lang === "ar"
+                            ? `✨ سيحتوي موقعك على زر تبديل اللغة بين ${[wizardForm.websiteLanguage, ...wizardForm.websiteExtraLangs].map(c => WEBSITE_LANGUAGES.find(l => l.code === c)?.native).filter(Boolean).join(" ← ")}`
+                            : `✨ Your site will have a language switcher: ${[wizardForm.websiteLanguage, ...wizardForm.websiteExtraLangs].map(c => WEBSITE_LANGUAGES.find(l => l.code === c)?.native).filter(Boolean).join(" → ")}`}
+                        </p>
+                      )}
                     </div>
                   </div>
 

@@ -206,15 +206,56 @@ const FALLBACK_ICONS = ["fa-gem","fa-handshake","fa-trophy","fa-globe","fa-bolt"
 
 const STAR_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
-export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: boolean): { html: string; css: string } {
+// ── Multilingual UI dictionary ─────────────────────────────────────────────
+export const MULTILANG_UI: Record<string, Record<string, string>> = {
+  ar: { nav_about:"من نحن", nav_services:"خدماتنا", nav_gallery:"أعمالنا", nav_reviews:"آراء العملاء", nav_contact:"تواصل", discover:"اكتشف المزيد", about_us_eyebrow:"من نحن", quality:"جودة لا تُضاهى", team:"فريق محترف ومتخصص", service:"خدمة عملاء متميزة", exp:"سنة خبرة", services_eyebrow:"خدماتنا", services_title:"ما نقدمه لك", services_sub:"نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك", gallery_eyebrow:"معرض الأعمال", gallery_title:"أعمالنا المميزة", ready_title:"هل أنت مستعد للبدء؟", ready_sub:"تواصل معنا اليوم وابدأ رحلة نجاحك", testi_eyebrow:"آراء العملاء", testi_title:"ماذا يقول عملاؤنا", contact_eyebrow:"تواصل معنا", contact_title:"نسعد بخدمتك", about_cta:"تواصل معنا", quick_links:"روابط سريعة", get_in_touch:"تواصل معنا", rights:"جميع الحقوق محفوظة.", phone_label:"الهاتف", email_label:"البريد", address_label:"العنوان", wa:"تواصل عبر واتساب", form_title:"أرسل رسالتك", form_name:"الاسم الكامل", form_email:"البريد الإلكتروني", form_phone:"رقم الجوال", form_msg:"رسالتك..." },
+  en: { nav_about:"About", nav_services:"Services", nav_gallery:"Gallery", nav_reviews:"Reviews", nav_contact:"Contact", discover:"Discover More", about_us_eyebrow:"About Us", quality:"Unmatched Quality", team:"Professional Expert Team", service:"Outstanding Customer Service", exp:"Years Exp.", services_eyebrow:"Services", services_title:"What We Offer", services_sub:"We provide comprehensive solutions that meet your needs and exceed your expectations", gallery_eyebrow:"Portfolio", gallery_title:"Our Featured Work", ready_title:"Ready to Get Started?", ready_sub:"Contact us today and start your success journey", testi_eyebrow:"Testimonials", testi_title:"What Our Clients Say", contact_eyebrow:"Contact Us", contact_title:"We'd Love to Help", about_cta:"Get In Touch", quick_links:"Quick Links", get_in_touch:"Get In Touch", rights:"All Rights Reserved.", phone_label:"Phone", email_label:"Email", address_label:"Address", wa:"WhatsApp Us", form_title:"Send a Message", form_name:"Full Name", form_email:"Email Address", form_phone:"Phone Number", form_msg:"Your message..." },
+  fr: { nav_about:"À propos", nav_services:"Services", nav_gallery:"Portfolio", nav_reviews:"Avis", nav_contact:"Contact", discover:"Découvrir plus", about_us_eyebrow:"À propos de nous", quality:"Qualité incomparable", team:"Équipe professionnelle", service:"Service client exceptionnel", exp:"Ans d'expérience", services_eyebrow:"Services", services_title:"Ce que nous offrons", services_sub:"Nous proposons des solutions complètes qui répondent à vos besoins et dépassent vos attentes", gallery_eyebrow:"Portfolio", gallery_title:"Nos travaux vedettes", ready_title:"Prêt à commencer?", ready_sub:"Contactez-nous aujourd'hui et lancez votre parcours", testi_eyebrow:"Témoignages", testi_title:"Ce que disent nos clients", contact_eyebrow:"Contactez-nous", contact_title:"Nous sommes là pour vous", about_cta:"Nous contacter", quick_links:"Liens rapides", get_in_touch:"Nous contacter", rights:"Tous droits réservés.", phone_label:"Téléphone", email_label:"E-mail", address_label:"Adresse", wa:"Contacter via WhatsApp", form_title:"Envoyer un message", form_name:"Nom complet", form_email:"Adresse e-mail", form_phone:"Numéro de téléphone", form_msg:"Votre message..." },
+  tr: { nav_about:"Hakkımızda", nav_services:"Hizmetler", nav_gallery:"Galeri", nav_reviews:"Yorumlar", nav_contact:"İletişim", discover:"Daha fazla keşfet", about_us_eyebrow:"Hakkımızda", quality:"Eşsiz kalite", team:"Profesyonel uzman ekip", service:"Üstün müşteri hizmeti", exp:"Yıl deneyim", services_eyebrow:"Hizmetler", services_title:"Ne sunuyoruz", services_sub:"İhtiyaçlarınızı karşılayan ve beklentilerinizi aşan kapsamlı çözümler sunuyoruz", gallery_eyebrow:"Portföy", gallery_title:"Öne çıkan çalışmalarımız", ready_title:"Başlamaya hazır mısınız?", ready_sub:"Bugün bizimle iletişime geçin", testi_eyebrow:"Referanslar", testi_title:"Müşterilerimiz ne diyor", contact_eyebrow:"İletişim", contact_title:"Yardımcı olmaktan memnuniyet duyarız", about_cta:"İletişime geç", quick_links:"Hızlı bağlantılar", get_in_touch:"İletişim", rights:"Tüm hakları saklıdır.", phone_label:"Telefon", email_label:"E-posta", address_label:"Adres", wa:"WhatsApp'tan ulaşın", form_title:"Mesaj gönder", form_name:"Ad Soyad", form_email:"E-posta adresi", form_phone:"Telefon numarası", form_msg:"Mesajınız..." },
+  ru: { nav_about:"О нас", nav_services:"Услуги", nav_gallery:"Галерея", nav_reviews:"Отзывы", nav_contact:"Контакты", discover:"Узнать больше", about_us_eyebrow:"О компании", quality:"Непревзойдённое качество", team:"Профессиональная команда", service:"Превосходный сервис", exp:"лет опыта", services_eyebrow:"Услуги", services_title:"Что мы предлагаем", services_sub:"Мы предоставляем комплексные решения, отвечающие вашим потребностям", gallery_eyebrow:"Портфолио", gallery_title:"Избранные работы", ready_title:"Готовы начать?", ready_sub:"Свяжитесь с нами сегодня", testi_eyebrow:"Отзывы", testi_title:"Что говорят наши клиенты", contact_eyebrow:"Связаться", contact_title:"Рады помочь вам", about_cta:"Связаться", quick_links:"Быстрые ссылки", get_in_touch:"Связаться", rights:"Все права защищены.", phone_label:"Телефон", email_label:"Эл. почта", address_label:"Адрес", wa:"Написать в WhatsApp", form_title:"Отправить сообщение", form_name:"Полное имя", form_email:"Эл. адрес", form_phone:"Номер телефона", form_msg:"Ваше сообщение..." },
+  de: { nav_about:"Über uns", nav_services:"Leistungen", nav_gallery:"Portfolio", nav_reviews:"Bewertungen", nav_contact:"Kontakt", discover:"Mehr entdecken", about_us_eyebrow:"Über uns", quality:"Unübertroffene Qualität", team:"Professionelles Expertenteam", service:"Hervorragender Kundenservice", exp:"Jahre Erfahrung", services_eyebrow:"Leistungen", services_title:"Was wir anbieten", services_sub:"Wir bieten umfassende Lösungen, die Ihren Anforderungen entsprechen", gallery_eyebrow:"Portfolio", gallery_title:"Unsere ausgewählten Arbeiten", ready_title:"Bereit anzufangen?", ready_sub:"Kontaktieren Sie uns heute", testi_eyebrow:"Bewertungen", testi_title:"Was unsere Kunden sagen", contact_eyebrow:"Kontakt", contact_title:"Wir helfen Ihnen gerne", about_cta:"Kontaktieren", quick_links:"Schnelllinks", get_in_touch:"Kontakt", rights:"Alle Rechte vorbehalten.", phone_label:"Telefon", email_label:"E-Mail", address_label:"Adresse", wa:"WhatsApp schreiben", form_title:"Nachricht senden", form_name:"Vollständiger Name", form_email:"E-Mail-Adresse", form_phone:"Telefonnummer", form_msg:"Ihre Nachricht..." },
+  zh: { nav_about:"关于我们", nav_services:"服务", nav_gallery:"作品集", nav_reviews:"客户评价", nav_contact:"联系", discover:"了解更多", about_us_eyebrow:"关于我们", quality:"卓越品质", team:"专业精英团队", service:"卓越客户服务", exp:"年经验", services_eyebrow:"服务", services_title:"我们提供什么", services_sub:"我们提供满足您需求并超越您期望的综合解决方案", gallery_eyebrow:"作品集", gallery_title:"精选作品", ready_title:"准备好开始了吗?", ready_sub:"今天联系我们，开启您的成功之旅", testi_eyebrow:"客户评价", testi_title:"我们的客户怎么说", contact_eyebrow:"联系我们", contact_title:"我们很乐意帮助您", about_cta:"联系我们", quick_links:"快速链接", get_in_touch:"联系我们", rights:"版权所有。", phone_label:"电话", email_label:"电子邮件", address_label:"地址", wa:"通过WhatsApp联系", form_title:"发送消息", form_name:"全名", form_email:"电子邮件地址", form_phone:"电话号码", form_msg:"您的留言..." },
+};
+
+export interface ExtraLang {
+  code: string;
+  content: LangContent;
+  businessName?: string;
+}
+
+export function buildInstantWebsite(
+  content: BilingualBusinessContent,
+  isRTL: boolean,
+  extraLangs?: ExtraLang[]
+): { html: string; css: string } {
   const config = BUSINESS_CONFIGS[content.business_type] || BUSINESS_CONFIGS.general;
   const primary = content.primary_color || config.primary;
   const accent = content.accent_color || config.accent;
   const dark = config.dark;
-  // Always start in Arabic (RTL) for Saudi market
   const dir = "rtl";
   const ar = content.ar;
   const en = content.en;
+
+  // Extra language (up to 1 additional beyond ar+en, or 2 if primary is not ar/en)
+  const e3: ExtraLang | undefined = extraLangs?.[0];
+  const e3code = e3?.code;
+
+  // Helper: escape HTML attribute values
+  const esc = (s: string) => (s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+  // Helper: generate data attributes for all active languages
+  // For UI strings: looks up from MULTILANG_UI dictionary
+  const dUI = (ar: string, en: string, key: string): string => {
+    let s = `data-ar="${esc(ar)}" data-en="${esc(en)}"`;
+    if (e3code) s += ` data-${e3code}="${esc(MULTILANG_UI[e3code]?.[key] || en)}"`;
+    return s;
+  };
+  // For dynamic (AI-generated) content
+  const dDyn = (arText: string, enText: string, extraText?: string): string => {
+    let s = `data-ar="${esc(arText)}" data-en="${esc(enText)}"`;
+    if (e3code && extraText) s += ` data-${e3code}="${esc(extraText)}"`;
+    return s;
+  };
   const fontImport = `@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&family=Tajawal:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap');`;
   const fontHeadingAr = "'Cairo', sans-serif";
   const fontBodyAr = "'Tajawal', 'Cairo', sans-serif";
@@ -230,14 +271,14 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
       <div class="service-icon-wrap">
         <i class="fa-solid ${svcIcons[i % svcIcons.length]}"></i>
       </div>
-      <h3 data-ar="${s.title}" data-en="${en.services[i]?.title || s.title}">${s.title}</h3>
-      <p data-ar="${s.desc}" data-en="${en.services[i]?.desc || s.desc}">${s.desc}</p>
+      <h3 ${dDyn(s.title, en.services[i]?.title || s.title, e3?.content.services[i]?.title)}>${s.title}</h3>
+      <p ${dDyn(s.desc, en.services[i]?.desc || s.desc, e3?.content.services[i]?.desc)}>${s.desc}</p>
     </div>`).join("");
 
   const statsHtml = config.stats.map(s => `
     <div class="stat-item" data-aos>
       <span class="stat-num" data-target="${s.num}">${s.num}</span>
-      <span class="stat-label" data-ar="${s.label_ar}" data-en="${s.label_en}">${s.label_ar}</span>
+      <span class="stat-label" ${dDyn(s.label_ar, s.label_en, e3code ? (MULTILANG_UI[e3code]?.exp || s.label_en) : undefined)}>${s.label_ar}</span>
     </div>`).join("");
 
   const galleryHtml = config.gallery_images.map((url, i) => `
@@ -250,44 +291,49 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
     <div class="testi-card" data-aos style="animation-delay:${i * 0.12}s">
       <div class="testi-quote-icon"><i class="fa-solid fa-quote-right"></i></div>
       <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
-      <p class="testi-text" data-ar='"${t.text_ar}"' data-en='"${t.text_en}"'>"${t.text_ar}"</p>
+      <p class="testi-text" data-ar='"${t.text_ar}"' data-en='"${t.text_en}"'${e3code ? ` data-${e3code}='"${esc(t.text_en)}"'` : ""}>"${t.text_ar}"</p>
       <div class="testi-author">
         <div class="testi-avatar">${t.name.charAt(0)}</div>
         <div>
           <div class="testi-name">${t.name}</div>
-          <div class="testi-role" data-ar="${t.role_ar}" data-en="${t.role_en}">${t.role_ar}</div>
+          <div class="testi-role" ${dDyn(t.role_ar, t.role_en, e3code ? t.role_en : undefined)}>${t.role_ar}</div>
         </div>
       </div>
     </div>`).join("");
 
   const whatsappNum = content.phone.replace(/\D/g, "");
 
+  // Language order for switcher: primary first (always ar for Saudi market), then others
+  const langOrder = ["ar", "en", ...(e3code ? [e3code] : [])];
+  // Initial button shows next language to switch to
+  const initialBtnLabel = langOrder[1] === "ar" ? "عر" : langOrder[1].toUpperCase();
+
   const html = `<div dir="rtl" class="aw-site" id="aw-root" lang="ar">
 
 <!-- ===== NAV ===== -->
 <nav class="aw-nav" id="aw-nav">
   <div class="aw-nav-inner">
-    <a href="#" class="aw-brand" data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</a>
+    <a href="#" class="aw-brand" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName || e3?.content.hero_title?.split(" ").slice(0,2).join(" "))}>${content.business_name_ar}</a>
     <div class="aw-nav-links">
-      <a href="#about" data-ar="من نحن" data-en="About">من نحن</a>
-      <a href="#services" data-ar="خدماتنا" data-en="Services">خدماتنا</a>
-      <a href="#gallery" data-ar="أعمالنا" data-en="Gallery">أعمالنا</a>
-      <a href="#testimonials" data-ar="آراء العملاء" data-en="Reviews">آراء العملاء</a>
-      <a href="#contact" class="aw-nav-cta" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
+      <a href="#about" ${dUI("من نحن", "About", "nav_about")}>من نحن</a>
+      <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>خدماتنا</a>
+      <a href="#gallery" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>أعمالنا</a>
+      <a href="#testimonials" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>آراء العملاء</a>
+      <a href="#contact" class="aw-nav-cta" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
     </div>
     <div style="display:flex;align-items:center;gap:0.5rem;">
-      <button id="aw-lang-btn" onclick="awToggleLang()" title="Switch Language" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:0.35rem 0.75rem;border-radius:2rem;font-size:0.8rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;font-family:inherit;">EN</button>
+      <button id="aw-lang-btn" onclick="awCycleLang()" title="Switch Language" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:0.35rem 0.75rem;border-radius:2rem;font-size:0.8rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;font-family:inherit;">${initialBtnLabel}</button>
       <button id="aw-menu-btn" aria-label="Menu" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var open=m.style.display==='flex';m.style.display=open?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:#fff;line-height:1;">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </div>
   <div id="aw-mobile-menu" style="display:none;flex-direction:column;padding:1rem 1.5rem;gap:0.25rem;border-top:1px solid rgba(255,255,255,0.1);">
-    <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="من نحن" data-en="About">من نحن</a>
-    <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="خدماتنا" data-en="Services">خدماتنا</a>
-    <a href="#gallery" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="أعمالنا" data-en="Gallery">أعمالنا</a>
-    <a href="#testimonials" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" data-ar="آراء العملاء" data-en="Reviews">آراء العملاء</a>
-    <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-cta-link" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
+    <a href="#about" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("من نحن", "About", "nav_about")}>من نحن</a>
+    <a href="#services" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("خدماتنا", "Services", "nav_services")}>خدماتنا</a>
+    <a href="#gallery" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>أعمالنا</a>
+    <a href="#testimonials" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-link" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>آراء العملاء</a>
+    <a href="#contact" onclick="document.getElementById('aw-mobile-menu').style.display='none'" class="mob-cta-link" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
   </div>
 </nav>
 
@@ -299,12 +345,12 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
     <div class="particle p1"></div><div class="particle p2"></div><div class="particle p3"></div>
   </div>
   <div class="aw-container hero-body">
-    <div class="hero-badge" data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</div>
-    <h1 class="hero-h1" data-ar="${ar.hero_title}" data-en="${en.hero_title}">${ar.hero_title}</h1>
-    <p class="hero-sub" data-ar="${ar.hero_subtitle}" data-en="${en.hero_subtitle}">${ar.hero_subtitle}</p>
+    <div class="hero-badge" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</div>
+    <h1 class="hero-h1" ${dDyn(ar.hero_title, en.hero_title, e3?.content.hero_title)}>${ar.hero_title}</h1>
+    <p class="hero-sub" ${dDyn(ar.hero_subtitle, en.hero_subtitle, e3?.content.hero_subtitle)}>${ar.hero_subtitle}</p>
     <div class="hero-actions">
-      <a href="#contact" class="btn-glow" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
-      <a href="#services" class="btn-ghost" data-ar="اكتشف المزيد" data-en="Discover More">اكتشف المزيد
+      <a href="#contact" class="btn-glow" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
+      <a href="#services" class="btn-ghost" ${dUI("اكتشف المزيد", "Discover More", "discover")}>اكتشف المزيد
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
     </div>
@@ -329,30 +375,30 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
         <img src="${config.about_image}" alt="${content.business_name_ar}" loading="lazy"/>
         <div class="about-exp-badge">
           <span class="exp-num">10+</span>
-          <span class="exp-txt" data-ar="سنة خبرة" data-en="Years Exp.">سنة خبرة</span>
+          <span class="exp-txt" ${dUI("سنة خبرة", "Years Exp.", "exp")}>سنة خبرة</span>
         </div>
       </div>
     </div>
     <div class="about-content" data-aos style="animation-delay:0.15s">
-      <span class="eyebrow" data-ar="من نحن" data-en="About Us">من نحن</span>
-      <h2 class="sec-title" data-ar="${ar.about_title}" data-en="${en.about_title}">${ar.about_title}</h2>
+      <span class="eyebrow" ${dUI("من نحن", "About Us", "about_us_eyebrow")}>من نحن</span>
+      <h2 class="sec-title" ${dDyn(ar.about_title, en.about_title, e3?.content.about_title)}>${ar.about_title}</h2>
       <div class="title-line"></div>
-      <p class="about-para" data-ar="${ar.about_text}" data-en="${en.about_text}">${ar.about_text}</p>
+      <p class="about-para" ${dDyn(ar.about_text, en.about_text, e3?.content.about_text)}>${ar.about_text}</p>
       <div class="about-checks">
         <div class="check-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-ar="جودة لا تُضاهى" data-en="Unmatched Quality">جودة لا تُضاهى</span>
+          <span ${dUI("جودة لا تُضاهى", "Unmatched Quality", "quality")}>جودة لا تُضاهى</span>
         </div>
         <div class="check-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-ar="فريق محترف ومتخصص" data-en="Professional Expert Team">فريق محترف ومتخصص</span>
+          <span ${dUI("فريق محترف ومتخصص", "Professional Expert Team", "team")}>فريق محترف ومتخصص</span>
         </div>
         <div class="check-item">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${primary}" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-          <span data-ar="خدمة عملاء متميزة" data-en="Outstanding Customer Service">خدمة عملاء متميزة</span>
+          <span ${dUI("خدمة عملاء متميزة", "Outstanding Customer Service", "service")}>خدمة عملاء متميزة</span>
         </div>
       </div>
-      <a href="#contact" class="btn-primary-solid" data-ar="تواصل معنا" data-en="Get In Touch">تواصل معنا</a>
+      <a href="#contact" class="btn-primary-solid" ${dUI("تواصل معنا", "Get In Touch", "about_cta")}>تواصل معنا</a>
     </div>
   </div>
 </section>
@@ -361,10 +407,10 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 <section id="services" class="aw-section bg-light">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow" data-ar="خدماتنا" data-en="Services">خدماتنا</span>
-      <h2 class="sec-title" data-ar="ما نقدمه لك" data-en="What We Offer">ما نقدمه لك</h2>
+      <span class="eyebrow" ${dUI("خدماتنا", "Services", "services_eyebrow")}>خدماتنا</span>
+      <h2 class="sec-title" ${dUI("ما نقدمه لك", "What We Offer", "services_title")}>ما نقدمه لك</h2>
       <div class="title-line center"></div>
-      <p class="sec-sub" data-ar="نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك" data-en="We provide comprehensive solutions that meet your needs and exceed your expectations">نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك</p>
+      <p class="sec-sub" ${dUI("نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك", "We provide comprehensive solutions that meet your needs and exceed your expectations", "services_sub")}>نقدم حلولاً متكاملة تلبي احتياجاتك وتتجاوز توقعاتك</p>
     </div>
     <div class="services-grid">
       ${servicesHtml}
@@ -376,8 +422,8 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 <section id="gallery" class="aw-section">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow" data-ar="معرض الأعمال" data-en="Portfolio">معرض الأعمال</span>
-      <h2 class="sec-title" data-ar="أعمالنا المميزة" data-en="Our Featured Work">أعمالنا المميزة</h2>
+      <span class="eyebrow" ${dUI("معرض الأعمال", "Portfolio", "gallery_eyebrow")}>معرض الأعمال</span>
+      <h2 class="sec-title" ${dUI("أعمالنا المميزة", "Our Featured Work", "gallery_title")}>أعمالنا المميزة</h2>
       <div class="title-line center"></div>
     </div>
     <div class="gallery-grid">
@@ -390,10 +436,10 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 <section class="cta-band" style="background:linear-gradient(135deg,${primary} 0%,${accent} 100%)">
   <div class="aw-container cta-inner" data-aos>
     <div>
-      <h2 class="cta-h2" data-ar="هل أنت مستعد للبدء؟" data-en="Ready to Get Started?">هل أنت مستعد للبدء؟</h2>
-      <p class="cta-p" data-ar="تواصل معنا اليوم وابدأ رحلة نجاحك" data-en="Contact us today and start your success journey">تواصل معنا اليوم وابدأ رحلة نجاحك</p>
+      <h2 class="cta-h2" ${dUI("هل أنت مستعد للبدء؟", "Ready to Get Started?", "ready_title")}>هل أنت مستعد للبدء؟</h2>
+      <p class="cta-p" ${dUI("تواصل معنا اليوم وابدأ رحلة نجاحك", "Contact us today and start your success journey", "ready_sub")}>تواصل معنا اليوم وابدأ رحلة نجاحك</p>
     </div>
-    <a href="#contact" class="btn-white" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</a>
+    <a href="#contact" class="btn-white" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</a>
   </div>
 </section>
 
@@ -401,8 +447,8 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 <section id="testimonials" class="aw-section bg-dark">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow" style="color:${accent}" data-ar="آراء العملاء" data-en="Testimonials">آراء العملاء</span>
-      <h2 class="sec-title" style="color:#fff" data-ar="ماذا يقول عملاؤنا" data-en="What Our Clients Say">ماذا يقول عملاؤنا</h2>
+      <span class="eyebrow" style="color:${accent}" ${dUI("آراء العملاء", "Testimonials", "testi_eyebrow")}>آراء العملاء</span>
+      <h2 class="sec-title" style="color:#fff" ${dUI("ماذا يقول عملاؤنا", "What Our Clients Say", "testi_title")}>ماذا يقول عملاؤنا</h2>
       <div class="title-line center"></div>
     </div>
     <div class="testi-grid">
@@ -415,45 +461,45 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 <section id="contact" class="aw-section">
   <div class="aw-container contact-wrap">
     <div class="contact-left" data-aos>
-      <span class="eyebrow" data-ar="تواصل معنا" data-en="Contact Us">تواصل معنا</span>
-      <h2 class="sec-title" data-ar="نسعد بخدمتك" data-en="We'd Love to Help">نسعد بخدمتك</h2>
+      <span class="eyebrow" ${dUI("تواصل معنا", "Contact Us", "contact_eyebrow")}>تواصل معنا</span>
+      <h2 class="sec-title" ${dUI("نسعد بخدمتك", "We'd Love to Help", "contact_title")}>نسعد بخدمتك</h2>
       <div class="title-line"></div>
-      <p class="contact-desc" data-ar="${ar.contact_description}" data-en="${en.contact_description}">${ar.contact_description}</p>
+      <p class="contact-desc" ${dDyn(ar.contact_description, en.contact_description, e3?.content.contact_description)}>${ar.contact_description}</p>
       <div class="contact-details">
         ${content.phone ? `<a href="tel:${content.phone}" class="contact-row">
           <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.9a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.07 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.72-.72a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           </div>
-          <div><div class="ci-label" data-ar="الهاتف" data-en="Phone">الهاتف</div><div class="ci-val" dir="ltr">${content.phone}</div></div>
+          <div><div class="ci-label" ${dUI("الهاتف", "Phone", "phone_label")}>الهاتف</div><div class="ci-val" dir="ltr">${content.phone}</div></div>
         </a>` : ""}
         ${content.email ? `<a href="mailto:${content.email}" class="contact-row">
           <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </div>
-          <div><div class="ci-label" data-ar="البريد" data-en="Email">البريد</div><div class="ci-val" dir="ltr">${content.email}</div></div>
+          <div><div class="ci-label" ${dUI("البريد", "Email", "email_label")}>البريد</div><div class="ci-val" dir="ltr">${content.email}</div></div>
         </a>` : ""}
         ${ar.address ? `<div class="contact-row">
           <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
-          <div><div class="ci-label" data-ar="العنوان" data-en="Address">العنوان</div><div class="ci-val" data-ar="${ar.address}" data-en="${en.address}">${ar.address}</div></div>
+          <div><div class="ci-label" ${dUI("العنوان", "Address", "address_label")}>العنوان</div><div class="ci-val" ${dDyn(ar.address, en.address, e3?.content.address)}>${ar.address}</div></div>
         </div>` : ""}
       </div>
       ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" class="wa-btn">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-        <span data-ar="تواصل عبر واتساب" data-en="WhatsApp Us">تواصل عبر واتساب</span>
+        <span ${dUI("تواصل عبر واتساب", "WhatsApp Us", "wa")}>تواصل عبر واتساب</span>
       </a>` : ""}
     </div>
     <div class="contact-right" data-aos style="animation-delay:0.15s">
-      <form class="contact-form" onsubmit="var b=this.querySelector('.form-submit');b.textContent=document.getElementById('aw-root').getAttribute('lang')==='ar'?'تم الإرسال ✓':'Sent ✓';b.style.background='#10b981';event.preventDefault();">
-        <h3 class="form-title" data-ar="أرسل رسالتك" data-en="Send a Message">أرسل رسالتك</h3>
+      <form class="contact-form" onsubmit="var b=this.querySelector('.form-submit');var l=document.getElementById('aw-root').getAttribute('lang');b.textContent=l==='ar'?'تم الإرسال ✓':'Sent ✓';b.style.background='#10b981';event.preventDefault();">
+        <h3 class="form-title" ${dUI("أرسل رسالتك", "Send a Message", "form_title")}>أرسل رسالتك</h3>
         <div class="form-row">
-          <input type="text" placeholder="الاسم الكامل" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name" class="form-inp" required/>
-          <input type="email" placeholder="البريد الإلكتروني" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address" class="form-inp" required/>
+          <input type="text" placeholder="الاسم الكامل" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_name || "Full Name")}"` : ""} class="form-inp" required/>
+          <input type="email" placeholder="البريد الإلكتروني" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_email || "Email Address")}"` : ""} class="form-inp" required/>
         </div>
-        <input type="tel" placeholder="رقم الجوال" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number" class="form-inp" dir="ltr"/>
-        <textarea placeholder="رسالتك..." data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..." class="form-inp form-ta" rows="4"></textarea>
-        <button type="submit" class="form-submit" data-ar="${ar.cta_text}" data-en="${en.cta_text}">${ar.cta_text}</button>
+        <input type="tel" placeholder="رقم الجوال" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_phone || "Phone Number")}"` : ""} class="form-inp" dir="ltr"/>
+        <textarea placeholder="رسالتك..." data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..."${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_msg || "Your message...")}"` : ""} class="form-inp form-ta" rows="4"></textarea>
+        <button type="submit" class="form-submit" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</button>
       </form>
     </div>
   </div>
@@ -463,26 +509,26 @@ export function buildInstantWebsite(content: BilingualBusinessContent, isRTL: bo
 <footer class="aw-footer">
   <div class="aw-container footer-wrap">
     <div class="footer-brand-col">
-      <span class="footer-logo" data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</span>
-      <p class="footer-tagline" data-ar="${ar.hero_subtitle.slice(0, 80)}" data-en="${en.hero_subtitle.slice(0, 80)}">${ar.hero_subtitle.slice(0, 80)}</p>
+      <span class="footer-logo" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</span>
+      <p class="footer-tagline" ${dDyn(ar.hero_subtitle.slice(0, 80), en.hero_subtitle.slice(0, 80), e3?.content.hero_subtitle?.slice(0, 80))}>${ar.hero_subtitle.slice(0, 80)}</p>
     </div>
     <div class="footer-links-col">
-      <div class="fl-heading" data-ar="روابط سريعة" data-en="Quick Links">روابط سريعة</div>
-      <a href="#about" data-ar="من نحن" data-en="About">من نحن</a>
-      <a href="#services" data-ar="خدماتنا" data-en="Services">خدماتنا</a>
-      <a href="#gallery" data-ar="أعمالنا" data-en="Gallery">أعمالنا</a>
-      <a href="#contact" data-ar="تواصل معنا" data-en="Contact">تواصل معنا</a>
+      <div class="fl-heading" ${dUI("روابط سريعة", "Quick Links", "quick_links")}>روابط سريعة</div>
+      <a href="#about" ${dUI("من نحن", "About", "nav_about")}>من نحن</a>
+      <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>خدماتنا</a>
+      <a href="#gallery" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>أعمالنا</a>
+      <a href="#contact" ${dUI("تواصل معنا", "Contact", "nav_contact")}>تواصل معنا</a>
     </div>
     <div class="footer-contact-col">
-      <div class="fl-heading" data-ar="تواصل معنا" data-en="Get In Touch">تواصل معنا</div>
+      <div class="fl-heading" ${dUI("تواصل معنا", "Get In Touch", "get_in_touch")}>تواصل معنا</div>
       ${content.phone ? `<a href="tel:${content.phone}" dir="ltr">${content.phone}</a>` : ""}
       ${content.email ? `<a href="mailto:${content.email}" dir="ltr">${content.email}</a>` : ""}
-      ${ar.address ? `<span data-ar="${ar.address}" data-en="${en.address}">${ar.address}</span>` : ""}
+      ${ar.address ? `<span ${dDyn(ar.address, en.address, e3?.content.address)}>${ar.address}</span>` : ""}
     </div>
   </div>
   <div class="footer-bottom">
     <div class="aw-container footer-bottom-inner">
-      <p>© 2026 <span data-ar="${content.business_name_ar}" data-en="${content.business_name_en}">${content.business_name_ar}</span>. <span data-ar="جميع الحقوق محفوظة." data-en="All Rights Reserved.">جميع الحقوق محفوظة.</span></p>
+      <p>© 2026 <span ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</span>. <span ${dUI("جميع الحقوق محفوظة.", "All Rights Reserved.", "rights")}>جميع الحقوق محفوظة.</span></p>
       <div class="footer-socials">
         ${content.phone ? `<a href="https://wa.me/${whatsappNum}" target="_blank" aria-label="WhatsApp" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>` : ""}
         <a href="#" aria-label="Instagram" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
@@ -516,23 +562,31 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="p
     nav.classList.toggle('aw-nav-scrolled', window.scrollY > 60);
   },{passive:true});
 
-  // ===== BILINGUAL TOGGLE =====
-  var currentLang = 'ar';
-  window.awToggleLang = function(){
-    currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  // ===== MULTILINGUAL CYCLING SWITCHER =====
+  var AW_LANG_ORDER = ${JSON.stringify(langOrder)};
+  var awLangIdx = 0;
+  function awGetNextLabel(nextCode){
+    return nextCode === 'ar' ? 'عر' : nextCode.toUpperCase();
+  }
+  window.awCycleLang = function(){
+    awLangIdx = (awLangIdx + 1) % AW_LANG_ORDER.length;
+    var lang = AW_LANG_ORDER[awLangIdx];
+    var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
     var root = document.getElementById('aw-root');
     var btn = document.getElementById('aw-lang-btn');
-    var isAr = currentLang === 'ar';
+    var isAr = lang === 'ar';
     root.setAttribute('dir', isAr ? 'rtl' : 'ltr');
-    root.setAttribute('lang', currentLang);
-    btn.textContent = isAr ? 'EN' : 'عر';
-    // Switch all text elements
-    document.querySelectorAll('[data-ar][data-en]').forEach(function(el){
-      el.textContent = isAr ? el.getAttribute('data-ar') : el.getAttribute('data-en');
+    root.setAttribute('lang', lang);
+    btn.textContent = awGetNextLabel(nextCode);
+    // Switch all translatable text elements
+    document.querySelectorAll('[data-ar]').forEach(function(el){
+      var val = el.getAttribute('data-' + lang);
+      if(val !== null) el.textContent = val;
     });
     // Switch placeholders
     document.querySelectorAll('[data-placeholder-ar]').forEach(function(el){
-      el.placeholder = isAr ? el.getAttribute('data-placeholder-ar') : el.getAttribute('data-placeholder-en');
+      var val = el.getAttribute('data-placeholder-' + lang) || el.getAttribute('data-placeholder-en');
+      if(val) el.placeholder = val;
     });
     // Switch fonts
     document.body.style.fontFamily = isAr ? "${fontBodyAr}" : "${fontBodyEn}";
@@ -540,6 +594,8 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="p
       el.style.fontFamily = isAr ? "${fontHeadingAr}" : "${fontHeadingEn}";
     });
   };
+  // Keep legacy alias for any existing calls
+  window.awToggleLang = window.awCycleLang;
 })();
 </script>`;
 

@@ -396,13 +396,16 @@ export async function registerRoutes(
 
       const language = req.body.language || "ar";
       const websiteLanguage: string = req.body.websiteLanguage || "ar";
+      const websiteLanguages: string[] = Array.isArray(req.body.websiteLanguages) && req.body.websiteLanguages.length > 0
+        ? req.body.websiteLanguages
+        : [websiteLanguage];
       const description = req.body.description || project.description || project.name;
       const logoDataUrl: string | undefined = req.body.logoDataUrl;
 
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
-      const generated = await generateInstantWebsite(description, language);
+      const generated = await generateInstantWebsite(description, language, websiteLanguages);
 
       const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2 } = await getUserPlanInfo(req.user.id);
       let baseHtml = generated.html;
@@ -452,6 +455,7 @@ export async function registerRoutes(
         status: "generated",
         editCount: 0,
         websiteLanguage,
+        websiteLanguages,
       });
 
       if (!isFreePlan2 && !isUserAdmin2) {

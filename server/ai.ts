@@ -755,24 +755,59 @@ No markdown, no code blocks, no explanation outside the JSON.`;
   }
 }
 
-import { buildInstantWebsite, type BilingualBusinessContent } from "./instant-templates";
+import { buildInstantWebsite, type BilingualBusinessContent, type ExtraLang } from "./instant-templates";
+
+const EXTRA_LANG_NAMES: Record<string, string> = {
+  fr: "French",
+  tr: "Turkish",
+  ru: "Russian",
+  de: "German",
+  zh: "Chinese (Simplified)",
+};
 
 export async function generateInstantWebsite(
   prompt: string,
-  language: string = "ar"
+  language: string = "ar",
+  languages: string[] = ["ar"]
 ): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
   const emailSlug = prompt.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10) || "business";
 
-  const systemPrompt = `You are a bilingual website content generator for Saudi/Arab businesses. Generate professional website copy in BOTH Arabic and English from a user prompt.
+  // Find extra language (first non-ar, non-en in languages array)
+  const extraLangCode = languages.find(l => l !== "ar" && l !== "en");
+  const extraLangName = extraLangCode ? (EXTRA_LANG_NAMES[extraLangCode] || extraLangCode) : null;
+
+  const systemPrompt = `You are a multilingual website content generator for Saudi/Arab businesses. Generate professional website copy in Arabic, English${extraLangName ? `, and ${extraLangName}` : ""} from a user prompt.
 Return ONLY valid JSON, no markdown, no explanation.`;
+
+  const extraLangBlock = extraLangCode && extraLangName ? `
+  "business_name_${extraLangCode}": "brand name in ${extraLangName}",
+  "${extraLangCode}": {
+    "hero_title": "compelling ${extraLangName} headline, max 8 words",
+    "hero_subtitle": "engaging ${extraLangName} subtitle, 1-2 sentences",
+    "about_title": "${extraLangName} about section heading",
+    "about_text": "2-3 ${extraLangName} sentences about the business",
+    "services": [
+      {"title": "${extraLangName} service name", "desc": "${extraLangName} short description"},
+      {"title": "${extraLangName} service name", "desc": "${extraLangName} short description"},
+      {"title": "${extraLangName} service name", "desc": "${extraLangName} short description"},
+      {"title": "${extraLangName} service name", "desc": "${extraLangName} short description"},
+      {"title": "${extraLangName} service name", "desc": "${extraLangName} short description"},
+      {"title": "${extraLangName} service name", "desc": "${extraLangName} short description"}
+    ],
+    "cta_text": "${extraLangName} CTA button text, 2-4 words",
+    "contact_description": "1-2 ${extraLangName} sentences inviting contact",
+    "address": "${extraLangName === "Arabic" ? "المملكة العربية السعودية" : "Saudi Arabia"}",
+    "seo_title": "${extraLangName} SEO title max 60 chars",
+    "seo_description": "${extraLangName} meta description 150-155 chars"
+  },` : "";
 
   const userPrompt = `User prompt: "${prompt}"
 
-Generate complete bilingual website content. Return this EXACT JSON structure:
+Generate complete multilingual website content. Return this EXACT JSON structure:
 {
   "business_name_ar": "brand name in Arabic",
-  "business_name_en": "brand name in English",
+  "business_name_en": "brand name in English",${extraLangBlock}
   "business_type": "one of: restaurant, agency, startup, portfolio, medical, general",
   "ar": {
     "hero_title": "compelling Arabic headline, max 8 words",
@@ -822,27 +857,38 @@ Rules:
 - business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general
 - Colors must match the business personality (warm for restaurant, professional for agency, etc.)
 - ALL services must be specific to this exact business type, not generic
-- hero_title must be exciting and benefit-driven`;
+- hero_title must be exciting and benefit-driven${extraLangCode ? `\n- Include the "${extraLangCode}" section with authentic, natural ${extraLangName} translations` : ""}`;
 
   const model = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-5.2" : "gpt-4.1-mini";
-  console.log("Instant generation using model:", model);
+  console.log("Instant generation using model:", model, "| languages:", languages.join(","));
 
+  const tokenLimit = extraLangCode ? 3200 : 2000;
   const response = await openai.chat.completions.create({
     model,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },
     ],
-    max_completion_tokens: 2000,
+    max_completion_tokens: tokenLimit,
     temperature: 0.7,
     response_format: { type: "json_object" },
   });
 
   const raw = response.choices[0]?.message?.content || "{}";
   let bilingualContent: BilingualBusinessContent;
+  let extraLang: ExtraLang | undefined;
   try {
-    bilingualContent = JSON.parse(raw) as BilingualBusinessContent;
-    if (!bilingualContent.ar || !bilingualContent.en) throw new Error("Missing language sections");
+    const parsed = JSON.parse(raw) as BilingualBusinessContent & Record<string, any>;
+    if (!parsed.ar || !parsed.en) throw new Error("Missing language sections");
+    bilingualContent = parsed;
+    // Extract extra language content if present
+    if (extraLangCode && parsed[extraLangCode]) {
+      extraLang = {
+        code: extraLangCode,
+        content: parsed[extraLangCode],
+        businessName: parsed[`business_name_${extraLangCode}`] || parsed.business_name_en,
+      };
+    }
   } catch {
     bilingualContent = {
       business_name_ar: prompt.slice(0, 30),
@@ -893,7 +939,7 @@ Rules:
     };
   }
 
-  const { html, css } = buildInstantWebsite(bilingualContent, isArabic);
+  const { html, css } = buildInstantWebsite(bilingualContent, isArabic, extraLang ? [extraLang] : undefined);
 
   return {
     html,
