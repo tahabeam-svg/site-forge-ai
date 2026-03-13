@@ -193,8 +193,8 @@ export default function BillingPage() {
       icon: Zap,
       credits: 5,
       features: lang === "ar"
-        ? ["موقع واحد", "10 تعديلات مجانية بالذكاء الاصطناعي", "إنشاء أساسي بالذكاء الاصطناعي", "دعم المجتمع", "يتضمن شعار عربي ويب"]
-        : ["1 website", "10 free AI edits", "Basic AI generation", "Community support", "ArabyWeb badge on site"],
+        ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "لا وصول لأداة التسويق", "دعم المجتمع", "يتضمن شعار عربي ويب"]
+        : ["1 website", "2 free AI edits/site", "No AI marketing access", "Community support", "ArabyWeb badge on site"],
     },
     {
       id: "pro",
@@ -207,8 +207,8 @@ export default function BillingPage() {
       icon: Crown,
       credits: 50,
       features: lang === "ar"
-        ? ["10 مواقع", "تعديل متقدم بالذكاء الاصطناعي", "دعم فني على مدار 24 ساعة", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
-        : ["10 websites", "Advanced AI editing", "24/7 technical support", "Analytics dashboard", "No ArabyWeb badge"],
+        ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — كل المنصات", "50 كريديت/شهر", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
+        : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — all platforms", "50 credits/month", "Analytics dashboard", "No ArabyWeb badge"],
     },
     {
       id: "business",
@@ -221,8 +221,8 @@ export default function BillingPage() {
       icon: Building2,
       credits: 200,
       features: lang === "ar"
-        ? ["30 موقعاً", "تعديل متقدم بالذكاء الاصطناعي", "دعم فني مخصص 24/7", "قوالب حصرية وتعاون الفريق", "بدون شعار عربي ويب"]
-        : ["30 websites", "Advanced AI editing", "24/7 priority support", "Premium templates & team collaboration", "No ArabyWeb badge"],
+        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI غير محدود", "200 كريديت/شهر", "دعم أولوية 24/7", "قوالب حصرية وتعاون الفريق", "بدون شعار عربي ويب"]
+        : ["30 websites", "10 free AI edits/site", "🚀 Unlimited AI Marketing", "200 credits/month", "Priority 24/7 support", "Premium templates & team collaboration", "No ArabyWeb badge"],
     },
   ];
 

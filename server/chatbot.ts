@@ -204,13 +204,15 @@ CONSULTATION TRIGGER:
 - Credits never expire — they stay in your account until used
 
 【3. AI Marketing & Social Media Content】
-- Generates ready-to-post content for Instagram, Twitter/X, TikTok, Snapchat, LinkedIn
+- Generates ready-to-post content for Instagram, Twitter/X, TikTok, Facebook, LinkedIn, YouTube
 - Supports Arabic dialects, formal Arabic, and English
 - Captions, hashtags, stories, campaigns, monthly content calendars
-- Marketing Plans:
-  * Starter: $9/month — 20 posts/month
-  * Growth (most popular): $19/month — 60 posts/month
-  * Pro: $39/month — Unlimited posts + full content calendar + campaign planning
+- INCLUDED in paid plans — no separate marketing subscription needed:
+  * Free plan: NO access to AI marketing tool (must upgrade)
+  * Pro (${pricing.proPrice} SAR/month): full AI marketing access on all platforms
+  * Business (${pricing.businessPrice} SAR/month): full AI marketing access + 200 credits/month
+- Each marketing generation costs 1 credit (SAME shared credit pool as website editing)
+- When credits run out: paid users (Pro/Business) can buy more — free users cannot
 
 【4. AI Edit Limits per Plan】
 - Free plan: 2 free AI edits per website (after that: 1 credit per edit)
@@ -309,13 +311,15 @@ ${dialectInstruction}
 - اللغة تُختار في الخطوة الأولى من معالج إنشاء الموقع
 
 【٤. محتوى التسويق والسوشيال ميديا بالذكاء الاصطناعي】
-- يُنشئ محتوى جاهزاً للنشر على Instagram, Twitter/X, TikTok, Snapchat, LinkedIn
+- يُنشئ محتوى جاهزاً للنشر على Instagram, Twitter/X, TikTok, Facebook, LinkedIn, YouTube
 - يدعم اللهجات العربية والعربية الفصحى والإنجليزية
 - كابشن، هاشتاقات، ستوري، حملات، تقويم محتوى شهري
-- باقات التسويق:
-  * Starter: 9$/شهر — 20 منشور/شهر
-  * Growth (الأكثر طلباً): 19$/شهر — 60 منشور/شهر
-  * Pro: 39$/شهر — منشورات غير محدودة + تقويم كامل + تخطيط حملات
+- مشمول في الباقات المدفوعة — لا توجد باقة تسويق منفصلة:
+  * الباقة المجانية: لا وصول لأداة التسويق (يجب الترقية)
+  * Pro (${pricing.proPrice} ر.س/شهر): وصول كامل للتسويق على جميع المنصات
+  * Business (${pricing.businessPrice} ر.س/شهر): وصول كامل + 200 كريديت/شهر
+- كل توليد محتوى تسويقي يخصم كريديت واحد (نفس مجموعة الكريديت المشتركة مع المواقع)
+- عند نفاذ الكريديت: المشتركون في الباقات المدفوعة يستطيعون شراء المزيد — الباقة المجانية لا تستطيع
 
 ═══ مهمتك التسويقية ═══
 

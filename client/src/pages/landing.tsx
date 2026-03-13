@@ -77,23 +77,23 @@ export default function LandingPage() {
 
   useSEO({
     title: isAr
-      ? "بناء موقع إلكتروني مجاني بالذكاء الاصطناعي في السعودية"
-      : "Free AI Website Builder for Saudi Arabia & Arab World",
+      ? "أنشئ موقعك وسوّق أعمالك بالذكاء الاصطناعي — مجاناً في السعودية"
+      : "Build & Market Your Business with AI — Free in Saudi Arabia",
     description: isAr
-      ? "أنشئ موقعك الإلكتروني المجاني أو متجرك الإلكتروني المجاني بالذكاء الاصطناعي في أقل من دقيقتين. بدون برمجة، بدون تكلفة. الأول في السعودية."
-      : "Build your free website or free online store with AI in under 2 minutes. No coding needed. Saudi Arabia's #1 AI website builder.",
+      ? "أنشئ موقعك الإلكتروني المجاني وسوّق أعمالك بالذكاء الاصطناعي في أقل من دقيقتين. توليد محتوى تسويقي لإنستغرام وتيك توك وتويتر تلقائياً. بدون برمجة، بدون تكلفة. الأول في السعودية."
+      : "Build your free website and market your business with AI in under 2 minutes. Auto-generate marketing content for Instagram, TikTok & Twitter. No coding needed. Saudi Arabia's #1 AI platform.",
     keywords: isAr
-      ? "موقع مجاني، بناء موقع الكتروني مجاني، انشاء موقع مجاني، متجر مجاني، متاجر مجانية، موقع بالذكاء الاصطناعي، بناء موقع بدون برمجة، موقع احترافي مجاني، استضافة مجانية، منصة بناء مواقع، موقع للشركات السعودية"
-      : "free website Saudi Arabia, AI website builder Arabic, free online store, website builder no code, free website builder",
+      ? "موقع مجاني، بناء موقع الكتروني مجاني، انشاء موقع مجاني، متجر مجاني، تسويق بالذكاء الاصطناعي، محتوى تسويقي، منشورات سوشيال ميديا، موقع بالذكاء الاصطناعي، بناء موقع بدون برمجة، موقع احترافي مجاني، استضافة مجانية، منصة بناء مواقع، موقع للشركات السعودية"
+      : "free website Saudi Arabia, AI website builder Arabic, free online store, AI marketing content, social media posts AI, website builder no code, free website builder",
     lang: isAr ? "ar" : "en",
     structuredData: {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": isAr ? "بناء موقع مجاني بالذكاء الاصطناعي" : "Free AI Website Builder",
+      "name": isAr ? "أنشئ موقعك وسوّق أعمالك بالذكاء الاصطناعي — ArabyWeb" : "Build & Market with AI — ArabyWeb",
       "url": "https://arabyweb.net/",
       "description": isAr
-        ? "المنصة الأولى لبناء المواقع المجانية بالذكاء الاصطناعي في السعودية والعالم العربي"
-        : "Saudi Arabia's first free AI website builder",
+        ? "المنصة الأولى لبناء المواقع والتسويق الرقمي بالذكاء الاصطناعي في السعودية والعالم العربي"
+        : "Saudi Arabia's first AI platform for website building and digital marketing",
       "breadcrumb": {
         "@type": "BreadcrumbList",
         "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "الرئيسية", "item": "https://arabyweb.net/" }]
@@ -266,7 +266,7 @@ export default function LandingPage() {
           >
             {lang === "ar" ? (
               <>
-                <span className="block mb-1">أنشئ موقع</span>
+                <span className="block mb-1">أنشئ وسوّق</span>
                 <span className="block mb-1">
                   <span className="relative inline-block">
                     <span className="relative bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
@@ -286,7 +286,7 @@ export default function LandingPage() {
               </>
             ) : (
               <>
-                <span className="block mb-1">Build Your</span>
+                <span className="block mb-1">Build & Market</span>
                 <span className="block">
                   <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
                     style={{ paddingBottom: "0.1em" }}>
@@ -670,8 +670,8 @@ export default function LandingPage() {
                 price: lang === "ar" ? "مجاناً" : "Free",
                 yearly: "",
                 features: lang === "ar"
-                  ? ["موقع واحد", "10 تعديلات ذكاء مجانية", "تسويق أساسي بالذكاء الاصطناعي"]
-                  : ["1 website", "10 free AI edits", "Basic AI marketing"],
+                  ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "لا وصول لأداة التسويق"]
+                  : ["1 website", "2 free AI edits/site", "No marketing tool access"],
               },
               {
                 name: lang === "ar" ? "احترافي" : "Pro",
@@ -679,16 +679,16 @@ export default function LandingPage() {
                 yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
                 popular: true,
                 features: lang === "ar"
-                  ? ["10 مواقع", "تسويق ذكاء متقدم", "محتوى لجميع المنصات", "حملات إطلاق منتجات"]
-                  : ["10 websites", "Advanced AI marketing", "All platforms content", "Product launch campaigns"],
+                  ? ["10 مواقع", "5 تعديلات مجانية/موقع", "تسويق AI — كل المنصات 🚀", "50 كريديت/شهر"]
+                  : ["10 websites", "5 free AI edits/site", "AI Marketing — all platforms 🚀", "50 credits/month"],
               },
               {
                 name: lang === "ar" ? "أعمال" : "Business",
                 price: lang === "ar" ? "99 ر.س" : "99 SAR",
                 yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
                 features: lang === "ar"
-                  ? ["30 موقعاً", "تسويق غير محدود", "استراتيجيات متكاملة", "دعم أولوية 24/7"]
-                  : ["30 websites", "Unlimited AI marketing", "Full strategies", "Priority 24/7 support"],
+                  ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "تسويق AI غير محدود 🚀", "200 كريديت/شهر + دعم أولوية"]
+                  : ["30 websites", "10 free AI edits/site", "Unlimited AI Marketing 🚀", "200 credits/month + priority support"],
               },
             ].map((plan, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>

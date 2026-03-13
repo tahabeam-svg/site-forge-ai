@@ -464,17 +464,19 @@ export async function sendSubscriptionStartedEmail(to: string, plan: string, end
          ${p(`تم تفعيل خطة <strong>${planName(plan, true)}</strong> بنجاح.`)}
          ${statsTable([
            ["الخطة", planName(plan, true)],
-           ["الجلسات المضافة", `${credits} جلسة ذكاء`],
+           ["الكريديت المضاف", `${credits} كريديت ذكاء`],
            ["الاشتراك يجدد في", endStr],
          ])}
+         ${infoBox(`✅ مشمول في خطتك: بناء المواقع + <strong>التسويق بالذكاء الاصطناعي</strong> (إنستغرام، تيك توك، تويتر، لينكدإن وأكثر). كل توليد محتوى يستهلك كريديت واحداً من رصيدك.`, "#10b981")}
          ${btn("https://arabyweb.net/dashboard", "ابدأ الاستخدام")}`
       : `${h1(`🎉 Your subscription is active!`)}
          ${p(`Your <strong>${planName(plan, false)}</strong> plan has been successfully activated.`)}
          ${statsTable([
            ["Plan", planName(plan, false)],
-           ["Sessions Added", `${credits} AI sessions`],
+           ["Credits Added", `${credits} AI credits`],
            ["Renewal Date", endStr],
          ])}
+         ${infoBox(`✅ Included in your plan: Website Builder + <strong>AI Marketing</strong> (Instagram, TikTok, Twitter, LinkedIn & more). Each content generation uses 1 credit from your balance.`, "#10b981")}
          ${btn("https://arabyweb.net/dashboard", "Start Using")}`,
     isAr
   );
