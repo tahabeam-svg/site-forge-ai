@@ -206,6 +206,19 @@ export async function seedDatabase() {
     console.error("Projects migration warning:", e.message);
   }
 
+  // ── DB indexes for performance ──────────────────────────────────────────────
+  try {
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_projects_user_id ON projects(user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_project_id ON chat_messages(project_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_subscriptions_order_id ON subscriptions(paymob_order_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_credit_purchases_user_id ON credit_purchases(user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_credit_purchases_order_id ON credit_purchases(paymob_order_id)`);
+    console.log("Migration: DB indexes ensured");
+  } catch (e: any) {
+    console.error("Index migration warning:", e.message);
+  }
+
   // Template versioning — bump TEMPLATE_VERSION to force regeneration
   const TEMPLATE_VERSION = "v3-gulf-avatars";
   try {

@@ -212,6 +212,17 @@ export async function registerRoutes(
     res.json({ status: "ok", version: BUILD_VERSION, timestamp: new Date().toISOString() });
   });
 
+  // ── Load dynamic plan prices from DB on startup so they survive server restarts ──
+  try {
+    const proPrice = await storage.getSetting("price_pro");
+    const businessPrice = await storage.getSetting("price_business");
+    if (proPrice) PLAN_PRICES.pro = parseInt(proPrice);
+    if (businessPrice) PLAN_PRICES.business = parseInt(businessPrice);
+    console.log("[Paymob] Plan prices loaded from DB:", PLAN_PRICES);
+  } catch (e) {
+    console.warn("[Paymob] Could not load plan prices from DB on startup:", e);
+  }
+
   await setupAuth(app);
   registerAuthRoutes(app);
 
@@ -654,8 +665,13 @@ export async function registerRoutes(
     }
   });
 
-  app.get("/api/templates", async (_req, res) => {
+  app.get("/api/templates", async (req, res) => {
     try {
+      // ?summary=true returns lightweight listing (no previewHtml/previewCss) — use for pickers & browsers
+      if (req.query.summary === "true") {
+        const summaryTemplates = await storage.getTemplatesSummary();
+        return res.json(summaryTemplates);
+      }
       const allTemplates = await storage.getTemplates();
       res.json(allTemplates);
     } catch (err) {
@@ -1109,9 +1125,8 @@ export async function registerRoutes(
         return res.json({ message: "OK" });
       }
 
-      // Otherwise, treat as subscription
-      const subs = await storage.getSubscriptions();
-      const sub = subs.find((s) => s.paymobOrderId === orderId);
+      // Otherwise, treat as subscription — query directly by orderId (no N+1)
+      const sub = await storage.getSubscriptionByOrderId(orderId);
       if (!sub) return res.json({ message: "OK" });
 
       if (sub.amountCents && data.amount_cents !== sub.amountCents) {

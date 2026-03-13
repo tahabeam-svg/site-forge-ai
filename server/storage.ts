@@ -1,7 +1,7 @@
 import { db } from "./db";
 import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback, creditPurchases } from "@shared/schema";
 import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback, CreditPurchase, InsertCreditPurchase } from "@shared/schema";
-import { eq, desc, sql, count, like, ilike } from "drizzle-orm";
+import { eq, desc, sql, count, like } from "drizzle-orm";
 
 export interface IStorage {
   getProjectsByUser(userId: string): Promise<Project[]>;
@@ -11,6 +11,7 @@ export interface IStorage {
   deleteProject(id: number): Promise<void>;
 
   getTemplates(): Promise<Template[]>;
+  getTemplatesSummary(): Promise<Omit<Template, "previewHtml" | "previewCss">[]>;
   getTemplate(id: number): Promise<Template | undefined>;
   createTemplate(template: InsertTemplate): Promise<Template>;
 
@@ -35,6 +36,7 @@ export interface IStorage {
   deleteSetting(key: string): Promise<void>;
 
   getSubscriptionByUser(userId: string): Promise<Subscription | undefined>;
+  getSubscriptionByOrderId(orderId: string): Promise<Subscription | undefined>;
   createSubscription(sub: InsertSubscription): Promise<Subscription>;
   updateSubscription(id: number, data: Partial<Subscription>): Promise<Subscription | undefined>;
   getSubscriptions(): Promise<Subscription[]>;
@@ -93,6 +95,20 @@ export class DatabaseStorage implements IStorage {
 
   async getTemplates(): Promise<Template[]> {
     return db.select().from(templates).orderBy(desc(templates.createdAt));
+  }
+
+  async getTemplatesSummary(): Promise<Omit<Template, "previewHtml" | "previewCss">[]> {
+    return db.select({
+      id: templates.id,
+      name: templates.name,
+      nameAr: templates.nameAr,
+      description: templates.description,
+      descriptionAr: templates.descriptionAr,
+      category: templates.category,
+      thumbnail: templates.thumbnail,
+      isPremium: templates.isPremium,
+      createdAt: templates.createdAt,
+    }).from(templates).orderBy(desc(templates.createdAt)) as any;
   }
 
   async getTemplate(id: number): Promise<Template | undefined> {
@@ -172,12 +188,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async setSetting(key: string, value: string): Promise<void> {
-    const existing = await this.getSetting(key);
-    if (existing !== null) {
-      await db.update(platformSettings).set({ value, updatedAt: new Date() }).where(eq(platformSettings.key, key));
-    } else {
-      await db.insert(platformSettings).values({ key, value });
-    }
+    await db.insert(platformSettings)
+      .values({ key, value })
+      .onConflictDoUpdate({
+        target: platformSettings.key,
+        set: { value, updatedAt: new Date() },
+      });
   }
 
   async getSettingsByPrefix(prefix: string): Promise<PlatformSetting[]> {
@@ -190,6 +206,13 @@ export class DatabaseStorage implements IStorage {
 
   async getSubscriptionByUser(userId: string): Promise<Subscription | undefined> {
     const [sub] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId)).orderBy(desc(subscriptions.createdAt));
+    return sub;
+  }
+
+  async getSubscriptionByOrderId(orderId: string): Promise<Subscription | undefined> {
+    const [sub] = await db.select().from(subscriptions)
+      .where(eq(subscriptions.paymobOrderId, orderId))
+      .limit(1);
     return sub;
   }
 
@@ -253,7 +276,6 @@ export class DatabaseStorage implements IStorage {
       language: item.language || "ar",
       isApproved: true,
     });
-    // Remove from auto-learned after promotion to KB
     await db.delete(autoLearnedKnowledge).where(eq(autoLearnedKnowledge.id, id));
   }
 

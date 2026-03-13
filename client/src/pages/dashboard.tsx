@@ -53,11 +53,9 @@ import {
   Upload,
   Zap,
   Check,
-  Crown,
   LayoutTemplate,
   MoreHorizontal,
   Globe2,
-  Clock,
   TrendingUp,
   ChevronRight,
   ChevronLeft,
@@ -283,11 +281,7 @@ export default function DashboardPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const lang = language;
-  const [showNewProject, setShowNewProject] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [newName, setNewName] = useState("");
-  const [newDesc, setNewDesc] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
 
   const [instantDialogOpen, setInstantDialogOpen] = useState(false);
   const [wizardForm, setWizardForm] = useState<WizardForm>(defaultWizardForm);
@@ -315,48 +309,13 @@ export default function DashboardPage() {
   const { data: rawProjects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
-  // Deduplicate by ID to prevent any double-render issues
   const projects = rawProjects.filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
 
   const { data: templates = [] } = useQuery<Template[]>({
-    queryKey: ["/api/templates"],
+    queryKey: ["/api/templates?summary=true"],
     staleTime: 10 * 60 * 1000,
   });
   const dialogTemplates = templates.slice(0, 9);
-
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/projects", {
-        name: newName,
-        description: newDesc,
-        templateId: selectedTemplate?.id || undefined,
-      });
-      const data = await res.json();
-      if (res.status === 402) {
-        throw new Error(lang === "ar" ? (data.messageAr || data.message) : (data.messageEn || data.message));
-      }
-      if (!res.ok) throw new Error(data.message || "Failed to create project");
-      if (selectedTemplate) {
-        await apiRequest("PUT", `/api/projects/${data.id}`, {
-          generatedHtml: selectedTemplate.previewHtml,
-          generatedCss: selectedTemplate.previewCss || "",
-          status: "generated",
-        });
-      }
-      return data;
-    },
-    onSuccess: (project: Project) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      setShowNewProject(false);
-      setNewName("");
-      setNewDesc("");
-      setSelectedTemplate(null);
-      navigate(`/editor/${project.id}`);
-    },
-    onError: (err: Error) => {
-      toast({ title: t("error", lang), description: err.message, variant: "destructive" });
-    },
-  });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -372,11 +331,18 @@ export default function DashboardPage() {
   const publishMutation = useMutation({
     mutationFn: async (id: number) => {
       const res = await apiRequest("POST", `/api/projects/${id}/publish`);
-      return res.json();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to publish");
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (project: Project) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
-      toast({ title: lang === "ar" ? "تم النشر" : "Published", description: lang === "ar" ? "تم نشر موقعك بنجاح" : "Your website has been published" });
+      toast({
+        title: lang === "ar" ? "✅ تم وضع علامة منشور" : "✅ Marked as Published",
+        description: lang === "ar"
+          ? "لنشر موقعك فعلياً على الإنترنت، استخدم زر «انشر موقعك» أو حمّل ملف HTML"
+          : "To go live on the internet, use «Deploy Guide» or download the HTML file",
+      });
     },
   });
 
@@ -400,7 +366,7 @@ export default function DashboardPage() {
     }, 400);
   }
 
-  function stopProgressAnimation(success: boolean) {
+  function stopProgressAnimation() {
     if (progressInterval.current) {
       clearInterval(progressInterval.current);
       progressInterval.current = null;
@@ -434,7 +400,23 @@ export default function DashboardPage() {
       if (wizardTemplate) createPayload.templateId = wizardTemplate.id;
 
       const createRes = await apiRequest("POST", "/api/projects", createPayload);
-      const project: Project = await createRes.json();
+      const createData = await createRes.json();
+
+      if (createRes.status === 402) {
+        stopProgressAnimation();
+        setIsInstantGenerating(false);
+        setInstantDialogOpen(false);
+        toast({
+          title: lang === "ar" ? "تحتاج إلى ترقية الخطة" : "Upgrade Required",
+          description: lang === "ar" ? (createData.messageAr || createData.message) : (createData.messageEn || createData.message),
+          variant: "destructive",
+        });
+        navigate("/billing");
+        return;
+      }
+
+      if (!createRes.ok) throw new Error(createData.message || "Failed to create project");
+      const project: Project = createData;
 
       const genPayload: Record<string, unknown> = {
         description: structuredDesc,
@@ -449,7 +431,7 @@ export default function DashboardPage() {
         throw new Error(errData.message || "Generation failed");
       }
 
-      stopProgressAnimation(true);
+      stopProgressAnimation();
 
       await new Promise((r) => setTimeout(r, 700));
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
@@ -467,7 +449,7 @@ export default function DashboardPage() {
         description: lang === "ar" ? "موقعك جاهز للتعديل والنشر" : "Your website is ready to edit and publish",
       });
     } catch (err: any) {
-      stopProgressAnimation(false);
+      stopProgressAnimation();
       setIsInstantGenerating(false);
       toast({
         title: t("error", lang),
@@ -1208,139 +1190,6 @@ export default function DashboardPage() {
               </p>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={showNewProject} onOpenChange={setShowNewProject}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t("createProject", lang)}</DialogTitle>
-            <DialogDescription>
-              {lang === "ar"
-                ? "صف موقعك وسيقوم الذكاء الاصطناعي ببنائه لك"
-                : "Describe your website and AI will build it for you"}
-            </DialogDescription>
-          </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (newName) createMutation.mutate();
-            }}
-            className="space-y-4"
-          >
-            {/* Template quick-picker */}
-            {dialogTemplates.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-1.5">
-                  <LayoutTemplate className="w-3.5 h-3.5 text-muted-foreground" />
-                  {lang === "ar" ? "ابدأ من قالب (اختياري)" : "Start from template (optional)"}
-                </label>
-                <div className="grid grid-cols-5 gap-2">
-                  {/* AI/blank option */}
-                  <button
-                    type="button"
-                    onClick={() => setSelectedTemplate(null)}
-                    className={`aspect-video rounded-lg border-2 flex flex-col items-center justify-center gap-1 transition-all text-[10px] font-medium ${
-                      !selectedTemplate
-                        ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400"
-                        : "border-border hover:border-emerald-300 dark:hover:border-emerald-700 text-muted-foreground"
-                    }`}
-                    data-testid="button-select-blank-template"
-                  >
-                    <Sparkles className={`w-4 h-4 ${!selectedTemplate ? "text-emerald-500" : "text-muted-foreground"}`} />
-                    {lang === "ar" ? "ذكاء" : "AI"}
-                  </button>
-                  {/* Template thumbnails */}
-                  {dialogTemplates.map((tpl) => (
-                    <button
-                      type="button"
-                      key={tpl.id}
-                      onClick={() => {
-                        setSelectedTemplate(tpl);
-                        if (!newName) setNewName(lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name);
-                        if (!newDesc) setNewDesc(lang === "ar" && tpl.descriptionAr ? tpl.descriptionAr : tpl.description || "");
-                      }}
-                      className={`aspect-video rounded-lg border-2 overflow-hidden relative transition-all focus:outline-none ${
-                        selectedTemplate?.id === tpl.id
-                          ? "border-emerald-500 shadow-md shadow-emerald-500/20"
-                          : "border-border hover:border-emerald-300 dark:hover:border-emerald-700"
-                      }`}
-                      data-testid={`button-select-template-${tpl.id}`}
-                    >
-                      <img
-                        src={tpl.thumbnail || ""}
-                        alt={lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name}
-                        className="w-full h-full object-cover"
-                      />
-                      {selectedTemplate?.id === tpl.id && (
-                        <div className="absolute inset-0 bg-emerald-500/25 flex items-center justify-center">
-                          <div className="bg-emerald-500 rounded-full p-0.5">
-                            <Check className="w-3 h-3 text-white" />
-                          </div>
-                        </div>
-                      )}
-                      {tpl.isPremium && (
-                        <div className="absolute top-0.5 end-0.5">
-                          <Crown className="w-2.5 h-2.5 text-amber-400" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
-                  {/* Browse more */}
-                  <button
-                    type="button"
-                    onClick={() => { setShowNewProject(false); navigate("/templates"); }}
-                    className="aspect-video rounded-lg border-2 border-dashed border-border hover:border-emerald-400/60 flex flex-col items-center justify-center gap-1 transition-all text-[10px] text-muted-foreground hover:text-foreground"
-                    data-testid="button-browse-more-templates"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    {lang === "ar" ? "المزيد" : "More"}
-                  </button>
-                </div>
-                {selectedTemplate && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                    <Check className="w-3 h-3" />
-                    {lang === "ar"
-                      ? `تم اختيار: ${selectedTemplate.nameAr || selectedTemplate.name}`
-                      : `Selected: ${selectedTemplate.name}`}
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("projectName", lang)}</label>
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder={lang === "ar" ? "معرض العطور" : "Perfume Exhibition"}
-                required
-                data-testid="input-project-name"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t("projectDescription", lang)}</label>
-              <Textarea
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-                placeholder={t("descriptionPlaceholder", lang)}
-                className="resize-none"
-                rows={2}
-                data-testid="input-project-description"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => { setShowNewProject(false); setSelectedTemplate(null); }} data-testid="button-cancel-create">
-                {t("cancel", lang)}
-              </Button>
-              <Button type="submit" disabled={createMutation.isPending || !newName} data-testid="button-confirm-create">
-                {createMutation.isPending && <Loader2 className="w-4 h-4 me-2 animate-spin" />}
-                {selectedTemplate
-                  ? (lang === "ar" ? "إنشاء من القالب" : "Create from Template")
-                  : t("createProject", lang)}
-              </Button>
-            </div>
-          </form>
         </DialogContent>
       </Dialog>
 
