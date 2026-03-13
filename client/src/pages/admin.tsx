@@ -104,6 +104,7 @@ export default function AdminPage() {
   const [paymobHmacSecret, setPaymobHmacSecret] = useState("");
   const [showApiKey, setShowApiKey] = useState(false);
   const [showHmac, setShowHmac] = useState(false);
+  const [testModeEnabled, setTestModeEnabled] = useState(false);
 
   const [proPrice, setProPrice] = useState("");
   const [businessPrice, setBusinessPrice] = useState("");
@@ -202,10 +203,19 @@ export default function AdminPage() {
     onError: () => { toast({ title: lang === "ar" ? "فشل التعليق الجماعي" : "Bulk suspend failed", variant: "destructive" }); },
   });
 
+  const { data: paymentConfig } = useQuery<{ configured: boolean; testMode: boolean }>({ queryKey: ["/api/payments/config"], enabled: !statsError });
+  useEffect(() => { if (paymentConfig) setTestModeEnabled(paymentConfig.testMode); }, [paymentConfig]);
+
   const savePaymobMutation = useMutation({
     mutationFn: async () => { const body: Record<string, string> = {}; if (paymobApiKey) body.apiKey = paymobApiKey; if (paymobIntegrationId) body.integrationId = paymobIntegrationId; if (paymobIframeId) body.iframeId = paymobIframeId; if (paymobHmacSecret) body.hmacSecret = paymobHmacSecret; await apiRequest("PUT", "/api/admin/settings/paymob", body); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/admin/settings/paymob"] }); setPaymobApiKey(""); setPaymobIntegrationId(""); setPaymobIframeId(""); setPaymobHmacSecret(""); toast({ title: lang === "ar" ? "تم حفظ إعدادات Paymob" : "Paymob settings saved" }); },
     onError: () => { toast({ title: lang === "ar" ? "فشل حفظ الإعدادات" : "Failed to save settings", variant: "destructive" }); },
+  });
+
+  const toggleTestModeMutation = useMutation({
+    mutationFn: async (enabled: boolean) => { await apiRequest("POST", "/api/admin/settings/paymob/test-mode", { enabled }); return enabled; },
+    onSuccess: (enabled) => { setTestModeEnabled(enabled); queryClient.invalidateQueries({ queryKey: ["/api/payments/config"] }); toast({ title: lang === "ar" ? (enabled ? "تم تفعيل وضع الاختبار" : "تم إيقاف وضع الاختبار") : (enabled ? "Test mode enabled" : "Test mode disabled") }); },
+    onError: () => { toast({ title: lang === "ar" ? "فشل تحديث وضع الاختبار" : "Failed to update test mode", variant: "destructive" }); },
   });
 
   const savePricingMutation = useMutation({
@@ -994,10 +1004,21 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
-                  <Button onClick={() => savePaymobMutation.mutate()} disabled={(!paymobApiKey && !paymobIntegrationId && !paymobIframeId && !paymobHmacSecret) || savePaymobMutation.isPending} className="bg-blue-600 hover:bg-blue-700" data-testid="button-save-paymob">
-                    {savePaymobMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Save className="w-4 h-4 me-1" />}
-                    {lang === "ar" ? "حفظ الإعدادات" : "Save Settings"}
-                  </Button>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <Button onClick={() => savePaymobMutation.mutate()} disabled={(!paymobApiKey && !paymobIntegrationId && !paymobIframeId && !paymobHmacSecret) || savePaymobMutation.isPending} className="bg-blue-600 hover:bg-blue-700" data-testid="button-save-paymob">
+                      {savePaymobMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Save className="w-4 h-4 me-1" />}
+                      {lang === "ar" ? "حفظ الإعدادات" : "Save Settings"}
+                    </Button>
+                    <button
+                      onClick={() => toggleTestModeMutation.mutate(!testModeEnabled)}
+                      disabled={toggleTestModeMutation.isPending}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${testModeEnabled ? "bg-amber-500/10 border-amber-500/40 text-amber-400" : "bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200"}`}
+                      data-testid="button-toggle-test-mode"
+                    >
+                      {testModeEnabled ? <ToggleRight className="w-5 h-5" /> : <ToggleLeft className="w-5 h-5" />}
+                      {lang === "ar" ? (testModeEnabled ? "وضع الاختبار: مفعّل" : "وضع الاختبار: معطّل") : (testModeEnabled ? "Test Mode: ON" : "Test Mode: OFF")}
+                    </button>
+                  </div>
                   <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
                     <h4 className="text-sm font-medium text-zinc-300 mb-2">{lang === "ar" ? "كيفية الحصول على البيانات:" : "How to get credentials:"}</h4>
                     <ol className="text-xs text-zinc-500 space-y-1 list-decimal list-inside">

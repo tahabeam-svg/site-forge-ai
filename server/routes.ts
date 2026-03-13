@@ -958,7 +958,8 @@ export async function registerRoutes(
   app.get("/api/payments/config", isAuthenticated, async (req: any, res) => {
     try {
       const configured = await isPaymobConfigured();
-      res.json({ configured });
+      const testMode = (await storage.getSetting("paymob_test_mode")) === "true";
+      res.json({ configured: configured || testMode, testMode });
     } catch (err) {
       res.status(500).json({ message: "Failed to check payment config" });
     }
@@ -1030,19 +1031,35 @@ export async function registerRoutes(
 
   app.post("/api/payments/initiate", isAuthenticated, async (req: any, res) => {
     try {
+      const testMode = (await storage.getSetting("paymob_test_mode")) === "true";
       const configured = await isPaymobConfigured();
-      if (!configured) return res.status(400).json({ message: "Payment gateway not configured" });
+      if (!configured && !testMode) return res.status(400).json({ message: "Payment gateway not configured" });
 
       const parsed = initiatePaymentSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid plan" });
 
-      const { plan } = parsed.data;
+      const { plan, billingCycle } = parsed.data;
       const amountCents = PLAN_PRICES[plan];
       if (!amountCents) return res.status(400).json({ message: "Invalid plan" });
 
       const userId = req.user.id;
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
+
+      if (testMode) {
+        const sub = await storage.createSubscription({
+          userId,
+          plan,
+          status: "pending",
+          paymobOrderId: `TEST-${Date.now()}`,
+          amountCents,
+          currency: "SAR",
+          startDate: null,
+          endDate: null,
+          paymobTransactionId: null,
+        });
+        return res.json({ testMode: true, testUrl: `/payment-test?type=plan&plan=${plan}&subId=${sub.id}&amount=${Math.round(amountCents / 100)}` });
+      }
 
       const merchantOrderId = `ARABYWEB-${userId}-${Date.now()}`;
       const { orderId, token: authToken } = await createPaymobOrder(amountCents, "SAR", merchantOrderId);
@@ -1080,19 +1097,33 @@ export async function registerRoutes(
 
   app.post("/api/payments/buy-credits", isAuthenticated, async (req: any, res) => {
     try {
+      const testMode = (await storage.getSetting("paymob_test_mode")) === "true";
       const configured = await isPaymobConfigured();
-      if (!configured) return res.status(400).json({ message: "Payment gateway not configured" });
+      if (!configured && !testMode) return res.status(400).json({ message: "Payment gateway not configured" });
 
       const parsed = buyCreditSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "كمية جلسات الذكاء يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
 
       const { credits } = parsed.data;
-      // 1 credit = 1 SAR + 15% VAT = 1.15 SAR = 115 halalas
       const amountCents = Math.round(credits * 1.15 * 100);
       const userId = req.user.id;
 
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
+
+      if (testMode) {
+        const purchase = await storage.createCreditPurchase({
+          userId,
+          credits,
+          amountCents,
+          currency: "SAR",
+          status: "pending",
+          paymobOrderId: `TEST-CREDITS-${Date.now()}`,
+          paymobTransactionId: null,
+        });
+        const amountSAR = Math.round(amountCents / 100);
+        return res.json({ testMode: true, testUrl: `/payment-test?type=credits&credits=${credits}&purchaseId=${purchase.id}&amount=${amountSAR}` });
+      }
 
       const merchantOrderId = `ARABYWEB-CREDITS-${userId}-${Date.now()}`;
       const { orderId, token: authToken } = await createPaymobOrder(amountCents, "SAR", merchantOrderId);
@@ -1118,6 +1149,46 @@ export async function registerRoutes(
     } catch (err: any) {
       console.error("Buy credits error:", err);
       res.status(500).json({ message: err.message || "Failed to initiate credit purchase" });
+    }
+  });
+
+  // ─── Test Payment Complete (test mode only) ───────────────────────────────
+  app.post("/api/payments/test-complete", isAuthenticated, async (req: any, res) => {
+    try {
+      const testMode = (await storage.getSetting("paymob_test_mode")) === "true";
+      if (!testMode) return res.status(403).json({ message: "Test mode not enabled" });
+
+      const { type, subId, purchaseId, credits, plan } = req.body;
+      const userId = req.user.id;
+
+      if (type === "plan" && subId && plan) {
+        const now = new Date();
+        const endDate = new Date(now);
+        endDate.setMonth(endDate.getMonth() + 1);
+        await storage.updateSubscription(Number(subId), {
+          status: "active",
+          startDate: now.toISOString(),
+          endDate: endDate.toISOString(),
+          paymobTransactionId: `TEST-TXN-${Date.now()}`,
+        });
+        const planCredits = plan === "business" ? 200 : 50;
+        await db.update(users).set({ plan, credits: planCredits } as any).where(eq(users.id, userId));
+        return res.json({ success: true, message: "تم تفعيل الاشتراك بنجاح" });
+      }
+
+      if (type === "credits" && purchaseId && credits) {
+        await storage.updateCreditPurchase(Number(purchaseId), {
+          status: "completed",
+          paymobTransactionId: `TEST-TXN-${Date.now()}`,
+        });
+        await db.execute(sql`UPDATE users SET credits = credits + ${Number(credits)} WHERE id = ${userId}`);
+        return res.json({ success: true, message: "تم إضافة الرصيد بنجاح" });
+      }
+
+      return res.status(400).json({ message: "Invalid request" });
+    } catch (err: any) {
+      console.error("Test complete error:", err);
+      res.status(500).json({ message: err.message || "Failed to complete test payment" });
     }
   });
 
@@ -1275,6 +1346,16 @@ export async function registerRoutes(
       res.json({ message: "Settings saved" });
     } catch (err) {
       res.status(500).json({ message: "Failed to save settings" });
+    }
+  });
+
+  app.post("/api/admin/settings/paymob/test-mode", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { enabled } = req.body;
+      await storage.setSetting("paymob_test_mode", enabled ? "true" : "false");
+      res.json({ testMode: enabled });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to update test mode" });
     }
   });
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -39,6 +40,7 @@ import {
 export default function BillingPage() {
   const { language } = useAuth();
   const lang = language;
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const qc = useQueryClient();
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
@@ -65,8 +67,10 @@ export default function BillingPage() {
       const res = await apiRequest("POST", "/api/payments/initiate", { plan, billingCycle });
       return res.json();
     },
-    onSuccess: (data: { iframeUrl: string }) => {
-      if (data.iframeUrl) {
+    onSuccess: (data: { iframeUrl?: string; testMode?: boolean; testUrl?: string }) => {
+      if (data.testMode && data.testUrl) {
+        setLocation(data.testUrl);
+      } else if (data.iframeUrl) {
         window.open(data.iframeUrl, "_blank");
       }
       setUpgradingPlan(null);
@@ -90,8 +94,12 @@ export default function BillingPage() {
       const res = await apiRequest("POST", "/api/payments/buy-credits", { credits });
       return res.json();
     },
-    onSuccess: (data: { iframeUrl: string }) => {
-      if (data.iframeUrl) window.open(data.iframeUrl, "_blank");
+    onSuccess: (data: { iframeUrl?: string; testMode?: boolean; testUrl?: string }) => {
+      if (data.testMode && data.testUrl) {
+        setLocation(data.testUrl);
+      } else if (data.iframeUrl) {
+        window.open(data.iframeUrl, "_blank");
+      }
       qc.invalidateQueries({ queryKey: ["/api/payments/credit-history"] });
       qc.invalidateQueries({ queryKey: ["/api/subscription"] });
     },
