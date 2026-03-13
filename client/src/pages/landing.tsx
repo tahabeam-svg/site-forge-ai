@@ -45,7 +45,7 @@ import {
   Lock,
   HeadphonesIcon,
 } from "lucide-react";
-import { SiGoogle, SiX } from "react-icons/si";
+import { SiGoogle, SiX, SiInstagram as SiBrandInstagram, SiFacebook as SiBrandFacebook } from "react-icons/si";
 import { SUPPORT_WHATSAPP_URL } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -664,98 +664,148 @@ export default function LandingPage() {
           </div>
 
           {/* ── Unified Pricing ── */}
-          <div id="pricing" className="pt-4">
-            <div className="text-center mb-8">
-              <h3 className="text-lg sm:text-2xl font-bold mb-2" data-testid="text-pricing-title">
-                {lang === "ar" ? "الأسعار — موقع + تسويق في باقة واحدة" : "Pricing — Website & Marketing in One Plan"}
+          <div id="pricing" className="pt-6">
+            <div className="text-center mb-10">
+              <Badge className="mb-3 px-3 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs">
+                {lang === "ar" ? "موقع + تسويق في باقة واحدة" : "Website + Marketing — One Subscription"}
+              </Badge>
+              <h3 className="text-2xl sm:text-3xl font-bold mb-3" data-testid="text-pricing-title">
+                {lang === "ar" ? "اختر الباقة المناسبة لك" : "Choose the Right Plan for You"}
               </h3>
-              <p className="text-muted-foreground text-sm">
-                {lang === "ar" ? "أسعار تنافسية تناسب جميع الأعمال السعودية" : "Competitive pricing for all Saudi businesses"}
+              <p className="text-muted-foreground text-sm sm:text-base max-w-xl mx-auto">
+                {lang === "ar" ? "أسعار شاملة تناسب جميع الأعمال السعودية — بدون رسوم خفية" : "All-inclusive pricing for Saudi businesses — no hidden fees"}
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
-              {[
-                {
-                  id: "free",
-                  name: lang === "ar" ? "مجاني" : "Free",
-                  price: lang === "ar" ? "مجاناً" : "Free",
-                  desc: lang === "ar" ? "للبدء والتجربة" : "Perfect for getting started",
-                  yearly: "",
-                  features: lang === "ar"
-                    ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "❌ لا وصول لأداة التسويق", "يتضمن شعار عربي ويب"]
-                    : ["1 website", "2 free AI edits/site", "❌ No AI marketing access", "ArabyWeb badge on site"],
-                  cta: lang === "ar" ? "ابدأ مجاناً" : "Get Started Free",
-                  popular: false,
-                },
-                {
-                  id: "pro",
-                  name: lang === "ar" ? "احترافي" : "Pro",
-                  price: lang === "ar" ? "49 ر.س" : "49 SAR",
-                  desc: lang === "ar" ? "بناء مواقع + تسويق AI مشمول" : "Website builder + AI marketing included",
-                  yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
-                  popular: true,
-                  features: lang === "ar"
-                    ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + تيك توك", "50 كريديت/شهر", "لوحة تحليلات · دعم 24/7", "بدون شعار عربي ويب"]
-                    : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — Instagram + TikTok", "50 credits/month", "Analytics · 24/7 support", "No ArabyWeb badge"],
-                  cta: lang === "ar" ? "اشترك الآن" : "Subscribe Now",
-                },
-                {
-                  id: "business",
-                  name: lang === "ar" ? "أعمال" : "Business",
-                  price: lang === "ar" ? "99 ر.س" : "99 SAR",
-                  desc: lang === "ar" ? "قوة كاملة — تسويق AI 3 منصات" : "Full power — AI marketing on 3 platforms",
-                  yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
-                  features: lang === "ar"
-                    ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + تيك توك + فيسبوك", "200 كريديت/شهر", "قوالب حصرية · دعم أولوية 24/7", "بدون شعار عربي ويب"]
-                    : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — Instagram + TikTok + Facebook", "200 credits/month", "Premium templates · Priority 24/7 support", "No ArabyWeb badge"],
-                  cta: lang === "ar" ? "اشترك الآن" : "Subscribe Now",
-                  popular: false,
-                },
-              ].map((plan, i) => (
-                <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
-                  <Card className={`p-6 h-full relative overflow-visible hover:shadow-lg transition-shadow ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 mt-4" : ""}`} data-testid={`card-plan-${i}`}>
-                    {plan.popular && (
-                      <Badge className="absolute -top-3 start-3 sm:start-auto sm:left-1/2 sm:-translate-x-1/2 px-3 bg-gradient-to-r from-emerald-500 to-teal-600 whitespace-nowrap">
-                        <Star className="w-3 h-3 me-1" />
-                        {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
-                      </Badge>
-                    )}
-                    <div className="text-center mb-6">
-                      <h4 className="text-lg font-semibold mb-1">{plan.name}</h4>
-                      <p className="text-xs text-muted-foreground mb-3">{plan.desc}</p>
-                      <div className="flex items-baseline justify-center gap-1">
-                        <span className="text-4xl font-bold">{plan.price}</span>
-                        {plan.id !== "free" && <span className="text-muted-foreground text-sm">{lang === "ar" ? "/شهرياً" : "/mo"}</span>}
-                      </div>
-                      {plan.id !== "free" && (
-                        <>
-                          <p className="text-xs text-muted-foreground mt-1">{plan.yearly}</p>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">{lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة ١٥٪" : "* Excl. 15% VAT"}</p>
-                        </>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-6 max-w-5xl mx-auto items-start">
+              {(() => {
+                type PlatformDef = { id: string; Icon: React.ComponentType<{ className?: string }>; bg: string; label: string };
+                const pricingPlans: Array<{
+                  id: string; name: string; price: string; desc: string; yearly: string;
+                  features: string[]; cta: string; popular: boolean; platforms?: PlatformDef[];
+                }> = [
+                  {
+                    id: "free",
+                    name: lang === "ar" ? "مجاني" : "Free",
+                    price: lang === "ar" ? "مجاناً" : "Free",
+                    desc: lang === "ar" ? "للبدء والتجربة" : "Perfect for getting started",
+                    yearly: "",
+                    features: lang === "ar"
+                      ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "❌ لا وصول لأداة التسويق", "يتضمن شعار عربي ويب"]
+                      : ["1 website", "2 free AI edits/site", "❌ No AI marketing access", "ArabyWeb badge on site"],
+                    cta: lang === "ar" ? "ابدأ مجاناً" : "Get Started Free",
+                    popular: false,
+                  },
+                  {
+                    id: "pro",
+                    name: lang === "ar" ? "احترافي" : "Pro",
+                    price: lang === "ar" ? "49 ر.س" : "49 SAR",
+                    desc: lang === "ar" ? "بناء مواقع + تسويق AI مشمول" : "Website builder + AI marketing included",
+                    yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
+                    popular: true,
+                    features: lang === "ar"
+                      ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — منصتان", "50 جلسة ذكاء/شهر", "لوحة تحليلات · دعم 24/7", "بدون شعار عربي ويب"]
+                      : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — 2 platforms", "50 AI sessions/month", "Analytics · 24/7 support", "No ArabyWeb badge"],
+                    platforms: [
+                      { id: "instagram", Icon: SiBrandInstagram, bg: "from-pink-500 to-purple-600", label: "Instagram" },
+                      { id: "twitter", Icon: SiX, bg: "from-gray-800 to-gray-950", label: "X / Twitter" },
+                    ],
+                    cta: lang === "ar" ? "اشترك الآن" : "Subscribe Now",
+                  },
+                  {
+                    id: "business",
+                    name: lang === "ar" ? "أعمال" : "Business",
+                    price: lang === "ar" ? "99 ر.س" : "99 SAR",
+                    desc: lang === "ar" ? "قوة كاملة — تسويق AI 3 منصات" : "Full power — AI marketing on 3 platforms",
+                    yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
+                    features: lang === "ar"
+                      ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — 3 منصات", "200 جلسة ذكاء/شهر", "قوالب حصرية · دعم أولوية 24/7", "بدون شعار عربي ويب"]
+                      : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — 3 platforms", "200 AI sessions/month", "Premium templates · Priority 24/7", "No ArabyWeb badge"],
+                    platforms: [
+                      { id: "instagram", Icon: SiBrandInstagram, bg: "from-pink-500 to-purple-600", label: "Instagram" },
+                      { id: "twitter", Icon: SiX, bg: "from-gray-800 to-gray-950", label: "X / Twitter" },
+                      { id: "facebook", Icon: SiBrandFacebook, bg: "from-blue-600 to-blue-700", label: "Facebook" },
+                    ],
+                    cta: lang === "ar" ? "اشترك الآن" : "Subscribe Now",
+                    popular: false,
+                  },
+                ];
+                return pricingPlans.map((plan, i) => (
+                  <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} className="flex">
+                    <Card className={`p-6 flex flex-col w-full relative overflow-visible transition-all duration-200 hover:shadow-xl ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 sm:-mt-4" : "hover:-translate-y-1"}`} data-testid={`card-plan-${i}`}>
+                      {plan.popular && (
+                        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md whitespace-nowrap text-xs">
+                          <Star className="w-3 h-3 me-1" />
+                          {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
+                        </Badge>
                       )}
-                    </div>
-                    <div className="space-y-2.5 mb-6">
-                      {plan.features.map((f, j) => (
-                        <div key={j} className="flex items-center gap-2 text-sm">
-                          {f.startsWith("❌") ? (
-                            <span className="w-4 h-4 shrink-0 text-center text-xs">❌</span>
-                          ) : (
-                            <Check className="w-4 h-4 text-emerald-500 shrink-0" />
-                          )}
-                          <span>{f.replace("❌ ", "")}</span>
+                      <div className="text-center mb-5 mt-2">
+                        <h4 className="text-xl font-bold mb-1">{plan.name}</h4>
+                        <p className="text-xs text-muted-foreground mb-4 leading-relaxed">{plan.desc}</p>
+                        <div className="flex items-baseline justify-center gap-1">
+                          <span className={`font-extrabold ${plan.id === "free" ? "text-3xl" : "text-4xl"}`}>{plan.price}</span>
+                          {plan.id !== "free" && <span className="text-muted-foreground text-sm">{lang === "ar" ? "/شهرياً" : "/mo"}</span>}
                         </div>
-                      ))}
-                    </div>
-                    <Button
-                      variant={plan.popular ? "default" : "outline"}
-                      className={`w-full ${plan.popular ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" : ""}`}
-                      onClick={() => handlePlanCTA(plan.id)}
-                      data-testid={`button-plan-${i}`}
-                    >
-                      {plan.cta}
-                    </Button>
-                  </Card>
-                </motion.div>
+                        {plan.id !== "free" && (
+                          <div className="mt-2 space-y-0.5">
+                            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{plan.yearly}</p>
+                            <p className="text-[10px] text-muted-foreground">{lang === "ar" ? "* لا تشمل ضريبة القيمة المضافة ١٥٪" : "* Excl. 15% VAT"}</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="border-t mb-5" />
+                      <div className="space-y-3 mb-6 flex-1">
+                        {plan.features.map((f, j) => {
+                          const isMarketing = f.startsWith("🚀") && plan.platforms && plan.platforms.length > 0;
+                          const isBad = f.startsWith("❌");
+                          return (
+                            <div key={j} className="flex items-start gap-2.5 text-sm">
+                              {isBad ? (
+                                <span className="w-4 h-4 shrink-0 mt-0.5 text-xs flex items-center justify-center text-red-500 font-bold">✕</span>
+                              ) : (
+                                <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                              )}
+                              {isMarketing ? (
+                                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                                  <span className="font-medium">{lang === "ar" ? "تسويق AI" : "AI Marketing"}</span>
+                                  <div className="flex items-center gap-1">
+                                    {plan.platforms!.map((p) => (
+                                      <div key={p.id} title={p.label} className={`w-[22px] h-[22px] rounded-full bg-gradient-to-br ${p.bg} flex items-center justify-center shadow-sm`}>
+                                        <p.Icon className="w-3 h-3 text-white" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span className={isBad ? "text-muted-foreground" : ""}>{f.replace("❌ ", "")}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        variant={plan.popular ? "default" : "outline"}
+                        size="lg"
+                        className={`w-full font-semibold ${plan.popular ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md" : ""}`}
+                        onClick={() => handlePlanCTA(plan.id)}
+                        data-testid={`button-plan-${i}`}
+                      >
+                        {plan.cta}
+                      </Button>
+                    </Card>
+                  </motion.div>
+                ));
+              })()}
+            </div>
+            <div className="flex items-center justify-center gap-5 sm:gap-8 mt-8 flex-wrap">
+              {[
+                { icon: "🔒", text: lang === "ar" ? "دفع آمن — Paymob" : "Secure payment — Paymob" },
+                { icon: "💳", text: lang === "ar" ? "بدون رسوم خفية" : "No hidden fees" },
+                { icon: "💬", text: lang === "ar" ? "دعم فني 24/7" : "24/7 Support" },
+              ].map((g, i) => (
+                <div key={i} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span>{g.icon}</span>
+                  <span>{g.text}</span>
+                </div>
               ))}
             </div>
           </div>

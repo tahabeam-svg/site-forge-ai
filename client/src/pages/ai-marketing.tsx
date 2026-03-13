@@ -42,9 +42,9 @@ interface SocialContent {
 
 const platforms = [
   { id: "instagram", label: "Instagram", labelAr: "إنستغرام", icon: Instagram, color: "from-pink-500 to-purple-600" },
-  { id: "tiktok", label: "TikTok", labelAr: "تيك توك", icon: SiTiktok, color: "from-gray-900 to-gray-800" },
-  { id: "facebook", label: "Facebook", labelAr: "فيسبوك", icon: Facebook, color: "from-blue-600 to-blue-700" },
   { id: "twitter", label: "X / Twitter", labelAr: "إكس / تويتر", icon: Twitter, color: "from-gray-700 to-gray-900" },
+  { id: "facebook", label: "Facebook", labelAr: "فيسبوك", icon: Facebook, color: "from-blue-600 to-blue-700" },
+  { id: "tiktok", label: "TikTok", labelAr: "تيك توك", icon: SiTiktok, color: "from-gray-900 to-gray-800" },
   { id: "linkedin", label: "LinkedIn", labelAr: "لينكدإن", icon: Linkedin, color: "from-blue-500 to-blue-600" },
   { id: "youtube", label: "YouTube", labelAr: "يوتيوب", icon: Youtube, color: "from-red-500 to-red-700" },
 ];
@@ -52,8 +52,8 @@ const platforms = [
 // Platforms allowed per plan (mirrors server/routes.ts MARKETING_PLATFORMS)
 const ALLOWED_PLATFORMS: Record<string, string[]> = {
   free: [],
-  pro: ["instagram", "tiktok"],
-  business: ["instagram", "tiktok", "facebook"],
+  pro: ["instagram", "twitter"],
+  business: ["instagram", "twitter", "facebook"],
 };
 
 const tones = [
@@ -273,11 +273,11 @@ export default function AIMarketingPage() {
                   <p className="text-xs text-muted-foreground mt-2">
                     {lang === "ar"
                       ? planName === "pro"
-                        ? "خطتك: Instagram + TikTok — قم بالترقية للأعمال لإضافة Facebook"
-                        : "خطتك: Instagram + TikTok + Facebook"
+                        ? "خطتك: Instagram + X/Twitter — قم بالترقية للأعمال لإضافة Facebook"
+                        : "خطتك: Instagram + X/Twitter + Facebook"
                       : planName === "pro"
-                        ? "Your plan: Instagram + TikTok — upgrade to Business to add Facebook"
-                        : "Your plan: Instagram + TikTok + Facebook"
+                        ? "Your plan: Instagram + X/Twitter — upgrade to Business to add Facebook"
+                        : "Your plan: Instagram + X/Twitter + Facebook"
                     }
                   </p>
                 )}

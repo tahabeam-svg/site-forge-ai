@@ -1133,8 +1133,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
   // Allowed platforms per plan
   const MARKETING_PLATFORMS: Record<string, string[]> = {
     free: [],
-    pro: ["instagram", "tiktok"],
-    business: ["instagram", "tiktok", "facebook"],
+    pro: ["instagram", "twitter"],
+    business: ["instagram", "twitter", "facebook"],
   };
 
   app.post("/api/marketing/generate", isAuthenticated, async (req: any, res) => {

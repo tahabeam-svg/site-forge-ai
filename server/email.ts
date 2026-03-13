@@ -464,10 +464,10 @@ export async function sendSubscriptionStartedEmail(to: string, plan: string, end
          ${p(`تم تفعيل خطة <strong>${planName(plan, true)}</strong> بنجاح.`)}
          ${statsTable([
            ["الخطة", planName(plan, true)],
-           ["الكريديت المضاف", `${credits} كريديت ذكاء`],
+           ["جلسات الذكاء المضافة", `${credits} جلسة ذكاء`],
            ["الاشتراك يجدد في", endStr],
          ])}
-         ${infoBox(`✅ مشمول في خطتك: بناء المواقع + <strong>التسويق بالذكاء الاصطناعي</strong> (إنستغرام، تيك توك، تويتر، لينكدإن وأكثر). كل توليد محتوى يستهلك كريديت واحداً من رصيدك.`, "#10b981")}
+         ${infoBox(`✅ مشمول في خطتك: بناء المواقع + <strong>التسويق بالذكاء الاصطناعي</strong> (إنستغرام، تيك توك، تويتر، لينكدإن وأكثر). كل توليد محتوى يستهلك جلسة ذكاء واحدة من رصيدك.`, "#10b981")}
          ${btn("https://arabyweb.net/dashboard", "ابدأ الاستخدام")}`
       : `${h1(`🎉 Your subscription is active!`)}
          ${p(`Your <strong>${planName(plan, false)}</strong> plan has been successfully activated.`)}
