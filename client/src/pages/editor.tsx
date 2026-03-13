@@ -503,12 +503,12 @@ export default function EditorPage() {
       />
 
       {/* ─── Mobile Header ─── */}
-      <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12 border-t-2 border-t-violet-500">
+      <header className="md:hidden flex items-center gap-2 px-3 py-2 border-b bg-background shrink-0 h-12">
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8" onClick={() => navigate("/dashboard")} data-testid="button-back">
           {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
         </Button>
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
-          <span className="shrink-0 w-5 h-5 rounded bg-violet-600 flex items-center justify-center text-[9px] font-black text-white leading-none">AW</span>
+          <span className="shrink-0 w-5 h-5 rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[8px] font-black text-white leading-none">AW</span>
           <h1 className="text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
         </div>
         {project.generatedHtml && (
@@ -618,7 +618,7 @@ export default function EditorPage() {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        <div className={`w-full md:w-[540px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-[480px] lg:w-[520px] shrink-0 border-e bg-background flex flex-col overflow-hidden ${mobileView === "preview" ? "hidden md:flex" : "flex"}`}>
           {!project.generatedHtml ? (
             <div className="p-4 flex flex-col items-center justify-center h-full">
               <Card className="p-6 w-full max-w-sm">
@@ -677,10 +677,10 @@ export default function EditorPage() {
           ) : (
             <>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden min-h-0">
-              <TabsList className="hidden md:grid mx-3 mt-3 shrink-0 grid-cols-4 h-auto p-1 gap-0.5">
+              <TabsList className="hidden md:grid mx-3 mt-3 shrink-0 grid-cols-4 h-auto p-1 gap-0.5 rounded-xl">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="chat" className="text-xs gap-1 py-2 data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-chat">
+                    <TabsTrigger value="chat" className="text-xs gap-1 py-2 rounded-lg data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-chat">
                       <MessageSquare className="w-3.5 h-3.5" />
                       {lang === "ar" ? "محادثة" : "Chat"}
                     </TabsTrigger>
@@ -689,7 +689,7 @@ export default function EditorPage() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="sections" className="text-xs gap-1 py-2 data-[state=active]:bg-emerald-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-sections">
+                    <TabsTrigger value="sections" className="text-xs gap-1 py-2 rounded-lg data-[state=active]:bg-teal-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-sections">
                       <Layout className="w-3.5 h-3.5" />
                       {lang === "ar" ? "أقسام" : "Sections"}
                     </TabsTrigger>
@@ -698,7 +698,7 @@ export default function EditorPage() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="media" className="text-xs gap-1 py-2 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-media">
+                    <TabsTrigger value="media" className="text-xs gap-1 py-2 rounded-lg data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-media">
                       <Image className="w-3.5 h-3.5" />
                       {lang === "ar" ? "وسائط" : "Media"}
                     </TabsTrigger>
@@ -707,7 +707,7 @@ export default function EditorPage() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="style" className="text-xs gap-1 py-2 data-[state=active]:bg-rose-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-style">
+                    <TabsTrigger value="style" className="text-xs gap-1 py-2 rounded-lg data-[state=active]:bg-violet-500 data-[state=active]:text-white data-[state=active]:shadow-sm" data-testid="tab-style">
                       <Palette className="w-3.5 h-3.5" />
                       {lang === "ar" ? "تنسيق" : "Style"}
                     </TabsTrigger>

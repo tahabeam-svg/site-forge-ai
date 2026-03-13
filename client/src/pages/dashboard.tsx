@@ -47,7 +47,18 @@ import {
   Check,
   Crown,
   LayoutTemplate,
+  MoreHorizontal,
+  Globe2,
+  Clock,
+  TrendingUp,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const INSTANT_STEPS = {
   ar: [
@@ -262,36 +273,81 @@ export default function DashboardPage() {
 
   const instantSteps = INSTANT_STEPS[lang as "ar" | "en"] || INSTANT_STEPS.ar;
 
+  const publishedCount = projects.filter(p => p.status === "published").length;
+  const generatedCount = projects.filter(p => p.generatedHtml).length;
+
   return (
     <DashboardLayout>
-      <div className="p-6 lg:p-8 max-w-7xl mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+      <div className="p-5 lg:p-7 max-w-7xl mx-auto">
+
+        {/* ── Page Header ── */}
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold" data-testid="text-dashboard-title">
-              {t("projects", lang)}
+            <h1 className="text-xl font-bold tracking-tight" data-testid="text-dashboard-title">
+              {lang === "ar" ? "مشاريعي" : "My Projects"}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {lang === "ar"
-                ? `${projects.length} مشروع`
-                : `${projects.length} project${projects.length !== 1 ? "s" : ""}`}
+                ? `${projects.length} مشروع — ${publishedCount} منشور`
+                : `${projects.length} project${projects.length !== 1 ? "s" : ""} — ${publishedCount} published`}
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              className="gap-2 border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10"
+              size="sm"
+              className="gap-1.5 h-8 text-xs border-violet-400/40 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10"
               onClick={() => setInstantDialogOpen(true)}
               data-testid="button-instant-generate"
             >
-              <Zap className="w-4 h-4" />
-              {lang === "ar" ? "إنشاء فوري" : "Instant Generate"}
+              <Zap className="w-3.5 h-3.5" />
+              {lang === "ar" ? "إنشاء فوري" : "Instant AI"}
             </Button>
-            <Button onClick={() => setShowNewProject(true)} data-testid="button-new-project">
-              <Plus className="w-4 h-4 me-2" />
+            <Button size="sm" className="gap-1.5 h-8 text-xs" onClick={() => setShowNewProject(true)} data-testid="button-new-project">
+              <Plus className="w-3.5 h-3.5" />
               {t("newProject", lang)}
             </Button>
           </div>
         </div>
+
+        {/* ── Stats Row ── */}
+        {projects.length > 0 && (
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              {
+                icon: FolderOpen,
+                value: projects.length,
+                label: lang === "ar" ? "إجمالي المشاريع" : "Total Projects",
+                color: "text-blue-500",
+                bg: "bg-blue-500/10",
+              },
+              {
+                icon: Globe2,
+                value: publishedCount,
+                label: lang === "ar" ? "المنشورة" : "Published",
+                color: "text-emerald-500",
+                bg: "bg-emerald-500/10",
+              },
+              {
+                icon: TrendingUp,
+                value: generatedCount,
+                label: lang === "ar" ? "جاهزة" : "Ready",
+                color: "text-violet-500",
+                bg: "bg-violet-500/10",
+              },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-xl border bg-card p-3 flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center shrink-0`}>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
+                <div>
+                  <div className="text-lg font-bold leading-tight">{stat.value}</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight">{stat.label}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
@@ -301,143 +357,212 @@ export default function DashboardPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
+            className="flex flex-col items-center justify-center py-20 text-center"
           >
-            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
-              <FolderOpen className="w-8 h-8 text-muted-foreground" />
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500/15 to-teal-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-5">
+              <Sparkles className="w-9 h-9 text-emerald-500/60" />
             </div>
             <h3 className="text-lg font-semibold mb-2" data-testid="text-no-projects">
               {t("noProjects", lang)}
             </h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            <p className="text-muted-foreground mb-7 max-w-sm text-sm leading-relaxed">
               {t("noProjectsDesc", lang)}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Button
-                className="gap-2 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90"
+                className="gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:opacity-90 shadow-sm shadow-emerald-500/25"
                 onClick={() => setInstantDialogOpen(true)}
                 data-testid="button-instant-first"
               >
                 <Zap className="w-4 h-4" />
-                {lang === "ar" ? "إنشاء موقع فوراً" : "Generate Instantly"}
+                {lang === "ar" ? "أنشئ موقعاً فوراً ✨" : "Generate Site Instantly ✨"}
               </Button>
-              <Button onClick={() => setShowNewProject(true)} data-testid="button-create-first">
-                <Sparkles className="w-4 h-4 me-2" />
+              <Button variant="outline" onClick={() => setShowNewProject(true)} data-testid="button-create-first">
+                <Plus className="w-4 h-4 me-2" />
                 {t("startFromScratch", lang)}
               </Button>
-              <Button variant="outline" onClick={() => navigate("/templates")} data-testid="button-browse-templates">
+              <Button variant="ghost" onClick={() => navigate("/templates")} data-testid="button-browse-templates">
+                <LayoutTemplate className="w-4 h-4 me-2" />
                 {t("useTemplate", lang)}
               </Button>
             </div>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <AnimatePresence>
               {projects.map((project, i) => (
                 <motion.div
                   key={project.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: i * 0.05 }}
+                  transition={{ delay: i * 0.04 }}
                 >
-                  <Card className="hover-elevate group" data-testid={`card-project-${project.id}`}>
-                    <div className="relative h-40 bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-pink-500/10 rounded-t-lg overflow-hidden">
+                  <Card
+                    className="group overflow-hidden border bg-card card-hover"
+                    data-testid={`card-project-${project.id}`}
+                  >
+                    {/* Thumbnail */}
+                    <div
+                      className="relative h-36 bg-gradient-to-br from-emerald-500/8 via-teal-500/8 to-cyan-500/8 overflow-hidden cursor-pointer"
+                      onClick={() => navigate(`/editor/${project.id}`)}
+                    >
                       {project.generatedHtml ? (
-                        <div className="absolute inset-0 p-2 overflow-hidden pointer-events-none">
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
                           <iframe
-                            srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.4);transform-origin:top left;width:250%;height:250%}${project.generatedCss||""}</style></head><body>${(project.generatedHtml||"").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style id="aw-[^"]*">[\s\S]*?<\/style>/gi,"")}</body></html>`}
-                            className="w-full h-full rounded bg-white border-0"
+                            srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.38);transform-origin:top left;width:263%;height:263%;overflow:hidden}${project.generatedCss||""}</style></head><body>${(project.generatedHtml||"").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style id="aw-[^"]*">[\s\S]*?<\/style>/gi,"")}</body></html>`}
+                            className="w-full h-full bg-white border-0"
                             sandbox="allow-same-origin"
-                            title="Project thumbnail"
+                            title="Project preview"
                           />
                         </div>
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Sparkles className="w-10 h-10 text-muted-foreground/30" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+                          <Sparkles className="w-8 h-8 text-emerald-400/40" />
+                          <span className="text-xs text-muted-foreground/50">
+                            {lang === "ar" ? "لم يُنشأ بعد" : "Not generated yet"}
+                          </span>
                         </div>
                       )}
-                      <div className="absolute top-3 end-3">
-                        <Badge variant={statusColor(project.status)} data-testid={`badge-status-${project.id}`}>
+                      {/* Hover overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                        <div className="flex gap-2">
+                          <div className="bg-white text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+                            {lang === "ar" ? "تعديل" : "Edit"}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Status badge */}
+                      <div className="absolute top-2.5 start-2.5">
+                        <Badge
+                          variant={statusColor(project.status)}
+                          className="text-[10px] h-5 px-1.5 shadow-sm"
+                          data-testid={`badge-status-${project.id}`}
+                        >
+                          {project.status === "published" && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-current me-1 animate-pulse inline-block" />
+                          )}
                           {statusLabel(project.status)}
                         </Badge>
                       </div>
                     </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-1 truncate" data-testid={`text-project-name-${project.id}`}>
-                        {project.name}
-                      </h3>
-                      {project.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {project.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 flex-wrap">
+
+                    {/* Card body */}
+                    <CardContent className="p-3.5">
+                      <div className="flex items-start justify-between gap-2 mb-2.5">
+                        <div className="min-w-0">
+                          <h3
+                            className="font-semibold text-sm truncate cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                            onClick={() => navigate(`/editor/${project.id}`)}
+                            data-testid={`text-project-name-${project.id}`}
+                          >
+                            {project.name}
+                          </h3>
+                          {project.description && (
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                              {project.description}
+                            </p>
+                          )}
+                        </div>
+                        {/* Overflow menu */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+                              data-testid={`button-menu-${project.id}`}
+                            >
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align={lang === "ar" ? "start" : "end"} className="w-44">
+                            <DropdownMenuItem
+                              onClick={() => navigate(`/editor/${project.id}`)}
+                              data-testid={`menu-edit-${project.id}`}
+                            >
+                              <Pencil className="w-3.5 h-3.5 me-2" />
+                              {t("edit", lang)}
+                            </DropdownMenuItem>
+                            {project.generatedHtml && (
+                              <DropdownMenuItem
+                                onClick={() => navigate(`/preview/${project.id}`)}
+                                data-testid={`menu-preview-${project.id}`}
+                              >
+                                <Eye className="w-3.5 h-3.5 me-2" />
+                                {t("preview", lang)}
+                              </DropdownMenuItem>
+                            )}
+                            {project.generatedHtml && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => window.open(`/api/projects/${project.id}/export?type=static`, "_blank")}
+                                  data-testid={`menu-download-${project.id}`}
+                                >
+                                  <Download className="w-3.5 h-3.5 me-2" />
+                                  {lang === "ar" ? "تحميل HTML" : "Download HTML"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => navigate(`/deploy-guide/${project.id}`)}
+                                  data-testid={`menu-deploy-${project.id}`}
+                                >
+                                  <Upload className="w-3.5 h-3.5 me-2" />
+                                  {lang === "ar" ? "انشر موقعك" : "Deploy Guide"}
+                                </DropdownMenuItem>
+                              </>
+                            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => setDeleteId(project.id)}
+                              className="text-destructive focus:text-destructive"
+                              data-testid={`menu-delete-${project.id}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5 me-2" />
+                              {t("delete", lang)}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Primary actions */}
+                      <div className="flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
+                          className="flex-1 h-8 text-xs"
                           onClick={() => navigate(`/editor/${project.id}`)}
                           data-testid={`button-edit-${project.id}`}
                         >
-                          <Pencil className="w-3.5 h-3.5 me-1" />
+                          <Pencil className="w-3 h-3 me-1" />
                           {t("edit", lang)}
                         </Button>
-                        {project.generatedHtml && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/preview/${project.id}`)}
-                            data-testid={`button-preview-${project.id}`}
-                          >
-                            <Eye className="w-3.5 h-3.5 me-1" />
-                            {t("preview", lang)}
-                          </Button>
-                        )}
-                        {project.generatedHtml && project.status !== "published" && (
+                        {project.generatedHtml && project.status !== "published" ? (
                           <Button
                             size="sm"
+                            className="flex-1 h-8 text-xs bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 shadow-sm shadow-emerald-500/20"
                             onClick={() => publishMutation.mutate(project.id)}
                             disabled={publishMutation.isPending}
                             data-testid={`button-publish-${project.id}`}
                           >
-                            <Rocket className="w-3.5 h-3.5 me-1" />
+                            {publishMutation.isPending
+                              ? <Loader2 className="w-3 h-3 me-1 animate-spin" />
+                              : <Rocket className="w-3 h-3 me-1" />
+                            }
                             {t("publish", lang)}
                           </Button>
-                        )}
-                        {project.generatedHtml && (
+                        ) : project.generatedHtml ? (
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              window.open(`/api/projects/${project.id}/export?type=static`, "_blank");
-                            }}
-                            data-testid={`button-download-${project.id}`}
+                            className="flex-1 h-8 text-xs"
+                            onClick={() => navigate(`/preview/${project.id}`)}
+                            data-testid={`button-preview-${project.id}`}
                           >
-                            <Download className="w-3.5 h-3.5 me-1" />
-                            {lang === "ar" ? "تحميل" : "Download"}
+                            <Eye className="w-3 h-3 me-1" />
+                            {t("preview", lang)}
                           </Button>
-                        )}
-                        {project.generatedHtml && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/deploy-guide/${project.id}`)}
-                            className="border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
-                            data-testid={`button-deploy-guide-${project.id}`}
-                          >
-                            <Upload className="w-3.5 h-3.5 me-1" />
-                            {lang === "ar" ? "انشر موقعك" : "Deploy"}
-                          </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteId(project.id)}
-                          className="ms-auto text-muted-foreground"
-                          data-testid={`button-delete-${project.id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                        ) : null}
                       </div>
                     </CardContent>
                   </Card>

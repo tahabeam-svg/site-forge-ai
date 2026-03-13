@@ -41,7 +41,14 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Publish system
 - Hidden admin panel (accessible only via direct URL /admin or /secure-admin, not in sidebar)
 - Marketing services section on landing page with tiered pricing
-- Green/teal brand color scheme
+- Emerald/teal brand color system (--primary: 160 84% 39%) — consistent throughout dashboard, sidebar, buttons
+- Dashboard project cards: dropdown menu for secondary actions (Download, Deploy, Delete), clean 2-button primary layout (Edit + Publish/Preview)
+- Dashboard stats bar: Total / Published / Ready counters with color-coded icons
+- Sidebar footer: live credits progress bar with plan badge (Free/Pro/Business), user avatar + email
+- Real shadows in CSS (not transparent zeros) — light mode: hsl shadows, dark mode: dark blue shadows
+- Editor panel width: 480px/520px (responsive) instead of fixed 540px
+- Editor tabs: all rounded-lg, Chat=emerald, Sections=teal, Media=amber, Style=violet
+- Mobile editor header: no border-t-violet stripe, AW badge in emerald gradient
 
 ## File Structure
 
