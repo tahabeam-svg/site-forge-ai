@@ -92,17 +92,26 @@ export default function FAQPage() {
     {
       category: "نظام الرصيد (الكريدت)",
       items: [
-        { q: "ما هو نظام الرصيد؟", a: "كل عملية ذكاء اصطناعي (مثل إنشاء موقع أو تعديله أو إنشاء محتوى تسويقي) تستهلك رصيداً واحداً." },
+        { q: "ما هو نظام الرصيد؟", a: "كل عملية ذكاء اصطناعي (مثل إنشاء موقع أو محتوى تسويقي) تستهلك رصيداً واحداً. التعديلات المجانية لكل موقع مدرجة ضمن خطتك، وأي تعديل إضافي يخصم كريدت واحد." },
         { q: "ماذا يحدث عند نفاد الرصيد؟", a: "عند نفاد رصيدك، يمكنك الانتظار حتى التجديد الشهري أو ترقية خطتك للحصول على أرصدة أكثر." },
         { q: "هل تُرحّل الأرصدة غير المستخدمة؟", a: "لا، الأرصدة غير المستخدمة لا تُرحّل إلى الشهر التالي. يتم تجديد رصيدك بالكامل في بداية كل دورة فوترة." },
       ],
     },
     {
+      category: "التعديلات على المواقع",
+      items: [
+        { q: "كم عدد التعديلات المجانية لكل موقع؟", a: "لكل موقع حد مجاني للتعديلات حسب الخطة:\n• الخطة المجانية: تعديلان (2) مجانيان لكل موقع\n• الخطة الاحترافية: 5 تعديلات مجانية لكل موقع\n• خطة الأعمال: 10 تعديلات مجانية لكل موقع\nبعد الاستنفاد يُخصم كريدت واحد لكل تعديل إضافي." },
+        { q: "هل التعديلات الإضافية مدفوعة؟", a: "نعم، بعد استنفاد التعديلات المجانية لكل موقع، يتم خصم كريدت واحد من رصيدك لكل تعديل إضافي. إذا لم يكن لديك رصيد كافٍ ستحتاج لشراء رصيد أو ترقية خطتك." },
+        { q: "هل التعديلات محسوبة لكل موقع أم للحساب كله؟", a: "التعديلات المجانية محسوبة لكل موقع على حدة. كل موقع جديد تنشئه يبدأ بعدد التعديلات المجانية كاملاً حسب خطتك." },
+      ],
+    },
+    {
       category: "المواقع والنشر",
       items: [
+        { q: "ما اللغات التي يدعمها منشئ المواقع؟", a: "يدعم منشئ المواقع 7 لغات: العربية 🇸🇦، الإنجليزية 🇬🇧، الفرنسية 🇫🇷، التركية 🇹🇷، الروسية 🇷🇺، الألمانية 🇩🇪، والصينية 🇨🇳." },
         { q: "هل يمكنني ربط دومين خاص بموقعي؟", a: "نعم، يمكنك ربط نطاق (دومين) خاص بموقعك من خلال إعدادات النشر." },
         { q: "هل المواقع متجاوبة مع الجوال؟", a: "نعم، جميع المواقع التي تُنشأ عبر المنصة متجاوبة تلقائياً وتعمل بشكل مثالي على جميع أحجام الشاشات." },
-        { q: "هل يمكنني تعديل الموقع بعد إنشائه؟", a: "نعم، يمكنك تعديل موقعك في أي وقت باستخدام المحرر المدمج أو عبر أوامر الذكاء الاصطناعي." },
+        { q: "هل يمكنني تعديل الموقع بعد إنشائه؟", a: "نعم، يمكنك تعديل موقعك في أي وقت باستخدام المحرر المدمج أو عبر أوامر الذكاء الاصطناعي. لكل موقع حد مجاني للتعديلات حسب خطتك." },
         { q: "هل يمكنني نشر موقعي على GitHub؟", a: "نعم، المنصة تدعم النشر المباشر على GitHub Pages لاستضافة مجانية وسريعة." },
       ],
     },
@@ -139,17 +148,26 @@ export default function FAQPage() {
     {
       category: "Credit System",
       items: [
-        { q: "How does the credit system work?", a: "Each AI operation (such as creating a website, editing it, or generating marketing content) consumes one credit." },
+        { q: "How does the credit system work?", a: "Each AI operation (creating a website or marketing content) consumes one credit. Free edits per project are included in your plan; extra edits beyond the limit cost 1 credit each." },
         { q: "What happens when I run out of credits?", a: "When your credits run out, you can wait for the monthly renewal or upgrade your plan for more credits." },
         { q: "Do unused credits roll over?", a: "No, unused credits do not roll over to the next month. Your credits are fully renewed at the start of each billing cycle." },
       ],
     },
     {
+      category: "Website Edits",
+      items: [
+        { q: "How many free edits does each website get?", a: "Each website has a free-edit limit based on your plan:\n• Free Plan: 2 free edits per site\n• Pro Plan: 5 free edits per site\n• Business Plan: 10 free edits per site\nAfter the free edits are used, each additional edit costs 1 credit." },
+        { q: "Are extra edits paid?", a: "Yes, once the free edits for a site are used up, each additional edit deducts 1 credit from your balance. If you're low on credits, you can purchase more or upgrade your plan." },
+        { q: "Are edit limits per site or per account?", a: "Edit limits are per site. Every new site you create starts fresh with the full number of free edits for your plan." },
+      ],
+    },
+    {
       category: "Websites & Publishing",
       items: [
+        { q: "What languages does the website builder support?", a: "The builder supports 7 languages: Arabic 🇸🇦, English 🇬🇧, French 🇫🇷, Turkish 🇹🇷, Russian 🇷🇺, German 🇩🇪, and Chinese 🇨🇳." },
         { q: "Can I connect a custom domain?", a: "Yes, you can connect a custom domain to your website through the publishing settings." },
         { q: "Are the websites mobile-responsive?", a: "Yes, all websites created through the platform are automatically responsive and work perfectly on all screen sizes." },
-        { q: "Can I edit my website after creating it?", a: "Yes, you can edit your website at any time using the built-in editor or through AI commands." },
+        { q: "Can I edit my website after creating it?", a: "Yes, you can edit your website at any time using the built-in editor or through AI commands. Each site has a free-edit limit based on your plan." },
         { q: "Can I publish my site to GitHub?", a: "Yes, the platform supports direct publishing to GitHub Pages for free and fast hosting." },
       ],
     },

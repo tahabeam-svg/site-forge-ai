@@ -65,8 +65,12 @@ const upload = multer({
   },
 });
 
-// Free plan: max user messages per project before upgrade wall
-const FREE_MSG_LIMIT = 8;
+// Per-plan free edit limits per project (after which credits are consumed)
+const PLAN_EDIT_LIMITS: Record<string, number> = {
+  free: 2,
+  pro: 5,
+  business: 10,
+};
 
 // Free plan: max projects a free user can create
 const FREE_PLAN_MAX_PROJECTS = 3;
@@ -94,9 +98,10 @@ function checkChatbotRateLimit(ip: string): boolean {
 }
 
 // Helper: fetch user plan info in one place (with subscription expiry check)
-async function getUserPlanInfo(userId: string): Promise<{ isFreePlan: boolean; isUserAdmin: boolean }> {
+async function getUserPlanInfo(userId: string): Promise<{ isFreePlan: boolean; isUserAdmin: boolean; planName: string; credits: number }> {
   const [user] = await db.select().from(users).where(eq(users.id, userId));
   const isUserAdmin = user?.isAdmin === true;
+  const credits = user?.credits ?? 0;
 
   if (user?.plan && user.plan !== "free") {
     const now = new Date();
@@ -106,12 +111,13 @@ async function getUserPlanInfo(userId: string): Promise<{ isFreePlan: boolean; i
       .limit(1);
     if (!activeSub || (activeSub.endDate && new Date(activeSub.endDate) < now)) {
       await db.update(users).set({ plan: "free", updatedAt: new Date() }).where(eq(users.id, userId));
-      return { isFreePlan: true, isUserAdmin };
+      return { isFreePlan: true, isUserAdmin, planName: "free", credits };
     }
   }
 
-  const isFreePlan = !user?.plan || user.plan === "free";
-  return { isFreePlan, isUserAdmin };
+  const planName = user?.plan || "free";
+  const isFreePlan = planName === "free";
+  return { isFreePlan, isUserAdmin, planName, credits };
 }
 
 const OVERFLOW_FIX_CSS = `<style id="aw-overflow-fix">html,body{overflow-x:hidden!important;max-width:100%!important}*,*::before,*::after{box-sizing:border-box}img,video,embed,object,iframe{max-width:100%!important;height:auto}#aw-nav{position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;z-index:9999!important;}@media(max-width:768px){#aw-menu-btn{display:block!important}.aw-nav-links{display:none!important}}</style>`;
@@ -377,6 +383,7 @@ export async function registerRoutes(
       if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
 
       const language = req.body.language || "ar";
+      const websiteLanguage: string = req.body.websiteLanguage || "ar";
       const description = req.body.description || project.description || project.name;
       const logoDataUrl: string | undefined = req.body.logoDataUrl;
 
@@ -431,7 +438,9 @@ export async function registerRoutes(
         colorPalette: generated.colorPalette,
         sections: generated.sections,
         status: "generated",
-      });
+        editCount: 0,
+        websiteLanguage,
+      } as any);
 
       if (!isFreePlan2 && !isUserAdmin2) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
@@ -458,20 +467,42 @@ export async function registerRoutes(
       const { command, language, imageDataUrl } = parsed.data;
       const lang = language || "ar";
 
-      // Check free plan message limit
-      const { isFreePlan: isFreePlanEdit, isUserAdmin: isAdminEdit } = await getUserPlanInfo(userId);
+      // ─── Plan-based edit limits with credit deduction ───────────────────────
+      const { isUserAdmin: isAdminEdit, planName: planNameEdit, credits: userCreditsEdit } = await getUserPlanInfo(userId);
+      const isFreePlanEdit = planNameEdit === "free";
+      const editLimit = PLAN_EDIT_LIMITS[planNameEdit] ?? PLAN_EDIT_LIMITS.free;
+      const currentEditCount = (project as any).editCount ?? 0;
+      const isOverLimit = currentEditCount >= editLimit;
 
-      if (isFreePlanEdit && !isAdminEdit) {
-        const existingMessages = await storage.getChatMessages(project.id);
-        const userMsgCount = existingMessages.filter((m) => m.role === "user").length;
-        if (userMsgCount >= FREE_MSG_LIMIT) {
+      if (!isAdminEdit && isOverLimit) {
+        // Over the free edits for this plan — need credits
+        if (userCreditsEdit <= 0) {
+          const limitMsgs: Record<string, Record<string, string>> = {
+            free: {
+              ar: `وصلت للحد المجاني (${editLimit} تعديلات) لهذا الموقع. اشحن رصيدك أو اشترك للحصول على تعديلات إضافية.`,
+              en: `You've used your ${editLimit} free edits for this website. Top up credits or upgrade to continue editing.`,
+            },
+            pro: {
+              ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطتك الاحترافية. كل تعديل إضافي يخصم كريديت واحد. اشحن رصيدك للمتابعة.`,
+              en: `You've used your ${editLimit} free edits on the Pro plan. Each extra edit costs 1 credit. Top up to continue.`,
+            },
+            business: {
+              ar: `وصلت للحد المجاني (${editLimit} تعديلات) في خطة الأعمال. كل تعديل إضافي يخصم كريديت واحد. اشحن رصيدك للمتابعة.`,
+              en: `You've used your ${editLimit} free edits on the Business plan. Each extra edit costs 1 credit. Top up to continue.`,
+            },
+          };
+          const msgs = limitMsgs[planNameEdit] || limitMsgs.free;
           return res.status(402).json({
             message: "limit_reached",
-            messageAr: `وصلت للحد الأقصى (${FREE_MSG_LIMIT} تعديلات) في الخطة المجانية. اشترك الآن للحصول على تعديلات غير محدودة.`,
-            messageEn: `You've reached the free plan limit (${FREE_MSG_LIMIT} edits). Upgrade now for unlimited edits.`,
+            messageAr: msgs.ar,
+            messageEn: msgs.en,
+            editCount: currentEditCount,
+            editLimit,
             remaining: 0,
           });
         }
+        // Has credits — deduct 1 credit for this extra edit
+        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
       }
 
       await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
@@ -507,20 +538,28 @@ export async function registerRoutes(
         finalEditHtml = removeFreePlanWatermark(finalEditHtml);
       }
 
-      // Show remaining edits for free plan
-      const allMessages = await storage.getChatMessages(project.id);
-      const newUserMsgCount = allMessages.filter((m) => m.role === "user").length;
-      const remainingEdits = isFreePlanEdit && !isAdminEdit
-        ? Math.max(0, FREE_MSG_LIMIT - newUserMsgCount)
-        : null;
+      // Increment edit count for this project
+      const newEditCount = currentEditCount + 1;
+      const remainingFree = Math.max(0, editLimit - newEditCount);
+      const creditDeducted = isOverLimit && !isAdminEdit;
 
-      const remainingNote = (remainingEdits !== null && remainingEdits <= 3 && remainingEdits > 0)
-        ? (lang === "ar"
-          ? `\n\n⚠️ تبقى لك **${remainingEdits}** تعديل${remainingEdits === 1 ? "" : "ات"} مجانية فقط. [اشترك الآن](/pricing) للحصول على تعديلات غير محدودة.`
-          : `\n\n⚠️ Only **${remainingEdits}** free edit${remainingEdits === 1 ? "" : "s"} remaining. [Upgrade now](/pricing) for unlimited edits.`)
-        : remainingEdits === 0
-          ? (lang === "ar" ? "\n\n🔒 انتهت تعديلاتك المجانية. [اشترك الآن](/pricing)" : "\n\n🔒 Free edits used up. [Upgrade now](/pricing)")
-          : "";
+      // Build informative remaining-edits note
+      let remainingNote = "";
+      if (!isAdminEdit) {
+        if (creditDeducted) {
+          remainingNote = lang === "ar"
+            ? `\n\n💳 تم خصم كريديت واحد لهذا التعديل الإضافي.`
+            : `\n\n💳 1 credit deducted for this extra edit.`;
+        } else if (remainingFree === 0) {
+          remainingNote = lang === "ar"
+            ? `\n\n⚠️ انتهت تعديلاتك المجانية لهذا الموقع (${editLimit}/${editLimit}). التعديلات الإضافية تخصم كريديت واحد.`
+            : `\n\n⚠️ You've used all ${editLimit} free edits for this site. Extra edits will cost 1 credit each.`;
+        } else if (remainingFree <= 2) {
+          remainingNote = lang === "ar"
+            ? `\n\n⚡ تبقى **${remainingFree}** تعديل${remainingFree === 1 ? "" : "ات"} مجانية لهذا الموقع.`
+            : `\n\n⚡ **${remainingFree}** free edit${remainingFree === 1 ? "" : "s"} remaining for this site.`;
+        }
+      }
 
       await storage.addChatMessage({
         projectId: project.id,
@@ -531,7 +570,8 @@ export async function registerRoutes(
       const updated = await storage.updateProject(project.id, {
         generatedHtml: finalEditHtml,
         generatedCss: result.css,
-      });
+        editCount: newEditCount,
+      } as any);
 
       res.json(updated);
     } catch (err: any) {

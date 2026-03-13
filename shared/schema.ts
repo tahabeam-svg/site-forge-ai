@@ -18,6 +18,8 @@ export const projects = pgTable("projects", {
   seoDescription: text("seo_description"),
   colorPalette: jsonb("color_palette"),
   sections: jsonb("sections"),
+  editCount: integer("edit_count").default(0).notNull(),
+  websiteLanguage: varchar("website_language").default("ar"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });

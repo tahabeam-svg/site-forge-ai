@@ -164,9 +164,20 @@ const ACTIVITY_TYPE_MAP_EN: Record<string, string> = {
   other: "Business",
 };
 
+const WEBSITE_LANGUAGES = [
+  { code: "ar", label: "عربي", flag: "🇸🇦", native: "العربية" },
+  { code: "en", label: "English", flag: "🇬🇧", native: "English" },
+  { code: "fr", label: "Français", flag: "🇫🇷", native: "Français" },
+  { code: "tr", label: "Türkçe", flag: "🇹🇷", native: "Türkçe" },
+  { code: "ru", label: "Русский", flag: "🇷🇺", native: "Русский" },
+  { code: "de", label: "Deutsch", flag: "🇩🇪", native: "Deutsch" },
+  { code: "zh", label: "中文", flag: "🇨🇳", native: "中文" },
+];
+
 interface WizardForm {
   siteName: string;
   activityType: string;
+  websiteLanguage: string;
   phone: string;
   email: string;
   city: string;
@@ -184,6 +195,7 @@ interface WizardForm {
 const defaultWizardForm: WizardForm = {
   siteName: "",
   activityType: "",
+  websiteLanguage: "ar",
   phone: "",
   email: "",
   city: "",
@@ -205,6 +217,15 @@ function buildStructuredPrompt(form: WizardForm, isArabic: boolean): string {
   const actType = form.activityType
     ? (isArabic ? typeMapAr[form.activityType] : typeMapEn[form.activityType]) || form.activityType
     : "";
+
+  // Website language directive
+  const langObj = WEBSITE_LANGUAGES.find((l) => l.code === form.websiteLanguage);
+  if (langObj && form.websiteLanguage !== "ar") {
+    lines.push(isArabic
+      ? `لغة الموقع المطلوبة: ${langObj.native} (${langObj.flag}) — يجب أن يكون جميع محتوى الموقع باللغة ${langObj.native} فقط`
+      : `Website language: ${langObj.native} (${langObj.flag}) — all website content must be in ${langObj.native} only`
+    );
+  }
 
   if (actType) lines.push(isArabic ? `نوع النشاط: ${actType}` : `Activity type: ${actType}`);
   if (form.siteName) lines.push(isArabic ? `الاسم: ${form.siteName}` : `Name: ${form.siteName}`);
@@ -411,7 +432,11 @@ export default function DashboardPage() {
       });
       const project: Project = await createRes.json();
 
-      const genPayload: Record<string, unknown> = { description: structuredDesc, language: lang };
+      const genPayload: Record<string, unknown> = {
+        description: structuredDesc,
+        language: lang,
+        websiteLanguage: wizardForm.websiteLanguage || "ar",
+      };
       if (wizardForm.logoDataUrl) genPayload.logoDataUrl = wizardForm.logoDataUrl;
 
       const genRes = await apiRequest("POST", `/api/projects/${project.id}/generate-instant`, genPayload);
@@ -858,6 +883,33 @@ export default function DashboardPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  {/* Website Language */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5 text-sm font-medium">
+                      <Globe2 className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "لغة الموقع" : "Website Language"}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="flex flex-wrap gap-2" data-testid="group-website-language">
+                      {WEBSITE_LANGUAGES.map((wl) => (
+                        <button
+                          key={wl.code}
+                          type="button"
+                          onClick={() => updateWizard("websiteLanguage", wl.code)}
+                          data-testid={`button-lang-${wl.code}`}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+                            wizardForm.websiteLanguage === wl.code
+                              ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-500/30"
+                              : "border-border bg-background text-foreground hover:border-violet-400 hover:text-violet-600"
+                          }`}
+                        >
+                          <span>{wl.flag}</span>
+                          <span>{wl.native}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Site Name */}
