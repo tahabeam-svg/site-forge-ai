@@ -526,21 +526,49 @@ export default function DashboardPage() {
                       </div>
 
                       {/* Primary actions */}
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs"
-                          onClick={() => navigate(`/editor/${project.id}`)}
-                          data-testid={`button-edit-${project.id}`}
-                        >
-                          <Pencil className="w-3 h-3 me-1" />
-                          {t("edit", lang)}
-                        </Button>
-                        {project.generatedHtml && project.status !== "published" ? (
+                      <div className="flex flex-col gap-1.5">
+                        {/* Row 1: Edit + Preview + Download */}
+                        <div className="flex gap-1.5">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-8 text-xs"
+                            onClick={() => navigate(`/editor/${project.id}`)}
+                            data-testid={`button-edit-${project.id}`}
+                          >
+                            <Pencil className="w-3 h-3 me-1" />
+                            {t("edit", lang)}
+                          </Button>
+                          {project.generatedHtml && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 h-8 text-xs"
+                                onClick={() => navigate(`/preview/${project.id}`)}
+                                data-testid={`button-preview-${project.id}`}
+                              >
+                                <Eye className="w-3 h-3 me-1" />
+                                {lang === "ar" ? "معاينة" : "Preview"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 px-0 shrink-0"
+                                onClick={() => window.open(`/api/projects/${project.id}/export?type=static`, "_blank")}
+                                data-testid={`button-download-${project.id}`}
+                                title={lang === "ar" ? "تحميل HTML" : "Download HTML"}
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        {/* Row 2: Publish (full width) */}
+                        {project.generatedHtml && project.status !== "published" && (
                           <Button
                             size="sm"
-                            className="flex-1 h-8 text-xs bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 shadow-sm shadow-emerald-500/20"
+                            className="w-full h-8 text-xs bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 shadow-sm shadow-emerald-500/20"
                             onClick={() => publishMutation.mutate(project.id)}
                             disabled={publishMutation.isPending}
                             data-testid={`button-publish-${project.id}`}
@@ -551,18 +579,7 @@ export default function DashboardPage() {
                             }
                             {t("publish", lang)}
                           </Button>
-                        ) : project.generatedHtml ? (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="flex-1 h-8 text-xs"
-                            onClick={() => navigate(`/preview/${project.id}`)}
-                            data-testid={`button-preview-${project.id}`}
-                          >
-                            <Eye className="w-3 h-3 me-1" />
-                            {t("preview", lang)}
-                          </Button>
-                        ) : null}
+                        )}
                       </div>
                     </CardContent>
                   </Card>
