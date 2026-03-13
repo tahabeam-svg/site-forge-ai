@@ -288,7 +288,7 @@ export default function BillingPage() {
         </div>
 
         {/* ─── Buy Credits Section ─── */}
-        <Card className="p-5" data-testid="card-buy-credits">
+        <Card className="p-5 relative overflow-hidden" data-testid="card-buy-credits">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
               <ShoppingCart className="w-4.5 h-4.5 text-white" />
@@ -302,6 +302,34 @@ export default function BillingPage() {
               </p>
             </div>
           </div>
+
+          {/* Free plan lock overlay */}
+          {currentPlan === "free" && (
+            <div className="absolute inset-0 bg-background/80 backdrop-blur-[2px] flex flex-col items-center justify-center z-10 rounded-xl p-6 text-center" data-testid="div-credits-locked">
+              <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mb-3">
+                <Lock className="w-7 h-7 text-amber-500" />
+              </div>
+              <h4 className="font-bold text-lg mb-1">
+                {lang === "ar" ? "متاح للمشتركين فقط" : "Available for Subscribers Only"}
+              </h4>
+              <p className="text-sm text-muted-foreground mb-4 max-w-xs">
+                {lang === "ar"
+                  ? "لشراء جلسات ذكاء إضافية يجب الاشتراك في خطة Pro أو Business أولاً."
+                  : "To purchase extra AI sessions, you must first subscribe to a Pro or Business plan."}
+              </p>
+              <Button
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white"
+                onClick={() => {
+                  const el = document.getElementById("plans-section");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                data-testid="button-upgrade-for-credits"
+              >
+                <Crown className="w-4 h-4 me-2" />
+                {lang === "ar" ? "اشترك الآن واحصل على جلسات" : "Subscribe Now & Get Sessions"}
+              </Button>
+            </div>
+          )}
 
           <div className="flex items-center gap-3 mb-4">
             <button
@@ -379,7 +407,7 @@ export default function BillingPage() {
               }
               buyCreditsM.mutate(creditAmount);
             }}
-            disabled={buyCreditsM.isPending}
+            disabled={buyCreditsM.isPending || currentPlan === "free"}
             data-testid="button-buy-credits"
           >
             {buyCreditsM.isPending ? (
@@ -394,7 +422,7 @@ export default function BillingPage() {
           </Button>
         </Card>
 
-        <div>
+        <div id="plans-section">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
             <h2 className="text-lg font-semibold" data-testid="text-plans-title">
               {lang === "ar" ? "خطط الاشتراك" : "Subscription Plans"}

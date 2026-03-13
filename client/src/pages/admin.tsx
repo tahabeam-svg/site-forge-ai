@@ -65,6 +65,8 @@ import {
   Lightbulb,
   HelpCircle,
   Coins,
+  Mail,
+  Send,
 } from "lucide-react";
 
 interface AdminStats { totalUsers: number; totalProjects: number; publishedProjects: number; }
@@ -80,7 +82,7 @@ interface SuspiciousIp { ip: string; account_count: number; accounts: FraudAccou
 interface FraudData { suspiciousIps: SuspiciousIp[]; recentFreeUsers: (FraudAccount & { registration_ip: string | null; project_count: number })[]; }
 interface UserFeedbackItem { id: number; userId: string | null; userName: string | null; userEmail: string | null; type: string; message: string; page: string | null; status: string; adminNote: string | null; createdAt: string; }
 
-type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "chatbot" | "fraud" | "feedback";
+type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "smtp" | "chatbot" | "fraud" | "feedback";
 
 export default function AdminPage() {
   const { language, logout, user } = useAuth();
@@ -106,6 +108,12 @@ export default function AdminPage() {
   const [showHmac, setShowHmac] = useState(false);
   const [testModeEnabled, setTestModeEnabled] = useState(false);
 
+  const [smtpHost, setSmtpHost] = useState("");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpPass, setSmtpPass] = useState("");
+  const [showSmtpPass, setShowSmtpPass] = useState(false);
+
   const [proPrice, setProPrice] = useState("");
   const [businessPrice, setBusinessPrice] = useState("");
   const [proCredits, setProCredits] = useState("");
@@ -124,6 +132,7 @@ export default function AdminPage() {
   const { data: projects = [], isLoading: projectsLoading } = useQuery<AdminProject[]>({ queryKey: ["/api/admin/projects"], enabled: !statsError });
   const { data: couponsData = [], isLoading: couponsLoading } = useQuery<Coupon[]>({ queryKey: ["/api/admin/coupons"], enabled: !statsError });
   const { data: paymobSettings } = useQuery<PaymobSettings>({ queryKey: ["/api/admin/settings/paymob"], enabled: !statsError });
+  const { data: smtpSettings } = useQuery<{ host: string; port: string; user: string; passConfigured: boolean; fromEnv: boolean }>({ queryKey: ["/api/admin/settings/smtp"], enabled: !statsError });
   const { data: adminSubs = [] } = useQuery<AdminSubscription[]>({ queryKey: ["/api/admin/subscriptions"], enabled: !statsError });
   const { data: adminCreditPurchases = [] } = useQuery<{id: number; userId: string; credits: number; amountCents: number; status: string; createdAt: string}[]>({ queryKey: ["/api/admin/credit-purchases"], enabled: !statsError });
   const { data: pricingData } = useQuery<PricingData>({ queryKey: ["/api/admin/pricing"], enabled: !statsError });
@@ -218,6 +227,29 @@ export default function AdminPage() {
     onError: () => { toast({ title: lang === "ar" ? "فشل تحديث وضع الاختبار" : "Failed to update test mode", variant: "destructive" }); },
   });
 
+  const saveSmtpMutation = useMutation({
+    mutationFn: async () => {
+      const body: Record<string, string> = {};
+      if (smtpHost) body.host = smtpHost;
+      if (smtpPort) body.port = smtpPort;
+      if (smtpUser) body.user = smtpUser;
+      if (smtpPass) body.pass = smtpPass;
+      await apiRequest("PUT", "/api/admin/settings/smtp", body);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings/smtp"] });
+      setSmtpPass("");
+      toast({ title: lang === "ar" ? "تم حفظ إعدادات البريد" : "SMTP settings saved" });
+    },
+    onError: () => { toast({ title: lang === "ar" ? "فشل حفظ إعدادات SMTP" : "Failed to save SMTP settings", variant: "destructive" }); },
+  });
+
+  const testSmtpMutation = useMutation({
+    mutationFn: async () => { const r = await apiRequest("POST", "/api/admin/settings/smtp/test", {}); return r.json(); },
+    onSuccess: (data: any) => { toast({ title: lang === "ar" ? "✅ تم إرسال رسالة الاختبار" : "✅ Test email sent", description: data.message }); },
+    onError: (err: any) => { toast({ title: lang === "ar" ? "❌ فشل إرسال الاختبار" : "❌ Test failed", description: err.message, variant: "destructive" }); },
+  });
+
   const savePricingMutation = useMutation({
     mutationFn: async () => { await apiRequest("PUT", "/api/admin/pricing", { proPrice: Math.round(parseFloat(proPrice) * 100), businessPrice: Math.round(parseFloat(businessPrice) * 100), proCredits: parseInt(proCredits), businessCredits: parseInt(businessCredits), freeCredits: parseInt(freeCredits) }); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/admin/pricing"] }); toast({ title: lang === "ar" ? "تم تحديث الأسعار" : "Pricing updated" }); },
@@ -269,6 +301,7 @@ export default function AdminPage() {
     { key: "promotions", icon: Sparkles, label: "Offers", labelAr: "العروض" },
     { key: "payments", icon: Receipt, label: "Payments", labelAr: "المدفوعات" },
     { key: "gateway", icon: CreditCard, label: "Gateway", labelAr: "بوابة الدفع" },
+    { key: "smtp", icon: Mail, label: "Email/SMTP", labelAr: "البريد الإلكتروني" },
     { key: "chatbot", icon: Bot, label: "Chatbot AI", labelAr: "الشاتبوت الذكي" },
     { key: "fraud", icon: AlertTriangle, label: "Anti-Fraud", labelAr: "مكافحة الاحتيال" },
     { key: "feedback", icon: MessageSquarePlus, label: "Feedback", labelAr: "بلاغات المستخدمين" },
@@ -465,6 +498,7 @@ export default function AdminPage() {
                     { label: lang === "ar" ? "تعديل الأسعار" : "Edit Pricing", icon: Tag, section: "pricing" as AdminSection, color: "from-emerald-600 to-teal-700" },
                     { label: lang === "ar" ? "إنشاء عرض" : "New Offer", icon: Sparkles, section: "promotions" as AdminSection, color: "from-amber-600 to-orange-700" },
                     { label: lang === "ar" ? "بوابة الدفع" : "Payment Setup", icon: CreditCard, section: "gateway" as AdminSection, color: "from-blue-600 to-indigo-700" },
+                    { label: lang === "ar" ? "إعدادات البريد" : "Email Settings", icon: Mail, section: "smtp" as AdminSection, color: "from-emerald-600 to-teal-700" },
                   ].map((action, i) => (
                     <button
                       key={i}
@@ -1028,6 +1062,116 @@ export default function AdminPage() {
                       <li>{lang === "ar" ? "أنشئ iFrame وانسخ المعرّف" : "Create iFrame, copy ID"}</li>
                     </ol>
                     <p className="text-xs text-zinc-500 mt-2">Callback: <code className="bg-zinc-900 px-1 py-0.5 rounded text-[10px] text-zinc-400">https://arabyweb.net/api/payments/callback</code></p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* ─── SMTP / Email Section ─────────────────────────────────────── */}
+            {activeSection === "smtp" && (
+              <Card className="bg-zinc-900 border-zinc-800">
+                <div className="p-3 sm:p-4 border-b border-zinc-800">
+                  <h3 className="font-semibold text-white flex items-center gap-2 text-sm sm:text-base">
+                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                    {lang === "ar" ? "إعدادات البريد الإلكتروني SMTP" : "Email / SMTP Settings"}
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-zinc-500 mt-1">
+                    {lang === "ar" ? "أدخل بيانات SMTP لتفعيل الإشعارات التلقائية" : "Enter SMTP credentials to enable automatic email notifications"}
+                  </p>
+                </div>
+                <div className="p-3 sm:p-4 space-y-4">
+                  {smtpSettings?.fromEnv && (
+                    <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <p className="text-sm text-blue-400 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" />
+                        {lang === "ar" ? "SMTP مُهيَّأ من متغيرات البيئة (env vars) — الأولوية للإعدادات البيئية." : "SMTP configured via environment variables — env vars take priority."}
+                      </p>
+                    </div>
+                  )}
+                  {smtpSettings && !smtpSettings.fromEnv && smtpSettings.host && (
+                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <p className="text-sm text-emerald-400 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" />
+                        {lang === "ar" ? "SMTP مُفعّل ومتصل" : "SMTP configured and active"}
+                      </p>
+                      <div className="mt-2 space-y-1 text-xs text-zinc-500">
+                        <p>Host: {smtpSettings.host}:{smtpSettings.port}</p>
+                        <p>User: {smtpSettings.user}</p>
+                        <p>Password: {smtpSettings.passConfigured ? "••••••••" : lang === "ar" ? "غير مُعيَّنة" : "Not set"}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Sender accounts info */}
+                  <div className="p-3 rounded-lg bg-zinc-800/60 border border-zinc-700/50">
+                    <h4 className="text-sm font-medium text-zinc-300 mb-2 flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      {lang === "ar" ? "عناوين الإرسال المُعدَّة مسبقاً" : "Preconfigured Sender Addresses"}
+                    </h4>
+                    <div className="space-y-1.5 text-xs text-zinc-500">
+                      {[
+                        ["noreply@arabyweb.net", lang === "ar" ? "الترحيب، التحقق، إعادة كلمة المرور، الأمان" : "Welcome, verification, password reset, security"],
+                        ["bills@arabyweb.net", lang === "ar" ? "الدفع، الاشتراكات، الرصيد" : "Payments, subscriptions, credits"],
+                        ["support@arabyweb.net", lang === "ar" ? "ردود الدعم الفني" : "Support replies"],
+                        ["info@arabyweb.net", lang === "ar" ? "الإعلانات والتحديثات" : "Announcements & updates"],
+                        ["privacy@arabyweb.net", lang === "ar" ? "تنبيهات النظام" : "System alerts"],
+                      ].map(([email, desc]) => (
+                        <div key={email} className="flex items-start gap-2">
+                          <span className="text-emerald-400 font-mono shrink-0">{email}</span>
+                          <span>— {desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-zinc-600 mt-2">
+                      {lang === "ar"
+                        ? "يجب تكوين هذه الحسابات كـ Aliases أو صناديق بريد في مزود الاستضافة، وتوجيه الإرسال عبر SMTP بوصفها مُرسِلاً واحداً."
+                        : "Configure these as aliases or inboxes in your hosting provider, sending via a single SMTP sender."}
+                    </p>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block text-zinc-300">{lang === "ar" ? "خادم SMTP (Host)" : "SMTP Host"}</label>
+                      <Input value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} placeholder={smtpSettings?.host || "mail.arabyweb.net"} className="bg-zinc-800 border-zinc-700 text-white" data-testid="input-smtp-host" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block text-zinc-300">{lang === "ar" ? "المنفذ (Port)" : "Port"}</label>
+                      <Input value={smtpPort} onChange={(e) => setSmtpPort(e.target.value)} placeholder={smtpSettings?.port || "587"} className="bg-zinc-800 border-zinc-700 text-white" data-testid="input-smtp-port" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block text-zinc-300">{lang === "ar" ? "اسم المستخدم (البريد)" : "Username (Email)"}</label>
+                      <Input value={smtpUser} onChange={(e) => setSmtpUser(e.target.value)} placeholder={smtpSettings?.user || "noreply@arabyweb.net"} className="bg-zinc-800 border-zinc-700 text-white" data-testid="input-smtp-user" />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1.5 block text-zinc-300">{lang === "ar" ? "كلمة مرور البريد" : "Email Password"}</label>
+                      <div className="relative">
+                        <Input value={smtpPass} onChange={(e) => setSmtpPass(e.target.value)} placeholder={smtpSettings?.passConfigured ? "••••••••" : lang === "ar" ? "كلمة المرور" : "Password"} type={showSmtpPass ? "text" : "password"} className="bg-zinc-800 border-zinc-700 text-white" data-testid="input-smtp-pass" />
+                        <Button variant="ghost" size="sm" className="absolute end-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-zinc-500" onClick={() => setShowSmtpPass(!showSmtpPass)}>
+                          {showSmtpPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <Button onClick={() => saveSmtpMutation.mutate()} disabled={(!smtpHost && !smtpUser && !smtpPass) || saveSmtpMutation.isPending} className="bg-emerald-600 hover:bg-emerald-700" data-testid="button-save-smtp">
+                      {saveSmtpMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Save className="w-4 h-4 me-1" />}
+                      {lang === "ar" ? "حفظ الإعدادات" : "Save Settings"}
+                    </Button>
+                    <Button variant="outline" onClick={() => testSmtpMutation.mutate()} disabled={testSmtpMutation.isPending} className="border-zinc-700 text-zinc-300 hover:bg-zinc-800" data-testid="button-test-smtp">
+                      {testSmtpMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Send className="w-4 h-4 me-1" />}
+                      {lang === "ar" ? "إرسال رسالة اختبار" : "Send Test Email"}
+                    </Button>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
+                    <h4 className="text-sm font-medium text-zinc-300 mb-2">{lang === "ar" ? "إعدادات Hosting بريد Arabyweb.net:" : "Arabyweb.net Email Hosting Setup:"}</h4>
+                    <ol className="text-xs text-zinc-500 space-y-1 list-decimal list-inside">
+                      <li>{lang === "ar" ? "سجّل دخولك إلى لوحة cPanel أو Plesk" : "Log in to cPanel or Plesk"}</li>
+                      <li>{lang === "ar" ? "Email Accounts → أنشئ حسابات البريد المطلوبة" : "Email Accounts → Create the required email accounts"}</li>
+                      <li>{lang === "ar" ? "Host: mail.arabyweb.net | Port: 587 (TLS) أو 465 (SSL)" : "Host: mail.arabyweb.net | Port: 587 (TLS) or 465 (SSL)"}</li>
+                      <li>{lang === "ar" ? "استخدم noreply@arabyweb.net للإرسال الرئيسي" : "Use noreply@arabyweb.net as main sender"}</li>
+                    </ol>
                   </div>
                 </div>
               </Card>

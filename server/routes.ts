@@ -1111,6 +1111,22 @@ export async function registerRoutes(
       const [user] = await db.select().from(users).where(eq(users.id, userId));
       if (!user) return res.status(404).json({ message: "User not found" });
 
+      // ── Free plan users cannot purchase extra credits ──────────────────────
+      if (!user.isAdmin) {
+        const [activeSub] = await db.select().from(subscriptions)
+          .where(and(eq(subscriptions.userId, userId), eq(subscriptions.status, "active")))
+          .orderBy(desc(subscriptions.endDate))
+          .limit(1);
+        const isPaid = activeSub && (activeSub.plan === "pro" || activeSub.plan === "business");
+        if (!isPaid) {
+          return res.status(403).json({
+            message: "يجب الاشتراك في خطة مدفوعة أولاً قبل شراء جلسات إضافية",
+            messageEn: "You must have an active paid subscription before purchasing additional AI sessions.",
+            requiresUpgrade: true,
+          });
+        }
+      }
+
       if (testMode) {
         const purchase = await storage.createCreditPurchase({
           userId,
@@ -1356,6 +1372,58 @@ export async function registerRoutes(
       res.json({ testMode: enabled });
     } catch (err) {
       res.status(500).json({ message: "Failed to update test mode" });
+    }
+  });
+
+  // ─── SMTP Settings ────────────────────────────────────────────────────────
+  app.get("/api/admin/settings/smtp", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const [host, port, user, pass] = await Promise.all([
+        storage.getSetting("smtp_host"),
+        storage.getSetting("smtp_port"),
+        storage.getSetting("smtp_user"),
+        storage.getSetting("smtp_pass"),
+      ]);
+      // Never return the actual password — mask it
+      res.json({
+        host: host || "",
+        port: port || "587",
+        user: user || "",
+        passConfigured: !!pass,
+        fromEnv: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch SMTP settings" });
+    }
+  });
+
+  app.put("/api/admin/settings/smtp", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { host, port, user, pass } = req.body;
+      if (host !== undefined) await storage.setSetting("smtp_host", String(host));
+      if (port !== undefined) await storage.setSetting("smtp_port", String(port));
+      if (user !== undefined) await storage.setSetting("smtp_user", String(user));
+      if (pass !== undefined && pass !== "") await storage.setSetting("smtp_pass", String(pass));
+      res.json({ success: true });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to save SMTP settings" });
+    }
+  });
+
+  app.post("/api/admin/settings/smtp/test", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const adminUser = req.user;
+      const email = adminUser?.email;
+      if (!email) return res.status(400).json({ message: "No admin email found" });
+      const { sendTestEmail } = await import("./email");
+      const sent = await sendTestEmail(email, true);
+      if (sent) {
+        res.json({ success: true, message: `Test email sent to ${email}` });
+      } else {
+        res.status(400).json({ message: "Failed to send test email — check SMTP settings" });
+      }
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to send test email" });
     }
   });
 

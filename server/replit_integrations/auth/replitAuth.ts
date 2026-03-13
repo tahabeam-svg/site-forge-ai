@@ -283,6 +283,11 @@ export async function setupAuth(app: Express) {
             }).returning();
 
             console.log(`[AUTH] New Google user: ${email} from IP ${ip}`);
+            // Fire-and-forget welcome email
+            if (email) {
+              const name = `${profile.name?.givenName || ""} ${profile.name?.familyName || ""}`.trim() || email;
+              sendGoogleWelcomeEmail(email, name, true).catch(() => {});
+            }
             return done(null, newUser);
           } catch (err) {
             console.error("Google OAuth error:", err);
@@ -342,6 +347,9 @@ export async function setupAuth(app: Express) {
       }).returning();
 
       console.log(`[AUTH] New user: ${email} from IP ${ip}`);
+      // Fire-and-forget welcome email
+      const fullName = `${firstName || ""} ${lastName || ""}`.trim() || email;
+      sendWelcomeEmail(email.toLowerCase(), fullName, true).catch(() => {});
       req.login(newUser, (err) => {
         if (err) return next(err);
         const { password: _, ...safeUser } = newUser;

@@ -1,6 +1,18 @@
 import nodemailer from "nodemailer";
 import { storage } from "./storage";
 
+// ─── Sender addresses per category ───────────────────────────────────────────
+
+const SENDERS = {
+  noreply:  "ArabyWeb <noreply@arabyweb.net>",    // welcome, verification, reset, security
+  bills:    "ArabyWeb Bills <bills@arabyweb.net>",  // payments, subscriptions, credits
+  support:  "ArabyWeb Support <support@arabyweb.net>", // support replies
+  info:     "ArabyWeb <info@arabyweb.net>",         // announcements, general
+  privacy:  "ArabyWeb Privacy <privacy@arabyweb.net>", // privacy/system alerts
+} as const;
+
+type SenderKey = keyof typeof SENDERS;
+
 // ─── Transport (env vars first, then DB settings) ────────────────────────────
 
 async function getSmtpConfig() {
@@ -11,17 +23,15 @@ async function getSmtpConfig() {
       port: parseInt(process.env.SMTP_PORT || "587", 10),
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
-      from: process.env.SMTP_FROM || `ArabyWeb <noreply@arabyweb.net>`,
     };
   }
   // Fall back to DB settings (configured from admin panel)
   try {
-    const [host, port, user, pass, from] = await Promise.all([
+    const [host, port, user, pass] = await Promise.all([
       storage.getSetting("smtp_host"),
       storage.getSetting("smtp_port"),
       storage.getSetting("smtp_user"),
       storage.getSetting("smtp_pass"),
-      storage.getSetting("smtp_from"),
     ]);
     if (host && user && pass) {
       return {
@@ -29,14 +39,13 @@ async function getSmtpConfig() {
         port: parseInt(port || "587", 10),
         user,
         pass,
-        from: from || `ArabyWeb <noreply@arabyweb.net>`,
       };
     }
   } catch {}
   return null;
 }
 
-async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
+async function sendMail(to: string, subject: string, html: string, sender: SenderKey = "noreply"): Promise<boolean> {
   const cfg = await getSmtpConfig();
   if (!cfg) {
     console.log(`[EMAIL] No SMTP config — skipped: "${subject}" → ${to}`);
@@ -49,8 +58,8 @@ async function sendMail(to: string, subject: string, html: string): Promise<bool
       secure: cfg.port === 465,
       auth: { user: cfg.user, pass: cfg.pass },
     });
-    await transport.sendMail({ from: cfg.from, to, subject, html });
-    console.log(`[EMAIL] ✓ "${subject}" → ${to}`);
+    await transport.sendMail({ from: SENDERS[sender], to, subject, html });
+    console.log(`[EMAIL] ✓ [${SENDERS[sender]}] "${subject}" → ${to}`);
     return true;
   } catch (err: any) {
     console.error(`[EMAIL] ✗ Failed "${subject}" → ${to}:`, err.message);
@@ -171,7 +180,7 @@ export async function sendWelcomeEmail(to: string, name: string, isAr = true) {
          ${p("If you need any help, our support team is always here for you.", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 2. Email Verification ────────────────────────────────────────────────────
@@ -193,7 +202,7 @@ export async function sendEmailVerificationEmail(to: string, name: string, verif
          ${p("This link is valid for 24 hours. If you didn't sign up for ArabyWeb, please ignore this email.", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 3. New Google Registration ───────────────────────────────────────────────
@@ -215,7 +224,7 @@ export async function sendGoogleWelcomeEmail(to: string, name: string, isAr = tr
          ${p("Your free balance: 10 AI sessions", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 4. New Login Method Detected ────────────────────────────────────────────
@@ -236,7 +245,7 @@ export async function sendNewLoginMethodEmail(to: string, name: string, method: 
          ${btn("https://arabyweb.net/settings", "Review Account Settings")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 5. Password Reset ────────────────────────────────────────────────────────
@@ -255,7 +264,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string, isAr 
          ${p("This link is valid for 30 minutes only. If you didn't request this, please ignore this email.", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 6. Site Creation Started ─────────────────────────────────────────────────
@@ -274,7 +283,7 @@ export async function sendSiteCreationStartedEmail(to: string, siteName: string,
          ${btn("https://arabyweb.net/dashboard", "View Dashboard")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 7. Site Creation Completed ───────────────────────────────────────────────
@@ -295,7 +304,7 @@ export async function sendSiteCreationCompletedEmail(to: string, siteName: strin
          ${p("Continue improving your site from the dashboard.", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 8. Site Creation Failed ──────────────────────────────────────────────────
@@ -316,7 +325,7 @@ export async function sendSiteCreationFailedEmail(to: string, siteName: string, 
          ${p("If the issue persists, please contact our support team.", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
 
 // ─── 9. Credit Used (per usage) ──────────────────────────────────────────────
@@ -341,7 +350,7 @@ export async function sendCreditUsedEmail(to: string, creditsUsed: number, remai
          ${remaining <= 5 ? infoBox(`Alert: Only ${remaining} sessions remaining. ${btn("https://arabyweb.net/billing", "Top Up Credits")}`, "#f59e0b") : ""}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 10. Low Credits Warning ──────────────────────────────────────────────────
@@ -362,7 +371,7 @@ export async function sendLowCreditsEmail(to: string, remaining = 0, isAr = true
          ${p("You can upgrade your plan to get more sessions at a better price.", true)}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 11. Credits Depleted ─────────────────────────────────────────────────────
@@ -381,7 +390,7 @@ export async function sendCreditsDepletedEmail(to: string, isAr = true) {
          ${btn("https://arabyweb.net/billing", "Top Up Credits Now")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 12. Payment Success ──────────────────────────────────────────────────────
@@ -408,7 +417,7 @@ export async function sendPaymentSuccessEmail(to: string, credits: number, amoun
          ${btn("https://arabyweb.net/billing", "View My Balance")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 13. Payment Failed ───────────────────────────────────────────────────────
@@ -427,7 +436,7 @@ export async function sendPaymentFailedEmail(to: string, amountSar: number, isAr
          ${btn("https://arabyweb.net/billing", "Try Again")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 14. Subscription Started ─────────────────────────────────────────────────
@@ -456,7 +465,7 @@ export async function sendSubscriptionStartedEmail(to: string, plan: string, end
          ${btn("https://arabyweb.net/dashboard", "Start Using")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 15. Subscription Renewed ─────────────────────────────────────────────────
@@ -476,7 +485,7 @@ export async function sendSubscriptionRenewedEmail(to: string, plan: string, new
          ${btn("https://arabyweb.net/billing", "Manage Subscription")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 16. Plan Upgrade ─────────────────────────────────────────────────────────
@@ -495,7 +504,7 @@ export async function sendPlanUpgradedEmail(to: string, oldPlan: string, newPlan
          ${btn("https://arabyweb.net/dashboard", "Explore New Features")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 17. Plan Downgrade ───────────────────────────────────────────────────────
@@ -514,7 +523,7 @@ export async function sendPlanDowngradedEmail(to: string, oldPlan: string, newPl
          ${btn("https://arabyweb.net/billing", "Manage Subscription")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 18. Subscription Expiry Reminder ────────────────────────────────────────
@@ -533,7 +542,7 @@ export async function sendSubscriptionExpiryReminderEmail(to: string, plan: stri
          ${btn("https://arabyweb.net/billing", "Renew Subscription")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 19. Subscription Expired ─────────────────────────────────────────────────
@@ -552,7 +561,7 @@ export async function sendSubscriptionExpiredEmail(to: string, plan: string, isA
          ${btn("https://arabyweb.net/billing", "Renew Subscription Now")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "bills");
 }
 
 // ─── 20. System Alert ─────────────────────────────────────────────────────────
@@ -569,7 +578,7 @@ export async function sendSystemAlertEmail(to: string, title: string, message: s
          ${btn("https://arabyweb.net/dashboard", "Go to Dashboard")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "privacy");
 }
 
 // ─── 21. Support Reply ────────────────────────────────────────────────────────
@@ -590,7 +599,7 @@ export async function sendSupportReplyEmail(to: string, userName: string, ticket
          ${btn("https://arabyweb.net/dashboard", "Go to Platform")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "support");
 }
 
 // ─── 22. Announcement ─────────────────────────────────────────────────────────
@@ -609,7 +618,7 @@ export async function sendAnnouncementEmail(to: string, userName: string, title:
          ${btn("https://arabyweb.net/dashboard", "Learn More")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "info");
 }
 
 // ─── Test email (for admin panel verification) ────────────────────────────────
@@ -626,5 +635,5 @@ export async function sendTestEmail(to: string, isAr = true): Promise<boolean> {
          ${infoBox("ArabyWeb is ready to send all automated notifications.", "#10b981")}`,
     isAr
   );
-  return sendMail(to, subject, html);
+  return sendMail(to, subject, html, "noreply");
 }
