@@ -257,7 +257,7 @@ export default function ChatWidget() {
             initial={{ opacity: 0, x: 20, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.9 }}
-            className="fixed bottom-36 right-20 z-50 max-w-[220px]"
+            className="fixed bottom-36 left-20 md:left-24 z-50 max-w-[220px]"
             dir={isRTL ? "rtl" : "ltr"}
           >
             <button
@@ -276,7 +276,7 @@ export default function ChatWidget() {
       </AnimatePresence>
 
       {/* ── Floating Button ── */}
-      <div className="fixed bottom-20 right-6 z-50" dir="ltr">
+      <div className="fixed bottom-20 left-6 z-50" dir="ltr">
         <AnimatePresence>
           {!open && unreadCount > 0 && (
             <motion.div
@@ -317,7 +317,7 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            className="fixed bottom-36 right-6 z-50 w-[340px] sm:w-[390px] flex flex-col"
+            className="fixed bottom-36 left-6 z-50 w-[340px] sm:w-[390px] flex flex-col"
             style={{ maxHeight: "calc(100vh - 160px)" }}
             dir={isRTL ? "rtl" : "ltr"}
           >

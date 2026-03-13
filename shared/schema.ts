@@ -99,6 +99,10 @@ export const subscriptions = pgTable("subscriptions", {
   currency: varchar("currency").default("SAR"),
   startDate: timestamp("start_date").default(sql`CURRENT_TIMESTAMP`),
   endDate: timestamp("end_date"),
+  invoiceIsCompany: boolean("invoice_is_company").default(false),
+  invoiceCompanyName: varchar("invoice_company_name"),
+  invoiceTaxNumber: varchar("invoice_tax_number"),
+  invoiceCustomerName: varchar("invoice_customer_name"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
@@ -179,6 +183,10 @@ export const creditPurchases = pgTable("credit_purchases", {
   status: varchar("status").default("pending").notNull(),
   paymobOrderId: varchar("paymob_order_id"),
   paymobTransactionId: varchar("paymob_transaction_id"),
+  invoiceIsCompany: boolean("invoice_is_company").default(false),
+  invoiceCompanyName: varchar("invoice_company_name"),
+  invoiceTaxNumber: varchar("invoice_tax_number"),
+  invoiceCustomerName: varchar("invoice_customer_name"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 

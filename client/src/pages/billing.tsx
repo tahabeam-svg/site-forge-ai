@@ -64,7 +64,11 @@ export default function BillingPage() {
 
   const upgradeMutation = useMutation({
     mutationFn: async (plan: string) => {
-      const res = await apiRequest("POST", "/api/payments/initiate", { plan, billingCycle });
+      const res = await apiRequest("POST", "/api/payments/initiate", {
+        plan,
+        billingCycle,
+        invoiceInfo: { isCompany, companyName: companyName || undefined, taxNumber: taxNumber || undefined },
+      });
       return res.json();
     },
     onSuccess: (data: { iframeUrl?: string; testMode?: boolean; testUrl?: string }) => {
@@ -91,7 +95,10 @@ export default function BillingPage() {
 
   const buyCreditsM = useMutation({
     mutationFn: async (credits: number) => {
-      const res = await apiRequest("POST", "/api/payments/buy-credits", { credits });
+      const res = await apiRequest("POST", "/api/payments/buy-credits", {
+        credits,
+        invoiceInfo: { isCompany, companyName: companyName || undefined, taxNumber: taxNumber || undefined },
+      });
       return res.json();
     },
     onSuccess: (data: { iframeUrl?: string; testMode?: boolean; testUrl?: string }) => {

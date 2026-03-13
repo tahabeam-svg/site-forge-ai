@@ -621,6 +621,149 @@ export async function sendAnnouncementEmail(to: string, userName: string, title:
   return sendMail(to, subject, html, "info");
 }
 
+// ─── 23. Saudi VAT Invoice ────────────────────────────────────────────────────
+
+export interface InvoiceData {
+  invoiceNumber: string;
+  invoiceDate: Date;
+  customerEmail: string;
+  customerName: string;
+  isCompany: boolean;
+  companyName?: string;
+  taxNumber?: string;
+  description: string;
+  amountWithVatSar: number;
+  invoiceType: "subscription" | "credits";
+  planOrCredits?: string;
+}
+
+export async function sendInvoiceEmail(data: InvoiceData, isAr = true): Promise<boolean> {
+  const SELLER_NAME = "مؤسسة الهدف الممتاز للمعارض والمؤتمرات";
+  const SELLER_NAME_EN = "Al-Hadaf Al-Mumtaz Foundation for Exhibitions & Conferences";
+  const SELLER_VAT = "310000000000003";
+  const SELLER_ADDRESS_AR = "الرياض، المملكة العربية السعودية";
+  const SELLER_ADDRESS_EN = "Riyadh, Saudi Arabia";
+  const PLATFORM_NAME = "ArabyWeb.net";
+
+  const totalSar = data.amountWithVatSar;
+  const beforeVat = parseFloat((totalSar / 1.15).toFixed(2));
+  const vatAmount = parseFloat((totalSar - beforeVat).toFixed(2));
+
+  const dateStr = data.invoiceDate.toLocaleDateString(isAr ? "ar-SA-u-nu-latn" : "en-US", {
+    year: "numeric", month: "long", day: "numeric"
+  });
+
+  const invoiceTitle = isAr ? "فاتورة ضريبية" : "Tax Invoice";
+  const subject = isAr
+    ? `🧾 فاتورة ضريبية #${data.invoiceNumber} — ${PLATFORM_NAME}`
+    : `🧾 Tax Invoice #${data.invoiceNumber} — ${PLATFORM_NAME}`;
+
+  const buyerSection = isAr
+    ? `<div style="background:#f8fafc;border-radius:10px;padding:16px 20px;margin:16px 0;border:1px solid #e2e8f0;">
+        <p style="margin:0 0 8px;font-weight:700;color:#0f172a;font-size:0.95rem;">بيانات العميل</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>الاسم:</strong> ${data.isCompany ? (data.companyName || data.customerName) : data.customerName}</p>
+        ${data.isCompany && data.taxNumber ? `<p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>الرقم الضريبي:</strong> ${data.taxNumber}</p>` : ""}
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>البريد الإلكتروني:</strong> ${data.customerEmail}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>نوع العميل:</strong> ${data.isCompany ? "شركة / مؤسسة" : "فرد"}</p>
+      </div>`
+    : `<div style="background:#f8fafc;border-radius:10px;padding:16px 20px;margin:16px 0;border:1px solid #e2e8f0;">
+        <p style="margin:0 0 8px;font-weight:700;color:#0f172a;font-size:0.95rem;">Customer Details</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Name:</strong> ${data.isCompany ? (data.companyName || data.customerName) : data.customerName}</p>
+        ${data.isCompany && data.taxNumber ? `<p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Tax Number:</strong> ${data.taxNumber}</p>` : ""}
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Email:</strong> ${data.customerEmail}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Customer Type:</strong> ${data.isCompany ? "Company / Entity" : "Individual"}</p>
+      </div>`;
+
+  const sellerSection = isAr
+    ? `<div style="background:#f0fdf4;border-radius:10px;padding:16px 20px;margin:16px 0;border:1px solid #bbf7d0;">
+        <p style="margin:0 0 8px;font-weight:700;color:#0f172a;font-size:0.95rem;">بيانات المورد</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>الاسم:</strong> ${SELLER_NAME}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>الرقم الضريبي:</strong> ${SELLER_VAT}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>العنوان:</strong> ${SELLER_ADDRESS_AR}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>المنصة:</strong> ${PLATFORM_NAME}</p>
+      </div>`
+    : `<div style="background:#f0fdf4;border-radius:10px;padding:16px 20px;margin:16px 0;border:1px solid #bbf7d0;">
+        <p style="margin:0 0 8px;font-weight:700;color:#0f172a;font-size:0.95rem;">Supplier Details</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Name:</strong> ${SELLER_NAME_EN}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>VAT Number:</strong> ${SELLER_VAT}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Address:</strong> ${SELLER_ADDRESS_EN}</p>
+        <p style="margin:3px 0;font-size:0.88rem;color:#475569;"><strong>Platform:</strong> ${PLATFORM_NAME}</p>
+      </div>`;
+
+  const itemsTable = isAr
+    ? `<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem;direction:rtl;">
+        <thead>
+          <tr style="background:#6366f1;color:#fff;">
+            <th style="padding:10px 14px;text-align:right;border-radius:8px 0 0 0;">البيان</th>
+            <th style="padding:10px 14px;text-align:center;">الكمية</th>
+            <th style="padding:10px 14px;text-align:left;border-radius:0 8px 0 0;">السعر (ريال)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc;">
+            <td style="padding:10px 14px;color:#1e293b;">${data.description}</td>
+            <td style="padding:10px 14px;text-align:center;color:#1e293b;">1</td>
+            <td style="padding:10px 14px;text-align:left;color:#1e293b;">${beforeVat.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>`
+    : `<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:0.88rem;">
+        <thead>
+          <tr style="background:#6366f1;color:#fff;">
+            <th style="padding:10px 14px;text-align:left;border-radius:8px 0 0 0;">Description</th>
+            <th style="padding:10px 14px;text-align:center;">Qty</th>
+            <th style="padding:10px 14px;text-align:right;border-radius:0 8px 0 0;">Price (SAR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:#f8fafc;">
+            <td style="padding:10px 14px;color:#1e293b;">${data.description}</td>
+            <td style="padding:10px 14px;text-align:center;color:#1e293b;">1</td>
+            <td style="padding:10px 14px;text-align:right;color:#1e293b;">${beforeVat.toFixed(2)}</td>
+          </tr>
+        </tbody>
+      </table>`;
+
+  const totalsSection = isAr
+    ? `<div style="background:#f8fafc;border-radius:10px;padding:16px 20px;margin:16px 0;border:1px solid #e2e8f0;direction:rtl;">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;color:#475569;"><span>المبلغ قبل الضريبة:</span><span>${beforeVat.toFixed(2)} ريال</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;color:#475569;"><span>ضريبة القيمة المضافة (15%):</span><span>${vatAmount.toFixed(2)} ريال</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:1.05rem;font-weight:800;color:#0f172a;border-top:2px solid #6366f1;margin-top:8px;"><span>الإجمالي شامل الضريبة:</span><span>${totalSar.toFixed(2)} ريال سعودي</span></div>
+      </div>`
+    : `<div style="background:#f8fafc;border-radius:10px;padding:16px 20px;margin:16px 0;border:1px solid #e2e8f0;">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;color:#475569;"><span>Amount before VAT:</span><span>SAR ${beforeVat.toFixed(2)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.9rem;color:#475569;"><span>VAT (15%):</span><span>SAR ${vatAmount.toFixed(2)}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:1.05rem;font-weight:800;color:#0f172a;border-top:2px solid #6366f1;margin-top:8px;"><span>Total incl. VAT:</span><span>SAR ${totalSar.toFixed(2)}</span></div>
+      </div>`;
+
+  const html = wrap(
+    isAr
+      ? `<div style="text-align:center;margin-bottom:8px;">
+          <div style="display:inline-block;background:#6366f1;color:#fff;padding:8px 24px;border-radius:20px;font-weight:700;font-size:1rem;">${invoiceTitle}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0;padding:12px 16px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd;direction:rtl;">
+          <div><span style="color:#64748b;font-size:0.85rem;">رقم الفاتورة</span><br/><strong style="color:#0f172a;">#${data.invoiceNumber}</strong></div>
+          <div style="text-align:left;"><span style="color:#64748b;font-size:0.85rem;">تاريخ الإصدار</span><br/><strong style="color:#0f172a;">${dateStr}</strong></div>
+        </div>
+        ${sellerSection}${buyerSection}${itemsTable}${totalsSection}
+        <p style="font-size:0.8rem;color:#94a3b8;text-align:center;margin-top:16px;">هذه فاتورة ضريبية صادرة وفق أنظمة هيئة الزكاة والضريبة والجمارك (ZATCA)</p>
+        ${btn("https://arabyweb.net/billing", "عرض الاشتراك")}`
+      : `<div style="text-align:center;margin-bottom:8px;">
+          <div style="display:inline-block;background:#6366f1;color:#fff;padding:8px 24px;border-radius:20px;font-weight:700;font-size:1rem;">${invoiceTitle}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0;padding:12px 16px;background:#f0f9ff;border-radius:10px;border:1px solid #bae6fd;">
+          <div><span style="color:#64748b;font-size:0.85rem;">Invoice Number</span><br/><strong style="color:#0f172a;">#${data.invoiceNumber}</strong></div>
+          <div style="text-align:right;"><span style="color:#64748b;font-size:0.85rem;">Issue Date</span><br/><strong style="color:#0f172a;">${dateStr}</strong></div>
+        </div>
+        ${sellerSection}${buyerSection}${itemsTable}${totalsSection}
+        <p style="font-size:0.8rem;color:#94a3b8;text-align:center;margin-top:16px;">This is a tax invoice issued in compliance with ZATCA regulations.</p>
+        ${btn("https://arabyweb.net/billing", "View Subscription")}`,
+    isAr
+  );
+
+  return sendMail(data.customerEmail, subject, html, "bills");
+}
+
 // ─── Test email (for admin panel verification) ────────────────────────────────
 
 export async function sendTestEmail(to: string, isAr = true): Promise<boolean> {

@@ -6,14 +6,14 @@ import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInst
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
-import { sendPaymentSuccessEmail, sendLowCreditsEmail } from "./email";
+import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData } from "./email";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import archiver from "archiver";
 import crypto from "crypto";
 import { db } from "./db";
-import { users, subscriptions } from "@shared/schema";
+import { users, subscriptions, creditPurchases } from "@shared/schema";
 import { eq, sql, and, gte, desc, lt } from "drizzle-orm";
 
 const ENCRYPTION_KEY = crypto.createHash("sha256").update(process.env.SESSION_SECRET || "arabyweb-fallback-key").digest();
@@ -1024,9 +1024,16 @@ export async function registerRoutes(
     }
   });
 
+  const invoiceInfoSchema = z.object({
+    isCompany: z.boolean().optional().default(false),
+    companyName: z.string().optional(),
+    taxNumber: z.string().optional(),
+  });
+
   const initiatePaymentSchema = z.object({
     plan: z.enum(["pro", "business"]),
     billingCycle: z.enum(["monthly", "yearly"]).optional().default("monthly"),
+    invoiceInfo: invoiceInfoSchema.optional(),
   });
 
   app.post("/api/payments/initiate", isAuthenticated, async (req: any, res) => {
@@ -1038,7 +1045,7 @@ export async function registerRoutes(
       const parsed = initiatePaymentSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid plan" });
 
-      const { plan, billingCycle } = parsed.data;
+      const { plan, billingCycle, invoiceInfo } = parsed.data;
       const amountCents = PLAN_PRICES[plan];
       if (!amountCents) return res.status(400).json({ message: "Invalid plan" });
 
@@ -1080,6 +1087,10 @@ export async function registerRoutes(
         startDate: null,
         endDate: null,
         paymobTransactionId: null,
+        invoiceIsCompany: invoiceInfo?.isCompany || false,
+        invoiceCompanyName: invoiceInfo?.companyName || null,
+        invoiceTaxNumber: invoiceInfo?.taxNumber || null,
+        invoiceCustomerName: `${user.firstName || ""} ${user.lastName || ""}`.trim() || null,
       });
 
       const iframeUrl = await getIframeUrl(paymentToken);
@@ -1093,6 +1104,11 @@ export async function registerRoutes(
   // ─── Buy Credits (top-up) ────────────────────────────────────────────────
   const buyCreditSchema = z.object({
     credits: z.number().int().min(50).refine((n) => n % 5 === 0, { message: "Credits must be a multiple of 5" }),
+    invoiceInfo: z.object({
+      isCompany: z.boolean().optional().default(false),
+      companyName: z.string().optional(),
+      taxNumber: z.string().optional(),
+    }).optional(),
   });
 
   app.post("/api/payments/buy-credits", isAuthenticated, async (req: any, res) => {
@@ -1104,7 +1120,7 @@ export async function registerRoutes(
       const parsed = buyCreditSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "كمية جلسات الذكاء يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
 
-      const { credits } = parsed.data;
+      const { credits, invoiceInfo } = parsed.data;
       const amountCents = Math.round(credits * 1.15 * 100);
       const userId = req.user.id;
 
@@ -1158,6 +1174,10 @@ export async function registerRoutes(
         status: "pending",
         paymobOrderId: String(orderId),
         paymobTransactionId: null,
+        invoiceIsCompany: invoiceInfo?.isCompany || false,
+        invoiceCompanyName: invoiceInfo?.companyName || null,
+        invoiceTaxNumber: invoiceInfo?.taxNumber || null,
+        invoiceCustomerName: `${user.firstName || ""} ${user.lastName || ""}`.trim() || null,
       });
 
       const iframeUrl = await getIframeUrl(paymentToken);
@@ -1189,6 +1209,29 @@ export async function registerRoutes(
         });
         const planCredits = plan === "business" ? 200 : 50;
         await db.execute(sql`UPDATE users SET plan = ${plan}, credits = ${planCredits} WHERE id = ${userId}`);
+        // Send invoice email for test subscription
+        try {
+          const [subRow] = await db.select().from(subscriptions).where(eq(subscriptions.id, Number(subId)));
+          const [userRow] = await db.select().from(users).where(eq(users.id, userId));
+          if (userRow?.email && subRow) {
+            const amountSar = (subRow.amountCents || 0) / 100;
+            const planNameAr = plan === "business" ? "Business" : "Pro";
+            const invoiceData: InvoiceData = {
+              invoiceNumber: `AW-SUB-${subRow.id}`,
+              invoiceDate: now,
+              customerEmail: userRow.email,
+              customerName: (subRow as any).invoiceCustomerName || `${userRow.firstName || ""} ${userRow.lastName || ""}`.trim() || userRow.email,
+              isCompany: !!(subRow as any).invoiceIsCompany,
+              companyName: (subRow as any).invoiceCompanyName || undefined,
+              taxNumber: (subRow as any).invoiceTaxNumber || undefined,
+              description: `اشتراك خطة ${planNameAr} — ArabyWeb.net (شهري)`,
+              amountWithVatSar: amountSar,
+              invoiceType: "subscription",
+              planOrCredits: planNameAr,
+            };
+            sendInvoiceEmail(invoiceData, true).catch(() => {});
+          }
+        } catch { /* non-critical */ }
         return res.json({ success: true, message: "تم تفعيل الاشتراك بنجاح" });
       }
 
@@ -1198,6 +1241,28 @@ export async function registerRoutes(
           paymobTransactionId: `TEST-TXN-${Date.now()}`,
         });
         await db.execute(sql`UPDATE users SET credits = credits + ${Number(credits)} WHERE id = ${userId}`);
+        // Send invoice email for test credit purchase
+        try {
+          const [purchase] = await db.select().from(creditPurchases).where(eq(creditPurchases.id, Number(purchaseId)));
+          const [userRow] = await db.select().from(users).where(eq(users.id, userId));
+          if (userRow?.email && purchase) {
+            const amountSar = (purchase.amountCents || 0) / 100;
+            const invoiceData: InvoiceData = {
+              invoiceNumber: `AW-CR-${purchase.id}`,
+              invoiceDate: new Date(),
+              customerEmail: userRow.email,
+              customerName: (purchase as any).invoiceCustomerName || `${userRow.firstName || ""} ${userRow.lastName || ""}`.trim() || userRow.email,
+              isCompany: !!(purchase as any).invoiceIsCompany,
+              companyName: (purchase as any).invoiceCompanyName || undefined,
+              taxNumber: (purchase as any).invoiceTaxNumber || undefined,
+              description: `شراء ${purchase.credits} جلسة ذكاء اصطناعي — ArabyWeb.net`,
+              amountWithVatSar: amountSar,
+              invoiceType: "credits",
+              planOrCredits: `${purchase.credits} جلسة`,
+            };
+            sendInvoiceEmail(invoiceData, true).catch(() => {});
+          }
+        } catch { /* non-critical */ }
         return res.json({ success: true, message: "تم إضافة الرصيد بنجاح" });
       }
 
@@ -1251,12 +1316,25 @@ export async function registerRoutes(
             .set({ credits: sql`credits + ${creditPurchase.credits}`, updatedAt: new Date() })
             .where(eq(users.id, creditPurchase.userId));
           console.log(`[Credits] Added ${creditPurchase.credits} credits to user ${creditPurchase.userId}`);
-          // Send payment success email (fire-and-forget)
+          // Send Saudi VAT invoice email (fire-and-forget)
           try {
-            const [buyer] = await db.select({ email: users.email }).from(users).where(eq(users.id, creditPurchase.userId));
+            const [buyer] = await db.select().from(users).where(eq(users.id, creditPurchase.userId));
             if (buyer?.email) {
               const amountSar = (creditPurchase.amountCents || 0) / 100;
-              sendPaymentSuccessEmail(buyer.email, creditPurchase.credits, amountSar, true).catch(() => {});
+              const invoiceData: InvoiceData = {
+                invoiceNumber: `AW-CR-${creditPurchase.id}`,
+                invoiceDate: new Date(),
+                customerEmail: buyer.email,
+                customerName: (creditPurchase as any).invoiceCustomerName || `${buyer.firstName || ""} ${buyer.lastName || ""}`.trim() || buyer.email,
+                isCompany: !!(creditPurchase as any).invoiceIsCompany,
+                companyName: (creditPurchase as any).invoiceCompanyName || undefined,
+                taxNumber: (creditPurchase as any).invoiceTaxNumber || undefined,
+                description: `شراء ${creditPurchase.credits} جلسة ذكاء اصطناعي — ArabyWeb.net`,
+                amountWithVatSar: amountSar,
+                invoiceType: "credits",
+                planOrCredits: `${creditPurchase.credits} جلسة`,
+              };
+              sendInvoiceEmail(invoiceData, true).catch(() => {});
             }
           } catch { /* non-critical */ }
         } else {
@@ -1292,11 +1370,25 @@ export async function registerRoutes(
         const [existingUser] = await db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, sub.userId));
         const totalCredits = (existingUser?.credits || 0) + addedCredits;
         await db.update(users).set({ plan: sub.plan, credits: totalCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
-        // Send subscription success email (fire-and-forget)
+        // Send Saudi VAT invoice email for subscription (fire-and-forget)
         try {
           if (existingUser?.email) {
             const amountSar = (sub.amountCents || 0) / 100;
-            sendPaymentSuccessEmail(existingUser.email, addedCredits, amountSar, true).catch(() => {});
+            const planNameAr = sub.plan === "business" ? "Business" : "Pro";
+            const invoiceData: InvoiceData = {
+              invoiceNumber: `AW-SUB-${sub.id}`,
+              invoiceDate: new Date(),
+              customerEmail: existingUser.email,
+              customerName: (sub as any).invoiceCustomerName || existingUser.email,
+              isCompany: !!(sub as any).invoiceIsCompany,
+              companyName: (sub as any).invoiceCompanyName || undefined,
+              taxNumber: (sub as any).invoiceTaxNumber || undefined,
+              description: `اشتراك خطة ${planNameAr} — ArabyWeb.net (شهري)`,
+              amountWithVatSar: amountSar,
+              invoiceType: "subscription",
+              planOrCredits: planNameAr,
+            };
+            sendInvoiceEmail(invoiceData, true).catch(() => {});
           }
         } catch { /* non-critical */ }
       } else {
