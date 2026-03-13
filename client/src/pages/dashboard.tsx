@@ -90,9 +90,11 @@ export default function DashboardPage() {
   const [isInstantGenerating, setIsInstantGenerating] = useState(false);
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const { data: projects = [], isLoading } = useQuery<Project[]>({
+  const { data: rawProjects = [], isLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
   });
+  // Deduplicate by ID to prevent any double-render issues
+  const projects = rawProjects.filter((p, idx, arr) => arr.findIndex(x => x.id === p.id) === idx);
 
   const { data: templates = [] } = useQuery<Template[]>({
     queryKey: ["/api/templates"],
@@ -344,7 +346,7 @@ export default function DashboardPage() {
                       {project.generatedHtml ? (
                         <div className="absolute inset-0 p-2 overflow-hidden pointer-events-none">
                           <iframe
-                            srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.4);transform-origin:top left;width:250%;height:250%}${project.generatedCss||""}</style></head><body>${project.generatedHtml}</body></html>`}
+                            srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.4);transform-origin:top left;width:250%;height:250%}${project.generatedCss||""}</style></head><body>${(project.generatedHtml||"").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style id="aw-[^"]*">[\s\S]*?<\/style>/gi,"")}</body></html>`}
                             className="w-full h-full rounded bg-white border-0"
                             sandbox="allow-same-origin"
                             title="Project thumbnail"
