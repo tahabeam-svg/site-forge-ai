@@ -64,6 +64,7 @@ import {
   Bug,
   Lightbulb,
   HelpCircle,
+  Coins,
 } from "lucide-react";
 
 interface AdminStats { totalUsers: number; totalProjects: number; publishedProjects: number; }
@@ -123,6 +124,7 @@ export default function AdminPage() {
   const { data: couponsData = [], isLoading: couponsLoading } = useQuery<Coupon[]>({ queryKey: ["/api/admin/coupons"], enabled: !statsError });
   const { data: paymobSettings } = useQuery<PaymobSettings>({ queryKey: ["/api/admin/settings/paymob"], enabled: !statsError });
   const { data: adminSubs = [] } = useQuery<AdminSubscription[]>({ queryKey: ["/api/admin/subscriptions"], enabled: !statsError });
+  const { data: adminCreditPurchases = [] } = useQuery<{id: number; userId: string; credits: number; amountCents: number; status: string; createdAt: string}[]>({ queryKey: ["/api/admin/credit-purchases"], enabled: !statsError });
   const { data: pricingData } = useQuery<PricingData>({ queryKey: ["/api/admin/pricing"], enabled: !statsError });
   const { data: promotions = [] } = useQuery<Promotion[]>({ queryKey: ["/api/admin/promotions"], enabled: !statsError });
   const { data: fraudData, isLoading: fraudLoading, refetch: refetchFraud } = useQuery<FraudData>({
@@ -900,6 +902,44 @@ export default function AdminPage() {
                         </div>
                       );
                     })}
+                  </div>
+                </ScrollArea>
+              </Card>
+            )}
+
+            {/* CREDIT PURCHASES */}
+            {activeSection === "payments" && adminCreditPurchases.length > 0 && (
+              <Card className="bg-zinc-900 border-zinc-800">
+                <div className="p-3 sm:p-4 border-b border-zinc-800">
+                  <h3 className="font-semibold text-white flex items-center gap-2 text-sm sm:text-base">
+                    <Coins className="w-4 h-4 text-violet-400" />
+                    {lang === "ar" ? "مشتريات النقاط" : "Credit Purchases"}
+                  </h3>
+                  <p className="text-[10px] text-zinc-500 mt-0.5">
+                    {adminCreditPurchases.filter(p => p.status === "completed").length} {lang === "ar" ? "مكتمل" : "completed"} • {(adminCreditPurchases.filter(p => p.status === "completed").reduce((s, p) => s + p.amountCents, 0) / 100).toFixed(0)} {lang === "ar" ? "ر.س" : "SAR"} {lang === "ar" ? "إجمالي" : "total"}
+                  </p>
+                </div>
+                <ScrollArea className="h-[250px]">
+                  <div className="divide-y divide-zinc-800">
+                    {adminCreditPurchases.map((p, i) => (
+                      <div key={p.id} className="flex items-center justify-between p-3 hover:bg-zinc-800/50 transition-colors" data-testid={`row-credit-purchase-${i}`}>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
+                            <Coins className="w-3.5 h-3.5 text-violet-400" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-medium text-zinc-200 truncate">{p.userId.slice(0, 10)}...</p>
+                            <p className="text-[10px] text-zinc-500">{new Date(p.createdAt).toLocaleDateString()} • +{p.credits} {lang === "ar" ? "نقطة" : "cr"}</p>
+                          </div>
+                        </div>
+                        <div className="text-end shrink-0 ms-2">
+                          <p className="text-xs font-semibold text-white" dir="ltr">{(p.amountCents / 100).toFixed(0)} SAR</p>
+                          <Badge variant="secondary" className={`text-[9px] mt-0.5 ${p.status === "completed" ? "bg-emerald-500/20 text-emerald-400" : p.status === "pending" ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"}`}>
+                            {p.status === "completed" ? (lang === "ar" ? "مكتمل" : "Done") : p.status === "pending" ? (lang === "ar" ? "معلق" : "Pending") : (lang === "ar" ? "فشل" : "Failed")}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </ScrollArea>
               </Card>

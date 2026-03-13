@@ -169,6 +169,18 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
+export const creditPurchases = pgTable("credit_purchases", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  credits: integer("credits").notNull(),
+  amountCents: integer("amount_cents").notNull(),
+  currency: varchar("currency").default("SAR"),
+  status: varchar("status").default("pending").notNull(),
+  paymobOrderId: varchar("paymob_order_id"),
+  paymobTransactionId: varchar("paymob_transaction_id"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
 export const userFeedback = pgTable("user_feedback", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id"),
@@ -182,6 +194,8 @@ export const userFeedback = pgTable("user_feedback", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
+export const insertCreditPurchaseSchema = createInsertSchema(creditPurchases).omit({ id: true, createdAt: true });
+
 // Insert schemas
 export const insertVisitorQuestionSchema = createInsertSchema(visitorQuestions).omit({ id: true, createdAt: true });
 export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({ id: true, createdAt: true });
@@ -191,6 +205,9 @@ export const insertChatbotConversationSchema = createInsertSchema(chatbotConvers
 export const insertUserFeedbackSchema = createInsertSchema(userFeedback).omit({ id: true, createdAt: true, status: true, adminNote: true });
 
 // Types
+export type CreditPurchase = typeof creditPurchases.$inferSelect;
+export type InsertCreditPurchase = z.infer<typeof insertCreditPurchaseSchema>;
+
 export type VisitorQuestion = typeof visitorQuestions.$inferSelect;
 export type AutoLearnedKnowledge = typeof autoLearnedKnowledge.$inferSelect;
 export type KnowledgeBase = typeof knowledgeBase.$inferSelect;

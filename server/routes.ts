@@ -1009,6 +1009,63 @@ export async function registerRoutes(
     }
   });
 
+  // ─── Buy Credits (top-up) ────────────────────────────────────────────────
+  const buyCreditSchema = z.object({
+    credits: z.number().int().min(50).refine((n) => n % 5 === 0, { message: "Credits must be a multiple of 5" }),
+  });
+
+  app.post("/api/payments/buy-credits", isAuthenticated, async (req: any, res) => {
+    try {
+      const configured = await isPaymobConfigured();
+      if (!configured) return res.status(400).json({ message: "Payment gateway not configured" });
+
+      const parsed = buyCreditSchema.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "كمية الكريديت يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
+
+      const { credits } = parsed.data;
+      // 1 credit = 1 SAR = 100 halalas
+      const amountCents = credits * 100;
+      const userId = req.user.id;
+
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      const merchantOrderId = `ARABYWEB-CREDITS-${userId}-${Date.now()}`;
+      const { orderId, token: authToken } = await createPaymobOrder(amountCents, "SAR", merchantOrderId);
+
+      const paymentToken = await getPaymentKey(authToken, orderId, amountCents, "SAR", {
+        email: user.email || "user@arabyweb.net",
+        firstName: user.firstName || "User",
+        lastName: user.lastName || "ArabyWeb",
+      });
+
+      await storage.createCreditPurchase({
+        userId,
+        credits,
+        amountCents,
+        currency: "SAR",
+        status: "pending",
+        paymobOrderId: String(orderId),
+        paymobTransactionId: null,
+      });
+
+      const iframeUrl = await getIframeUrl(paymentToken);
+      res.json({ iframeUrl, orderId, credits, amountSAR: credits });
+    } catch (err: any) {
+      console.error("Buy credits error:", err);
+      res.status(500).json({ message: err.message || "Failed to initiate credit purchase" });
+    }
+  });
+
+  app.get("/api/payments/credit-history", isAuthenticated, async (req: any, res) => {
+    try {
+      const purchases = await storage.getCreditPurchasesByUser(req.user.id);
+      res.json(purchases);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch credit history" });
+    }
+  });
+
   app.post("/api/payments/callback", async (req: any, res) => {
     try {
       const data = req.body?.obj;
@@ -1026,6 +1083,33 @@ export async function registerRoutes(
       const orderId = String(data.order?.id ?? data.order ?? "");
       if (!orderId) return res.status(400).json({ message: "Missing order ID" });
 
+      // Check if this is a credit purchase order first
+      const creditPurchase = await storage.getCreditPurchaseByOrderId(orderId);
+      if (creditPurchase) {
+        if (creditPurchase.amountCents && data.amount_cents !== creditPurchase.amountCents) {
+          console.error("Credit purchase amount mismatch:", data.amount_cents, "vs", creditPurchase.amountCents);
+          return res.status(400).json({ message: "Amount mismatch" });
+        }
+        if (data.success === true) {
+          await storage.updateCreditPurchase(creditPurchase.id, {
+            status: "completed",
+            paymobTransactionId: String(data.id),
+          });
+          // Add credits to user balance
+          await db.update(users)
+            .set({ credits: sql`credits + ${creditPurchase.credits}`, updatedAt: new Date() })
+            .where(eq(users.id, creditPurchase.userId));
+          console.log(`[Credits] Added ${creditPurchase.credits} credits to user ${creditPurchase.userId}`);
+        } else {
+          await storage.updateCreditPurchase(creditPurchase.id, {
+            status: "failed",
+            paymobTransactionId: String(data.id || ""),
+          });
+        }
+        return res.json({ message: "OK" });
+      }
+
+      // Otherwise, treat as subscription
       const subs = await storage.getSubscriptions();
       const sub = subs.find((s) => s.paymobOrderId === orderId);
       if (!sub) return res.json({ message: "OK" });
@@ -1122,6 +1206,15 @@ export async function registerRoutes(
       res.json(subs);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch subscriptions" });
+    }
+  });
+
+  app.get("/api/admin/credit-purchases", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const purchases = await storage.getAllCreditPurchases();
+      res.json(purchases);
+    } catch {
+      res.status(500).json({ message: "Failed to fetch credit purchases" });
     }
   });
 

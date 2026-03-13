@@ -172,6 +172,26 @@ export async function seedDatabase() {
     console.error("Platform tables migration warning:", e.message);
   }
 
+  // Credit purchases table
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS credit_purchases (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR NOT NULL,
+        credits INTEGER NOT NULL,
+        amount_cents INTEGER NOT NULL,
+        currency VARCHAR DEFAULT 'SAR',
+        status VARCHAR NOT NULL DEFAULT 'pending',
+        paymob_order_id VARCHAR,
+        paymob_transaction_id VARCHAR,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    console.log("Migration: credit_purchases table ensured");
+  } catch (e: any) {
+    console.error("Credit purchases migration warning:", e.message);
+  }
+
   const existing = await db.select().from(templates);
   if (existing.length > 0) return;
 

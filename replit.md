@@ -101,6 +101,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `coupons` - id (serial), code (text, unique), discountType (text), discountValue (integer), maxUses (integer), usedCount (integer), expiresAt (timestamp), isActive (boolean), createdAt
 - `platform_settings` - id (serial), key (varchar, unique), value (text), updatedAt
 - `subscriptions` - id (serial), userId (varchar), plan (varchar), status (varchar), paymobOrderId, paymobTransactionId, amountCents, currency, startDate, endDate, createdAt
+- `credit_purchases` - id (serial), userId (varchar), credits (integer), amountCents (integer), currency (varchar, default 'SAR'), status (varchar: pending/completed/failed), paymobOrderId, paymobTransactionId, createdAt
 
 ## API Routes
 
@@ -134,8 +135,11 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - `GET /api/payments/config` - Check if Paymob is configured
 - `GET /api/subscription` - Get current user subscription
 - `POST /api/payments/initiate` - Start payment flow (returns Paymob iframe URL)
-- `POST /api/payments/callback` - Paymob webhook callback
+- `POST /api/payments/callback` - Paymob webhook callback (handles both subscriptions and credit purchases)
 - `GET /api/payments/status/:orderId` - Check payment status
+- `POST /api/payments/buy-credits` - Buy extra credits (min 50, multiples of 5, 1 SAR/credit)
+- `GET /api/payments/credit-history` - User's credit purchase history
+- `GET /api/admin/credit-purchases` - Admin view of all credit purchases
 - `GET /api/admin/settings/paymob` - Get Paymob settings (masked)
 - `PUT /api/admin/settings/paymob` - Save Paymob settings
 - `GET /api/admin/subscriptions` - List all subscriptions

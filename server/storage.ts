@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback } from "@shared/schema";
+import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback, creditPurchases } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback, CreditPurchase, InsertCreditPurchase } from "@shared/schema";
 import { eq, desc, sql, count, like, ilike } from "drizzle-orm";
 
 export interface IStorage {
@@ -57,6 +57,13 @@ export interface IStorage {
   createFeedback(feedback: InsertUserFeedback): Promise<UserFeedback>;
   updateFeedbackStatus(id: number, status: string, adminNote?: string): Promise<void>;
   getNewFeedbackCount(): Promise<number>;
+
+  // Credit Purchases
+  createCreditPurchase(purchase: InsertCreditPurchase): Promise<CreditPurchase>;
+  getCreditPurchaseByOrderId(orderId: string): Promise<CreditPurchase | undefined>;
+  updateCreditPurchase(id: number, data: Partial<CreditPurchase>): Promise<CreditPurchase | undefined>;
+  getCreditPurchasesByUser(userId: string): Promise<CreditPurchase[]>;
+  getAllCreditPurchases(): Promise<CreditPurchase[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -281,6 +288,30 @@ export class DatabaseStorage implements IStorage {
   async getNewFeedbackCount(): Promise<number> {
     const [r] = await db.select({ count: count() }).from(userFeedback).where(eq(userFeedback.status, "new"));
     return r?.count ?? 0;
+  }
+
+  // ─── Credit Purchases ────────────────────────────────────────────────────
+  async createCreditPurchase(purchase: InsertCreditPurchase): Promise<CreditPurchase> {
+    const [result] = await db.insert(creditPurchases).values(purchase).returning();
+    return result;
+  }
+
+  async getCreditPurchaseByOrderId(orderId: string): Promise<CreditPurchase | undefined> {
+    const [result] = await db.select().from(creditPurchases).where(eq(creditPurchases.paymobOrderId, orderId));
+    return result;
+  }
+
+  async updateCreditPurchase(id: number, data: Partial<CreditPurchase>): Promise<CreditPurchase | undefined> {
+    const [result] = await db.update(creditPurchases).set(data).where(eq(creditPurchases.id, id)).returning();
+    return result;
+  }
+
+  async getCreditPurchasesByUser(userId: string): Promise<CreditPurchase[]> {
+    return db.select().from(creditPurchases).where(eq(creditPurchases.userId, userId)).orderBy(desc(creditPurchases.createdAt));
+  }
+
+  async getAllCreditPurchases(): Promise<CreditPurchase[]> {
+    return db.select().from(creditPurchases).orderBy(desc(creditPurchases.createdAt));
   }
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import DashboardLayout from "@/components/dashboard-layout";
 import { Card } from "@/components/ui/card";
@@ -23,17 +23,23 @@ import {
   ToggleRight,
   Receipt,
   FileText,
+  ShoppingCart,
+  History,
+  Plus,
+  Minus,
 } from "lucide-react";
 
 export default function BillingPage() {
   const { language } = useAuth();
   const lang = language;
   const { toast } = useToast();
+  const qc = useQueryClient();
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [isCompany, setIsCompany] = useState(false);
   const [taxNumber, setTaxNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [creditAmount, setCreditAmount] = useState(50);
 
   const VAT_RATE = 0.15;
 
@@ -67,6 +73,44 @@ export default function BillingPage() {
       setUpgradingPlan(null);
     },
   });
+
+  const { data: creditHistory } = useQuery<{id: number; credits: number; amountCents: number; status: string; createdAt: string}[]>({
+    queryKey: ["/api/payments/credit-history"],
+  });
+
+  const buyCreditsM = useMutation({
+    mutationFn: async (credits: number) => {
+      const res = await apiRequest("POST", "/api/payments/buy-credits", { credits });
+      return res.json();
+    },
+    onSuccess: (data: { iframeUrl: string }) => {
+      if (data.iframeUrl) window.open(data.iframeUrl, "_blank");
+      qc.invalidateQueries({ queryKey: ["/api/payments/credit-history"] });
+      qc.invalidateQueries({ queryKey: ["/api/subscription"] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: lang === "ar" ? "فشل بدء الدفع" : "Payment failed",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const adjustCredits = (delta: number) => {
+    setCreditAmount(prev => {
+      const next = prev + delta;
+      if (next < 50) return 50;
+      if (next % 5 !== 0) return Math.round(next / 5) * 5;
+      return next;
+    });
+  };
+
+  const handleCreditInput = (val: string) => {
+    const n = parseInt(val);
+    if (isNaN(n)) return;
+    setCreditAmount(Math.max(50, Math.round(n / 5) * 5));
+  };
 
   const handleUpgrade = (plan: string) => {
     if (!paymentConfig?.configured) {
@@ -222,6 +266,113 @@ export default function BillingPage() {
             </div>
           </div>
         </div>
+
+        {/* ─── Buy Credits Section ─── */}
+        <Card className="p-5" data-testid="card-buy-credits">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <ShoppingCart className="w-4.5 h-4.5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-base">
+                {lang === "ar" ? "شراء نقاط إضافية" : "Buy Extra Credits"}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {lang === "ar" ? "1 نقطة = 1 ريال سعودي • الحد الأدنى 50 نقطة" : "1 credit = 1 SAR • Minimum 50 credits"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mb-4">
+            <button
+              onClick={() => adjustCredits(-5)}
+              disabled={creditAmount <= 50}
+              className="w-9 h-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-40"
+              data-testid="button-credits-minus"
+            >
+              <Minus className="w-4 h-4" />
+            </button>
+            <div className="flex-1 text-center">
+              <Input
+                type="number"
+                value={creditAmount}
+                min={50}
+                step={5}
+                onChange={(e) => handleCreditInput(e.target.value)}
+                className="text-center text-xl font-bold h-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                data-testid="input-credit-amount"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {lang === "ar" ? "نقطة" : "credits"}
+              </p>
+            </div>
+            <button
+              onClick={() => adjustCredits(5)}
+              className="w-9 h-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors"
+              data-testid="button-credits-plus"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-4">
+            {[50, 100, 200, 500].map(preset => (
+              <button
+                key={preset}
+                onClick={() => setCreditAmount(preset)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  creditAmount === preset
+                    ? "bg-violet-600 text-white border-violet-600"
+                    : "hover:border-violet-400 hover:text-violet-600"
+                }`}
+                data-testid={`button-preset-${preset}`}
+              >
+                {preset} {lang === "ar" ? "نقطة" : "cr"}
+              </button>
+            ))}
+          </div>
+
+          <Separator className="my-3" />
+
+          <div className="space-y-1.5 text-sm mb-4">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{lang === "ar" ? `${creditAmount} نقطة` : `${creditAmount} credits`}</span>
+              <span className="font-medium">{creditAmount} ر.س</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{lang === "ar" ? "ضريبة القيمة المضافة (15%)" : "VAT (15%)"}</span>
+              <span className="font-medium">{(creditAmount * 0.15).toFixed(2)} ر.س</span>
+            </div>
+            <Separator className="my-1" />
+            <div className="flex justify-between font-bold text-base">
+              <span>{lang === "ar" ? "الإجمالي" : "Total"}</span>
+              <span className="text-violet-600">{(creditAmount * 1.15).toFixed(2)} ر.س</span>
+            </div>
+          </div>
+
+          <Button
+            className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+            onClick={() => {
+              if (!paymentConfig?.configured) {
+                toast({ title: lang === "ar" ? "بوابة الدفع غير مفعّلة" : "Payment not configured", variant: "destructive" });
+                return;
+              }
+              buyCreditsM.mutate(creditAmount);
+            }}
+            disabled={buyCreditsM.isPending}
+            data-testid="button-buy-credits"
+          >
+            {buyCreditsM.isPending ? (
+              <Loader2 className="w-4 h-4 animate-spin me-2" />
+            ) : (
+              <ShoppingCart className="w-4 h-4 me-2" />
+            )}
+            {lang === "ar"
+              ? `شراء ${creditAmount} نقطة مقابل ${(creditAmount * 1.15).toFixed(2)} ر.س`
+              : `Buy ${creditAmount} credits for SAR ${(creditAmount * 1.15).toFixed(2)}`}
+            <ExternalLink className="w-3.5 h-3.5 ms-2 opacity-70" />
+          </Button>
+        </Card>
 
         <div>
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
@@ -446,6 +597,48 @@ export default function BillingPage() {
             </p>
           </Card>
         ) : null}
+
+        {/* ─── Credit History ─── */}
+        {creditHistory && creditHistory.length > 0 && (
+          <Card className="p-5" data-testid="card-credit-history">
+            <div className="flex items-center gap-2 mb-4">
+              <History className="w-5 h-5 text-violet-600" />
+              <h3 className="font-semibold">
+                {lang === "ar" ? "سجل شراء النقاط" : "Credit Purchase History"}
+              </h3>
+            </div>
+            <div className="space-y-2">
+              {creditHistory.slice(0, 10).map((p) => {
+                const date = new Date(p.createdAt).toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US");
+                const statusColor = p.status === "completed" ? "bg-emerald-100 text-emerald-700" : p.status === "pending" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700";
+                const statusLabel = p.status === "completed"
+                  ? (lang === "ar" ? "مكتمل" : "Completed")
+                  : p.status === "pending"
+                    ? (lang === "ar" ? "في الانتظار" : "Pending")
+                    : (lang === "ar" ? "فشل" : "Failed");
+                return (
+                  <div key={p.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm" data-testid={`row-credit-${p.id}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center">
+                        <Coins className="w-4 h-4 text-violet-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium">
+                          +{p.credits} {lang === "ar" ? "نقطة" : "credits"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{date}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium">{(p.amountCents / 100).toFixed(0)} ر.س</span>
+                      <Badge className={`text-[10px] ${statusColor}`}>{statusLabel}</Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+        )}
 
         {!paymentConfig?.configured && (
           <Card className="p-4 border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800">
