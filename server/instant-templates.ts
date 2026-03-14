@@ -821,19 +821,17 @@ export function buildInstantWebsite(
       <div class="gallery-overlay"></div>
     </div>`).join("");
 
-  const QUOTE_SVG = getSvcIcon("fa-quote-right");
   const testimonialsHtml = config.testimonials.map((t, i) => `
     <div class="testi-card" data-aos style="animation-delay:${i * 0.12}s">
-      <div class="testi-quote-icon">${QUOTE_SVG}</div>
-      <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
-      <p class="testi-text" data-ar="${esc(t.text_ar)}" data-en="${esc(t.text_en)}"${e3code ? ` data-${e3code}="${esc(t.text_en)}"` : ""}>${t.text_ar}</p>
-      <div class="testi-author">
+      <div class="testi-top-row">
         <div class="testi-avatar">${t.name.charAt(0)}</div>
-        <div>
+        <div class="testi-meta">
           <div class="testi-name">${t.name}</div>
           <div class="testi-role" ${dDyn(t.role_ar, t.role_en, e3code ? t.role_en : undefined)}>${t.role_ar}</div>
         </div>
       </div>
+      <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
+      <p class="testi-text" data-ar="${esc(t.text_ar)}" data-en="${esc(t.text_en)}"${e3code ? ` data-${e3code}="${esc(t.text_en)}"` : ""}>${t.text_ar}</p>
     </div>`).join("");
 
   const whatsappNum = content.phone.replace(/\D/g, "");
@@ -1009,61 +1007,80 @@ export function buildInstantWebsite(
 </section>
 
 <!-- ===== CONTACT ===== -->
-<section id="contact" class="aw-section">
-  <div class="aw-container contact-wrap">
-    <div class="contact-left" data-aos>
-      <span class="eyebrow" ${dUI("تواصل معنا", "Contact Us", "contact_eyebrow")}>تواصل معنا</span>
-      <h2 class="sec-title" ${dUI("نسعد بخدمتك", "We'd Love to Help", "contact_title")}>نسعد بخدمتك</h2>
-      <div class="title-line"></div>
-      <p class="contact-desc" ${dDyn(ar.contact_description, en.contact_description, e3?.content.contact_description)}>${ar.contact_description}</p>
-      <div class="contact-details">
-        ${content.phone ? `<a href="tel:${content.phone}" class="contact-row">
-          <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.9a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.07 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.72-.72a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+<section id="contact" class="aw-section contact-section">
+  <div class="aw-container">
+    <div class="contact-panel">
+
+      <!-- LEFT: gradient info panel -->
+      <div class="contact-info-panel" data-aos>
+        <div class="cip-blob1"></div>
+        <div class="cip-blob2"></div>
+        <div class="cip-inner">
+          <span class="cip-eyebrow" ${dUI("تواصل معنا", "Contact Us", "contact_eyebrow")}>تواصل معنا</span>
+          <h2 class="cip-title" ${dUI("نسعد بخدمتك", "We'd Love to Help", "contact_title")}>نسعد بخدمتك</h2>
+          <p class="cip-desc" ${dDyn(ar.contact_description, en.contact_description, e3?.content.contact_description)}>${ar.contact_description}</p>
+          <div class="cip-details">
+            ${content.phone ? `<div class="cip-row">
+              <div class="cip-icon-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.9a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.07 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.72-.72a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+              <div><div class="cip-row-label" ${dUI("الهاتف", "Phone", "phone_label")}>الهاتف</div><a href="tel:${content.phone}" class="cip-row-val" dir="ltr">${content.phone}</a></div>
+            </div>` : ""}
+            ${content.email ? `<div class="cip-row">
+              <div class="cip-icon-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+              <div><div class="cip-row-label" ${dUI("البريد", "Email", "email_label")}>البريد</div><a href="mailto:${content.email}" class="cip-row-val" dir="ltr">${content.email}</a></div>
+            </div>` : ""}
+            ${ar.address ? `<div class="cip-row">
+              <div class="cip-icon-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div><div class="cip-row-label" ${dUI("العنوان", "Address", "address_label")}>العنوان</div><div class="cip-row-val" ${dDyn(ar.address, en.address, e3?.content.address)}>${ar.address}</div></div>
+            </div>` : ""}
           </div>
-          <div><div class="ci-label" ${dUI("الهاتف", "Phone", "phone_label")}>الهاتف</div><div class="ci-val" dir="ltr">${content.phone}</div></div>
-        </a>` : ""}
-        ${content.email ? `<a href="mailto:${content.email}" class="contact-row">
-          <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <div><div class="ci-label" ${dUI("البريد", "Email", "email_label")}>البريد</div><div class="ci-val" dir="ltr">${content.email}</div></div>
-        </a>` : ""}
-        ${ar.address ? `<div class="contact-row">
-          <div class="contact-icon-box" style="background:${primary}15;color:${primary}">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          </div>
-          <div><div class="ci-label" ${dUI("العنوان", "Address", "address_label")}>العنوان</div><div class="ci-val" ${dDyn(ar.address, en.address, e3?.content.address)}>${ar.address}</div></div>
-        </div>` : ""}
+          ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="noreferrer noopener" class="wa-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+            <span ${dUI("تواصل عبر واتساب", "WhatsApp Us", "wa")}>تواصل عبر واتساب</span>
+          </a>` : ""}
+        </div>
       </div>
-      ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="noreferrer noopener" class="wa-btn">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-        <span ${dUI("تواصل عبر واتساب", "WhatsApp Us", "wa")}>تواصل عبر واتساب</span>
-      </a>` : ""}
-    </div>
-    <div class="contact-right" data-aos style="animation-delay:0.15s">
-      <form class="contact-form" onsubmit="var b=this.querySelector('.form-submit');var l=document.getElementById('aw-root').getAttribute('lang');b.textContent=l==='ar'?'تم الإرسال ✓':'Sent ✓';b.style.background='#10b981';event.preventDefault();">
-        <h3 class="form-title" ${dUI("أرسل رسالتك", "Send a Message", "form_title")}>أرسل رسالتك</h3>
-        <div class="form-row">
-          <div class="fi-wrap">
-            <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-            <input type="text" placeholder="الاسم الكامل" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_name || "Full Name")}"` : ""} class="form-inp fi-inp" required/>
+
+      <!-- RIGHT: form card -->
+      <div class="contact-form-card" data-aos style="animation-delay:0.18s">
+        <div class="form-card-head">
+          <h3 class="form-title" ${dUI("أرسل رسالتك", "Send a Message", "form_title")}>أرسل رسالتك</h3>
+          <p class="form-subtitle" ${dUI("سنرد عليك في أقرب وقت", "We'll get back to you soon", "form_sub")}>سنرد عليك في أقرب وقت</p>
+        </div>
+        <form class="contact-form" onsubmit="var b=this.querySelector('.form-submit');var l=document.getElementById('aw-root').getAttribute('lang');b.textContent=l==='ar'?'تم الإرسال ✓':'Sent ✓';b.style.background='#10b981';b.style.boxShadow='0 8px 24px rgba(16,185,129,0.4)';event.preventDefault();">
+          <div class="form-field-group">
+            <label class="field-label" ${dUI("الاسم الكامل", "Full Name", "lbl_name")}>${MULTILANG_UI[primaryLang]?.form_name || "الاسم الكامل"}</label>
+            <div class="fi-wrap">
+              <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+              <input type="text" placeholder="${MULTILANG_UI[primaryLang]?.form_name || "الاسم الكامل"}" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_name || "Full Name")}"` : ""} class="form-inp fi-inp" required/>
+            </div>
           </div>
-          <div class="fi-wrap">
-            <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
-            <input type="email" placeholder="البريد الإلكتروني" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_email || "Email Address")}"` : ""} class="form-inp fi-inp" required/>
+          <div class="form-row-2">
+            <div class="form-field-group">
+              <label class="field-label" ${dUI("البريد الإلكتروني", "Email", "lbl_email")}>${MULTILANG_UI[primaryLang]?.form_email || "البريد الإلكتروني"}</label>
+              <div class="fi-wrap">
+                <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+                <input type="email" placeholder="${MULTILANG_UI[primaryLang]?.form_email || "البريد الإلكتروني"}" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_email || "Email Address")}"` : ""} class="form-inp fi-inp" required/>
+              </div>
+            </div>
+            <div class="form-field-group">
+              <label class="field-label" ${dUI("رقم الجوال", "Phone", "lbl_phone")}>${MULTILANG_UI[primaryLang]?.form_phone || "رقم الجوال"}</label>
+              <div class="fi-wrap">
+                <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 15.18z"/></svg></span>
+                <input type="tel" placeholder="${MULTILANG_UI[primaryLang]?.form_phone || "رقم الجوال"}" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_phone || "Phone Number")}"` : ""} class="form-inp fi-inp" dir="ltr"/>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="fi-wrap">
-          <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 15.18z"/></svg></span>
-          <input type="tel" placeholder="رقم الجوال" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_phone || "Phone Number")}"` : ""} class="form-inp fi-inp" dir="ltr"/>
-        </div>
-        <div class="fi-wrap fi-ta-wrap">
-          <span class="fi-icon fi-icon-top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-          <textarea placeholder="رسالتك..." data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..."${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_msg || "Your message...")}"` : ""} class="form-inp form-ta fi-inp" rows="4"></textarea>
-        </div>
-        <button type="submit" class="form-submit" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</button>
-      </form>
+          <div class="form-field-group">
+            <label class="field-label" ${dUI("رسالتك", "Your Message", "lbl_msg")}>${MULTILANG_UI[primaryLang]?.form_msg?.replace("...","") || "رسالتك"}</label>
+            <div class="fi-wrap fi-ta-wrap">
+              <span class="fi-icon fi-icon-top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+              <textarea placeholder="${MULTILANG_UI[primaryLang]?.form_msg || "رسالتك..."}" data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..."${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_msg || "Your message...")}"` : ""} class="form-inp form-ta fi-inp" rows="4"></textarea>
+            </div>
+          </div>
+          <button type="submit" class="form-submit" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</button>
+        </form>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1322,46 +1339,73 @@ input,textarea,select,button{font:inherit;}
 .btn-white:active{transform:translateY(1px);}
 
 /* ═══ TESTIMONIALS ═══ */
-.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;}
-.testi-card{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:1.75rem;padding:2.25rem;backdrop-filter:blur(12px);transition:transform 0.35s,background 0.35s,border-color 0.35s;position:relative;overflow:hidden;}
-.testi-card::after{content:'';position:absolute;bottom:0;inset-inline-start:0;width:100%;height:2px;background:linear-gradient(90deg,${primary},${accent});transform:scaleX(0);transform-origin:inset-inline-start;transition:transform 0.4s cubic-bezier(.22,1,.36,1);}
-.testi-card:hover{background:rgba(255,255,255,0.11);transform:translateY(-6px);border-color:${primary}55;}
-.testi-card:hover::after{transform:scaleX(1);}
-.testi-quote-icon{position:absolute;top:1.25rem;inset-inline-end:1.5rem;color:${accent};opacity:0.35;width:36px;height:36px;}
-.testi-quote-icon svg{width:36px;height:36px;}
-.testi-stars{display:flex;gap:3px;margin-bottom:1.25rem;}
-.testi-text{color:rgba(255,255,255,0.93);font-size:0.97rem;line-height:1.92;margin-bottom:1.75rem;font-style:normal;}
-.testi-author{display:flex;align-items:center;gap:1rem;}
-.testi-avatar{width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.2rem;font-weight:800;flex-shrink:0;box-shadow:0 4px 15px ${primary}65;}
-.testi-name{color:#fff;font-weight:700;font-size:0.95rem;}
-.testi-role{color:rgba(255,255,255,0.62);font-size:0.82rem;margin-top:0.2rem;}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.75rem;}
+.testi-card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.10);
+  border-top:3px solid transparent;
+  border-image:linear-gradient(90deg,${primary},${accent}) 1;
+  border-radius:0 0 1.5rem 1.5rem;
+  padding:2rem 1.75rem 1.75rem;
+  transition:transform 0.35s,background 0.35s,box-shadow 0.35s;
+  display:flex;flex-direction:column;gap:0;
+}
+.testi-card:hover{background:rgba(255,255,255,0.10);transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.25);}
+.testi-top-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;}
+.testi-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.35rem;font-weight:900;flex-shrink:0;box-shadow:0 4px 16px ${primary}55;}
+.testi-meta{flex:1;min-width:0;}
+.testi-name{color:#fff;font-weight:700;font-size:1rem;letter-spacing:-0.01em;}
+.testi-role{color:${accent};font-size:0.8rem;font-weight:600;margin-top:0.2rem;letter-spacing:0.3px;}
+.testi-stars{display:flex;gap:3px;margin-bottom:1rem;}
+.testi-text{color:rgba(255,255,255,0.88);font-size:0.96rem;line-height:1.9;font-style:normal;flex:1;}
 
 /* ═══ CONTACT ═══ */
-.contact-wrap{display:grid;grid-template-columns:1fr 1.15fr;gap:5rem;align-items:start;}
-.contact-desc{color:#64748b;font-size:1.03rem;line-height:1.88;margin:1.25rem 0 2rem;}
-.contact-details{display:flex;flex-direction:column;gap:0.85rem;margin-bottom:2rem;}
-.contact-row{display:flex;align-items:center;gap:1rem;padding:0.85rem;border-radius:1rem;transition:background 0.2s;}
-.contact-row:hover{background:#f4f7ff;}
-.contact-icon-box{width:44px;height:44px;border-radius:0.75rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ci-label{font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;margin-bottom:0.15rem;}
-.ci-val{font-size:0.95rem;font-weight:600;color:#334155;}
-.wa-btn{display:inline-flex;align-items:center;gap:0.75rem;background:#25D366;color:#fff;padding:0.85rem 2rem;border-radius:3rem;font-weight:700;font-size:0.95rem;box-shadow:0 8px 28px rgba(37,211,102,0.4);transition:transform 0.3s,box-shadow 0.3s;}
-.wa-btn:hover{transform:translateY(-3px);box-shadow:0 16px 38px rgba(37,211,102,0.55);}
-.contact-right{background:#fff;border:1.5px solid #e8eef8;border-radius:2rem;padding:2.75rem;box-shadow:0 20px 70px rgba(0,0,0,0.08);}
-.form-title{font-family:${fontHeading};font-size:1.35rem;font-weight:800;color:#0f172a;margin-bottom:1.75rem;letter-spacing:-0.01em;}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:0.85rem;}
-.fi-wrap{position:relative;margin-bottom:0.85rem;}
-.form-row .fi-wrap{margin-bottom:0;}
+.contact-section{background:linear-gradient(160deg,#f0f4ff 0%,#f8fafb 100%);padding:6rem 0!important;}
+.contact-panel{display:grid;grid-template-columns:1fr 1.25fr;gap:0;border-radius:2.5rem;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,0.12);}
+/* --- Left Info Panel --- */
+.contact-info-panel{
+  background:linear-gradient(160deg,${primary} 0%,${accent} 100%);
+  padding:3.5rem;
+  position:relative;
+  overflow:hidden;
+  display:flex;align-items:stretch;
+}
+.cip-blob1{position:absolute;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,0.08);top:-120px;${dir==="rtl"?"right:-120px":"left:-120px"};pointer-events:none;}
+.cip-blob2{position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,0.06);bottom:-80px;${dir==="rtl"?"left:-60px":"right:-60px"};pointer-events:none;}
+.cip-inner{position:relative;z-index:1;display:flex;flex-direction:column;width:100%;}
+.cip-eyebrow{font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.65);margin-bottom:0.85rem;display:block;}
+.cip-title{font-family:${fontHeading};font-size:2rem;font-weight:900;color:#fff;line-height:1.2;letter-spacing:-0.02em;margin-bottom:1rem;}
+.cip-desc{color:rgba(255,255,255,0.75);font-size:0.95rem;line-height:1.85;margin-bottom:2rem;flex:1;}
+.cip-details{display:flex;flex-direction:column;gap:0;}
+.cip-row{display:flex;align-items:flex-start;gap:1rem;padding:1rem 0;border-bottom:1px solid rgba(255,255,255,0.12);}
+.cip-row:last-child{border-bottom:none;}
+.cip-icon-box{width:40px;height:40px;border-radius:0.75rem;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;}
+.cip-row-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.55);margin-bottom:0.2rem;}
+.cip-row-val{color:#fff;font-size:0.95rem;font-weight:600;text-decoration:none;transition:opacity 0.2s;}
+.cip-row-val:hover{opacity:0.8;}
+.wa-btn{display:inline-flex;align-items:center;gap:0.75rem;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:1.5px solid rgba(255,255,255,0.35);color:#fff;padding:0.9rem 1.75rem;border-radius:3rem;font-weight:700;font-size:0.95rem;margin-top:2rem;transition:all 0.3s;cursor:pointer;}
+.wa-btn:hover{background:#25D366;border-color:#25D366;box-shadow:0 12px 32px rgba(37,211,102,0.45);transform:translateY(-2px);}
+/* --- Right Form Card --- */
+.contact-form-card{background:#fff;padding:3.5rem;display:flex;flex-direction:column;}
+.form-card-head{margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:2px solid #f1f5f9;}
+.form-title{font-family:${fontHeading};font-size:1.6rem;font-weight:900;color:#0f172a;margin-bottom:0.35rem;letter-spacing:-0.02em;}
+.form-subtitle{color:#94a3b8;font-size:0.9rem;}
+.contact-form{display:flex;flex-direction:column;gap:0;flex:1;}
+.form-field-group{margin-bottom:1.25rem;}
+.field-label{display:block;font-size:0.82rem;font-weight:700;color:#475569;margin-bottom:0.5rem;letter-spacing:0.3px;}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:0;}
+.form-row-2 .form-field-group{margin-bottom:1.25rem;}
+.fi-wrap{position:relative;}
 .fi-icon{position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:14px;color:#94a3b8;pointer-events:none;display:flex;align-items:center;line-height:0;transition:color 0.2s;}
 .fi-icon-top{top:15px;transform:none;}
 .fi-wrap:focus-within .fi-icon{color:${primary};}
-.form-inp{width:100%;padding:0.9rem 1.15rem;border:1.5px solid #e2e8f0;border-radius:0.9rem;font-family:${fontBody};font-size:0.95rem;color:#1e293b;background:#f8fafc;transition:border-color 0.25s,background 0.25s,box-shadow 0.25s;outline:none;}
-.form-inp:focus{border-color:${primary};background:#fff;box-shadow:0 0 0 4px ${primary}18;}
+.form-inp{width:100%;padding:0.85rem 1rem;border:2px solid #e8eef8;border-radius:0.75rem;font-size:0.95rem;color:#1e293b;background:#fff;transition:border-color 0.25s,box-shadow 0.25s;outline:none;}
+.form-inp:focus{border-color:${primary};box-shadow:0 0 0 4px ${primary}15;}
 .fi-inp{padding-inline-start:40px!important;}
-.form-ta{resize:vertical;min-height:115px;margin-bottom:0;display:block;}
-.form-submit{width:100%;padding:14px 26px;background:linear-gradient(135deg,${primary},${accent});color:#fff;border:none;border-radius:12px;font-family:${fontBody};font-size:1rem;font-weight:600;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.15),0 2px 4px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.15);transition:transform 0.2s ease,box-shadow 0.2s ease;}
-.form-submit:hover{transform:translateY(-2px);box-shadow:0 12px 28px ${primary}55,0 4px 8px rgba(0,0,0,0.15);}
-.form-submit:active{transform:translateY(1px);box-shadow:0 4px 12px ${primary}40;}
+.form-ta{resize:vertical;min-height:110px;display:block;}
+.form-submit{width:100%;padding:1rem 2rem;background:linear-gradient(135deg,${primary} 0%,${accent} 100%);color:#fff;border:none;border-radius:0.85rem;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 8px 24px ${primary}40,inset 0 1px 0 rgba(255,255,255,0.2);transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.3px;margin-top:0.5rem;}
+.form-submit:hover{transform:translateY(-2px);box-shadow:0 16px 36px ${primary}55,inset 0 1px 0 rgba(255,255,255,0.2);}
+.form-submit:active{transform:translateY(1px);}
 
 /* ═══ FOOTER ═══ */
 .aw-footer{background:linear-gradient(160deg,${dark} 0%,#060c18 100%);padding:5rem 0 0;position:relative;overflow:hidden;}
@@ -1386,6 +1430,9 @@ input,textarea,select,button{font:inherit;}
   .testi-grid{grid-template-columns:repeat(2,1fr);}
   .footer-wrap{grid-template-columns:1fr 1fr;gap:2.5rem;}
   .about-wrap{gap:3rem;}
+  .contact-panel{grid-template-columns:1fr 1.1fr;}
+  .contact-info-panel{padding:2.75rem 2.5rem;}
+  .contact-form-card{padding:2.75rem 2.5rem;}
 }
 @media(max-width:768px){
   .aw-nav-links{display:none!important;}
@@ -1405,11 +1452,14 @@ input,textarea,select,button{font:inherit;}
   .gallery-grid{grid-template-columns:repeat(2,1fr);}
   .cta-inner{flex-direction:column;text-align:center;}
   .testi-grid{grid-template-columns:1fr;}
-  .contact-wrap{grid-template-columns:1fr;gap:2.5rem;}
-  .form-row{grid-template-columns:1fr;}
+  .contact-panel{grid-template-columns:1fr;border-radius:2rem;}
+  .contact-info-panel{padding:2.5rem 2rem;}
+  .cip-title{font-size:1.6rem;}
+  .contact-form-card{padding:2rem;}
+  .form-row-2{grid-template-columns:1fr;}
   .footer-wrap{grid-template-columns:1fr;gap:2rem;}
   .aw-section{padding:4.5rem 0;}
-  .contact-right{padding:2rem;}
+  .contact-section{padding:4rem 0!important;}
 }
 @media(max-width:480px){
   .gallery-grid{grid-template-columns:1fr;}
@@ -1417,6 +1467,8 @@ input,textarea,select,button{font:inherit;}
   .hero-h1{font-size:1.95rem;}
   .stat-num{font-size:2.5rem;}
   .sec-title{font-size:1.75rem;}
+  .contact-info-panel{padding:2rem 1.5rem;}
+  .contact-form-card{padding:1.75rem 1.5rem;}
 }
 `;
 
