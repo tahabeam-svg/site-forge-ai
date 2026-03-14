@@ -36,8 +36,8 @@ type WebsiteCategory = "romantic" | "portfolio" | "event" | "business";
 function detectWebsiteCategory(description: string): WebsiteCategory {
   const d = description.toLowerCase();
   const romantic = ["حبيبت","حبيبي","حبيبه","عشيقت","زوجت","زوجي","girlfriend","boyfriend","lover","sweetheart","my love","بحبك","احبك","أحبك","ذكرى زواج","عيد زواج","عيد حب","valentine","anniversary","قلبي","رفيقت","رفيقي","لحبيبي","لحبيبتي","لزوجتي","لزوجي","أميرت","أميرتي","نغم","نور","ريم","لين","روان","ريان","هند","سارة","مريم","فاطمة","ياسمين","لحبيب","صديقتي","girlfriend website","love website"];
-  const portfolio = ["بورتفوليو","portfolio","أعمالي","موهبتي","مصور","مصمم","فنان","معلم","مدرس","طبيب","مهندس","محامي","شخصي","personal","resume","cv","سيرة ذاتية","شاعر","كاتب","موسيقي"];
-  const event = ["حفل","مناسبة","زفاف","خطوبة","عقد قران","حفلة","wedding","party","event","exhibition","معرض","مهرجان","festival","سوق","قرن","ختان","تخرج","graduation","عيد ميلاد موقع","birthday website"];
+  const portfolio = ["بورتفوليو","portfolio","أعمالي","موهبتي","مصور","مصمم","فنان","معلم","مدرس","طبيب","مهندس","محامي","شخصي","personal","resume","cv","سيرة ذاتية","شاعر","كاتب","موسيقي","فريلانسر","freelancer","مستقل","مطور","developer","ux designer","ui designer","مترجم","translator","مدرب","coach","influencer","مؤثر","youtuber","content creator","صانع محتوى"];
+  const event = ["حفل","مناسبة","زفاف","خطوبة","عقد قران","حفلة","wedding","party","event","exhibition","معرض","مهرجان","festival","سوق","قرن","ختان","تخرج","graduation","عيد ميلاد موقع","birthday website","ملتقى","مؤتمر","conference","summit","قمة","ندوة","seminar","workshop","ورشة عمل","launch event","حفل إطلاق"];
   if (romantic.some(k => d.includes(k))) return "romantic";
   if (portfolio.some(k => d.includes(k))) return "portfolio";
   if (event.some(k => d.includes(k))) return "event";
@@ -153,52 +153,94 @@ Return EXACTLY this JSON (no markdown, no explanation):
   }
 
   if (category === "portfolio") {
-    return `You are a world-class creative director building a stunning personal portfolio website. Style: modern 2025, minimal yet impactful — like top Dribbble portfolios.
+    return `You are a world-class creative director building a stunning personal portfolio website for the Arab market. Style: modern 2025, minimal yet jaw-dropping — like top Dribbble portfolios, Awwwards winners. Build something this person will be PROUD to share.
 
 Request: "${description}"
 
-SECTIONS (in order):
-1. NAVBAR: Fixed glassmorphism. Links: About, Skills, Portfolio, Contact. Brand = person's name. Mobile menu required.
-2. HERO: Full viewport. Animated gradient background (no photo needed — use CSS mesh gradient). Large name + title/role in gradient text. Short tagline. Two CTAs: "أعمالي" + "تواصل معي". Animated orb blobs.
-3. ABOUT (id="about"): 2-column. Professional photo left. Bio right with skills summary and a fun fact about them.
-4. SKILLS (id="skills"): Grid of skill badges with icons. Animated progress bars or percentage badges. NO "years of experience" count unless they mention it.
-5. PORTFOLIO (id="portfolio"): 3-column grid of work cards. Each with image, title, tag badges, hover overlay.
-6. CONTACT (id="contact"): Simple clean contact section with social links and a minimal form.
-7. FOOTER: Minimal dark footer.
+STEP 0 — MANDATORY: EXTRACT FIRST
+- Person's name → use as brand name everywhere
+- Their field/specialty (photographer, designer, developer, teacher, doctor, engineer, etc.)
+- Their city if mentioned
+- Specific skills/tools if mentioned
 
-DESIGN: Modern, clean, professional. Color: based on their field (tech=violet/cyan, design=pink/orange, etc.)
+═══ SECTIONS (in order) ═══
+
+1. NAVBAR: Fixed, glassmorphism (background:rgba(5,8,22,0.8);backdrop-filter:blur(24px)). Brand = person's name in gradient text. Links: عن نفسي (#about), مهاراتي (#skills), أعمالي (#portfolio), تواصل معي (#contact). Mobile hamburger required.
+
+2. HERO: Full viewport. Background: stunning CSS mesh gradient (use 3 large animated orb blobs, filter:blur(80px), @keyframes orbFloat). Large animated name in gradient text (clamp(3rem,8vw,6rem), font-weight:900). Below: title/role badge with glass effect. Short powerful tagline. Two CTAs: gradient solid + glass outline. Include animated typing effect for the role using CSS.
+
+3. ABOUT (id="about"): 2-column layout. LEFT: Professional Unsplash portrait with double gradient border (::before/::after pseudo-elements), floating "available for work" badge. RIGHT: personal bio (2-3 paragraphs, personal tone), checklist of key facts about them, social links (LinkedIn, GitHub/Behance/Instagram based on their field).
+
+4. SKILLS (id="skills"): Clean section on light gray background. Title "مهاراتي ودرجة إتقاني". Grid of skill cards (3-4 per row on desktop). Each skill card: icon + skill name + animated progress bar (0→percentage on scroll). Group skills by category if multiple fields. Animate bars with IntersectionObserver.
+
+5. PORTFOLIO (id="portfolio"): Dark section. Title "أحدث أعمالي". 3-column grid. Each card: Unsplash image relevant to their field, overlay on hover (translateY(-8px), gradient overlay, title appears), title badge, category tag, "مشاهدة المشروع" button. Generate 6 realistic projects matching their specialty (e.g. for designer: "تصميم هوية بصرية", "واجهة تطبيق موبايل", etc.)
+
+6. SERVICES/WHAT I OFFER (id="services"): Light section. "ماذا أقدم؟" — 3 service cards with gradient borders, icons, titles, descriptions. Real services based on their specialty.
+
+7. CONTACT (id="contact"): Dark section with gradient. Large CTA headline. Two-column: left side = contact info (WhatsApp link, email, city). Right side: minimal clean contact form (name, email, message, send button). Also link to their social platforms.
+
+8. FOOTER: Dark minimal. Name + tagline. Social icons with circle hover effect. Copyright.
+
+═══ DESIGN STYLE ═══
+- Color: Based on field — Designer: pink/purple (#be185d + #7c3aed) | Developer: violet/cyan (#6366f1 + #06b6d4) | Photographer: near-black/gold (#0a0a0a + #d4a843) | Teacher/Doctor: teal/blue (#0d9488 + #2563eb)
+- All transitions: cubic-bezier(.22,1,.36,1)
+- IntersectionObserver scroll reveals (aw-reveal → aw-visible)
+- Navbar scroll effect
+- Counter animation for any numbers
+- Include Font Awesome 6 CDN
+
 Language: ${lang}
 Font: ${font}
 Mobile hamburger: ${mobileMenu}
 ${MOBILE_RESPONSIVE_MANDATORY}
 
 Return EXACTLY this JSON (no markdown):
-{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS: Google Fonts @import, full reset, all components, animations, MANDATORY @media(max-width:768px) collapsing ALL grids/columns to 1 column, @media(max-width:480px) font fixes. overflow-x:hidden on body.","seoTitle":"title max 60 chars","seoDescription":"description 150-160 chars","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom with IntersectionObserver + skill bar animations + navbar scroll)","css":"complete CSS: Google Fonts @import, full reset (box-sizing:border-box, overflow-x:hidden, img max-width:100%), all components, animations, MANDATORY @media(max-width:768px) collapsing ALL grids to 1 column, @media(max-width:480px) font size fixes.","seoTitle":"Personal/Portfolio SEO title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
   }
 
   if (category === "event") {
-    return `You are a world-class event website designer. Build a premium event/occasion website.
+    return `You are a world-class event website designer specializing in Saudi/Arab events. Build a premium, visually stunning event website.
 
 Request: "${description}"
 
-SECTIONS:
-1. NAVBAR: Fixed glassmorphism. Links: About Event, Schedule, Gallery, Register. Mobile menu required.
-2. HERO: Full viewport with event imagery. Countdown timer if it's a future event. Event name in large bold gradient text. Date and location prominently displayed. CTA: "سجّل الآن".
-3. ABOUT EVENT: 2-column. Event description with beautiful imagery. Key highlights.
-4. SCHEDULE/PROGRAM: Timeline of event activities with icons and times.
-5. GALLERY: Photo grid of past events or preparation photos.
-6. SPEAKERS/HOSTS (if applicable): Card grid with photos, names, titles.
-7. REGISTER/CONTACT: Registration form or contact details.
-8. FOOTER: Dark, event branding.
+STEP 0 — MANDATORY: EXTRACT FIRST
+- Event name/title → use prominently throughout
+- Event type (wedding, conference, graduation, exhibition, festival, product launch, birthday, etc.)
+- Date if mentioned → display in a countdown timer
+- Location/venue if mentioned → city + venue name
+- Organizer name if mentioned
 
-DESIGN: Elegant, exciting, event-appropriate. Use colors fitting the event type.
+═══ SECTIONS (in order) ═══
+
+1. NAVBAR: Fixed glassmorphism (rgba dark + blur). Links: عن الفعالية (#about), البرنامج (#schedule), الصور (#gallery), التسجيل (#register). Mobile hamburger required. Brand = event name.
+
+2. HERO: Full viewport. Background: high-quality event/venue Unsplash image with dark overlay gradient. 3 animated orb blobs for depth. Event name in massive gradient text (clamp(2.5rem,7vw,6rem), font-weight:900). Date and location badge prominently displayed. If date is future: add a live countdown timer (Days, Hours, Minutes, Seconds) with JS setInterval. CTA buttons: "سجّل الآن" (gradient) + "عرّف نفسك" (outline glass).
+
+3. ABOUT EVENT (id="about"): 2-column. LEFT: Beautiful event imagery with gradient border overlay. RIGHT: Event description, key highlights as checklist with colored icons, expected attendees count, key sponsor/organizer name. Style: alternating section (light background).
+
+4. SCHEDULE/PROGRAM (id="schedule"): Dark gradient section. Title "برنامج الفعالية". Vertical timeline with time + activity + icon for each item. Generate a realistic schedule based on event type (e.g. for conference: Registration 8:00, Opening 9:00, Keynote 10:00, etc.). Each item has a numbered circle and connecting line.
+
+5. GALLERY (id="gallery"): Light section. Title "لحظات مميزة". 3-column masonry-style photo grid. Use 6 relevant Unsplash images matching the event type (conference=people in suits, wedding=flowers/venue, exhibition=booth setups, etc.).
+
+6. SPEAKERS/GUESTS (if applicable): Dark section. Card grid with Unsplash portrait photos, names, roles/titles. Generate 3-4 realistic speakers matching the event context.
+
+7. REGISTER/CONTACT (id="register"): Full-width gradient section. Large CTA headline "احجز مقعدك الآن". Registration form: Name, Phone, Email, How did you hear about us, Submit button. Also WhatsApp link and email prominently displayed.
+
+8. FOOTER: Dark, event branding with logo and social links.
+
+═══ DESIGN NOTES ═══
+- Color: Wedding=rose/gold, Conference=navy/gold, Festival=electric purple/amber, Exhibition=teal/green, Graduation=navy/gold
+- Add confetti or particle animation effect in hero for celebrations
+- Countdown timer if it's a future event (use JS setInterval updating every 1 second)
+- Include Font Awesome 6 CDN
+
 Language: ${lang}
 Font: ${font}
 Mobile hamburger: ${mobileMenu}
 ${MOBILE_RESPONSIVE_MANDATORY}
 
 Return EXACTLY this JSON (no markdown):
-{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS: Google Fonts @import, full reset, all components, animations, MANDATORY @media(max-width:768px) all grids collapse to 1 column, @media(max-width:480px) font fixes. overflow-x:hidden on body.","seoTitle":"title max 60 chars","seoDescription":"description 150-160 chars","sections":["names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom with countdown timer, scroll reveals, navbar effect)","css":"complete CSS: Google Fonts @import, full reset (box-sizing:border-box, overflow-x:hidden, img max-width:100%), all components, animations (@keyframes fadeUp, orbFloat), MANDATORY @media(max-width:768px) all grids collapse to 1 column !important, @media(max-width:480px) font size clamp fixes.","seoTitle":"Event SEO title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
   }
 
   // Default: business
@@ -225,6 +267,23 @@ export async function generateWebsite(description: string, language: string = "a
 Generate a COMPLETE, premium single-page website based on: "${description}"
 
 ═══════════════════════════════════════
+STEP 0 — MANDATORY: PARSE THE DESCRIPTION FIRST
+═══════════════════════════════════════
+Before writing a single line of HTML, extract these from the user description:
+
+1. BUSINESS NAME: If the user mentions a name (e.g. "مطعم السعادة", "شركة النور", "Safa Clinic"), use it as the brand. If no name, invent a creative Arabic brand name that matches the business type. NEVER use "اسم الشركة" or "Your Business Name".
+
+2. CITY/LOCATION: If mentioned (e.g. الرياض, جدة, Riyadh, مكة, الدمام), use it throughout — in hero subtitle, contact section, footer, Google Maps mention. Default: الرياض.
+
+3. SPECIFIC SERVICES/PRODUCTS: If the user mentions specific items (e.g. "شاورما وكبسة", "تصميم شعارات وهويات", "عيادة أسنان"), use THOSE EXACT services as card titles, NOT generic ones.
+
+4. UNIQUE SELLING POINT: If mentioned (e.g. "توصيل مجاني", "24 ساعة", "أسعار تنافسية"), use it in hero subtitle and CTA button.
+
+5. TARGET AUDIENCE: Infer from context. Customize tone accordingly (luxury=formal Arabic, youth brand=friendly tone).
+
+CRITICAL: Every section of this website must feel 100% custom-built for THIS specific business. Generic text like "نقدم أفضل الخدمات" or "خدمة 1" is ABSOLUTELY FORBIDDEN.
+
+═══════════════════════════════════════
 VISUAL DESIGN STANDARD 2025 — MANDATORY
 ═══════════════════════════════════════
 The website MUST look like it was designed in 2025 by a top-tier agency. Think Notion, Linear, Vercel, Stripe landing pages — but adapted for the Arab market.
@@ -233,17 +292,28 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 
 ▸ HERO (FULL VIEWPORT + ANIMATED ORBS): min-height:100vh. Dark gradient overlay on background image. Add 2–3 large blurred orb blobs (CSS radial-gradient circles, 400–700px, filter:blur(80px), position:absolute, animated with @keyframes orbFloat). Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
 
-▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing.
+▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing. STATS MUST BE RELEVANT TO THE SPECIFIC BUSINESS — Examples:
+  * Restaurant/Cafe: "15+ سنة خبرة", "500+ وجبة يومياً", "98% رضا العملاء", "50+ طبق متنوع"
+  * Medical/Clinic: "20+ طبيب متخصص", "10,000+ مريض تعالج", "15+ سنة خبرة", "98% نسبة الشفاء"
+  * Agency/Marketing: "200+ مشروع منجز", "50+ عميل نشط", "8+ سنوات خبرة", "15+ خبير متخصص"
+  * Real Estate: "500+ عقار مباع", "15+ سنة في السوق", "300+ عميل راضٍ", "50+ مشروع سكني"
+  * Beauty/Salon: "10,000+ جلسة", "5+ فروع", "98% رضا العميلات", "100+ منتج فاخر"
+  * Tech/Startup: "50+ تطبيق طورناه", "1M+ مستخدم", "99.9% وقت تشغيل", "10+ شراكة تقنية"
+  * Education: "5,000+ طالب", "50+ معلم متخصص", "95% معدل نجاح", "10+ سنوات تميز"
 
-▸ ABOUT: 2-column. Image with double-layer gradient border effect using ::before/::after pseudo-elements. Floating experience badge (gradient bg, bottom corner). Checklist items with colored check icons.
+▸ ABOUT: 2-column. Image with double-layer gradient border effect using ::before/::after pseudo-elements. Floating experience badge (gradient bg, bottom corner). Checklist items with colored check icons. The ABOUT text MUST reference the actual business name and city extracted from the description.
 
 ▸ SERVICES: 3-column grid. Cards use CSS GRADIENT BORDER trick: background:linear-gradient(white,white) padding-box, linear-gradient(135deg,PRIMARY,ACCENT) border-box; border:1.5px solid transparent. On hover: translateY(-12px), stronger shadow, full gradient border revealed. Icon box rotates on hover, fills with gradient.
+SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشاوي", services should be "مشاوي لحم", "دجاج مشوي", "أرز سعودي", "مقبلات", "عصائر طازجة", "توصيل منزلي". NEVER use generic "خدمة احترافية" or "Service 1".
 
-▸ GALLERY: 3-column grid with border-radius:1.25rem. Hover: image scale(1.1) + dark gradient overlay + eye icon appears (scale from 0.5 to 1).
+▸ GALLERY: 3-column grid with border-radius:1.25rem. Hover: image scale(1.1) + dark gradient overlay + eye icon appears (scale from 0.5 to 1). Use 6 REAL Unsplash images relevant to the specific business type (restaurant=food photos, clinic=medical, etc.).
 
-▸ CTA BAND: Full-width gradient background. Large bold headline. Decorative radial glow orb in corner.
+▸ CTA BAND: Full-width gradient background. Large bold headline personalized for THIS business (e.g. for a restaurant: "هل أنت جائع؟ اطلب أشهى المشاوي الآن"). Decorative radial glow orb in corner.
 
-▸ TESTIMONIALS: Dark section, glassmorphism cards (rgba background + backdrop-filter). Bottom gradient border appears on hover (scaleX animation). Quote icon with low opacity.
+▸ TESTIMONIALS: Dark section, glassmorphism cards (rgba background + backdrop-filter). Bottom gradient border appears on hover (scaleX animation). Quote icon with low opacity. Write 3 REALISTIC testimonials with:
+  * Real Arab names (e.g. محمد العتيبي، نورة القحطاني، فيصل الدوسري)
+  * Specific details matching the business (not generic praise)
+  * 5-star ratings using fa-star icons
 
 ▸ CONTACT: 2-column. Contact info with icon boxes. WhatsApp button. Right side: white card with gradient border, clean form inputs with focus ring.
 
@@ -257,6 +327,18 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 
 Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
 Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
+
+═══════════════════════════════════════
+SAUDI MARKET SPECIFICS — MANDATORY
+═══════════════════════════════════════
+- WhatsApp is the #1 contact method in Saudi Arabia — feature it prominently in hero, contact, and as a floating button
+- Use SAR (ريال سعودي) for any prices mentioned, not USD or generic currency
+- Working hours common pattern: السبت-الخميس 8ص-10م، الجمعة 2م-12م (adapt to business type)
+- Use realistic Saudi phone numbers format: +966 5X XXX XXXX
+- Cities commonly referenced: الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة
+- If it's a restaurant: mention "متاح التوصيل" and delivery platforms (مرسول، هنقرستيشن، كريم)
+- If it's a business: optionally mention VAT number "الرقم الضريبي" and CR "السجل التجاري" in footer
+- Payment: MADA (مدى) is the most popular, followed by Apple Pay and credit cards
 
 ═══════════════════════════════════════
 NAVIGATION — SINGLE-PAGE ANCHORS ONLY
@@ -313,15 +395,20 @@ Service icon CSS:
 STOCK IMAGES — HIGH QUALITY UNSPLASH
 ═══════════════════════════════════════
 Choose images that PRECISELY match the business topic. Use ?w=1600&h=900&fit=crop&q=85 for hero, ?w=800&h=600&fit=crop&q=80 for about, ?w=600&h=400&fit=crop&q=75 for gallery.
-- Restaurant/Cafe: photo-1517248135467-4c7edcad34c4, photo-1414235077428-338989a2e8c0, photo-1565299624946-b28f40a0ae38
-- Business/Corporate: photo-1497366216548-37526070297c, photo-1486406146926-c627a92ad1ab, photo-1542744173-8e7e53415bb0
-- Luxury/Perfume: photo-1541643600914-78b084683601, photo-1523293182086-7651a899d37f, photo-1588776814546-1ffbb7c4f58a
-- Technology/Startup: photo-1518770660439-4636190af475, photo-1552664730-d307ca884978, photo-1451187580459-43490279c0fa
-- Real Estate: photo-1560518883-ce09059eeffa, photo-1582407947304-fd86f028f716, photo-1512917774080-9991f1c4c750
-- Medical/Health: photo-1576091160399-112ba8d25d1d, photo-1579684385127-1ef15d508118, photo-1631217868264-e5b90bb7e133
-- Fashion/Retail: photo-1558618666-fcd25c85f82e, photo-1445205170230-053b83016050, photo-1490481651871-ab68de25d43d
-- Events/Exhibition: photo-1540575467063-178a50c2df87, photo-1505236858219-8359eb29e329
-- Use at least 6 relevant Unsplash images throughout the page
+- Restaurant/Cafe/Food: photo-1517248135467-4c7edcad34c4, photo-1414235077428-338989a2e8c0, photo-1565299624946-b28f40a0ae38, photo-1476224203421-9ac39bcb3327, photo-1504674900247-0877df9cc836, photo-1555396273-367ea4eb4db5, photo-1551218808-94e220e084d2, photo-1490818387583-1baba5e638af, photo-1544025162-d76694265947, photo-1567620905732-2d1ec7ab7445
+- Coffee/Cafe only: photo-1495474472287-4d71bcdd2085, photo-1501339847302-ac426a4a7cbb, photo-1511920170033-f8396924c348, photo-1442512595331-e89e73853f31
+- Grills/BBQ/Meat: photo-1529193591184-b1d58069ecdd, photo-1544025162-d76694265947, photo-1432139555190-58524dae6a55, photo-1558030137-a56c1b3b9498
+- Business/Corporate/Agency: photo-1497366216548-37526070297c, photo-1486406146926-c627a92ad1ab, photo-1542744173-8e7e53415bb0, photo-1553877522-43269d4ea984, photo-1522071820081-009f0129c71c, photo-1524758631624-e2822e304c36
+- Luxury/Perfume/Fragrance: photo-1541643600914-78b084683601, photo-1523293182086-7651a899d37f, photo-1588776814546-1ffbb7c4f58a, photo-1615634260167-c8cdede054de
+- Technology/Startup/Software: photo-1518770660439-4636190af475, photo-1552664730-d307ca884978, photo-1451187580459-43490279c0fa, photo-1461749280684-dccba630e2f6, photo-1504639725590-34d0984388bd
+- Real Estate/Property: photo-1560518883-ce09059eeffa, photo-1582407947304-fd86f028f716, photo-1512917774080-9991f1c4c750, photo-1570129477492-45c003edd2be, photo-1600596542815-ffad4c1539a9
+- Medical/Clinic/Health: photo-1576091160399-112ba8d25d1d, photo-1579684385127-1ef15d508118, photo-1631217868264-e5b90bb7e133, photo-1559757148-5c350d0d3c56, photo-1638202993928-7d4f3a8e4b6b
+- Beauty/Salon/Spa: photo-1560066984-138dadb4c035, photo-1522337360788-8b13dee7a37e, photo-1487412947147-5cebf100d293, photo-1519014816548-bf5fe059798b
+- Fashion/Retail/Store: photo-1558618666-fcd25c85f82e, photo-1445205170230-053b83016050, photo-1490481651871-ab68de25d43d, photo-1483985988355-763728e1935b
+- Education/Training/Academy: photo-1523050854058-8df90110c9f1, photo-1509062522246-3755977927d7, photo-1427504494785-3a9ca7044f45, photo-1456513080510-7bf3a84b82f8
+- Automotive/Car/Transport: photo-1492144534655-ae79c964c9d7, photo-1469854523086-cc02fe5d8800, photo-1511919884226-fd3cad34687c
+- Events/Wedding: photo-1540575467063-178a50c2df87, photo-1505236858219-8359eb29e329, photo-1519741497674-611481863552
+- Use at least 6 relevant Unsplash images throughout the page. MATCH images to the EXACT business type in the description.
 
 ═══════════════════════════════════════
 WHATSAPP BUTTON — REQUIRED FOR ARAB MARKET
@@ -335,13 +422,18 @@ Pattern: <a href="https://wa.me/966500000000" target="_blank" style="position:fi
 COLOR PALETTE GUIDELINES
 ═══════════════════════════════════════
 Pick a unique, business-appropriate palette. Avoid cliché generic blue (#2196f3 type):
-- Restaurant: warm reds/oranges (#c0392b + #e67e22)
-- Luxury/Perfume: near-black dark with gold (#0a0a0a + #d4a843)
-- Medical: teal/cyan (#0d9488 + #0284c7)
-- Tech/Startup: violet/purple (#7c3aed + #06b6d4)
-- Corporate/Agency: deep navy/royal (#1e3a5f + #2563eb)
-- Beauty/Fashion: rose/mauve (#be185d + #f43f5e)
-- Real Estate: charcoal/emerald (#1a2e1a + #059669)
+- Restaurant/Grills/Food: warm reds/oranges (#c0392b + #e67e22) or deep charcoal with amber (#1a0a00 + #f59e0b)
+- Coffee/Cafe: warm brown/cream (#6f4e37 + #d4a843)
+- Luxury/Perfume/Jewelry: near-black with gold (#0a0a0a + #d4a843) or deep purple with rose-gold (#1a0033 + #b8860b)
+- Medical/Clinic/Pharmacy: teal/cyan (#0d9488 + #0284c7) or deep blue (#1e40af + #06b6d4)
+- Tech/Startup/Software: violet/purple (#7c3aed + #06b6d4) or dark with electric green (#030712 + #22c55e)
+- Corporate/Agency/Consulting: deep navy (#1e3a5f + #2563eb) or slate with indigo (#0f172a + #6366f1)
+- Beauty/Salon/Spa: rose/mauve (#be185d + #f43f5e) or blush with gold (#fdf2f8 dark sections + #be185d)
+- Real Estate/Property: charcoal/emerald (#1a2e1a + #059669) or navy/gold (#0f172a + #f59e0b)
+- Fashion/Retail: bold black/white with accent (#0a0a0a + #ef4444) or fashion purple (#4a0072 + #e879f9)
+- Education/Academy: deep blue/orange (#1e3a8a + #f97316) or emerald/gold (#064e3b + #fbbf24)
+- Automotive/Transport: steel blue (#1e293b + #3b82f6) or racing red (#7f1d1d + #ef4444)
+- Events/Entertainment: electric purple (#4a0072 + #a855f7) or festival amber (#78350f + #f59e0b)
 Dark background for: hero, stats bar, testimonials section, footer
 Light/white background for: about, services
 Subtle gray (#f8fafc) for alternating sections
@@ -488,33 +580,49 @@ export async function generateSocialContent(topic: string, platform: string, lan
   const isArabic = language === "ar";
 
   const platformGuidelines: Record<string, string> = {
-    instagram: "Max 2200 chars, visual-first, use emojis, 20-30 hashtags",
-    facebook: "Longer form OK, engaging questions, 3-5 hashtags",
-    linkedin: "Professional tone, industry insights, 3-5 hashtags",
-    twitter: "Max 280 chars, concise, 2-3 hashtags, punchy",
-    tiktok: "Trendy, Gen-Z friendly, viral hooks, 5-10 hashtags",
-    youtube: "SEO-optimized title/description, compelling hook",
+    instagram: "Max 2200 chars, visual-first, use emojis generously, 20-30 relevant hashtags (mix Arabic + English), line breaks for readability, start with a hook",
+    facebook: "Conversational, engaging storytelling, ask a question, 3-5 hashtags, 150-400 words ideal, include CTA",
+    linkedin: "Professional insightful tone, add industry value, personal story + lesson format, 3-5 hashtags, 150-300 words",
+    twitter: "Max 280 chars total (post must be under 250 chars to leave room), punchy, controversial or insightful, 1-2 hashtags max, hook in first 5 words",
+    tiktok: "Trendy, Gen-Z friendly, MUST start with viral hook ('لن تصدق...', 'سر لا يعرفه أحد...'), 5-10 hashtags, short punchy sentences",
+    youtube: "SEO-optimized title (60 chars max), compelling description with keywords, timestamps suggestion, include subscribe CTA",
   };
 
-  const prompt = `You are an expert social media marketer for the Saudi/Arab market.
+  const toneGuide: Record<string, string> = {
+    professional: "Professional yet warm. Clear, confident, credible. No slang.",
+    casual: "Friendly, conversational, like talking to a friend. Use light humor.",
+    motivational: "Inspiring, energetic, action-oriented. Use power words.",
+    promotional: "Sales-focused but not pushy. Highlight value and benefits. Urgency.",
+    educational: "Informative, clear, teach something useful. Lists and steps work well.",
+  };
+
+  const prompt = `You are an elite social media marketer specializing in the Saudi Arabian and Arab markets. You know what goes viral in KSA, what resonates with Saudi audiences, and how to write content that gets engagement.
 
 Generate a ${platform} post about: "${topic}"
 
-Language: ${isArabic ? "Arabic" : "English"}
-Tone: ${tone}
+Platform: ${platform.toUpperCase()}
+Language: ${isArabic ? "Arabic (use Saudi/Gulf dialect if casual, Modern Standard Arabic if professional)" : "English"}
+Tone: ${tone} — ${toneGuide[tone] || toneGuide.professional}
 Platform guidelines: ${platformGuidelines[platform] || "Standard social media post"}
+
+SAUDI MARKET CONTEXT:
+- Saudi audiences respond well to: authenticity, local references (Riyadh, Jeddah, KSA), Arabic pride, quality emphasis, WhatsApp CTAs
+- Peak engagement times: 7-11pm (AST) on weekdays, after Asr and Isha prayers
+- Popular hashtags include Arabic versions (#الرياض #السعودية #جدة) mixed with English
+- Avoid: exaggeration without proof, anything culturally insensitive, copying Western styles without localizing
+- Strong CTAs: "تواصل معنا على واتساب", "احجز الآن", "اطلب عينتك المجانية"
 
 Return a JSON object with:
 {
-  "post": "The main post text with emojis",
-  "caption": "Extended caption/description",
+  "post": "The COMPLETE main post text with emojis and line breaks — ready to copy-paste directly to ${platform}. Include hook, body, CTA.",
+  "caption": "Extended caption/description with extra context if needed",
   "hashtags": ["hashtag1", "hashtag2", ...],
-  "callToAction": "A compelling call to action",
-  "bestTimeToPost": "Recommended posting time for Saudi audience",
-  "contentType": "carousel/reel/story/post/video"
+  "callToAction": "A compelling specific call to action for Saudi audience",
+  "bestTimeToPost": "Recommended posting time for Saudi audience (e.g. الثلاثاء 8-10 مساءً بتوقيت الرياض)",
+  "contentType": "${platform === 'instagram' ? 'reel/carousel/post/story' : platform === 'tiktok' ? 'video' : platform === 'youtube' ? 'video' : 'post'}"
 }
 
-IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks.`;
+IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks. The post field must be complete and ready to publish.`;
 
   const response = await openai.chat.completions.create({
     model: getModel(),

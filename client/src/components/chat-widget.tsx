@@ -98,23 +98,14 @@ export default function ChatWidget() {
     const msgs = uiLang === "en" ? PROACTIVE_MSGS_EN : PROACTIVE_MSGS_AR;
     const msg = msgs[Math.floor(Math.random() * msgs.length)];
 
-    // Show bubble after 3s
+    // Show bubble after 4s
     const bubbleTimer = setTimeout(() => {
       setProactiveBubble(msg);
       setUnreadCount(1);
-    }, 3000);
-
-    // Auto-open after 8s if not opened yet
-    const openTimer = setTimeout(() => {
-      if (!open) {
-        setOpen(true);
-        sessionStorage.setItem(STORAGE_KEY, "1");
-      }
-    }, 8000);
+    }, 4000);
 
     return () => {
       clearTimeout(bubbleTimer);
-      clearTimeout(openTimer);
     };
   }, [uiLang]);
 
