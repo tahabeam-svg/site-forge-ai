@@ -40,13 +40,18 @@ interface SocialContent {
   contentType: string;
 }
 
+// Platforms included in paid plans
 const platforms = [
   { id: "instagram", label: "Instagram", labelAr: "إنستغرام", icon: Instagram, color: "from-pink-500 to-purple-600" },
   { id: "twitter", label: "X / Twitter", labelAr: "إكس / تويتر", icon: Twitter, color: "from-gray-700 to-gray-900" },
   { id: "facebook", label: "Facebook", labelAr: "فيسبوك", icon: Facebook, color: "from-blue-600 to-blue-700" },
-  { id: "tiktok", label: "TikTok", labelAr: "تيك توك", icon: SiTiktok, color: "from-gray-900 to-gray-800" },
-  { id: "linkedin", label: "LinkedIn", labelAr: "لينكدإن", icon: Linkedin, color: "from-blue-500 to-blue-600" },
-  { id: "youtube", label: "YouTube", labelAr: "يوتيوب", icon: Youtube, color: "from-red-500 to-red-700" },
+];
+
+// Platforms not yet available in any plan — shown as "coming soon"
+const comingSoonPlatforms = [
+  { id: "tiktok", label: "TikTok", labelAr: "تيك توك", icon: SiTiktok },
+  { id: "linkedin", label: "LinkedIn", labelAr: "لينكدإن", icon: Linkedin },
+  { id: "youtube", label: "YouTube", labelAr: "يوتيوب", icon: Youtube },
 ];
 
 // Platforms allowed per plan (mirrors server/routes.ts MARKETING_PLATFORMS)
@@ -281,6 +286,45 @@ export default function AIMarketingPage() {
                     }
                   </p>
                 )}
+                {/* Coming soon platforms */}
+                <div className="mt-3 pt-3 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {lang === "ar" ? "قريباً:" : "Coming soon:"}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {comingSoonPlatforms.map((p) => (
+                      isAdmin ? (
+                        <button
+                          key={p.id}
+                          onClick={() => setSelectedPlatform(p.id)}
+                          className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border-2 text-xs transition-all ${
+                            selectedPlatform === p.id
+                              ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-950"
+                              : "border-dashed border-border hover:border-emerald-300"
+                          }`}
+                          data-testid={`button-platform-${p.id}`}
+                        >
+                          <p.icon className="w-3 h-3" />
+                          <span>{lang === "ar" ? p.labelAr : p.label}</span>
+                          <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1 rounded font-medium">admin</span>
+                        </button>
+                      ) : (
+                        <div
+                          key={p.id}
+                          title={lang === "ar" ? "قريباً — غير متاح حالياً" : "Coming soon — not yet available"}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-dashed border-border bg-muted/50 text-muted-foreground text-xs cursor-default select-none"
+                          data-testid={`coming-soon-platform-${p.id}`}
+                        >
+                          <p.icon className="w-3 h-3 opacity-50" />
+                          <span className="opacity-70">{lang === "ar" ? p.labelAr : p.label}</span>
+                          <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-1 rounded font-medium">
+                            {lang === "ar" ? "قريباً" : "soon"}
+                          </span>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <div>
