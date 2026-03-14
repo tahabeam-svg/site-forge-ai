@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, User, ArrowRight, Globe, Sparkles, Zap, Code2, Palette, CheckCircle2, Play } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
+import BrandName from "@/components/brand-name";
 
 function FloatingOrb({ className }: { className: string }) {
   return <div className={`absolute rounded-full blur-3xl animate-pulse ${className}`} />;
@@ -290,7 +291,15 @@ export default function AuthPage() {
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
               <Globe className="w-4 h-4 text-white" />
             </div>
-            <span className="text-white/90 text-sm font-medium tracking-wide">ArabyWeb.net</span>
+            <span
+              className="text-white/90 text-sm font-medium"
+              style={isAr
+                ? { fontFamily: "'Cairo', sans-serif", fontWeight: 900 }
+                : { fontFamily: "'Space Grotesk', 'Inter', sans-serif", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }
+              }
+            >
+              {isAr ? "عربي ويب" : "ARABYWEB"}
+            </span>
           </div>
 
           <h2 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight" style={{ fontFamily: "'Cairo', sans-serif" }}>
@@ -360,9 +369,7 @@ export default function AuthPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4 shadow-lg shadow-emerald-500/30">
                 <Globe className="w-8 h-8 text-white" />
               </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                ArabyWeb.net
-              </h1>
+              <BrandName lang={lang} className="text-3xl" />
             </button>
             <p className="text-muted-foreground mt-1 text-sm">
               {isAr ? "ابنِ موقعك الاحترافي بسرعة البرق" : "Build your website lightning fast"}

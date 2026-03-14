@@ -51,6 +51,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import LanguageToggle from "@/components/language-toggle";
+import BrandName from "@/components/brand-name";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -177,9 +178,7 @@ export default function LandingPage() {
               <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
                 <Globe2 className="w-5 h-5 text-white" />
               </div>
-              <span className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent" data-testid="text-brand">
-                {t("brand", lang)}
-              </span>
+              <BrandName lang={lang} className="text-lg" />
             </button>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
@@ -987,9 +986,7 @@ export default function LandingPage() {
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
                   <Globe2 className="w-5 h-5 text-white" />
                 </div>
-                <span className="font-bold text-xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                  {t("brand", lang)}
-                </span>
+                <BrandName lang={lang} className="text-xl" />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {lang === "ar"

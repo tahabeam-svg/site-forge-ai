@@ -1,5 +1,6 @@
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
+import BrandName from "@/components/brand-name";
 import { useLocation } from "wouter";
 import {
   Sidebar,
@@ -112,7 +113,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Globe2 className="w-4 h-4 text-white" />
                 </div>
                 <div className="text-start min-w-0">
-                  <div className="font-bold text-sm gradient-text leading-tight">{t("brand", lang)}</div>
+                  <BrandName lang={lang} className="text-sm leading-tight" />
                   <div className="text-[10px] text-muted-foreground leading-tight">{lang === "ar" ? "منشئ المواقع" : "Website Builder"}</div>
                 </div>
               </button>
