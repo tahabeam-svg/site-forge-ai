@@ -717,48 +717,158 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks. The post fi
   }
 }
 
-// ─── Social Media Post Image Generation (DALL-E) ────────────────────────────
+// ─── Social Media Post Image Generation (DALL-E 3 with smart business detection) ─
+function detectImageBusinessType(topic: string): { en: string; visualCues: string; forbidden: string } {
+  const t = topic.toLowerCase();
+
+  const map: Array<[string[], { en: string; visualCues: string; forbidden: string }]> = [
+    [
+      ["مقاولات","بناء","إنشاء","مشاريع إنشائية","هندسة مدنية","تشييد","عمران","بنية تحتية","construction","contracting","building"],
+      { en: "construction and contracting",
+        visualCues: "active construction site with cranes, steel structure being built, concrete columns, construction workers in helmets and safety vests, modern building under construction, architectural blueprints, heavy machinery like excavators. Real construction photography, dynamic industrial scene.",
+        forbidden: "mosques, landscapes, phone mockups, abstract patterns, generic business icons" }
+    ],
+    [
+      ["مطعم","مقهى","أكل","وجبات","قهوة","مشوي","شاورما","برغر","سوشي","حلويات","بيتزا","restaurant","cafe","food","coffee"],
+      { en: "restaurant and food",
+        visualCues: "beautifully plated food on elegant table, professional food photography, warm restaurant lighting, fresh ingredients, chef preparing food, appetizing close-up of the dish, rich colors and textures. Top-down or 45-degree food photography.",
+        forbidden: "cartoon food, clipart, generic icons, phone mockups" }
+    ],
+    [
+      ["عيادة","دكتور","طبيب","صحة","مستشفى","علاج","طب","clinic","doctor","medical","health","hospital"],
+      { en: "medical and healthcare",
+        visualCues: "clean modern clinic interior, professional doctor in white coat, medical equipment, healthcare professional consulting patient, bright sterile environment, trust-inspiring medical setting. Photorealistic medical photography.",
+        forbidden: "cartoons, phone mockups, generic icons, mosques" }
+    ],
+    [
+      ["عقار","شقق","مباني","فلل","أراضي","تطوير عقاري","real estate","property","villa","apartment"],
+      { en: "real estate and property",
+        visualCues: "stunning exterior of modern residential building or villa, luxury apartment interior with floor-to-ceiling windows, architectural photography, dramatic lighting on building facade, aerial view of real estate development, premium residential complex.",
+        forbidden: "phone mockups, generic icons, abstract patterns" }
+    ],
+    [
+      ["صالون","مكياج","تجميل","كوافير","عناية","سبا","spa","salon","beauty","makeup","hair","skincare"],
+      { en: "beauty and salon",
+        visualCues: "elegant beauty salon interior, professional makeup application, luxurious skincare products arranged beautifully, glamorous hair styling, soft pink and gold tones, premium beauty experience. Lifestyle beauty photography.",
+        forbidden: "cartoon, generic icons, phone mockups" }
+    ],
+    [
+      ["تسويق","إعلانات","برندينج","محتوى","ميديا","وكالة","marketing","agency","advertising","branding","media"],
+      { en: "marketing and creative agency",
+        visualCues: "modern creative workspace with large monitors showing design work, team brainstorming around whiteboard, colorful mood boards, creative director reviewing designs, sleek open-plan office, dynamic creative energy.",
+        forbidden: "phone mockups, generic business icons, stock photo clichés" }
+    ],
+    [
+      ["تقنية","برمجة","تطبيق","سوفتوير","ذكاء اصطناعي","استضافة","tech","software","app","ai","development","coding"],
+      { en: "technology and software",
+        visualCues: "developer working on multiple monitors with code, futuristic server room with glowing blue lights, abstract data visualization, close-up of hands typing on keyboard with holographic interface, modern tech startup office. Dark theme with neon highlights.",
+        forbidden: "generic clipart, phone mockups, Islamic architecture" }
+    ],
+    [
+      ["سياحة","رحلات","فندق","سفر","حجز","وجهة","tourism","travel","hotel","destination","resort"],
+      { en: "tourism and travel",
+        visualCues: "breathtaking travel destination landscape, luxury hotel pool overlooking scenic view, happy traveler at famous landmark, pristine beach or mountain view, premium resort experience. Vibrant travel photography.",
+        forbidden: "phone mockups, generic icons, clipart" }
+    ],
+    [
+      ["تعليم","دروس","تدريب","أكاديمية","دورات","مدرسة","education","school","academy","training","courses","learning"],
+      { en: "education and training",
+        visualCues: "engaged students in modern classroom, instructor teaching in professional setting, digital learning on tablet, books and study materials, graduation ceremony, inspiring educational environment. Warm motivational photography.",
+        forbidden: "phone mockups, generic icons, cartoons" }
+    ],
+    [
+      ["محامي","قانون","مستشار","law","lawyer","legal","attorney","justice"],
+      { en: "legal services",
+        visualCues: "professional lawyer at mahogany desk with law books, scales of justice, legal documents with professional pen, formal office with city view, authoritative and trustworthy setting. Dark professional tones.",
+        forbidden: "cartoon, phone mockups, generic icons" }
+    ],
+    [
+      ["لياقة","جيم","رياضة","تمرين","صالة","fitness","gym","workout","sport","training"],
+      { en: "fitness and gym",
+        visualCues: "athlete performing powerful workout, well-equipped modern gym interior, motivational fitness photography, person lifting weights or running, strong physique in dynamic pose, energy and determination. High contrast photography.",
+        forbidden: "cartoon, generic icons, phone mockups" }
+    ],
+    [
+      ["عطور","ساعات","مجوهرات","فاخر","luxury","perfume","watches","jewelry","fashion","couture"],
+      { en: "luxury goods",
+        visualCues: "product shot of luxury item on black marble with dramatic side lighting, close-up texture of premium material, elegant flat lay with gold accents, high-fashion editorial photography, opulence and exclusivity. Dark dramatic background.",
+        forbidden: "cartoon, phone mockups, generic backgrounds" }
+    ],
+    [
+      ["سيارات","مركبات","قطع غيار","تأجير سيارات","automotive","cars","vehicles","auto","rental"],
+      { en: "automotive",
+        visualCues: "sleek luxury car on dramatic road with motion blur, studio car photography with reflective floor, close-up of car interior with leather seats, car showroom with spotlights, dynamic driving shot on empty highway.",
+        forbidden: "cartoon cars, phone mockups, generic icons" }
+    ],
+    [
+      ["متجر","تسوق","منتجات","بيع","تجارة","store","shop","ecommerce","product","retail"],
+      { en: "retail and e-commerce",
+        visualCues: "beautifully styled product flat lay on clean background, lifestyle product photography, colorful shopping experience, products arranged elegantly, premium packaging shot, modern retail environment.",
+        forbidden: "generic clipart, phone mockups, low quality stock photos" }
+    ],
+  ];
+
+  for (const [keywords, config] of map) {
+    if (keywords.some(k => t.includes(k))) return config;
+  }
+
+  // Generic fallback — still better than before
+  return {
+    en: topic,
+    visualCues: `professional commercial photography directly representing: ${topic}. Real-world scene, high quality, modern Saudi/Gulf market aesthetic.`,
+    forbidden: "phone mockups, mosque illustrations, abstract geometric patterns, generic business icons, unrelated subjects",
+  };
+}
+
 export async function generateSocialPostImage(
   topic: string,
   platform: string,
   language: string = "ar",
   postContent?: string
 ): Promise<{ url: string; revisedPrompt?: string }> {
-  const isArabic = language === "ar";
 
   const platformStyle: Record<string, string> = {
-    instagram: "vibrant, high-contrast, aesthetically pleasing, Instagram-worthy, lifestyle photography style",
-    twitter: "clean, bold, impactful, minimal, eye-catching graphic style",
-    facebook: "warm, engaging, community-feel, professional yet approachable",
-    linkedin: "professional, corporate, clean, business-oriented",
-    tiktok: "trendy, youthful, vibrant, Gen-Z aesthetic, dynamic",
-    youtube: "cinematic, thumbnail style, high contrast, bold text space",
+    instagram: "vibrant, high-contrast, Instagram-worthy, lifestyle photography, bright and aesthetic",
+    twitter: "clean, bold, impactful, minimal, eye-catching, high contrast",
+    facebook: "warm, engaging, professional yet approachable, community feel",
+    linkedin: "professional, corporate, clean, polished, business-oriented",
+    tiktok: "trendy, dynamic, youthful, energetic, Gen-Z aesthetic",
+    youtube: "cinematic, thumbnail-style, high contrast, dramatic lighting",
   };
 
-  const style = platformStyle[platform] || "professional, high quality, modern";
+  const style = platformStyle[platform] || "professional, high quality, modern, commercial photography";
+  const biz = detectImageBusinessType(topic);
 
-  const imagePrompt = `Create a professional square social media post image (1:1 ratio) for ${platform}.
+  // Extract key action/subject from postContent for stronger relevance
+  const contextHint = postContent
+    ? `Additional context: ${postContent.slice(0, 150).replace(/[^\u0600-\u06FF\w\s.,!?]/g, "")}`
+    : "";
 
-Topic: ${topic}
-${postContent ? `Post context: ${postContent.slice(0, 200)}` : ""}
+  const imagePrompt = `Photorealistic professional social media image for ${platform}, square format (1:1).
 
-Visual style: ${style}
-Market: Saudi Arabia / Arab world
-Aesthetic requirements:
-- NO text or Arabic text in the image (text will be added separately)
-- High quality, professional photography or illustration
-- Colors that work for ${platform} feed
-- Clean composition with clear focal point
-- Modern, premium feel suitable for Saudi/Gulf market
+SUBJECT: ${biz.en}
+TOPIC: ${topic}
+${contextHint}
 
-The image should visually represent: ${topic}`;
+WHAT TO SHOW IN THE IMAGE:
+${biz.visualCues}
+
+STYLE: ${style}, premium quality, Saudi/Gulf market
+
+STRICT RULES:
+- NO text, letters, words, or Arabic calligraphy anywhere in the image
+- FORBIDDEN elements: ${biz.forbidden}
+- The image MUST clearly and directly represent: ${topic}
+- Real photography style, not illustration or clipart
+- Single clear focal point, professional composition
+- Image must be 100% relevant to the topic — NO generic or unrelated content`;
 
   const response = await openai.images.generate({
     model: "dall-e-3",
     prompt: imagePrompt,
     n: 1,
     size: "1024x1024",
-    quality: "standard",
+    quality: "hd",
   });
 
   const imageUrl = response.data?.[0]?.url;
