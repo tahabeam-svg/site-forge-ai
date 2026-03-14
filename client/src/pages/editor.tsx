@@ -129,6 +129,8 @@ export default function EditorPage() {
   const [showTemplateBrowser, setShowTemplateBrowser] = useState(false);
   const [templateCategory, setTemplateCategory] = useState("all");
   const [loadingStep, setLoadingStep] = useState(0);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const chatMsgsRef = useRef<HTMLDivElement>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -151,8 +153,21 @@ export default function EditorPage() {
     enabled: !!project?.generatedHtml,
   });
 
+  // Push messages to bottom — double rAF ensures browser has completed layout
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    let raf1: number, raf2: number;
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const container = chatScrollRef.current;
+        const msgs = chatMsgsRef.current;
+        if (!container || !msgs) return;
+        msgs.style.paddingTop = "0px";
+        const pad = Math.max(0, container.clientHeight - msgs.scrollHeight - 8);
+        msgs.style.paddingTop = `${pad}px`;
+        container.scrollTop = container.scrollHeight;
+      });
+    });
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
   }, [messages]);
 
   // Prevent page body from scrolling on the editor (mobile fix)
@@ -169,11 +184,17 @@ export default function EditorPage() {
   // JS-calculated messages area height — bypasses ALL CSS inheritance issues
   useEffect(() => {
     const calc = () => {
-      if (window.innerWidth >= 768) { setMsgAreaHeight(null); return; }
-      const headerH = 48;       // mobile header h-12
-      const bottomNavH = 60;    // fixed bottom nav
       const inputH = chatInputAreaRef.current?.offsetHeight ?? 112;
-      setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+      if (window.innerWidth >= 768) {
+        // Desktop: total height minus desktop header, tabs list, and chat input
+        const desktopHeaderH = 48;
+        const tabsListH = 56;
+        setMsgAreaHeight(window.innerHeight - desktopHeaderH - tabsListH - inputH);
+      } else {
+        const headerH = 44;    // mobile header h-11
+        const bottomNavH = 60; // fixed bottom nav
+        setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+      }
     };
     calc();
     window.addEventListener("resize", calc);
@@ -186,23 +207,20 @@ export default function EditorPage() {
 
   // Recalculate when input area changes (tab switch, limit banner, image preview)
   useEffect(() => {
-    if (typeof window === "undefined" || window.innerWidth >= 768) return;
-    // Defer slightly so the DOM is updated before measuring
     const id = requestAnimationFrame(() => {
-      const headerH = 48;
-      const bottomNavH = 60;
       const inputH = chatInputAreaRef.current?.offsetHeight ?? 112;
-      setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+      if (window.innerWidth >= 768) {
+        const desktopHeaderH = 48;
+        const tabsListH = 56;
+        setMsgAreaHeight(window.innerHeight - desktopHeaderH - tabsListH - inputH);
+      } else {
+        const headerH = 44;
+        const bottomNavH = 60;
+        setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+      }
     });
     return () => cancelAnimationFrame(id);
   }, [limitReached, chatImagePreview, activeTab]);
-
-  // Cycle loading steps while editMutation is pending
-  useEffect(() => {
-    if (!editMutation.isPending) { setLoadingStep(0); return; }
-    const id = setInterval(() => setLoadingStep(s => (s + 1) % 3), 2800);
-    return () => clearInterval(id);
-  }, [editMutation.isPending]);
 
   // One-time scroll hint for the style tab
   useEffect(() => {
@@ -321,6 +339,13 @@ export default function EditorPage() {
       }
     },
   });
+
+  // Cycle loading steps while editMutation is pending (placed AFTER editMutation declaration)
+  useEffect(() => {
+    if (!editMutation.isPending) { setLoadingStep(0); return; }
+    const id = setInterval(() => setLoadingStep(s => (s + 1) % 3), 2800);
+    return () => clearInterval(id);
+  }, [editMutation.isPending]);
 
   const publishMutation = useMutation({
     mutationFn: async () => {
@@ -774,10 +799,15 @@ export default function EditorPage() {
               {/* Chat messages only — input is OUTSIDE Tabs below */}
               <TabsContent
                 value="chat"
-                className="overflow-y-auto mt-0 px-4 py-3 md:flex-1"
-                style={msgAreaHeight !== null ? { height: msgAreaHeight, flex: "none" } : undefined}
+                className="mt-0 flex flex-col overflow-hidden shrink-0"
+                style={msgAreaHeight !== null ? { height: msgAreaHeight } : { flex: "1 1 0%" }}
               >
-                <div className="flex flex-col justify-end min-h-full gap-4">
+                {/* Inner scroll container */}
+                <div
+                  ref={chatScrollRef}
+                  className="flex-1 overflow-y-auto px-4 py-3 flex flex-col min-h-0"
+                >
+                  <div ref={chatMsgsRef} className="flex flex-col gap-4">
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
@@ -932,6 +962,7 @@ export default function EditorPage() {
 
                   <div ref={chatEndRef} />
                 </div>
+                </div>{/* end inner scroll container */}
               </TabsContent>
 
               <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
