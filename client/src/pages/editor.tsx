@@ -132,6 +132,7 @@ export default function EditorPage() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const chatMsgsRef = useRef<HTMLDivElement>(null);
   const [pendingUserMsg, setPendingUserMsg] = useState<string | null>(null);
+  const [panelContentHeight, setPanelContentHeight] = useState<number | null>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -182,19 +183,21 @@ export default function EditorPage() {
     };
   }, []);
 
-  // JS-calculated messages area height — bypasses ALL CSS inheritance issues
+  // JS-calculated heights — bypasses ALL CSS/Radix Tabs inheritance issues
   useEffect(() => {
     const calc = () => {
       const inputH = chatInputAreaRef.current?.offsetHeight ?? 112;
       if (window.innerWidth >= 768) {
-        // Desktop: total height minus desktop header, tabs list, and chat input
         const desktopHeaderH = 48;
         const tabsListH = 56;
         setMsgAreaHeight(window.innerHeight - desktopHeaderH - tabsListH - inputH);
+        // sections/media/style have no chat input below them
+        setPanelContentHeight(window.innerHeight - desktopHeaderH - tabsListH);
       } else {
         const headerH = 44;    // mobile header h-11
         const bottomNavH = 60; // fixed bottom nav
         setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+        setPanelContentHeight(window.innerHeight - headerH - bottomNavH);
       }
     };
     calc();
@@ -214,10 +217,12 @@ export default function EditorPage() {
         const desktopHeaderH = 48;
         const tabsListH = 56;
         setMsgAreaHeight(window.innerHeight - desktopHeaderH - tabsListH - inputH);
+        setPanelContentHeight(window.innerHeight - desktopHeaderH - tabsListH);
       } else {
         const headerH = 44;
         const bottomNavH = 60;
         setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
+        setPanelContentHeight(window.innerHeight - headerH - bottomNavH);
       }
     });
     return () => cancelAnimationFrame(id);
@@ -983,8 +988,12 @@ export default function EditorPage() {
                 </div>{/* end inner scroll container */}
               </TabsContent>
 
-              <TabsContent value="sections" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0 pt-3 md:pt-0">
-                <div className="flex-1 overflow-y-auto px-3 pb-[72px] md:pb-3">
+              <TabsContent
+                value="sections"
+                className="shrink-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0"
+                style={panelContentHeight !== null ? { height: panelContentHeight } : { flex: "1 1 0%" }}
+              >
+                <div className="flex-1 overflow-y-auto px-3 pb-4 min-h-0">
                 <div className="mt-2 space-y-3">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800/40 px-3 py-2.5 flex items-center gap-2.5">
@@ -1073,8 +1082,12 @@ export default function EditorPage() {
                 </div>{/* end sections scroll */}
               </TabsContent>
 
-              <TabsContent value="media" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0 pt-3 md:pt-0">
-                <div className="flex-1 overflow-y-auto px-3 pb-[72px] md:pb-3">
+              <TabsContent
+                value="media"
+                className="shrink-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0"
+                style={panelContentHeight !== null ? { height: panelContentHeight } : { flex: "1 1 0%" }}
+              >
+                <div className="flex-1 overflow-y-auto px-3 pb-4 min-h-0">
                 <div className="mt-2 space-y-4">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2.5 flex items-center gap-2.5">
@@ -1192,10 +1205,14 @@ export default function EditorPage() {
                 </div>{/* end media scroll */}
               </TabsContent>
 
-              <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative pb-[72px] md:pb-0">
+              <TabsContent
+                value="style"
+                className="shrink-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative"
+                style={panelContentHeight !== null ? { height: panelContentHeight } : { flex: "1 1 0%" }}
+              >
                 <div
                   ref={styleScrollRef}
-                  className="flex-1 overflow-y-auto px-3 pb-3"
+                  className="flex-1 overflow-y-auto px-3 pb-4 min-h-0"
                   onScroll={dismissStyleHint}
                 >
                 <div className="mt-2 space-y-4">
