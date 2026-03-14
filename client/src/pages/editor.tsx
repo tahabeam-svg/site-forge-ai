@@ -805,9 +805,11 @@ export default function EditorPage() {
               {/* Chat messages only — input is OUTSIDE Tabs below */}
               <TabsContent
                 value="chat"
-                className="mt-0 flex flex-col overflow-hidden shrink-0"
+                className="mt-0 overflow-hidden shrink-0"
                 style={msgAreaHeight !== null ? { height: msgAreaHeight } : { flex: "1 1 0%" }}
               >
+                {/* flex wrapper inside — NOT on TabsContent (would override Radix hidden attr) */}
+                <div className="flex flex-col h-full overflow-hidden">
                 {/* Inner scroll container */}
                 <div
                   ref={chatScrollRef}
@@ -980,6 +982,7 @@ export default function EditorPage() {
                   <div ref={chatEndRef} />
                 </div>
                 </div>{/* end inner scroll container */}
+                </div>{/* end flex wrapper */}
               </TabsContent>
 
               <TabsContent
@@ -1195,8 +1198,9 @@ export default function EditorPage() {
 
               <TabsContent
                 value="style"
-                className="flex-1 min-h-0 flex flex-col overflow-hidden mt-0 relative"
+                className="flex-1 min-h-0 overflow-hidden mt-0 relative"
               >
+                <div className="flex flex-col h-full">
                 <div
                   ref={styleScrollRef}
                   className="flex-1 min-h-0 overflow-y-auto px-3 pt-3 md:pt-2 pb-[72px] md:pb-4"
@@ -1454,6 +1458,7 @@ export default function EditorPage() {
                     </button>
                   </div>
                 )}
+                </div>{/* end flex wrapper */}
               </TabsContent>
             </Tabs>
 
