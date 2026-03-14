@@ -707,10 +707,14 @@ Sitemap: https://arabyweb.net/sitemap.xml
           baseHtml = baseHtml.replace(/<svg[^>]*id=["']aw-ai-logo-footer["'][^>]*>[\s\S]*?<\/svg>/gi, logoImgFooter);
           baseHtml = baseHtml.replace(/<img[^>]*id=["']aw-ai-logo-footer["'][^>]*\/?>/gi, logoImgFooter);
         } else if (baseHtml.includes('class="aw-brand-group"') || baseHtml.includes("class='aw-brand-group'")) {
-          // Inject logo inside brand-group BEFORE the brand anchor (outside background-clip:text context)
+          // Replace auto-icon with logo, add aw-logo-mode to hide brand text
           baseHtml = baseHtml.replace(
-            /(<div[^>]*class=["']aw-brand-group["'][^>]*>)/gi,
-            `$1<img src="${logoDataUrl}" alt="logo" style="height:38px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;border-radius:6px;">`
+            /<div[^>]*class=["']aw-auto-icon["'][^>]*>[\s\S]*?<\/div>/i,
+            `<img src="${logoDataUrl}" alt="logo" style="height:44px;width:auto;object-fit:contain;flex-shrink:0;border-radius:8px;">`
+          );
+          baseHtml = baseHtml.replace(
+            /(<div[^>]*class=["'])aw-brand-group(["'][^>]*>)/gi,
+            `$1aw-brand-group aw-logo-mode$2`
           );
         } else if (baseHtml.includes("__AW_IMG_001__")) {
           baseHtml = baseHtml.replace(/__AW_IMG_001__/g, logoDataUrl);

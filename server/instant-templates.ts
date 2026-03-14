@@ -633,10 +633,24 @@ export interface ExtraLang {
   businessName?: string;
 }
 
+// Business type → Font Awesome icon class for auto brand icon
+const BRAND_ICON_MAP: Record<string, string> = {
+  cleaning:"fa-broom", restaurant:"fa-utensils", medical:"fa-stethoscope",
+  realestate:"fa-building", beauty:"fa-spa", education:"fa-graduation-cap",
+  construction:"fa-hammer", ecommerce:"fa-bag-shopping", gym:"fa-dumbbell",
+  fitness:"fa-dumbbell", logistics:"fa-truck", legal:"fa-scale-balanced",
+  photography:"fa-camera", hotel:"fa-bed", agency:"fa-bullhorn",
+  startup:"fa-rocket", tech:"fa-microchip", consulting:"fa-handshake",
+  finance:"fa-chart-line", automotive:"fa-car", charity:"fa-heart",
+  portfolio:"fa-palette", luxury:"fa-gem", events:"fa-calendar-star",
+  freelance:"fa-laptop-code", general:"fa-briefcase",
+};
+
 export function buildInstantWebsite(
   content: BilingualBusinessContent,
   primaryLang: string,
-  extraLangs?: ExtraLang[]
+  extraLangs?: ExtraLang[],
+  userSelectedLangs?: string[]
 ): { html: string; css: string } {
   const config = BUSINESS_CONFIGS[content.business_type] || BUSINESS_CONFIGS.general;
   const primary = content.primary_color || config.primary;
@@ -714,15 +728,23 @@ export function buildInstantWebsite(
 
   const whatsappNum = content.phone.replace(/\D/g, "");
 
-  // Language order: extra lang before English so clicking once reaches selected extra lang
-  const knownLangs = ["ar", ...(e3code ? [e3code] : []), "en"];
+  // Language filtering: only include languages the user actually selected
+  const selectedLangs = (userSelectedLangs && userSelectedLangs.length > 0) ? userSelectedLangs : ["ar", "en"];
+  // Build ordered language list filtered to user-selected languages only
+  const knownLangs = ["ar", ...(e3code ? [e3code] : []), "en"].filter(l => selectedLangs.includes(l));
   // Put primary language first, then maintain order
   const langOrder = [primaryLang, ...knownLangs.filter(l => l !== primaryLang)];
+  // Only show lang switcher if more than one language is selected
+  const showLangBtn = langOrder.length > 1;
   // Initial content to display (matches primaryLang)
   const initContent = primaryLang === "ar" ? ar : primaryLang === "en" ? en : (e3?.content ?? ar);
   const initName = primaryLang === "ar" ? content.business_name_ar : primaryLang === "en" ? content.business_name_en : (e3?.businessName || content.business_name_en);
   // Initial button shows next language to switch to (always uppercase code: AR, EN, FR, etc.)
-  const initialBtnLabel = langOrder[1].toUpperCase();
+  const initialBtnLabel = showLangBtn ? langOrder[1].toUpperCase() : "";
+
+  // Auto brand icon based on business type (shown when no logo is uploaded)
+  const brandIconClass = BRAND_ICON_MAP[content.business_type] || "fa-briefcase";
+  const autoIconHtml = `<div class="aw-auto-icon" id="aw-auto-icon"><i class="fa-solid ${brandIconClass}"></i></div>`;
 
   const html = `<div dir="${dir}" class="aw-site" id="aw-root" lang="${primaryLang}">
 
@@ -730,6 +752,7 @@ export function buildInstantWebsite(
 <nav class="aw-nav" id="aw-nav">
   <div class="aw-nav-inner">
     <div class="aw-brand-group">
+      ${autoIconHtml}
       <a href="#" class="aw-brand" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName || e3?.content.hero_title?.split(" ").slice(0,2).join(" "))}>${initName}</a>
     </div>
     <div class="aw-nav-links">
@@ -740,7 +763,7 @@ export function buildInstantWebsite(
       <a href="#contact" class="aw-nav-cta" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</a>
     </div>
     <div style="display:flex;align-items:center;gap:0.5rem;">
-      <button id="aw-lang-btn" onclick="awCycleLang()" title="Switch Language" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:0.35rem 0.75rem;border-radius:2rem;font-size:0.8rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;font-family:inherit;">${initialBtnLabel}</button>
+      ${showLangBtn ? `<button id="aw-lang-btn" onclick="awCycleLang()" title="Switch Language" style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;padding:0.35rem 0.75rem;border-radius:2rem;font-size:0.8rem;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;font-family:inherit;">${initialBtnLabel}</button>` : ""}
       <button id="aw-menu-btn" aria-label="Menu" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var open=m.style.display==='flex';m.style.display=open?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;padding:6px;color:#fff;line-height:1;">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
@@ -912,12 +935,24 @@ export function buildInstantWebsite(
       <form class="contact-form" onsubmit="var b=this.querySelector('.form-submit');var l=document.getElementById('aw-root').getAttribute('lang');b.textContent=l==='ar'?'تم الإرسال ✓':'Sent ✓';b.style.background='#10b981';event.preventDefault();">
         <h3 class="form-title" ${dUI("أرسل رسالتك", "Send a Message", "form_title")}>أرسل رسالتك</h3>
         <div class="form-row">
-          <input type="text" placeholder="الاسم الكامل" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_name || "Full Name")}"` : ""} class="form-inp" required/>
-          <input type="email" placeholder="البريد الإلكتروني" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_email || "Email Address")}"` : ""} class="form-inp" required/>
+          <div class="fi-wrap">
+            <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <input type="text" placeholder="الاسم الكامل" data-placeholder-ar="الاسم الكامل" data-placeholder-en="Full Name"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_name || "Full Name")}"` : ""} class="form-inp fi-inp" required/>
+          </div>
+          <div class="fi-wrap">
+            <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>
+            <input type="email" placeholder="البريد الإلكتروني" data-placeholder-ar="البريد الإلكتروني" data-placeholder-en="Email Address"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_email || "Email Address")}"` : ""} class="form-inp fi-inp" required/>
+          </div>
         </div>
-        <input type="tel" placeholder="رقم الجوال" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_phone || "Phone Number")}"` : ""} class="form-inp" dir="ltr"/>
-        <textarea placeholder="رسالتك..." data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..."${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_msg || "Your message...")}"` : ""} class="form-inp form-ta" rows="4"></textarea>
-        <button type="submit" class="form-submit" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${ar.cta_text}</button>
+        <div class="fi-wrap">
+          <span class="fi-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 1.18h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 8a16 16 0 0 0 6 6l.81-.81a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 15.18z"/></svg></span>
+          <input type="tel" placeholder="رقم الجوال" data-placeholder-ar="رقم الجوال" data-placeholder-en="Phone Number"${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_phone || "Phone Number")}"` : ""} class="form-inp fi-inp" dir="ltr"/>
+        </div>
+        <div class="fi-wrap fi-ta-wrap">
+          <span class="fi-icon fi-icon-top"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+          <textarea placeholder="رسالتك..." data-placeholder-ar="رسالتك..." data-placeholder-en="Your message..."${e3code ? ` data-placeholder-${e3code}="${esc(MULTILANG_UI[e3code]?.form_msg || "Your message...")}"` : ""} class="form-inp form-ta fi-inp" rows="4"></textarea>
+        </div>
+        <button type="submit" class="form-submit" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</button>
       </form>
     </div>
   </div>
@@ -993,7 +1028,7 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" style="p
     root.setAttribute('dir', isAr ? 'rtl' : 'ltr');
     root.setAttribute('lang', lang);
     var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
-    btn.textContent = awGetNextLabel(nextCode);
+    if(btn) btn.textContent = awGetNextLabel(nextCode);
     // Switch all translatable text elements
     document.querySelectorAll('[data-ar]').forEach(function(el){
       var val = el.getAttribute('data-' + lang) || el.getAttribute('data-ar');
@@ -1049,8 +1084,11 @@ img{max-width:100%;display:block;object-fit:cover;}
 .aw-nav{position:fixed;top:0;inset-inline:0;z-index:1000;background:rgba(5,8,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.08);transition:background 0.4s,box-shadow 0.4s;}
 .aw-nav.aw-nav-scrolled{background:rgba(5,8,22,0.97)!important;box-shadow:0 4px 40px rgba(0,0,0,0.5);}
 .aw-nav-inner{max-width:1200px;margin:0 auto;padding:1.05rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
-.aw-brand-group{display:flex;align-items:center;gap:0.5rem;isolation:auto;}
-.aw-brand-group img{height:38px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;border-radius:6px;}
+.aw-brand-group{display:flex;align-items:center;gap:0.65rem;isolation:auto;}
+.aw-brand-group img{height:40px;width:auto;object-fit:contain;flex-shrink:0;border-radius:8px;}
+.aw-auto-icon{width:40px;height:40px;background:linear-gradient(135deg,${primary},${accent});border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.05rem;flex-shrink:0;box-shadow:0 4px 14px ${primary}60;}
+.aw-brand-group.aw-logo-mode .aw-brand{display:none!important;}
+.aw-brand-group.aw-logo-mode .aw-auto-icon{display:none!important;}
 .aw-brand{font-family:${fontHeading};font-size:1.45rem;font-weight:900;background:linear-gradient(135deg,#fff 20%,${accent} 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;letter-spacing:-0.02em;}
 .aw-nav-links{display:flex;align-items:center;gap:1.75rem;}
 .aw-nav-links a{font-size:0.88rem;font-weight:500;color:rgba(255,255,255,0.72);transition:color 0.2s;position:relative;padding-bottom:2px;}
@@ -1200,9 +1238,15 @@ img{max-width:100%;display:block;object-fit:cover;}
 .contact-right{background:#fff;border:1.5px solid #e8eef8;border-radius:2rem;padding:2.75rem;box-shadow:0 20px 70px rgba(0,0,0,0.08);}
 .form-title{font-family:${fontHeading};font-size:1.35rem;font-weight:800;color:#0f172a;margin-bottom:1.75rem;letter-spacing:-0.01em;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;margin-bottom:0.85rem;}
+.fi-wrap{position:relative;margin-bottom:0.85rem;}
+.form-row .fi-wrap{margin-bottom:0;}
+.fi-icon{position:absolute;top:50%;transform:translateY(-50%);inset-inline-start:14px;color:#94a3b8;pointer-events:none;display:flex;align-items:center;line-height:0;transition:color 0.2s;}
+.fi-icon-top{top:15px;transform:none;}
+.fi-wrap:focus-within .fi-icon{color:${primary};}
 .form-inp{width:100%;padding:0.9rem 1.15rem;border:1.5px solid #e2e8f0;border-radius:0.9rem;font-family:${fontBody};font-size:0.95rem;color:#1e293b;background:#f8fafc;transition:border-color 0.25s,background 0.25s,box-shadow 0.25s;outline:none;}
 .form-inp:focus{border-color:${primary};background:#fff;box-shadow:0 0 0 4px ${primary}18;}
-.form-ta{resize:vertical;min-height:115px;margin-bottom:1rem;display:block;}
+.fi-inp{padding-inline-start:40px!important;}
+.form-ta{resize:vertical;min-height:115px;margin-bottom:0;display:block;}
 .form-submit{width:100%;padding:14px 26px;background:linear-gradient(135deg,${primary},${accent});color:#fff;border:none;border-radius:12px;font-family:${fontBody};font-size:1rem;font-weight:600;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.15),0 2px 4px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.15);transition:transform 0.2s ease,box-shadow 0.2s ease;}
 .form-submit:hover{transform:translateY(-2px);box-shadow:0 12px 28px ${primary}55,0 4px 8px rgba(0,0,0,0.15);}
 .form-submit:active{transform:translateY(1px);box-shadow:0 4px 12px ${primary}40;}

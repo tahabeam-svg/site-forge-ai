@@ -1337,7 +1337,14 @@ export async function generateInstantWebsite(
   const extraLangCode = languages.find(l => l !== "ar" && l !== "en");
   const extraLangName = extraLangCode ? (EXTRA_LANG_NAMES[extraLangCode] || extraLangCode) : null;
 
-  const systemPrompt = `You are an expert multilingual website content generator specializing in Saudi/Arab businesses. Generate professional, conversion-optimized website copy in Arabic, English${extraLangName ? `, and ${extraLangName}` : ""} from a user prompt.
+  const needsEnglish = languages.includes("en");
+  const langsList = [
+    "Arabic",
+    ...(needsEnglish ? ["English"] : []),
+    ...(extraLangName ? [extraLangName] : [])
+  ].join(", ");
+
+  const systemPrompt = `You are an expert multilingual website content generator specializing in Saudi/Arab businesses. Generate professional, conversion-optimized website copy in ${langsList} from a user prompt.
 
 CRITICAL RULES:
 1. The prompt often starts with "نوع النشاط: X" (activity type) — this is the MOST IMPORTANT signal for business_type selection. Always map it:
@@ -1411,7 +1418,7 @@ Generate complete multilingual website content. Return this EXACT JSON structure
     "seo_title": "Arabic SEO title max 60 chars",
     "seo_description": "Arabic meta description 150-155 chars"
   },
-  "en": {
+  ${needsEnglish ? `"en": {
     "hero_title": "compelling English headline, max 8 words",
     "hero_subtitle": "engaging English subtitle, 1-2 sentences",
     "about_title": "English about section heading",
@@ -1429,7 +1436,7 @@ Generate complete multilingual website content. Return this EXACT JSON structure
     "address": "Saudi Arabia",
     "seo_title": "English SEO title max 60 chars",
     "seo_description": "English meta description 150-155 chars"
-  },
+  },` : ""}
   "phone": "+966 5X XXX XXXX",
   "email": "info@${emailSlug}.sa",
   "primary_color": "#hexcolor that fits the business type",
@@ -1465,7 +1472,18 @@ Rules:
   let extraLang: ExtraLang | undefined;
   try {
     const parsed = JSON.parse(raw) as BilingualBusinessContent & Record<string, any>;
-    if (!parsed.ar || !parsed.en) throw new Error("Missing language sections");
+    if (!parsed.ar) throw new Error("Missing Arabic language section");
+    // If English was not requested but AI included it anyway, that's fine.
+    // If English was requested but missing, fall back to Arabic content
+    if (needsEnglish && !parsed.en) {
+      parsed.en = { ...parsed.ar };
+      parsed.business_name_en = parsed.business_name_ar;
+    }
+    // If English not requested and not returned, create a minimal copy for template fallback
+    if (!parsed.en) {
+      parsed.en = { ...parsed.ar };
+      parsed.business_name_en = parsed.business_name_ar;
+    }
     bilingualContent = parsed;
     // Extract extra language content if present
     if (extraLangCode && parsed[extraLangCode]) {
@@ -1525,7 +1543,7 @@ Rules:
     };
   }
 
-  const { html, css } = buildInstantWebsite(bilingualContent, primaryWebsiteLang, extraLang ? [extraLang] : undefined);
+  const { html, css } = buildInstantWebsite(bilingualContent, primaryWebsiteLang, extraLang ? [extraLang] : undefined, languages);
 
   const isPrimaryAr = primaryWebsiteLang === "ar";
   const isPrimaryEn = primaryWebsiteLang === "en";
