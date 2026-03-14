@@ -10,6 +10,7 @@ import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type In
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 import archiver from "archiver";
 import crypto from "crypto";
 import { db } from "./db";
@@ -436,46 +437,21 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
   // ── SEO: OpenGraph image (SVG served as branded image) ─────────────────────
   app.get("/og-image.png", (_req, res) => {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0f172a"/><stop offset="50%" style="stop-color:#1e293b"/><stop offset="100%" style="stop-color:#0f2027"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#10b981"/><stop offset="100%" style="stop-color:#8b5cf6"/>
-    </linearGradient>
-    <linearGradient id="pill" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.2"/><stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.2"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <circle cx="100" cy="100" r="200" fill="#10b981" opacity="0.05"/>
-  <circle cx="1100" cy="530" r="250" fill="#8b5cf6" opacity="0.07"/>
-  <rect x="0" y="0" width="1200" height="4" fill="url(#accent)"/>
-  <text x="100" y="110" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="#10b981">ArabyWeb.net</text>
-  <text x="100" y="140" font-family="Arial,sans-serif" font-size="16" fill="#64748b">&#x639;&#x631;&#x628;&#x64A; &#x648;&#x64A;&#x628;</text>
-  <text x="600" y="240" text-anchor="middle" font-family="Arial,sans-serif" font-size="56" font-weight="900" fill="#f1f5f9">&#x623;&#x646;&#x634;&#x626; &#x645;&#x648;&#x642;&#x639;&#x643; &#x645;&#x62C;&#x627;&#x646;&#x627;&#x64B;</text>
-  <text x="600" y="310" text-anchor="middle" font-family="Arial,sans-serif" font-size="52" font-weight="900" fill="url(#accent)">&#x628;&#x627;&#x644;&#x630;&#x643;&#x627;&#x621; &#x627;&#x644;&#x627;&#x635;&#x637;&#x646;&#x627;&#x639;&#x64A;</text>
-  <text x="600" y="370" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" fill="#94a3b8">&#x641;&#x64A; &#x623;&#x642;&#x644; &#x645;&#x646; &#x62F;&#x642;&#x64A;&#x642;&#x62A;&#x64A;&#x646; &#xB7; &#x628;&#x62F;&#x648;&#x646; &#x628;&#x631;&#x645;&#x62C;&#x629; &#xB7; &#x62A;&#x633;&#x648;&#x64A;&#x642; &#x630;&#x643;&#x64A; &#x62A;&#x644;&#x642;&#x627;&#x626;&#x64A;</text>
-  <rect x="200" y="415" width="200" height="44" rx="22" fill="url(#pill)" stroke="#10b981" stroke-width="1" stroke-opacity="0.4"/>
-  <text x="300" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#10b981">&#x1F680; &#x645;&#x648;&#x642;&#x639; &#x645;&#x62C;&#x627;&#x646;&#x64A;</text>
-  <rect x="430" y="415" width="200" height="44" rx="22" fill="url(#pill)" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.4"/>
-  <text x="530" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#a78bfa">&#x2728; &#x62A;&#x633;&#x648;&#x64A;&#x642; AI</text>
-  <rect x="660" y="415" width="240" height="44" rx="22" fill="url(#pill)" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.4"/>
-  <text x="780" y="442" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#60a5fa">&#x1F4F1; &#x62A;&#x635;&#x645;&#x64A;&#x645; &#x627;&#x62D;&#x62A;&#x631;&#x627;&#x641;&#x64A;</text>
-  <text x="270" y="545" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#f1f5f9">+1000</text>
-  <text x="270" y="575" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#64748b">&#x645;&#x648;&#x642;&#x639; &#x645;&#x64F;&#x646;&#x634;&#x623;</text>
-  <rect x="545" y="520" width="2" height="65" fill="#334155"/>
-  <text x="680" y="545" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#f1f5f9">#1</text>
-  <text x="680" y="575" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#64748b">&#x641;&#x64A; &#x627;&#x644;&#x633;&#x639;&#x648;&#x62F;&#x64A;&#x629;</text>
-  <rect x="820" y="520" width="2" height="65" fill="#334155"/>
-  <text x="970" y="545" text-anchor="middle" font-family="Arial,sans-serif" font-size="34" font-weight="800" fill="#f1f5f9">24</text>
-  <text x="970" y="575" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#64748b">&#x642;&#x637;&#x627;&#x639; &#x62A;&#x62C;&#x627;&#x631;&#x64A;</text>
-  <text x="600" y="615" text-anchor="middle" font-family="Arial,sans-serif" font-size="16" fill="#475569">arabyweb.net</text>
-</svg>`;
-    res.setHeader("Content-Type", "image/svg+xml");
-    res.setHeader("Cache-Control", "public, max-age=86400");
-    res.send(svg);
+    const pngPath = path.join(process.cwd(), "client", "public", "og-image.png");
+    if (fs.existsSync(pngPath)) {
+      res.setHeader("Content-Type", "image/png");
+      res.setHeader("Cache-Control", "public, max-age=86400");
+      res.sendFile(pngPath);
+    } else {
+      const distPath = path.join(process.cwd(), "dist", "public", "og-image.png");
+      if (fs.existsSync(distPath)) {
+        res.setHeader("Content-Type", "image/png");
+        res.setHeader("Cache-Control", "public, max-age=86400");
+        res.sendFile(distPath);
+      } else {
+        res.redirect("/og-image.svg");
+      }
+    }
   });
 
   // ── Load dynamic plan prices from DB on startup so they survive server restarts ──
