@@ -966,10 +966,16 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
   app.get("/api/templates", async (req, res) => {
     try {
-      // ?summary=true returns lightweight listing (no previewHtml/previewCss) — use for pickers & browsers
       if (req.query.summary === "true") {
-        const summaryTemplates = await storage.getTemplatesSummary();
-        return res.json(summaryTemplates);
+        const page = req.query.page ? parseInt(req.query.page as string) : undefined;
+        const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+        const category = req.query.category as string | undefined;
+        if (page !== undefined) {
+          const result = await storage.getTemplatesSummary({ category, page, limit: limit || 24 });
+          return res.json(result);
+        }
+        const result = await storage.getTemplatesSummary({ category });
+        return res.json(result.data);
       }
       const allTemplates = await storage.getTemplates();
       res.json(allTemplates);

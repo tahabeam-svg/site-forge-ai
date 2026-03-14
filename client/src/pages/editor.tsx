@@ -137,8 +137,8 @@ export default function EditorPage() {
     queryKey: ["/api/projects", projectId],
   });
 
-  const { data: allTemplates = [] } = useQuery<Template[]>({
-    queryKey: ["/api/templates"],
+  const { data: allTemplates = [] } = useQuery<Omit<Template, "previewHtml" | "previewCss">[]>({
+    queryKey: ["/api/templates?summary=true"],
     staleTime: 10 * 60 * 1000,
   });
 
@@ -282,10 +282,12 @@ export default function EditorPage() {
   });
 
   const applyTemplateMutation = useMutation({
-    mutationFn: async (template: Template) => {
+    mutationFn: async (templateId: number) => {
+      const fullRes = await fetch(`/api/templates/${templateId}`);
+      const fullTemplate: Template = await fullRes.json();
       const res = await apiRequest("PUT", `/api/projects/${projectId}`, {
-        generatedHtml: template.previewHtml,
-        generatedCss: template.previewCss || "",
+        generatedHtml: fullTemplate.previewHtml,
+        generatedCss: fullTemplate.previewCss || "",
         status: "generated",
       });
       return res.json();
@@ -987,7 +989,7 @@ export default function EditorPage() {
                                 <Button
                                   size="sm"
                                   className="h-7 text-[11px] px-2.5 bg-emerald-500 hover:bg-emerald-600"
-                                  onClick={() => applyTemplateMutation.mutate(tpl)}
+                                  onClick={() => applyTemplateMutation.mutate(tpl.id)}
                                   disabled={applyTemplateMutation.isPending}
                                   data-testid={`button-apply-template-${tpl.id}`}
                                 >

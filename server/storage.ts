@@ -11,7 +11,7 @@ export interface IStorage {
   deleteProject(id: number): Promise<void>;
 
   getTemplates(): Promise<Template[]>;
-  getTemplatesSummary(): Promise<Omit<Template, "previewHtml" | "previewCss">[]>;
+  getTemplatesSummary(opts?: { category?: string; page?: number; limit?: number }): Promise<{ data: Omit<Template, "previewHtml" | "previewCss">[]; total: number; page: number; limit: number }>;
   getTemplate(id: number): Promise<Template | undefined>;
   createTemplate(template: InsertTemplate): Promise<Template>;
 
@@ -97,8 +97,12 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(templates).orderBy(desc(templates.createdAt));
   }
 
-  async getTemplatesSummary(): Promise<Omit<Template, "previewHtml" | "previewCss">[]> {
-    return db.select({
+  async getTemplatesSummary(opts?: { category?: string; page?: number; limit?: number }): Promise<{ data: Omit<Template, "previewHtml" | "previewCss">[]; total: number; page: number; limit: number }> {
+    const page = Math.max(1, opts?.page ?? 1);
+    const limit = Math.min(100, Math.max(1, opts?.limit ?? 24));
+    const offset = (page - 1) * limit;
+
+    const baseQuery = db.select({
       id: templates.id,
       name: templates.name,
       nameAr: templates.nameAr,
@@ -108,7 +112,19 @@ export class DatabaseStorage implements IStorage {
       thumbnail: templates.thumbnail,
       isPremium: templates.isPremium,
       createdAt: templates.createdAt,
-    }).from(templates).orderBy(desc(templates.createdAt)) as any;
+    }).from(templates);
+
+    const countQuery = db.select({ count: sql<number>`count(*)::int` }).from(templates);
+
+    if (opts?.category && opts.category !== "all") {
+      const data = await baseQuery.where(eq(templates.category, opts.category)).orderBy(desc(templates.createdAt)).limit(limit).offset(offset) as any[];
+      const [{ count: total }] = await countQuery.where(eq(templates.category, opts.category));
+      return { data, total, page, limit };
+    }
+
+    const data = await baseQuery.orderBy(desc(templates.createdAt)).limit(limit).offset(offset) as any[];
+    const [{ count: total }] = await countQuery;
+    return { data, total, page, limit };
   }
 
   async getTemplate(id: number): Promise<Template | undefined> {

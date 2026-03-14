@@ -102,8 +102,8 @@ export default function LandingPage() {
     }
   });
 
-  const { data: allTemplates = [] } = useQuery<Template[]>({
-    queryKey: ["/api/templates"],
+  const { data: allTemplates = [] } = useQuery<Omit<Template, "previewHtml" | "previewCss">[]>({
+    queryKey: ["/api/templates?summary=true"],
     staleTime: 10 * 60 * 1000,
   });
   const { data: meData } = useQuery<{ plan: string }>({

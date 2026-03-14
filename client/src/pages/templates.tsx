@@ -12,7 +12,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/dashboard-layout";
-import { Crown, Sparkles, Loader2 } from "lucide-react";
+import { Crown, Sparkles, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+
+type TemplateSummary = Omit<Template, "previewHtml" | "previewCss">;
+type PaginatedTemplates = { data: TemplateSummary[]; total: number; page: number; limit: number };
+
+const LIMIT = 24;
 
 const categories = [
   "all", "corporate", "ecommerce", "exhibition", "restaurant", "startup", "portfolio",
@@ -26,6 +31,8 @@ export default function TemplatesPage() {
   const { toast } = useToast();
   const lang = language;
   const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [page, setPage] = useState(1);
+  const [loadingTemplateId, setLoadingTemplateId] = useState<number | null>(null);
   const isAr = lang !== "en";
 
   useSEO({
@@ -39,39 +46,53 @@ export default function TemplatesPage() {
     lang: isAr ? "ar" : "en",
   });
 
-  const { data: templates = [], isLoading } = useQuery<Template[]>({
-    queryKey: ["/api/templates"],
+  const categoryParam = activeCategory !== "all" ? `&category=${activeCategory}` : "";
+  const queryKey = [`/api/templates?summary=true&page=${page}&limit=${LIMIT}${categoryParam}`];
+
+  const { data, isLoading } = useQuery<PaginatedTemplates>({
+    queryKey,
   });
 
+  const templates = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.ceil(total / LIMIT);
+
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat);
+    setPage(1);
+  };
+
   const createFromTemplate = useMutation({
-    mutationFn: async (template: Template) => {
+    mutationFn: async (templateId: number) => {
+      setLoadingTemplateId(templateId);
+      const fullRes = await fetch(`/api/templates/${templateId}`);
+      const fullTemplate: Template = await fullRes.json();
+
       const res = await apiRequest("POST", "/api/projects", {
-        name: lang === "ar" && template.nameAr ? template.nameAr : template.name,
-        description: lang === "ar" && template.descriptionAr ? template.descriptionAr : template.description,
-        templateId: template.id,
+        name: lang === "ar" && fullTemplate.nameAr ? fullTemplate.nameAr : fullTemplate.name,
+        description: lang === "ar" && fullTemplate.descriptionAr ? fullTemplate.descriptionAr : fullTemplate.description,
+        templateId: fullTemplate.id,
       });
       const project = await res.json();
 
       await apiRequest("PUT", `/api/projects/${project.id}`, {
-        generatedHtml: template.previewHtml,
-        generatedCss: template.previewCss,
+        generatedHtml: fullTemplate.previewHtml,
+        generatedCss: fullTemplate.previewCss,
         status: "generated",
       });
 
       return project;
     },
     onSuccess: (project) => {
+      setLoadingTemplateId(null);
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       navigate(`/editor/${project.id}`);
     },
     onError: (err: Error) => {
+      setLoadingTemplateId(null);
       toast({ title: t("error", lang), description: err.message, variant: "destructive" });
     },
   });
-
-  const filtered = activeCategory === "all"
-    ? templates
-    : templates.filter((t) => t.category === activeCategory);
 
   const categoryLabel = (cat: string) => {
     const key = cat as keyof ReturnType<typeof t>;
@@ -86,9 +107,9 @@ export default function TemplatesPage() {
             {t("templates", lang)}
           </h1>
           <p className="text-muted-foreground">
-            {lang === "ar"
-              ? "اختر قالباً للبدء بسرعة أو استخدم الذكاء الاصطناعي لإنشاء تصميم فريد"
-              : "Choose a template to start quickly or use AI to create a unique design"}
+            {isAr
+              ? `اختر من ${total} قالب احترافي للبدء بسرعة أو استخدم الذكاء الاصطناعي لإنشاء تصميم فريد`
+              : `Choose from ${total} professional templates or use AI to create a unique design`}
           </p>
         </div>
 
@@ -98,7 +119,7 @@ export default function TemplatesPage() {
               key={cat}
               variant={activeCategory === cat ? "default" : "outline"}
               size="sm"
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => handleCategoryChange(cat)}
               data-testid={`button-category-${cat}`}
             >
               {categoryLabel(cat)}
@@ -111,86 +132,108 @@ export default function TemplatesPage() {
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((template, i) => (
-              <motion.div
-                key={template.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i * 0.03, 0.5) }}
-              >
-                <Card className="hover-elevate group" data-testid={`card-template-${template.id}`}>
-                  <div className="relative h-48 bg-muted rounded-t-lg overflow-hidden">
-                    {template.thumbnail ? (
-                      <img
-                        src={template.thumbnail}
-                        alt={lang === "ar" && template.nameAr ? template.nameAr : template.name}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
-                        data-testid={`img-template-${template.id}`}
-                      />
-                    ) : template.previewHtml ? (
-                      <div className="absolute inset-0 p-2 overflow-hidden pointer-events-none">
-                        <iframe
-                          srcDoc={template.previewHtml?.startsWith('<!DOCTYPE')
-                            ? template.previewHtml.replace('</head>', `<style>body{transform:scale(0.25);transform-origin:top left;width:400%;height:400%;}</style></head>`)
-                            : `<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.35);transform-origin:top left;width:285%;height:285%}${template.previewCss||""}</style></head><body>${template.previewHtml}</body></html>`
-                          }
-                          className="w-full h-full rounded bg-white border-0"
-                          sandbox="allow-same-origin"
-                          title="Template preview"
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {templates.map((template, i) => (
+                <motion.div
+                  key={template.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: Math.min(i * 0.03, 0.4) }}
+                >
+                  <Card className="hover-elevate group" data-testid={`card-template-${template.id}`}>
+                    <div className="relative h-48 bg-muted rounded-t-lg overflow-hidden">
+                      {template.thumbnail ? (
+                        <img
+                          src={template.thumbnail}
+                          alt={isAr && template.nameAr ? template.nameAr : template.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          loading="lazy"
+                          data-testid={`img-template-${template.id}`}
                         />
-                      </div>
-                    ) : null}
-                    {template.isPremium && (
-                      <div className="absolute top-3 right-3 z-10">
-                        <Badge className="bg-amber-500/90 text-white">
-                          <Crown className="w-3 h-3 me-1" />
-                          {t("premium", lang)}
-                        </Badge>
-                      </div>
-                    )}
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold mb-1" data-testid={`text-template-name-${template.id}`}>
-                      {lang === "ar" && template.nameAr ? template.nameAr : template.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {lang === "ar" && template.descriptionAr ? template.descriptionAr : template.description}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize">
-                        {categoryLabel(template.category)}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        className="ms-auto"
-                        onClick={() => {
-                          if (!isAuthenticated) {
-                            toast({ title: lang === "ar" ? "سجّل دخولك أولاً" : "Please login first", description: lang === "ar" ? "يجب تسجيل الدخول لاستخدام القوالب" : "You need to login to use templates", variant: "destructive" });
-                            navigate("/auth");
-                            return;
-                          }
-                          createFromTemplate.mutate(template);
-                        }}
-                        disabled={createFromTemplate.isPending}
-                        data-testid={`button-use-template-${template.id}`}
-                      >
-                        {createFromTemplate.isPending ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <>
-                            <Sparkles className="w-3.5 h-3.5 me-1" />
-                            {t("selectTemplate", lang)}
-                          </>
-                        )}
-                      </Button>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950 dark:to-teal-900">
+                          <Sparkles className="w-12 h-12 text-emerald-400 opacity-40" />
+                        </div>
+                      )}
+                      {template.isPremium && (
+                        <div className="absolute top-3 right-3 z-10">
+                          <Badge className="bg-amber-500/90 text-white">
+                            <Crown className="w-3 h-3 me-1" />
+                            {t("premium", lang)}
+                          </Badge>
+                        </div>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold mb-1" data-testid={`text-template-name-${template.id}`}>
+                        {isAr && template.nameAr ? template.nameAr : template.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {isAr && template.descriptionAr ? template.descriptionAr : template.description}
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="capitalize">
+                          {categoryLabel(template.category)}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          className="ms-auto"
+                          onClick={() => {
+                            if (!isAuthenticated) {
+                              toast({ title: isAr ? "سجّل دخولك أولاً" : "Please login first", description: isAr ? "يجب تسجيل الدخول لاستخدام القوالب" : "You need to login to use templates", variant: "destructive" });
+                              navigate("/auth");
+                              return;
+                            }
+                            createFromTemplate.mutate(template.id);
+                          }}
+                          disabled={loadingTemplateId !== null}
+                          data-testid={`button-use-template-${template.id}`}
+                        >
+                          {loadingTemplateId === template.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <>
+                              <Sparkles className="w-3.5 h-3.5 me-1" />
+                              {t("selectTemplate", lang)}
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-10">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  disabled={page === 1}
+                  data-testid="button-prev-page"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                  {isAr ? "السابق" : "Prev"}
+                </Button>
+                <span className="text-sm text-muted-foreground px-2">
+                  {isAr ? `صفحة ${page} من ${totalPages}` : `Page ${page} of ${totalPages}`}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  disabled={page === totalPages}
+                  data-testid="button-next-page"
+                >
+                  {isAr ? "التالي" : "Next"}
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </DashboardLayout>
