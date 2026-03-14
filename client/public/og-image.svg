@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="50%" style="stop-color:#1e293b"/>
+      <stop offset="100%" style="stop-color:#0f2027"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.2"/>
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.2"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="20" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="#10b981" opacity="0.05"/>
+  <circle cx="1100" cy="530" r="250" fill="#8b5cf6" opacity="0.07"/>
+  <circle cx="600" cy="600" r="300" fill="#3b82f6" opacity="0.04"/>
+
+  <!-- Grid pattern -->
+  <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+    <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-width="0.3" opacity="0.05"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="4" fill="url(#accent)"/>
+
+  <!-- Logo / Brand -->
+  <text x="100" y="110" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#10b981">ArabyWeb.net</text>
+  <text x="100" y="140" font-family="Arial, sans-serif" font-size="16" fill="#64748b">عربي ويب</text>
+
+  <!-- Main headline Arabic -->
+  <text x="600" y="240" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" font-weight="900" fill="#f1f5f9" direction="rtl">أنشئ موقعك مجاناً</text>
+  <text x="600" y="305" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" font-weight="900">
+    <tspan fill="url(#accent)">بالذكاء الاصطناعي</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="365" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#94a3b8" direction="rtl">
+    في أقل من دقيقتين · بدون برمجة · تسويق ذكي تلقائي
+  </text>
+
+  <!-- Feature pills -->
+  <rect x="200" y="410" width="200" height="44" rx="22" fill="url(#pill)" stroke="#10b981" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="300" y="437" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#10b981" direction="rtl">🚀 موقع مجاني</text>
+
+  <rect x="430" y="410" width="220" height="44" rx="22" fill="url(#pill)" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="540" y="437" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#a78bfa" direction="rtl">✨ تسويق AI</text>
+
+  <rect x="680" y="410" width="220" height="44" rx="22" fill="url(#pill)" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.4"/>
+  <text x="790" y="437" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#60a5fa" direction="rtl">📱 تصميم احترافي</text>
+
+  <!-- Bottom stats -->
+  <text x="300" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="800" fill="#f1f5f9">+1000</text>
+  <text x="300" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b" direction="rtl">موقع مُنشأ</text>
+
+  <rect x="565" y="520" width="2" height="60" fill="#334155"/>
+
+  <text x="700" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="800" fill="#f1f5f9">#1</text>
+  <text x="700" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b" direction="rtl">في السعودية</text>
+
+  <rect x="840" y="520" width="2" height="60" fill="#334155"/>
+
+  <text x="1000" y="540" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="800" fill="#f1f5f9">24</text>
+  <text x="1000" y="570" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="#64748b">قطاع تجاري</text>
+
+  <!-- Bottom URL -->
+  <text x="600" y="610" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#475569">arabyweb.net</text>
+</svg>
