@@ -88,7 +88,7 @@ export default function PreviewPage() {
         <iframe
           src={previewSrc}
           className="w-full h-full border-0"
-          sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
           title="Full Preview"
           data-testid="iframe-full-preview"
         />

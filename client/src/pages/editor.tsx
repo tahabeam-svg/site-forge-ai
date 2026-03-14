@@ -1686,7 +1686,7 @@ export default function EditorPage() {
                   ref={iframeRef}
                   src={previewSrc}
                   className="w-full h-full border-0"
-                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+                  sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
                   title="Website Preview"
                   data-testid="iframe-preview"
                 />
