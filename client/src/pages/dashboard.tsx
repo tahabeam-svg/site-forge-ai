@@ -172,9 +172,49 @@ const WEBSITE_LANGUAGES = [
   { code: "zh", label: "中文", flag: "🇨🇳", native: "中文" },
 ];
 
+const DESIGN_STYLES = [
+  { value: "dark-modern",    emoji: "🌑", labelAr: "داكن عصري",   labelEn: "Dark Modern",      descAr: "خلفيات داكنة، إضاءة نيون",    descEn: "Dark bg, neon accents",     bgClass: "from-slate-900 to-violet-950", textClass: "text-violet-300" },
+  { value: "clean-light",    emoji: "☀️", labelAr: "فاتح نظيف",   labelEn: "Clean & Light",    descAr: "أبيض ناصع، بسيط وأنيق",       descEn: "White, clean & elegant",    bgClass: "from-sky-50 to-white",        textClass: "text-sky-700" },
+  { value: "saudi-warm",     emoji: "🟫", labelAr: "سعودي أصيل",  labelEn: "Saudi Warm",       descAr: "ذهبي دافئ، طابع خليجي",       descEn: "Warm gold, Gulf style",     bgClass: "from-amber-900 to-yellow-800", textClass: "text-yellow-200" },
+  { value: "bold-colorful",  emoji: "🎨", labelAr: "ألوان جريئة", labelEn: "Bold & Colorful",  descAr: "تدرجات نابضة وجريئة",          descEn: "Vibrant gradient look",     bgClass: "from-pink-500 to-orange-500", textClass: "text-white" },
+  { value: "luxury-minimal", emoji: "💎", labelAr: "فاخر بسيط",  labelEn: "Luxury Minimal",   descAr: "أسود وذهبي، فخامة راقية",     descEn: "Black & gold luxury",       bgClass: "from-black to-zinc-800",      textClass: "text-yellow-400" },
+];
+
+const ACTIVITY_GRID = [
+  { value: "restaurant", emoji: "🍽️", labelAr: "مطعم وكافيه",      labelEn: "Restaurant" },
+  { value: "medical",    emoji: "🏥", labelAr: "عيادة وصحة",        labelEn: "Medical" },
+  { value: "beauty",     emoji: "💅", labelAr: "تجميل وعناية",      labelEn: "Beauty" },
+  { value: "education",  emoji: "📚", labelAr: "تعليم وتدريب",      labelEn: "Education" },
+  { value: "realestate", emoji: "🏠", labelAr: "عقارات",             labelEn: "Real Estate" },
+  { value: "tech",       emoji: "💻", labelAr: "تقنية ومتاجر",      labelEn: "Tech & Store" },
+  { value: "design",     emoji: "🎨", labelAr: "تصميم وإبداع",      labelEn: "Design" },
+  { value: "events",     emoji: "🎪", labelAr: "فعاليات",            labelEn: "Events" },
+  { value: "services",   emoji: "⚙️", labelAr: "خدمات وأعمال",      labelEn: "Services" },
+  { value: "legal",      emoji: "⚖️", labelAr: "محاماة واستشارات",  labelEn: "Legal" },
+  { value: "personal",   emoji: "👤", labelAr: "موقع شخصي",         labelEn: "Personal" },
+  { value: "romantic",   emoji: "❤️", labelAr: "رومانسي / هدية",    labelEn: "Romantic" },
+  { value: "other",      emoji: "✨", labelAr: "أخرى",               labelEn: "Other" },
+];
+
+const SMART_SUGGESTIONS: Record<string, { ar: string[]; en: string[] }> = {
+  restaurant: { ar: ["مطعم مشاوي فاخر مع توصيل مجاني في الرياض", "كافيه متخصص بقهوة سبيشلتي وحلويات", "مطعم بحري للمأكولات الطازجة والسمك"], en: ["Premium grill with free delivery", "Specialty coffee & pastry cafe", "Seafood restaurant with fresh catch"] },
+  medical:    { ar: ["عيادة أسنان تجميلية بأحدث التقنيات", "مركز طبي شامل مع أطباء متخصصين", "عيادة جلدية وتجميل بالليزر"], en: ["Aesthetic dental clinic with latest tech", "Comprehensive medical center", "Dermatology & laser aesthetics clinic"] },
+  beauty:     { ar: ["صالون تجميل نسائي فاخر في جدة", "مركز سبا وعناية بالبشرة الفاخر", "صالون رجالي احترافي للحلاقة"], en: ["Luxury women's salon in Jeddah", "Premium spa & skincare center", "Professional men's barbershop"] },
+  education:  { ar: ["أكاديمية برمجة وتقنية للناشئين", "مركز تعليمي لتحسين اللغة الإنجليزية", "معهد تدريب مهني معتمد دولياً"], en: ["Coding academy for beginners", "English language learning center", "Internationally certified training"] },
+  realestate: { ar: ["شركة عقارية متخصصة بالفلل الفاخرة", "مكتب عقارات تجارية في الرياض", "مطور عقاري للمجمعات السكنية"], en: ["Luxury villa real estate company", "Commercial real estate office", "Residential property developer"] },
+  tech:       { ar: ["شركة تطوير تطبيقات جوال وويب", "متجر إلكتروني للإلكترونيات والأجهزة", "وكالة تسويق رقمي ومحتوى"], en: ["Mobile & web development company", "Electronics e-commerce store", "Digital marketing & content agency"] },
+  design:     { ar: ["استوديو تصميم هوية بصرية واحترافية", "مصمم جرافيك مستقل ومتعدد المواهب", "وكالة إبداعية شاملة للشركات"], en: ["Brand identity design studio", "Freelance graphic designer", "Full-service creative agency"] },
+  events:     { ar: ["مؤتمر تقني سنوي بالرياض 2025", "حفل زفاف فاخر لا يُنسى", "معرض ريادة أعمال وابتكار"], en: ["Annual tech conference Riyadh 2025", "Luxury wedding celebration", "Business & innovation expo"] },
+  services:   { ar: ["شركة نظافة منازل وفلل فاخرة", "خدمات كهرباء وصيانة احترافية", "شركة نقل عفش موثوقة وآمنة"], en: ["Premium home & villa cleaning", "Professional electrical & maintenance", "Trusted furniture moving company"] },
+  legal:      { ar: ["مكتب محاماة متخصص في القضايا التجارية", "مستشار قانوني معتمد للشركات", "مكتب عقود وتوثيق رسمي"], en: ["Commercial law firm & litigation", "Certified corporate legal consultant", "Contracts & notary office"] },
+  personal:   { ar: ["بورتفوليو مصور فوتوغرافي إبداعي", "سيرة ذاتية لمهندس برمجيات خبرة 5 سنوات", "موقع مدرب حياة ومتحدث تحفيزي"], en: ["Creative photography portfolio", "Software engineer 5yr experience CV", "Life coach & motivational speaker"] },
+  romantic:   { ar: ["هدية رقمية لزوجتي العزيزة نورة", "إهداء رومانسي لحبيبتي لين بمناسبة عيد ميلادها", "موقع ذكرى زواجنا الخامسة"], en: ["Digital gift for my dear wife", "Birthday surprise for my love", "Our 5th wedding anniversary site"] },
+};
+
 interface WizardForm {
   siteName: string;
   activityType: string;
+  designStyle: string;
   websiteLanguage: string;
   websiteExtraLangs: string[];
   phone: string;
@@ -194,6 +234,7 @@ interface WizardForm {
 const defaultWizardForm: WizardForm = {
   siteName: "",
   activityType: "",
+  designStyle: "",
   websiteLanguage: "ar",
   websiteExtraLangs: [],
   phone: "",
@@ -246,6 +287,16 @@ function buildStructuredPrompt(form: WizardForm, isArabic: boolean): string {
 
   if (form.logoDataUrl) {
     lines.push(isArabic ? "الشعار: مُرفق (ضعه في مكان بارز في الموقع)" : "Logo: attached (place it prominently on the website)");
+  }
+
+  if (form.designStyle) {
+    const styleObj = DESIGN_STYLES.find(s => s.value === form.designStyle);
+    if (styleObj) {
+      const styleDesc = isArabic
+        ? `نمط التصميم المطلوب: ${styleObj.labelAr} (${styleObj.descAr})`
+        : `Design style: ${styleObj.labelEn} (${styleObj.descEn})`;
+      lines.push(`\n${styleDesc}`);
+    }
   }
 
   if (form.extraNotes) {
@@ -630,13 +681,13 @@ export default function DashboardPage() {
                   >
                     {/* Thumbnail */}
                     <div
-                      className="relative h-36 bg-gradient-to-br from-emerald-500/8 via-teal-500/8 to-cyan-500/8 overflow-hidden cursor-pointer"
+                      className="relative h-44 bg-gradient-to-br from-emerald-500/8 via-teal-500/8 to-cyan-500/8 overflow-hidden cursor-pointer"
                       onClick={() => navigate(`/editor/${project.id}`)}
                     >
                       {project.generatedHtml ? (
-                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none transition-transform duration-500 group-hover:scale-105">
                           <iframe
-                            srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.38);transform-origin:top left;width:263%;height:263%;overflow:hidden}${project.generatedCss||""}</style></head><body>${(project.generatedHtml||"").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style id="aw-[^"]*">[\s\S]*?<\/style>/gi,"")}</body></html>`}
+                            srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Inter,sans-serif;transform:scale(0.42);transform-origin:top left;width:238%;height:238%;overflow:hidden}${project.generatedCss||""}</style></head><body>${(project.generatedHtml||"").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,"").replace(/<style id="aw-[^"]*">[\s\S]*?<\/style>/gi,"")}</body></html>`}
                             className="w-full h-full bg-white border-0"
                             sandbox="allow-same-origin"
                             title="Project preview"
@@ -650,12 +701,22 @@ export default function DashboardPage() {
                           </span>
                         </div>
                       )}
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      {/* Hover overlay with action buttons */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                         <div className="flex gap-2">
-                          <div className="bg-white text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+                          <div className="bg-white text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                            <Pencil className="w-3 h-3" />
                             {lang === "ar" ? "تعديل" : "Edit"}
                           </div>
+                          {project.generatedHtml && (
+                            <div
+                              className="bg-slate-800/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1 hover:bg-slate-700 transition-colors cursor-pointer"
+                              onClick={(e) => { e.stopPropagation(); window.open(`/preview/${project.id}`, "_blank"); }}
+                            >
+                              <Eye className="w-3 h-3" />
+                              {lang === "ar" ? "معاينة" : "Preview"}
+                            </div>
+                          )}
                         </div>
                       </div>
                       {/* Status badge */}
@@ -931,26 +992,33 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  {/* Activity Type */}
-                  <div className="space-y-1.5">
+                  {/* Activity Type — Visual Grid */}
+                  <div className="space-y-2">
                     <Label className="flex items-center gap-1.5 text-sm font-medium">
                       <Building2 className="w-3.5 h-3.5 text-violet-500" />
                       {lang === "ar" ? "نوع النشاط" : "Activity Type"}
                       <span className="text-red-500">*</span>
                     </Label>
-                    <Select
-                      value={wizardForm.activityType}
-                      onValueChange={(v) => updateWizard("activityType", v)}
-                    >
-                      <SelectTrigger data-testid="select-activity-type" className="w-full">
-                        <SelectValue placeholder={lang === "ar" ? "اختر نوع النشاط..." : "Select activity type..."} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(lang === "ar" ? ACTIVITY_TYPES_AR : ACTIVITY_TYPES_EN).map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="grid grid-cols-4 gap-1.5" data-testid="select-activity-type">
+                      {ACTIVITY_GRID.map((act) => (
+                        <button
+                          key={act.value}
+                          type="button"
+                          onClick={() => updateWizard("activityType", act.value)}
+                          data-testid={`button-activity-${act.value}`}
+                          className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border-2 transition-all text-center ${
+                            wizardForm.activityType === act.value
+                              ? "border-violet-500 bg-violet-50 dark:bg-violet-950/40 shadow-md shadow-violet-500/20"
+                              : "border-border hover:border-violet-300 hover:bg-violet-50/50 dark:hover:bg-violet-950/20"
+                          }`}
+                        >
+                          <span className="text-xl">{act.emoji}</span>
+                          <span className={`text-[10px] font-medium leading-tight ${wizardForm.activityType === act.value ? "text-violet-700 dark:text-violet-300" : "text-muted-foreground"}`}>
+                            {lang === "ar" ? act.labelAr : act.labelEn}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
                   {/* Website Language */}
@@ -1054,6 +1122,48 @@ export default function DashboardPage() {
                       data-testid="input-site-name"
                       className="text-base"
                     />
+                  </div>
+
+                  {/* Design Style Selector */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1.5 text-sm font-medium">
+                      <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                      {lang === "ar" ? "النمط البصري" : "Design Style"}
+                      <span className="text-xs font-normal text-muted-foreground ms-1">({lang === "ar" ? "اختياري" : "optional"})</span>
+                    </Label>
+                    <div className="grid grid-cols-5 gap-1.5">
+                      {DESIGN_STYLES.map((style) => (
+                        <button
+                          key={style.value}
+                          type="button"
+                          onClick={() => updateWizard("designStyle", wizardForm.designStyle === style.value ? "" : style.value)}
+                          data-testid={`button-style-${style.value}`}
+                          className={`relative flex flex-col items-center gap-1.5 rounded-xl overflow-hidden border-2 transition-all pt-3 pb-2 px-1 ${
+                            wizardForm.designStyle === style.value
+                              ? "border-violet-500 shadow-md shadow-violet-500/25"
+                              : "border-border hover:border-violet-300"
+                          }`}
+                        >
+                          <div className={`absolute inset-0 bg-gradient-to-br ${style.bgClass} opacity-90`} />
+                          {wizardForm.designStyle === style.value && (
+                            <div className="absolute top-1 end-1 w-4 h-4 bg-violet-500 rounded-full flex items-center justify-center z-10">
+                              <Check className="w-2.5 h-2.5 text-white" />
+                            </div>
+                          )}
+                          <span className="relative z-10 text-lg">{style.emoji}</span>
+                          <span className={`relative z-10 text-[9px] font-semibold leading-tight text-center ${style.textClass}`}>
+                            {lang === "ar" ? style.labelAr : style.labelEn}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    {wizardForm.designStyle && (
+                      <p className="text-xs text-violet-600 dark:text-violet-400">
+                        ✓ {lang === "ar"
+                          ? DESIGN_STYLES.find(s => s.value === wizardForm.designStyle)?.descAr
+                          : DESIGN_STYLES.find(s => s.value === wizardForm.designStyle)?.descEn}
+                      </p>
+                    )}
                   </div>
 
                   {/* City & Phone in a row */}
@@ -1193,12 +1303,35 @@ export default function DashboardPage() {
                     )}
                   </div>
 
-                  {/* Extra Notes */}
-                  <div className="space-y-1.5">
+                  {/* Extra Notes + Smart Suggestions */}
+                  <div className="space-y-2">
                     <Label className="flex items-center gap-1.5 text-sm font-medium">
                       <Sparkles className="w-3.5 h-3.5 text-violet-500" />
-                      {lang === "ar" ? "تفاصيل إضافية (اختياري)" : "Additional Details (optional)"}
+                      {lang === "ar" ? "وصف موقعك (اختياري)" : "Describe Your Website (optional)"}
                     </Label>
+                    {/* Smart suggestion chips */}
+                    {wizardForm.activityType && SMART_SUGGESTIONS[wizardForm.activityType] && (
+                      <div className="space-y-1.5">
+                        <p className="text-xs text-muted-foreground">{lang === "ar" ? "💡 اقتراحات جاهزة — انقر لاستخدامها:" : "💡 Ready examples — click to use:"}</p>
+                        <div className="flex flex-col gap-1.5">
+                          {(SMART_SUGGESTIONS[wizardForm.activityType][lang === "ar" ? "ar" : "en"]).map((sug, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => updateWizard("extraNotes", sug)}
+                              data-testid={`button-suggestion-${idx}`}
+                              className={`text-start text-xs px-3 py-2 rounded-lg border transition-all ${
+                                wizardForm.extraNotes === sug
+                                  ? "bg-violet-50 dark:bg-violet-950/40 border-violet-400 text-violet-700 dark:text-violet-300"
+                                  : "border-border hover:border-violet-300 hover:bg-violet-50/50 dark:hover:bg-violet-950/20 text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              {sug}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <Textarea
                       value={wizardForm.extraNotes}
                       onChange={(e) => updateWizard("extraNotes", e.target.value)}

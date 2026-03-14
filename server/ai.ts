@@ -331,6 +331,54 @@ SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشا
 
 ▸ COLOR DEPTH: Use 3 opacity levels of your primary: full, 40%, 15%. Never use flat solid colors for backgrounds — always use gradients.
 
+═══════════════════════════════════════
+DESIGN STYLE OVERRIDES (if specified in description)
+═══════════════════════════════════════
+If the description contains "نمط التصميم المطلوب" or "Design style", apply these overrides STRICTLY:
+
+◆ داكن عصري / Dark Modern:
+  - Background: #050814 to #0f0c29 gradient throughout
+  - All sections use dark backgrounds — NO white sections
+  - Primary accents: electric violet (#7c3aed) + cyan (#06b6d4)
+  - Stats bar, service cards, testimonials: dark glass with neon border glow (box-shadow: 0 0 20px rgba(124,58,237,0.3))
+  - Hero text: neon gradient (#a78bfa → #22d3ee)
+  - Navbar: rgba(5,8,22,0.95) + neon border bottom
+
+◆ فاتح نظيف / Clean & Light:
+  - ALL sections use white (#ffffff) or very light gray (#f8fafc) backgrounds
+  - NO dark sections except footer (which uses #1e293b)
+  - Primary: sky blue (#0284c7) + teal (#0d9488)
+  - Cards: white background, subtle border (#e2e8f0), gentle shadow (0 2px 8px rgba(0,0,0,0.06))
+  - Hero: light gradient (#f0f9ff → #e0f2fe), dark text (#0f172a)
+  - Typography: clean, airy — more line-height (1.8), softer weights
+
+◆ سعودي أصيل / Saudi Warm:
+  - Color palette: deep emerald green (#064e3b) + warm gold (#d4a843) + cream (#fef9e7)
+  - Background: cream/white sections alternating with dark green (#064e3b)
+  - Hero: dark olive green gradient with gold text accents
+  - Cards: cream background (#fef9e7) with gold border (1.5px solid #d4a843)
+  - Stats: dark green background, gold numbers
+  - Pattern: add subtle Arabic geometric SVG pattern overlay (opacity 0.04) in hero and footer
+  - Feel: authentic, trustworthy, traditional yet modern
+
+◆ ألوان جريئة / Bold & Colorful:
+  - Use VIVID multi-stop gradients everywhere: from #f43f5e via #8b5cf6 to #06b6d4
+  - Hero: massive rainbow gradient background
+  - Each section has its own bold gradient (alternate pink→purple, orange→yellow, teal→blue)
+  - Cards: each card has its own gradient background color
+  - Stats numbers: bright gradient text
+  - CTAs: bright animated gradient buttons with pulse glow
+  - Feel: energetic, youthful, social-media-ready
+
+◆ فاخر بسيط / Luxury Minimal:
+  - Background: pure black (#000000) or very dark charcoal (#0a0a0a) everywhere
+  - NO colorful sections — only black, white, and gold (#d4a843)
+  - Serif-inspired feel: increase letter-spacing on headings to 0.05em, use elegant thin weights
+  - Services: pure white cards on black background with thin gold border (1px solid #d4a843)
+  - Stats: black background, gold gradient numbers, thin dividers
+  - Minimal animations — no heavy effects, only smooth fade-ins
+  - Feel: luxury brand, high-end, exclusive
+
 Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
 Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) from Google Fonts" : "Import Montserrat (headings, weight 700-900) + Inter (body) from Google Fonts"}
 
