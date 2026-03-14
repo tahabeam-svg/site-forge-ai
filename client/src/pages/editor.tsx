@@ -132,7 +132,6 @@ export default function EditorPage() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const chatMsgsRef = useRef<HTMLDivElement>(null);
   const [pendingUserMsg, setPendingUserMsg] = useState<string | null>(null);
-  const [panelContentHeight, setPanelContentHeight] = useState<number | null>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -191,13 +190,10 @@ export default function EditorPage() {
         const desktopHeaderH = 48;
         const tabsListH = 56;
         setMsgAreaHeight(window.innerHeight - desktopHeaderH - tabsListH - inputH);
-        // sections/media/style have no chat input below them
-        setPanelContentHeight(window.innerHeight - desktopHeaderH - tabsListH);
       } else {
         const headerH = 44;    // mobile header h-11
         const bottomNavH = 60; // fixed bottom nav
         setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
-        setPanelContentHeight(window.innerHeight - headerH - bottomNavH);
       }
     };
     calc();
@@ -217,12 +213,10 @@ export default function EditorPage() {
         const desktopHeaderH = 48;
         const tabsListH = 56;
         setMsgAreaHeight(window.innerHeight - desktopHeaderH - tabsListH - inputH);
-        setPanelContentHeight(window.innerHeight - desktopHeaderH - tabsListH);
       } else {
         const headerH = 44;
         const bottomNavH = 60;
         setMsgAreaHeight(window.innerHeight - headerH - bottomNavH - inputH);
-        setPanelContentHeight(window.innerHeight - headerH - bottomNavH);
       }
     });
     return () => cancelAnimationFrame(id);
@@ -990,11 +984,9 @@ export default function EditorPage() {
 
               <TabsContent
                 value="sections"
-                className="shrink-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0"
-                style={panelContentHeight !== null ? { height: panelContentHeight } : { flex: "1 1 0%" }}
+                className="flex-1 min-h-0 overflow-y-auto mt-0 px-3 pt-3 md:pt-2 pb-[72px] md:pb-4"
               >
-                <div className="flex-1 overflow-y-auto px-3 pb-4 min-h-0">
-                <div className="mt-2 space-y-3">
+                <div className="space-y-3">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800/40 px-3 py-2.5 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center shrink-0">
@@ -1079,16 +1071,13 @@ export default function EditorPage() {
                     <TooltipContent side="top">{lang === "ar" ? "إعادة إنشاء الموقع بالكامل بالذكاء الاصطناعي" : "Rebuild entire website from scratch with AI"}</TooltipContent>
                   </Tooltip>
                 </div>
-                </div>{/* end sections scroll */}
               </TabsContent>
 
               <TabsContent
                 value="media"
-                className="shrink-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0"
-                style={panelContentHeight !== null ? { height: panelContentHeight } : { flex: "1 1 0%" }}
+                className="flex-1 min-h-0 overflow-y-auto mt-0 px-3 pt-3 md:pt-2 pb-[72px] md:pb-4"
               >
-                <div className="flex-1 overflow-y-auto px-3 pb-4 min-h-0">
-                <div className="mt-2 space-y-4">
+                <div className="space-y-4">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2.5 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center shrink-0">
@@ -1202,20 +1191,18 @@ export default function EditorPage() {
                     </div>
                   </div>
                 </div>
-                </div>{/* end media scroll */}
               </TabsContent>
 
               <TabsContent
                 value="style"
-                className="shrink-0 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative"
-                style={panelContentHeight !== null ? { height: panelContentHeight } : { flex: "1 1 0%" }}
+                className="flex-1 min-h-0 flex flex-col overflow-hidden mt-0 relative"
               >
                 <div
                   ref={styleScrollRef}
-                  className="flex-1 overflow-y-auto px-3 pb-4 min-h-0"
+                  className="flex-1 min-h-0 overflow-y-auto px-3 pt-3 md:pt-2 pb-[72px] md:pb-4"
                   onScroll={dismissStyleHint}
                 >
-                <div className="mt-2 space-y-4">
+                <div className="space-y-4">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-950/30 dark:to-pink-950/20 border border-rose-200 dark:border-rose-800/40 px-3 py-2.5 flex items-center gap-2.5">
                     <div className="w-7 h-7 rounded-lg bg-rose-500 flex items-center justify-center shrink-0">
