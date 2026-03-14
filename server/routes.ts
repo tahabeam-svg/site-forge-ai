@@ -1117,8 +1117,13 @@ Sitemap: https://arabyweb.net/sitemap.xml
   app.post("/api/analyze-business", isAuthenticated, async (req: any, res) => {
     try {
       const { activityType, businessName } = req.body as { activityType?: string; businessName?: string };
-      // Only ask for clarification when category is "other" or "services"
-      if (!businessName?.trim() || (activityType !== "other" && activityType !== "services")) {
+      if (!businessName?.trim()) {
+        return res.json({ needsClarification: false });
+      }
+      // For specific categories with multi-word names that contain a clear type indicator, skip check
+      const specificCategories = ["restaurant", "medical", "realestate", "automotive", "education", "hotel"];
+      const wordCount = businessName.trim().split(/\s+/).length;
+      if (specificCategories.includes(activityType || "") && wordCount >= 3) {
         return res.json({ needsClarification: false });
       }
       const { openai } = await import("./ai");
@@ -1128,16 +1133,32 @@ Sitemap: https://arabyweb.net/sitemap.xml
         messages: [
           {
             role: "system",
-            content: `You are a business type analyzer. Given an Arabic business name, determine if the business type is ambiguous. 
-Return JSON: { "clear": true/false, "question_ar": "Arabic clarification question", "options_ar": ["option1","option2","option3","option4"] }
-- If the name clearly indicates a specific business (e.g. "مطعم الريف" = restaurant, "شركة النقل السريع" = logistics), set clear:true
-- If the name is ambiguous or could be multiple business types (e.g. "نغم", "نور", "أمل"), set clear:false
-- Write the question in Arabic, starting with the business name
-- Provide 4 realistic options that the name could represent`,
+            content: `You are an expert Arabic business name analyzer for a Saudi website builder.
+
+Given a business name and its selected category, determine if the business type needs clarification.
+
+Return JSON: { "clear": true/false, "question_ar": "Arabic question", "options_ar": ["option1","option2","option3","option4"] }
+
+Rules:
+- Set clear:TRUE when:
+  • The name clearly describes the business (e.g. "مطعم الريف", "عيادة الدكتور سعيد", "شركة النقل السريع")
+  • The category strongly matches the name's obvious meaning
+  • The name contains a clear activity word (مطعم، عيادة، صالون، شركة، مدرسة، فندق، صيدلية...)
+  
+- Set clear:FALSE when:
+  • The name is a single abstract word (نغم، نور، أمل، لمسة، رؤية، إبداع، سمو...)
+  • The name could equally represent multiple different industries
+  • The selected category is "other" or "general"
+  • The name gives no indication of the business activity
+
+When asking for clarification:
+- Write the question naturally in Arabic
+- Provide exactly 4 specific, realistic options for what this business could be
+- Options should be specific activities, not generic categories`,
           },
           {
             role: "user",
-            content: `Business name: "${businessName.trim()}"`,
+            content: `Business name: "${businessName.trim()}" | Selected category: "${activityType || "other"}"`,
           },
         ],
         max_completion_tokens: 300,

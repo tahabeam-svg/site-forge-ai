@@ -1,0 +1,300 @@
+You are a senior SaaS AI architect and full-stack engineer.
+
+Rebuild and upgrade the AI website generation engine of the ArabyWeb platform.
+
+The current generator produces weak layouts, duplicate sections, poor contrast, basic contact forms, and low quality footers. The system must be redesigned into a structured AI page builder that generates professional websites.
+
+--------------------------------------------------
+
+1. BUSINESS UNDERSTANDING ENGINE
+
+Before generating a website the system must analyze the business context.
+
+Inputs:
+
+business name
+selected category
+city
+keywords
+
+If category = "Other", the AI must not guess the business type.
+
+Instead it must analyze the semantic meaning of the business name and ask the user for clarification before generating the site.
+
+Example:
+
+Business name: نغم
+
+Possible meanings:
+
+music academy
+music studio
+art brand
+personal brand
+
+The system must ask the user to choose the correct activity before generating the website.
+
+The generator must never assign unrelated industries.
+
+--------------------------------------------------
+
+2. PAGE STRUCTURE ENGINE
+
+Every generated website must follow a strict layout structure.
+
+Allowed page structure:
+
+Hero
+Services
+About
+Features or Benefits
+Portfolio or Gallery
+Testimonials
+Call To Action
+Contact Section
+Footer
+
+Each section must appear only once.
+
+Duplicate sections are forbidden.
+
+The generator must validate the page structure before rendering.
+
+--------------------------------------------------
+
+3. HERO SECTION RULES
+
+The hero section must include:
+
+background image
+overlay gradient
+headline
+subheadline
+two call-to-action buttons
+
+Hero must appear only once at the top of the page.
+
+Text must always remain readable on top of the image.
+
+--------------------------------------------------
+
+4. SERVICES SECTION SYSTEM
+
+Services must appear as modern cards.
+
+Each card must include:
+
+icon
+title
+description
+
+Design requirements:
+
+rounded corners
+soft shadow
+hover animation
+balanced spacing
+
+Grid layout:
+
+3 columns desktop
+2 columns tablet
+1 column mobile
+
+--------------------------------------------------
+
+5. ICON SYSTEM
+
+Every service or feature card must include an icon.
+
+Icons must come from a professional outline icon library.
+
+Icons must match the business industry.
+
+Example:
+
+education → graduation cap
+music → music note
+technology → chip
+consulting → chart
+
+No service card may appear without an icon.
+
+--------------------------------------------------
+
+6. TESTIMONIALS SYSTEM
+
+Testimonials must be displayed as modern cards.
+
+Each testimonial must include:
+
+client avatar
+client name
+star rating
+testimonial text
+
+Contrast rules:
+
+If background is dark → testimonial cards must use a light background.
+
+If background is light → testimonial cards must use a darker text color.
+
+Text must always be readable.
+
+--------------------------------------------------
+
+7. CONTACT FORM SYSTEM
+
+Replace the basic HTML contact form with a modern SaaS form component.
+
+The contact form must include:
+
+Name
+Email
+Phone
+Message
+
+Design requirements:
+
+card container
+rounded input fields
+icons inside inputs
+focus animations
+modern submit button
+responsive layout
+
+--------------------------------------------------
+
+8. FOOTER SYSTEM
+
+The footer must follow a professional multi-column layout.
+
+Structure:
+
+Column 1
+logo and short description
+
+Column 2
+quick navigation links
+
+Column 3
+services
+
+Column 4
+contact information and social icons
+
+The footer must include:
+
+proper spacing
+divider lines
+copyright section
+
+--------------------------------------------------
+
+9. LOGO HANDLING SYSTEM
+
+The platform must not force users to upload a logo.
+
+If the user uploads a logo:
+
+display only the uploaded logo.
+
+If the user does not upload a logo:
+
+generate a placeholder brand icon based on the industry.
+
+When uploading a logo display a recommendation message explaining ideal logo specifications:
+
+preferred formats: PNG or SVG
+transparent background recommended
+minimum resolution: 512x512
+recommended resolution: 1024x1024
+maximum file size: 2MB
+
+This is a recommendation only, not mandatory.
+
+--------------------------------------------------
+
+10. DESIGN SYSTEM
+
+Implement a global design system.
+
+Rules:
+
+container width: 1200px
+section padding: 80px
+card border radius: 16px
+grid gap: 24px
+
+Typography must follow a clear hierarchy:
+
+large headline
+section title
+body text
+
+--------------------------------------------------
+
+11. COLOR CONTRAST VALIDATION
+
+The generator must validate text readability.
+
+Rules:
+
+dark background → light text
+light background → dark text
+
+The system must automatically correct poor contrast combinations.
+
+Gradient text is forbidden.
+
+Gradients may only appear in backgrounds or buttons.
+
+--------------------------------------------------
+
+12. BUTTON SYSTEM
+
+Create unified button styles.
+
+Primary button:
+
+rounded corners
+soft shadow
+hover animation
+subtle 3D elevation
+
+Buttons must look modern and consistent across the entire site.
+
+--------------------------------------------------
+
+13. IMAGE HANDLING
+
+Images must always include:
+
+rounded corners
+balanced spacing
+proper aspect ratio
+
+The generator must avoid distorted images.
+
+--------------------------------------------------
+
+14. WEBSITE QUALITY VALIDATION
+
+Before delivering the generated website the system must run a validation check.
+
+Check for:
+
+duplicate sections
+weak contact form
+missing icons
+poor footer structure
+text readability
+layout balance
+
+If any problem exists the system must regenerate the affected section automatically.
+
+--------------------------------------------------
+
+FINAL OBJECTIVE
+
+Transform ArabyWeb into an intelligent AI website builder that produces modern, professional websites using structured layouts, reusable components, strong visual hierarchy, readable typography, and validated design quality.

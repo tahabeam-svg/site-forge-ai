@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { runQualityCheck } from "./design-system.js";
+import { runQualityCheck, validateAndCorrectColors, validatePageStructure } from "./design-system.js";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -1534,6 +1534,16 @@ VALIDATION RULES — verify before returning:
       parsed.business_name_en = parsed.business_name_ar;
     }
     bilingualContent = parsed;
+
+    // ── Color Auto-Correction (before quality check) ──────────
+    if (parsed.primary_color || parsed.accent_color) {
+      const corrected = validateAndCorrectColors(
+        parsed.primary_color || "#1a56db",
+        parsed.accent_color  || "#7c3aed",
+      );
+      parsed.primary_color = corrected.primary;
+      parsed.accent_color  = corrected.accent;
+    }
 
     // ── Design System Quality Gate ────────────────────────────
     const qReport = runQualityCheck({

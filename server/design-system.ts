@@ -549,3 +549,155 @@ input,textarea,select,button{font:inherit;}
 .footer-bottom p,.footer-powered{color:rgba(255,255,255,0.2);font-size:${T.font.sm};}
 `.trim();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 7. COLOR AUTO-CORRECTION — تصحيح الألوان تلقائياً
+// ═══════════════════════════════════════════════════════════════
+
+function hexToHSL(hex: string): [number, number, number] | null {
+  const rgb = hexToRgb(hex);
+  if (!rgb) return null;
+  const r = rgb[0] / 255, g = rgb[1] / 255, b = rgb[2] / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h = 0, s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const hNorm = h / 360, sNorm = s / 100, lNorm = l / 100;
+  const hue2rgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+  let r: number, g: number, b: number;
+  if (sNorm === 0) {
+    r = g = b = lNorm;
+  } else {
+    const q = lNorm < 0.5 ? lNorm * (1 + sNorm) : lNorm + sNorm - lNorm * sNorm;
+    const p = 2 * lNorm - q;
+    r = hue2rgb(p, q, hNorm + 1/3);
+    g = hue2rgb(p, q, hNorm);
+    b = hue2rgb(p, q, hNorm - 1/3);
+  }
+  const toHex = (x: number) => Math.round(x * 255).toString(16).padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
+ * Ensures a primary color has sufficient darkness for use on white backgrounds.
+ * If the color is too light (luminance > 0.50), darkens it to L=35–40%.
+ * Returns original hex if already dark enough.
+ */
+export function ensureColorDarkEnough(hex: string): string {
+  if (!hex || !hex.startsWith("#")) return hex;
+  const rgb = hexToRgb(hex);
+  if (!rgb) return hex;
+  const lum = relativeLuminance(...rgb);
+  if (lum <= 0.50) return hex; // Already dark enough
+  // Darken: convert to HSL, reduce lightness to 38%
+  const hsl = hexToHSL(hex);
+  if (!hsl) return hex;
+  const [h, s] = hsl;
+  // Preserve saturation, but boost it slightly for vibrancy
+  const newL = 38;
+  const newS = Math.min(90, s + 10);
+  return hslToHex(h, newS, newL);
+}
+
+/**
+ * Ensures a pair of primary + accent colors are both dark enough.
+ * Returns corrected { primary, accent } values.
+ */
+export function validateAndCorrectColors(primary: string, accent: string): { primary: string; accent: string } {
+  const correctedPrimary = ensureColorDarkEnough(primary);
+  const correctedAccent  = ensureColorDarkEnough(accent);
+  if (correctedPrimary !== primary) {
+    console.log(`[ColorCorrection] Primary ${primary} → ${correctedPrimary} (was too light)`);
+  }
+  if (correctedAccent !== accent) {
+    console.log(`[ColorCorrection] Accent ${accent} → ${correctedAccent} (was too light)`);
+  }
+  return { primary: correctedPrimary, accent: correctedAccent };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 8. PAGE STRUCTURE VALIDATOR — فاحص هيكل الصفحة
+// ═══════════════════════════════════════════════════════════════
+
+export const REQUIRED_SECTIONS = [
+  "hero",
+  "stats",
+  "about",
+  "services",
+  "gallery",
+  "cta",
+  "testimonials",
+  "contact",
+  "footer",
+] as const;
+
+export type PageSection = typeof REQUIRED_SECTIONS[number];
+
+export interface PageStructureReport {
+  valid:    boolean;
+  sections: PageSection[];
+  missing:  string[];
+  duplicates: string[];
+}
+
+/**
+ * Validates the HTML string of a generated website to ensure:
+ * - All required sections are present (by id or class)
+ * - No section appears more than once
+ */
+export function validatePageStructure(html: string): PageStructureReport {
+  const sectionPatterns: Record<PageSection, RegExp> = {
+    hero:         /class="aw-hero"/,
+    stats:        /class="aw-stats"/,
+    about:        /id="about"/,
+    services:     /id="services"/,
+    gallery:      /id="gallery"/,
+    cta:          /(class="cta-band"|class="cta-section")/,
+    testimonials: /id="testimonials"/,
+    contact:      /id="contact"/,
+    footer:       /<footer/,
+  };
+
+  const sections: PageSection[]  = [];
+  const missing:    string[]      = [];
+  const duplicates: string[]      = [];
+
+  for (const section of REQUIRED_SECTIONS) {
+    const regex = sectionPatterns[section];
+    const matches = html.match(new RegExp(regex.source, "g"));
+    if (!matches || matches.length === 0) {
+      missing.push(section);
+    } else {
+      sections.push(section);
+      if (matches.length > 1) {
+        duplicates.push(section);
+      }
+    }
+  }
+
+  return {
+    valid: missing.length === 0 && duplicates.length === 0,
+    sections,
+    missing,
+    duplicates,
+  };
+}

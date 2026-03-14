@@ -1,4 +1,4 @@
-import { buildButtonCSS, buildComponentCSS, runQualityCheck, getIconSVG, TOKENS, LAYOUT } from "./design-system.js";
+import { buildButtonCSS, buildComponentCSS, runQualityCheck, getIconSVG, validatePageStructure, TOKENS, LAYOUT } from "./design-system.js";
 
 export interface BusinessContent {
   business_name: string;
@@ -1139,6 +1139,12 @@ export function buildInstantWebsite(
         <a href="#contact" ${dUI("تواصل معنا", "Contact", "nav_contact")}>${MULTILANG_UI[primaryLang]?.nav_contact || "تواصل"}</a>
       </div>
 
+      <!-- Services Column (4th column) -->
+      <div class="footer-services-col">
+        <div class="fl-heading" ${dUI("خدماتنا", "Services", "nav_services")}>${MULTILANG_UI[primaryLang]?.nav_services || "خدماتنا"}</div>
+        ${ar.services.slice(0, 4).map((svc, i) => `<a href="#services" ${dDyn(svc.title, en.services[i]?.title || svc.title, e3?.content.services[i]?.title)}>${svc.title}</a>`).join("\n        ")}
+      </div>
+
       <div class="footer-contact-col">
         <div class="fl-heading" ${dUI("معلومات التواصل", "Get In Touch", "get_in_touch")}>${MULTILANG_UI[primaryLang]?.get_in_touch || "معلومات التواصل"}</div>
         ${content.phone ? `<div class="fc-row">
@@ -1421,16 +1427,17 @@ input,textarea,select,button{font:inherit;}
 /* ═══ TESTIMONIALS ═══ */
 .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.75rem;}
 .testi-card{
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.10);
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.13);
   border-top:3px solid transparent;
   border-image:linear-gradient(90deg,${primary},${accent}) 1;
   border-radius:0 0 1.5rem 1.5rem;
   padding:2rem 1.75rem 1.75rem;
-  transition:transform 0.35s,background 0.35s,box-shadow 0.35s;
+  transition:transform 0.35s cubic-bezier(.22,1,.36,1),background 0.35s,box-shadow 0.35s;
   display:flex;flex-direction:column;gap:0;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
 }
-.testi-card:hover{background:rgba(255,255,255,0.10);transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.25);}
+.testi-card:hover{background:rgba(255,255,255,0.13);transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.3),0 0 0 1px rgba(255,255,255,0.12);}
 .testi-top-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;}
 .testi-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.35rem;font-weight:900;flex-shrink:0;box-shadow:0 4px 16px ${primary}55;}
 .testi-meta{flex:1;min-width:0;}
@@ -1503,7 +1510,11 @@ input,textarea,select,button{font:inherit;}
 
 /* --- Footer Main --- */
 .footer-main{padding:4rem 0 3rem;}
-.footer-wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:4rem;}
+.footer-wrap{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:3rem;}
+.footer-services-col{display:flex;flex-direction:column;gap:0.85rem;}
+.footer-services-col a{color:rgba(255,255,255,0.4);font-size:0.9rem;transition:color 0.2s,padding-inline-start 0.2s;display:inline-flex;align-items:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.footer-services-col a::before{content:'›';margin-inline-end:0.5rem;color:${accent};font-weight:700;opacity:0.7;}
+.footer-services-col a:hover{color:#fff;padding-inline-start:0.25rem;}
 .footer-logo{font-family:${fontHeading};font-size:1.65rem;font-weight:900;background:linear-gradient(135deg,#fff 20%,${accent} 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.02em;display:block;margin-bottom:0.9rem;}
 .footer-tagline{color:rgba(255,255,255,0.38);font-size:0.9rem;line-height:1.8;max-width:270px;margin-bottom:1.75rem;}
 .footer-socials{display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;}
@@ -1560,7 +1571,8 @@ ${buildButtonCSS(primary, accent, fontBody)}
 @media(max-width:1024px){
   .services-grid{grid-template-columns:repeat(2,1fr);}
   .testi-grid{grid-template-columns:repeat(2,1fr);}
-  .footer-wrap{grid-template-columns:1fr 1fr;gap:2.5rem;}
+  .footer-wrap{grid-template-columns:1fr 1fr;gap:2rem;}
+  .footer-brand-col{grid-column:1/-1;}
   .about-wrap{gap:3rem;}
   .contact-panel{grid-template-columns:1fr 1.1fr;}
   .contact-info-panel{padding:2.75rem 2.5rem;}
@@ -1608,6 +1620,15 @@ ${buildButtonCSS(primary, accent, fontBody)}
   .fcta-title{font-size:1.2rem;}
 }
 `;
+
+  // ── Page Structure Validation ──────────────────────────────
+  const structureReport = validatePageStructure(html);
+  if (!structureReport.valid) {
+    if (structureReport.missing.length > 0)    console.warn(`[PageStructure] Missing sections: ${structureReport.missing.join(", ")}`);
+    if (structureReport.duplicates.length > 0) console.warn(`[PageStructure] Duplicate sections: ${structureReport.duplicates.join(", ")}`);
+  } else {
+    console.log(`[PageStructure] ✓ All ${structureReport.sections.length} sections validated — no duplicates`);
+  }
 
   return { html, css };
 }

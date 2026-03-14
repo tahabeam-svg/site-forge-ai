@@ -457,8 +457,8 @@ export default function DashboardPage() {
   async function handleInstantGenerate(clarificationNote?: string) {
     if (!wizardForm.siteName.trim()) return;
 
-    // Business clarity check: only when category is "other" or "services" and no clarification yet
-    if (!clarificationNote && (wizardForm.activityType === "other" || wizardForm.activityType === "services" || !wizardForm.activityType)) {
+    // Business clarity check: run for ALL categories to detect ambiguous business names
+    if (!clarificationNote && wizardForm.siteName.trim()) {
       setIsClarifying(true);
       try {
         const res = await fetch("/api/analyze-business", {
