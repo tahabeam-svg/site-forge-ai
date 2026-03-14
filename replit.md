@@ -40,6 +40,7 @@ AI-powered website builder SaaS platform targeting the Saudi and Arab market. Us
 - Image/logo upload directly in AI chat conversation (with preview and instructions)
 - Publish system
 - Hidden admin panel (accessible only via direct URL /admin or /secure-admin, not in sidebar)
+- AI Industry Engine (server/industry-engine.ts): 10 industry profiles (cleaning/restaurant/medical/realestate/beauty/education/construction/ecommerce/fitness/logistics/general); auto-detects industry from prompt keywords; enriches prompt with industry-specific services, trust signals, SEO hints, design mood; mapActivityToIndustry() maps Arabic wizard activity types; integrated in generate-instant before AI call; admin: GET /api/admin/industry-engine; POST /api/industry-detect for testing
 - AI Component Library: auto-saves every generated website to `ai_generated_blocks` DB table (businessType, designStyle, websiteLanguage, usage count); admin endpoint `/api/admin/learning-stats` returns generation stats + top blocks
 - Self-Learning Platform: `generation_logs` table tracks every generation attempt (success/fail, timing ms, businessType, designStyle, cache hit); getGenerationStats() returns success rate, avg time, top business types, cache hit rate
 - Premium Button Design System: all CTA buttons use border-radius:12px (not pill 50px), 3-layer box-shadow for 3D depth, hover=translateY(-2px)+stronger shadow, active=translateY(1px) micro-press effect; forbidden: rainbow gradients, childish colors

@@ -5,6 +5,7 @@ import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integra
 import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite, generateSocialPostImage } from "./ai";
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
+import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData } from "./email";
 import { z } from "zod";
@@ -680,8 +681,17 @@ Sitemap: https://arabyweb.net/sitemap.xml
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
+      // ─── AI Industry Engine: detect industry + enrich prompt ─────────────────
+      const isArabicUI = language === "ar";
+      const mappedIndustryId = mapActivityToIndustry(activityType);
+      const { enrichedPrompt, industryId, industryProfile } = runIndustryEngine(
+        description,
+        isArabicUI,
+        mappedIndustryId
+      );
+
       const genStartTime = Date.now();
-      const generated = await generateInstantWebsite(description, language, websiteLanguages, websiteLanguage);
+      const generated = await generateInstantWebsite(enrichedPrompt, language, websiteLanguages, websiteLanguage);
       const genMs = Date.now() - genStartTime;
       let baseHtml = generated.html;
 
@@ -696,10 +706,11 @@ Sitemap: https://arabyweb.net/sitemap.xml
           baseHtml = baseHtml.replace(/<img[^>]*id=["']aw-ai-logo["'][^>]*\/?>/gi, logoImg);
           baseHtml = baseHtml.replace(/<svg[^>]*id=["']aw-ai-logo-footer["'][^>]*>[\s\S]*?<\/svg>/gi, logoImgFooter);
           baseHtml = baseHtml.replace(/<img[^>]*id=["']aw-ai-logo-footer["'][^>]*\/?>/gi, logoImgFooter);
-        } else if (baseHtml.includes('class="aw-brand"') || baseHtml.includes("class='aw-brand'")) {
+        } else if (baseHtml.includes('class="aw-brand-group"') || baseHtml.includes("class='aw-brand-group'")) {
+          // Inject logo inside brand-group BEFORE the brand anchor (outside background-clip:text context)
           baseHtml = baseHtml.replace(
-            /(<a[^>]*class=["']aw-brand["'][^>]*>)/gi,
-            `$1<img src="${logoDataUrl}" alt="logo" style="height:36px;width:auto;object-fit:contain;vertical-align:middle;margin-inline-end:8px;mix-blend-mode:multiply;">`
+            /(<div[^>]*class=["']aw-brand-group["'][^>]*>)/gi,
+            `$1<img src="${logoDataUrl}" alt="logo" style="height:38px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;border-radius:6px;">`
           );
         } else if (baseHtml.includes("__AW_IMG_001__")) {
           baseHtml = baseHtml.replace(/__AW_IMG_001__/g, logoDataUrl);
@@ -772,7 +783,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
           });
           await storage.logGeneration({
             userId: req.user.id,
-            businessType: activityType,
+            businessType: activityType || industryId,
             designStyle,
             websiteLanguage,
             prompt: description.slice(0, 500),
@@ -1052,6 +1063,49 @@ Sitemap: https://arabyweb.net/sitemap.xml
       res.json({ generationStats: genStats, topBlocks });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch learning stats" });
+    }
+  });
+
+  // Industry Engine: list all industry profiles + test detection
+  app.get("/api/admin/industry-engine", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { INDUSTRY_ENGINE } = await import("./industry-engine");
+      const profiles = Object.entries(INDUSTRY_ENGINE).map(([id, p]) => ({
+        id,
+        nameAr: p.nameAr,
+        nameEn: p.nameEn,
+        serviceCount: p.typicalServices.length,
+        keywordCount: p.keywords.length + p.keywordsEn.length,
+        designMood: p.designHints.mood,
+        colorPalette: p.designHints.colorPalette,
+      }));
+      res.json({ industries: profiles, total: profiles.length });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to load industry engine" });
+    }
+  });
+
+  // Industry Engine: test detection on a prompt
+  app.post("/api/industry-detect", isAuthenticated, async (req: any, res) => {
+    try {
+      const { prompt, isArabicUI } = req.body;
+      if (!prompt) return res.status(400).json({ message: "prompt required" });
+      const { enrichedPrompt, industryId, industryProfile } = runIndustryEngine(
+        String(prompt).slice(0, 1000),
+        isArabicUI !== false,
+      );
+      res.json({
+        detectedIndustry: industryId,
+        industryNameAr: industryProfile.nameAr,
+        industryNameEn: industryProfile.nameEn,
+        typicalServices: industryProfile.typicalServices,
+        trustSignals: industryProfile.trustSignals,
+        ctaVariants: industryProfile.ctaVariants,
+        designHints: industryProfile.designHints,
+        seoKeywords: industryProfile.seoKeywords,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: "Detection failed", detail: err?.message });
     }
   });
 

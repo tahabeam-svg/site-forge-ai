@@ -714,8 +714,8 @@ export function buildInstantWebsite(
 
   const whatsappNum = content.phone.replace(/\D/g, "");
 
-  // Language order for switcher: primary language first, then others
-  const knownLangs = ["ar", "en", ...(e3code ? [e3code] : [])];
+  // Language order: extra lang before English so clicking once reaches selected extra lang
+  const knownLangs = ["ar", ...(e3code ? [e3code] : []), "en"];
   // Put primary language first, then maintain order
   const langOrder = [primaryLang, ...knownLangs.filter(l => l !== primaryLang)];
   // Initial content to display (matches primaryLang)
@@ -729,7 +729,9 @@ export function buildInstantWebsite(
 <!-- ===== NAV ===== -->
 <nav class="aw-nav" id="aw-nav">
   <div class="aw-nav-inner">
-    <a href="#" class="aw-brand" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName || e3?.content.hero_title?.split(" ").slice(0,2).join(" "))}>${initName}</a>
+    <div class="aw-brand-group">
+      <a href="#" class="aw-brand" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName || e3?.content.hero_title?.split(" ").slice(0,2).join(" "))}>${initName}</a>
+    </div>
     <div class="aw-nav-links">
       <a href="#about" ${dUI("من نحن", "About", "nav_about")}>${MULTILANG_UI[primaryLang]?.nav_about || (isPrimaryAr ? "من نحن" : "About")}</a>
       <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>${MULTILANG_UI[primaryLang]?.nav_services || (isPrimaryAr ? "خدماتنا" : "Services")}</a>
@@ -1047,6 +1049,8 @@ img{max-width:100%;display:block;object-fit:cover;}
 .aw-nav{position:fixed;top:0;inset-inline:0;z-index:1000;background:rgba(5,8,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.08);transition:background 0.4s,box-shadow 0.4s;}
 .aw-nav.aw-nav-scrolled{background:rgba(5,8,22,0.97)!important;box-shadow:0 4px 40px rgba(0,0,0,0.5);}
 .aw-nav-inner{max-width:1200px;margin:0 auto;padding:1.05rem 1.5rem;display:flex;align-items:center;justify-content:space-between;}
+.aw-brand-group{display:flex;align-items:center;gap:0.5rem;isolation:auto;}
+.aw-brand-group img{height:38px;width:auto;object-fit:contain;flex-shrink:0;mix-blend-mode:multiply;border-radius:6px;}
 .aw-brand{font-family:${fontHeading};font-size:1.45rem;font-weight:900;background:linear-gradient(135deg,#fff 20%,${accent} 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;white-space:nowrap;letter-spacing:-0.02em;}
 .aw-nav-links{display:flex;align-items:center;gap:1.75rem;}
 .aw-nav-links a{font-size:0.88rem;font-weight:500;color:rgba(255,255,255,0.72);transition:color 0.2s;position:relative;padding-bottom:2px;}
