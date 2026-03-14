@@ -1,6 +1,6 @@
 export interface BusinessContent {
   business_name: string;
-  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym";
+  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym" | "ecommerce" | "tech" | "consulting" | "logistics" | "cleaning" | "photography" | "finance" | "hotel" | "charity" | "freelance";
   hero_title: string;
   hero_subtitle: string;
   about_title: string;
@@ -33,7 +33,7 @@ export interface LangContent {
 export interface BilingualBusinessContent {
   business_name_ar: string;
   business_name_en: string;
-  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym";
+  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym" | "ecommerce" | "tech" | "consulting" | "logistics" | "cleaning" | "photography" | "finance" | "hotel" | "charity" | "freelance";
   ar: LangContent;
   en: LangContent;
   phone: string;
@@ -358,6 +358,256 @@ const BUSINESS_CONFIGS: Record<string, {
       { name: "عمر السليم", role_ar: "مدير عام", role_en: "General Manager", text_ar: "شركة متميزة وموثوقة، تقدم خدمات بمستوى عالمي. تجربتنا معهم كانت ممتازة.", text_en: "An outstanding and reliable company providing world-class services. Our experience with them was excellent." },
       { name: "مريم الحسين", role_ar: "رائدة أعمال", role_en: "Entrepreneur", text_ar: "فريق محترف يحرص على إرضاء العملاء ويتجاوز التوقعات في كل مرة.", text_en: "A professional team that strives to satisfy customers and exceeds expectations every time." },
       { name: "وليد الفهد", role_ar: "مستثمر", role_en: "Investor", text_ar: "أنصح بهم بشدة! خدمة احترافية وجودة عالية بأسعار تنافسية. شركاء نجاح حقيقيون.", text_en: "Highly recommend! Professional service, high quality at competitive prices. True success partners." },
+    ],
+  },
+  ecommerce: {
+    primary: "#f97316", accent: "#8b5cf6", dark: "#0a0500",
+    icons: ["fa-cart-shopping","fa-tags","fa-truck","fa-shield-check","fa-gift","fa-percent"],
+    hero_image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1485217988980-11786ced9454?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1523381294911-8d3cead13475?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "50K+", label_ar: "منتج متوفر", label_en: "Products Available" },
+      { num: "24h", label_ar: "توصيل سريع", label_en: "Fast Delivery" },
+      { num: "99%", label_ar: "رضا العملاء", label_en: "Customer Satisfaction" },
+      { num: "100%", label_ar: "ضمان الجودة", label_en: "Quality Guarantee" },
+    ],
+    testimonials: [
+      { name: "نوف العتيبي", role_ar: "عميلة دائمة", role_en: "Loyal Customer", text_ar: "تجربة تسوق رائعة! الجودة ممتازة والتوصيل سريع جداً. أنصح به بشدة.", text_en: "Wonderful shopping experience! Excellent quality and very fast delivery. Highly recommend." },
+      { name: "بندر الحربي", role_ar: "رجل أعمال", role_en: "Businessman", text_ar: "أفضل متجر للمنتجات الأصلية. الأسعار تنافسية والخدمة ممتازة دائماً.", text_en: "Best store for original products. Competitive prices and always excellent service." },
+      { name: "رانيا القحطاني", role_ar: "مؤثرة رقمية", role_en: "Digital Influencer", text_ar: "كل ما أحتاجه في مكان واحد. سرعة الشحن والتغليف الأنيق يجعلان التجربة مميزة.", text_en: "Everything I need in one place. Fast shipping and elegant packaging make the experience special." },
+    ],
+  },
+  tech: {
+    primary: "#6366f1", accent: "#06b6d4", dark: "#020613",
+    icons: ["fa-code","fa-microchip","fa-cloud","fa-shield","fa-robot","fa-diagram-project"],
+    hero_image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1536148935331-408321065b18?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "500+", label_ar: "مشروع تقني", label_en: "Tech Projects" },
+      { num: "99.9%", label_ar: "وقت التشغيل", label_en: "System Uptime" },
+      { num: "10+", label_ar: "سنوات خبرة", label_en: "Years Experience" },
+      { num: "50+", label_ar: "مطور متخصص", label_en: "Expert Developers" },
+    ],
+    testimonials: [
+      { name: "عبدالعزيز الراشد", role_ar: "مدير تقنية", role_en: "CTO", text_ar: "حلول تقنية متقدمة تجاوزت كل توقعاتنا. فريق يفهم احتياجات السوق السعودي.", text_en: "Advanced tech solutions that exceeded all our expectations. A team that understands the Saudi market." },
+      { name: "سلمى الشهري", role_ar: "رائدة أعمال رقمية", role_en: "Digital Entrepreneur", text_ar: "سرعة التنفيذ والجودة العالية ميّزانهم عن غيرهم. نتائج ملموسة من أول أسبوع.", text_en: "Speed of execution and high quality set them apart. Tangible results from the first week." },
+      { name: "فهد المطيري", role_ar: "مدير عمليات", role_en: "Operations Director", text_ar: "أتمتة رائعة وفّرت علينا ساعات من العمل اليومي. شريك تقني يُعتمد عليه.", text_en: "Excellent automation saved us hours of daily work. A reliable tech partner." },
+    ],
+  },
+  consulting: {
+    primary: "#1e40af", accent: "#d97706", dark: "#000814",
+    icons: ["fa-handshake","fa-chart-line","fa-lightbulb","fa-briefcase","fa-users","fa-magnifying-glass-chart"],
+    hero_image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "300+", label_ar: "عميل شركة", label_en: "Corporate Clients" },
+      { num: "15+", label_ar: "سنة استشارة", label_en: "Years Consulting" },
+      { num: "2B+", label_ar: "ريال وفّرنا", label_en: "SAR Value Created" },
+      { num: "98%", label_ar: "نجاح المشاريع", label_en: "Project Success Rate" },
+    ],
+    testimonials: [
+      { name: "تركي المنصور", role_ar: "رئيس تنفيذي", role_en: "CEO", text_ar: "استراتيجية محكمة وتنفيذ دقيق. حوّلوا شركتنا من الخسارة إلى الربحية في عام واحد.", text_en: "Solid strategy and precise execution. They transformed our company from loss to profitability in one year." },
+      { name: "هيفاء السديري", role_ar: "مديرة تطوير", role_en: "Development Director", text_ar: "رؤية استراتيجية عميقة ومعرفة واسعة بالسوق السعودي. شريك نجاح استراتيجي.", text_en: "Deep strategic vision and extensive knowledge of the Saudi market. A strategic success partner." },
+      { name: "ماجد العنزي", role_ar: "مستثمر", role_en: "Investor", text_ar: "أكثر من مجرد استشاريين — شركاء حقيقيون في النمو والتوسع. أنصح بهم بشدة.", text_en: "More than just consultants — true partners in growth and expansion. Highly recommend." },
+    ],
+  },
+  logistics: {
+    primary: "#dc2626", accent: "#f59e0b", dark: "#0a0000",
+    icons: ["fa-truck-fast","fa-warehouse","fa-box","fa-route","fa-ship","fa-plane"],
+    hero_image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1553413077-190dd305871c?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1519003300449-424ad0405076?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1609543613596-04fa8a88aed8?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1615840287214-7ff58936c4cf?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "1M+", label_ar: "شحنة سنوياً", label_en: "Shipments/Year" },
+      { num: "24h", label_ar: "توصيل داخلي", label_en: "Local Delivery" },
+      { num: "50+", label_ar: "وجهة دولية", label_en: "Global Destinations" },
+      { num: "99%", label_ar: "دقة التسليم", label_en: "Delivery Accuracy" },
+    ],
+    testimonials: [
+      { name: "سعود الدوسري", role_ar: "مدير سلسلة التوريد", role_en: "Supply Chain Manager", text_ar: "شريك لوجستي موثوق. الشحنات تصل في وقتها دائماً وبحالة ممتازة.", text_en: "A reliable logistics partner. Shipments always arrive on time and in excellent condition." },
+      { name: "نادية الزهراني", role_ar: "مديرة عمليات", role_en: "Operations Manager", text_ar: "نظام التتبع الذكي وسرعة الاستجابة ميّزانهم عن كل المنافسين.", text_en: "Smart tracking system and fast response set them apart from all competitors." },
+      { name: "خالد الشهري", role_ar: "تاجر جملة", role_en: "Wholesale Trader", text_ar: "وفّرنا 30% من تكاليف الشحن بعد التعاون معهم. كفاءة عالية وأسعار تنافسية.", text_en: "Saved 30% in shipping costs after partnering with them. High efficiency and competitive prices." },
+    ],
+  },
+  cleaning: {
+    primary: "#0891b2", accent: "#22c55e", dark: "#000d14",
+    icons: ["fa-spray-can","fa-broom","fa-soap","fa-leaf","fa-shield-check","fa-house"],
+    hero_image: "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1527515637462-cff94edd56f9?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1628177142898-93e36e4e3a50?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1504274066651-8d31a536b11a?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "5000+", label_ar: "منزل نُظّف", label_en: "Homes Cleaned" },
+      { num: "100%", label_ar: "منتجات آمنة", label_en: "Safe Products" },
+      { num: "8+", label_ar: "سنوات خبرة", label_en: "Years Experience" },
+      { num: "98%", label_ar: "رضا العملاء", label_en: "Client Satisfaction" },
+    ],
+    testimonials: [
+      { name: "أمل الرشيد", role_ar: "ربة منزل", role_en: "Homeowner", text_ar: "عمل رائع وفريق أمين. البيت بلمع كأنه جديد والمنتجات آمنة تماماً للأطفال.", text_en: "Wonderful work and trustworthy team. The house sparkles like new and products are completely safe for kids." },
+      { name: "محمد الجهني", role_ar: "مدير مجمع سكني", role_en: "Residential Complex Manager", text_ar: "خدمة منتظمة ودقيقة. فريق محترف يحترم الخصوصية ويقدم نتائج ممتازة.", text_en: "Regular and precise service. A professional team that respects privacy and delivers excellent results." },
+      { name: "سلوى العمري", role_ar: "مديرة مكتب", role_en: "Office Manager", text_ar: "أفضل شركة تنظيف تعاملنا معها. التعقيم الشامل والرائحة المنعشة تجعل بيئة العمل أفضل.", text_en: "Best cleaning company we've worked with. Complete sanitization and fresh scent make the work environment better." },
+    ],
+  },
+  photography: {
+    primary: "#1c1917", accent: "#d97706", dark: "#050302",
+    icons: ["fa-camera","fa-image","fa-film","fa-wand-magic-sparkles","fa-star","fa-circle-dot"],
+    hero_image: "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1464207687429-7505649dae38?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1502982720700-bfff97f2ecac?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1533134486753-c833f0ed4866?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "2000+", label_ar: "جلسة تصوير", label_en: "Photo Sessions" },
+      { num: "50K+", label_ar: "صورة محترفة", label_en: "Professional Photos" },
+      { num: "10+", label_ar: "سنة إبداع", label_en: "Years Creativity" },
+      { num: "100%", label_ar: "ضمان الرضا", label_en: "Satisfaction Guaranteed" },
+    ],
+    testimonials: [
+      { name: "ليلى المالكي", role_ar: "عروس سعيدة", role_en: "Happy Bride", text_ar: "أجمل صور زفافنا! المصور يمتلك عيناً فنية استثنائية وأسلوباً راقياً.", text_en: "Most beautiful wedding photos! The photographer has an exceptional artistic eye and refined style." },
+      { name: "يوسف الغامدي", role_ar: "مدير علامة تجارية", role_en: "Brand Manager", text_ar: "صور المنتجات ارتفعت مبيعاتنا 40% بعد استخدامها. تصوير احترافي يبيع بالفعل.", text_en: "Product photos boosted our sales 40% after using them. Professional photography that actually sells." },
+      { name: "ريم الحربي", role_ar: "مديرة فعاليات", role_en: "Events Manager", text_ar: "التقاط اللحظات بشكل مذهل. كل صورة تحكي قصة وتنقل المشاعر بصدق.", text_en: "Capturing moments beautifully. Every photo tells a story and conveys emotions authentically." },
+    ],
+  },
+  finance: {
+    primary: "#0f4c81", accent: "#22c55e", dark: "#000814",
+    icons: ["fa-coins","fa-chart-pie","fa-landmark","fa-file-invoice-dollar","fa-shield","fa-calculator"],
+    hero_image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1553729459-efe14ef6055d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1518458028785-8fbcd101ebb9?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "500M+", label_ar: "ريال مُدار", label_en: "SAR Managed" },
+      { num: "1000+", label_ar: "عميل موثوق", label_en: "Trusted Clients" },
+      { num: "20+", label_ar: "سنة خبرة مالية", label_en: "Years Financial Exp." },
+      { num: "100%", label_ar: "امتثال نظامي", label_en: "Regulatory Compliance" },
+    ],
+    testimonials: [
+      { name: "عادل الكثيري", role_ar: "رجل أعمال", role_en: "Businessman", text_ar: "إدارة مالية احترافية أنقذت شركتي من مشكلات ضريبية معقدة. خبراء موثوقون.", text_en: "Professional financial management saved my company from complex tax issues. Trusted experts." },
+      { name: "منى الصالح", role_ar: "مديرة مالية", role_en: "CFO", text_ar: "توفير ضريبي ملحوظ وتخطيط مالي دقيق. شريك مالي استراتيجي حقيقي.", text_en: "Significant tax savings and precise financial planning. A true strategic financial partner." },
+      { name: "براء المحمد", role_ar: "مستثمر", role_en: "Investor", text_ar: "تحليلات استثمارية دقيقة وعوائد فعلية تجاوزت التوقعات. أنصح بهم للجميع.", text_en: "Precise investment analysis and actual returns that exceeded expectations. Recommend to everyone." },
+    ],
+  },
+  hotel: {
+    primary: "#92400e", accent: "#d4af37", dark: "#0a0500",
+    icons: ["fa-hotel","fa-bed","fa-utensils","fa-swimming-pool","fa-spa","fa-concierge-bell"],
+    hero_image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "200+", label_ar: "غرفة فاخرة", label_en: "Luxury Rooms" },
+      { num: "5★", label_ar: "تصنيف عالمي", label_en: "Global Rating" },
+      { num: "20K+", label_ar: "ضيف سعيد", label_en: "Happy Guests" },
+      { num: "24/7", label_ar: "خدمة الضيوف", label_en: "Guest Services" },
+    ],
+    testimonials: [
+      { name: "شيخة آل مكتوم", role_ar: "ضيفة متكررة", role_en: "Repeat Guest", text_ar: "فندق استثنائي! كل تفصيلة مُعدّة باحترافية عالية. إقامة لا تُنسى في كل مرة.", text_en: "Exceptional hotel! Every detail is prepared with high professionalism. Unforgettable stay every time." },
+      { name: "أحمد الباز", role_ar: "رجل أعمال", role_en: "Businessman", text_ar: "أفضل مكان للاجتماعات وتناول الطعام. الخدمة والمطعم يستحقان كل تقدير.", text_en: "Best place for meetings and dining. The service and restaurant deserve every praise." },
+      { name: "فريدة المصباح", role_ar: "مدوّنة سياحية", role_en: "Travel Blogger", text_ar: "تجربة إقامة فاخرة بحق. الموظفون ودودون والمرافق استثنائية. أعلى تقييم.", text_en: "Truly luxurious accommodation experience. Friendly staff and exceptional facilities. Highest rating." },
+    ],
+  },
+  charity: {
+    primary: "#15803d", accent: "#f59e0b", dark: "#001a0a",
+    icons: ["fa-hand-holding-heart","fa-people-group","fa-seedling","fa-hands-helping","fa-circle-dollar-to-slot","fa-globe"],
+    hero_image: "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1560252829-804f1aedf1be?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "50K+", label_ar: "مستفيد سنوياً", label_en: "Beneficiaries/Year" },
+      { num: "100+", label_ar: "برنامج خيري", label_en: "Charity Programs" },
+      { num: "15+", label_ar: "سنة عطاء", label_en: "Years of Giving" },
+      { num: "95%", label_ar: "من التبرعات للمحتاجين", label_en: "Donations to Beneficiaries" },
+    ],
+    testimonials: [
+      { name: "الشيخ عبدالرحمن", role_ar: "متبرع دائم", role_en: "Regular Donor", text_ar: "شفافية تامة في توزيع التبرعات وتقارير دورية تُثلج الصدر. ثقة عالية.", text_en: "Full transparency in distributing donations and periodic heartwarming reports. High trust." },
+      { name: "أسماء البلوي", role_ar: "متطوعة", role_en: "Volunteer", text_ar: "تجربة تطوع ترفع الروح المعنوية. منظمة ممتازة تُحدث فارقاً حقيقياً في المجتمع.", text_en: "A volunteer experience that lifts the spirit. Excellent organization making a real difference in the community." },
+      { name: "الدكتور فيصل", role_ar: "عضو مجلس الأمناء", role_en: "Board Member", text_ar: "حوكمة رشيدة وأثر اجتماعي ملموس. من أفضل الجمعيات الخيرية في المملكة.", text_en: "Sound governance and tangible social impact. One of the best charities in the Kingdom." },
+    ],
+  },
+  freelance: {
+    primary: "#7c3aed", accent: "#ec4899", dark: "#0a0012",
+    icons: ["fa-laptop-code","fa-pen-nib","fa-rocket","fa-star","fa-clock","fa-handshake"],
+    hero_image: "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1547658719-da2b51169166?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [
+      { num: "300+", label_ar: "مشروع مكتمل", label_en: "Projects Completed" },
+      { num: "150+", label_ar: "عميل راضٍ", label_en: "Happy Clients" },
+      { num: "5+", label_ar: "سنوات خبرة", label_en: "Years Experience" },
+      { num: "4.9", label_ar: "تقييم المنصات", label_en: "Platform Rating" },
+    ],
+    testimonials: [
+      { name: "منصور الطلحي", role_ar: "صاحب مشروع", role_en: "Project Owner", text_ar: "تسليم في الوقت المحدد وجودة عالية. أفضل فريلانسر تعاملت معه حتى الآن.", text_en: "On-time delivery and high quality. Best freelancer I've worked with so far." },
+      { name: "رشا القرشي", role_ar: "مديرة مشاريع", role_en: "Project Manager", text_ar: "تواصل ممتاز واستيعاب سريع للمتطلبات. يُسلّم أكثر مما تتوقع.", text_en: "Excellent communication and quick grasp of requirements. Delivers more than you expect." },
+      { name: "عماد الحميدي", role_ar: "مؤسس ناشئة", role_en: "Startup Founder", text_ar: "ساعدني على إطلاق منتجي بسرعة وبتكلفة معقولة. محترف ويعمل باستقلالية.", text_en: "Helped me launch my product quickly and cost-effectively. Professional and works independently." },
     ],
   },
 };

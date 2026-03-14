@@ -801,10 +801,64 @@ function detectImageBusinessType(topic: string): { en: string; visualCues: strin
         forbidden: "cartoon cars, phone mockups, generic icons" }
     ],
     [
-      ["متجر","تسوق","منتجات","بيع","تجارة","store","shop","ecommerce","product","retail"],
+      ["متجر","تسوق","منتجات","بيع","تجارة","ecommerce","store","shop","product","retail","online store"],
       { en: "retail and e-commerce",
-        visualCues: "beautifully styled product flat lay on clean background, lifestyle product photography, colorful shopping experience, products arranged elegantly, premium packaging shot, modern retail environment.",
+        visualCues: "beautifully styled products flat lay on clean background, lifestyle product photography, colorful shopping experience, products arranged elegantly, premium packaging shot, modern retail environment, happy customer receiving package.",
         forbidden: "generic clipart, phone mockups, low quality stock photos" }
+    ],
+    [
+      ["تقنية","برمجة","تطبيق","سوفتوير","استضافة","حلول رقمية","tech","software","it","programming","development","saas","digital"],
+      { en: "technology and software",
+        visualCues: "developer at dual-monitor workstation with code on screen, glowing server racks in data center, abstract data visualization with glowing nodes, team of developers collaborating, dark-theme coding environment with neon blue highlights.",
+        forbidden: "phone mockups, cartoons, generic icons, Islamic architecture, unrelated objects" }
+    ],
+    [
+      ["استشارات","استشارة أعمال","مستشار","إدارة","حلول تجارية","consulting","advisory","management","business solutions"],
+      { en: "business consulting",
+        visualCues: "confident business consultant presenting strategy on whiteboard, executive team in boardroom meeting, professional in suit pointing at charts and graphs, strategic planning session with city skyline in background, handshake sealing a deal.",
+        forbidden: "cartoon, generic icons, phone mockups, unrelated backgrounds" }
+    ],
+    [
+      ["شحن","لوجستيات","توصيل","نقل","مستودع","freight","logistics","shipping","delivery","warehouse","supply chain","cargo"],
+      { en: "logistics and shipping",
+        visualCues: "massive warehouse with forklifts and organized shelves, fleet of delivery trucks lined up, aerial view of shipping port with containers, driver handing package to smiling customer, logistics operations center with screens.",
+        forbidden: "cartoon vehicles, generic icons, phone mockups" }
+    ],
+    [
+      ["تنظيف","نظافة","جلي","تعقيم","مكافحة حشرات","cleaning","housekeeping","janitorial","sanitization","maid"],
+      { en: "cleaning services",
+        visualCues: "professional cleaner in uniform using high-powered equipment in sparkling clean space, before-and-after transformation of room, team of cleaners with eco-friendly supplies, gleaming hotel lobby or office after professional cleaning.",
+        forbidden: "cartoon characters, generic icons, phone mockups" }
+    ],
+    [
+      ["تصوير","فيديو","استوديو","مصور","إنتاج","photography","videography","studio","filmmaker","media production"],
+      { en: "photography and videography",
+        visualCues: "photographer framing a perfect shot with professional DSLR, elegant studio setup with professional lighting, beautiful portrait of subject in golden hour light, filmmaker with cinema camera on set, gallery wall of stunning photographs.",
+        forbidden: "cartoon cameras, generic icons, phone mockups, clip art" }
+    ],
+    [
+      ["مالية","محاسبة","استثمار","تأمين","ضرائب","بنك","finance","accounting","investment","insurance","bank","tax","financial"],
+      { en: "financial services",
+        visualCues: "professional financial advisor consulting client at modern desk, close-up of financial charts showing growth trends, confident executive with city skyline background, financial documents with gold pen, secure vault symbolizing trust.",
+        forbidden: "cartoon money bags, generic icons, phone mockups, clichéd dollar signs" }
+    ],
+    [
+      ["فندق","شقق مفروشة","منتجع","ضيافة","إقامة","hotel","resort","hospitality","accommodation","motel","inn"],
+      { en: "hotel and hospitality",
+        visualCues: "stunning hotel lobby with dramatic chandelier and marble floors, luxurious king bedroom with view, infinity pool overlooking city or sea, chef preparing gourmet dish in hotel restaurant, concierge welcoming guest.",
+        forbidden: "cartoon hotel, phone mockups, generic icons, clip art" }
+    ],
+    [
+      ["جمعية","خيرية","وقف","تبرع","منظمة","إنسانية","charity","foundation","nonprofit","ngo","donation","humanitarian"],
+      { en: "charity and nonprofit",
+        visualCues: "volunteers distributing aid to grateful community, children smiling after receiving help, hands of diverse people coming together in unity, community garden or school built by charity, emotional storytelling moment of impact.",
+        forbidden: "generic icons, phone mockups, staged stock photos, clichéd imagery" }
+    ],
+    [
+      ["فريلانسر","مستقل","عمل حر","خبير","محترف مستقل","freelance","freelancer","independent","solopreneur","remote worker"],
+      { en: "freelancer and independent professional",
+        visualCues: "creative professional working on laptop in stylish home office or co-working space, portfolio pieces displayed on sleek desk, focused individual with dual screens showing design work, comfortable modern workspace with personal branding elements.",
+        forbidden: "generic office stock photos, phone mockups, cartoon characters" }
     ],
   ];
 
@@ -885,16 +939,30 @@ STRICT RULES:
 function extractBusinessTypeFromHtml(html: string): string {
   const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").toLowerCase();
   const map: Array<[string, string[]]> = [
-    ["مطعم أو مقهى",     ["مطعم","مقهى","أكل","وجبات","قهوة","مشوي","شاورما","برغر","restaurant","cafe","coffee","food","menu","شيف"]],
-    ["عيادة طبية",       ["عيادة","دكتور","طبيب","صحة","مريض","استشارة طبية","clinic","doctor","medical","health","pharma"]],
-    ["وكالة تسويق وإعلانات", ["تسويق","إعلانات","برندينج","محتوى","ميديا","نشر تجاري","marketing","agency","advertising","branding","media"]],
-    ["متجر إلكتروني",    ["متجر","تسوق","منتج","شراء","سلة","تجارة","store","shop","cart","product","ecommerce"]],
-    ["شركة تقنية",       ["تقنية","برمجة","تطبيق","سوفتوير","ذكاء اصطناعي","tech","software","app","saas","ai","development"]],
-    ["مكتب قانوني",      ["محامي","قانون","مستشار قانوني","law","lawyer","legal","attorney"]],
-    ["شركة عقارية",      ["عقار","شقق","مباني","عمارة","أراضي","real estate","property","realty"]],
-    ["صالون تجميل",      ["صالون","مكياج","تجميل","كوافير","spa","salon","beauty","makeup","hair"]],
-    ["شركة سياحة",       ["سياحة","رحلات","حجز","فندق","سفر","tourism","travel","hotel","booking"]],
-    ["مدرسة أو مركز تعليمي", ["تعليم","دروس","تدريب","أكاديمية","دورات","school","academy","training","education","courses"]],
+    ["مطعم أو مقهى",              ["مطعم","مقهى","أكل","وجبات","قهوة","مشوي","شاورما","برغر","restaurant","cafe","coffee","food","menu","شيف"]],
+    ["عيادة أو مستشفى",           ["عيادة","دكتور","طبيب","صحة","مريض","مستشفى","استشارة طبية","clinic","doctor","medical","health","hospital","pharma"]],
+    ["وكالة تسويق وإعلانات",       ["تسويق","إعلانات","برندينج","محتوى","ميديا","نشر تجاري","marketing","agency","advertising","branding","media"]],
+    ["متجر إلكتروني",              ["متجر","تسوق","منتج","شراء","سلة","تجارة إلكترونية","store","shop","cart","product","ecommerce","online store"]],
+    ["شركة تقنية ومعلومات",        ["تقنية","برمجة","تطبيق","سوفتوير","ذكاء اصطناعي","استضافة","حلول رقمية","tech","software","app","saas","ai","development","it","programming"]],
+    ["مكتب محاماة وقانوني",        ["محامي","قانون","مستشار قانوني","عقود","law","lawyer","legal","attorney","justice"]],
+    ["شركة عقارية",               ["عقار","شقق","مباني","عمارة","أراضي","فلل","تطوير عقاري","real estate","property","realty","villa","apartment"]],
+    ["صالون تجميل وعناية",         ["صالون","مكياج","تجميل","كوافير","عناية بالبشرة","سبا","spa","salon","beauty","makeup","hair","skincare","nail"]],
+    ["فندق ومنتجع",               ["فندق","منتجع","شقق مفروشة","إقامة","ضيافة","hotel","resort","hospitality","accommodation","motel","inn"]],
+    ["شركة سياحة وسفر",           ["سياحة","رحلات","حجز","سفر","وجهات","tourism","travel","booking","destination","tour"]],
+    ["مدرسة أو أكاديمية",         ["تعليم","دروس","تدريب","أكاديمية","دورات","مدرسة","school","academy","training","education","courses","learning"]],
+    ["شركة مقاولات وإنشاء",        ["مقاولات","بناء","إنشاء","تشييد","هندسة مدنية","عمران","بنية تحتية","construction","contracting","building","civil engineering"]],
+    ["شركة لوجستية وشحن",         ["شحن","لوجستيات","توصيل","نقل بضائع","مستودع","freight","logistics","shipping","delivery","warehouse","supply chain","cargo"]],
+    ["خدمات تنظيف",               ["تنظيف","نظافة","جلي","تعقيم","مكافحة حشرات","cleaning","housekeeping","janitorial","sanitization","pest control"]],
+    ["استوديو تصوير",             ["تصوير","فيديو","استوديو","مصور","إنتاج مرئي","photography","videography","studio","filmmaker","media production"]],
+    ["خدمات مالية ومحاسبة",        ["محاسبة","مالية","استثمار","تأمين","ضرائب","بنك","تدقيق","finance","accounting","investment","insurance","bank","tax","financial","audit"]],
+    ["جمعية خيرية",               ["جمعية","خيرية","وقف","تبرع","إنسانية","منظمة غير ربحية","charity","foundation","nonprofit","ngo","donation","humanitarian"]],
+    ["استشارات أعمال",             ["استشارات","استراتيجية","تطوير أعمال","إدارة","حلول تجارية","consulting","advisory","management consulting","business development","strategy"]],
+    ["مستقل (فريلانسر)",           ["فريلانسر","مستقل","عمل حر","خبير مستقل","freelance","freelancer","independent","solopreneur","remote worker"]],
+    ["صالة رياضية ولياقة",         ["لياقة","جيم","رياضة","تمرين","صالة رياضية","fitness","gym","workout","sport","training","crossfit"]],
+    ["سيارات وخدمات السيارات",      ["سيارات","مركبات","قطع غيار","تأجير سيارات","صيانة سيارات","cars","automotive","vehicles","auto","car rental","garage"]],
+    ["منتجات فاخرة وعطور",         ["عطور","ساعات","مجوهرات","فاخر","بريستيج","luxury","perfume","watches","jewelry","fashion","premium","couture"]],
+    ["أحداث وفعاليات",            ["فعاليات","حفلات","مؤتمرات","أعراس","تنظيم فعاليات","events","conferences","weddings","parties","event planning"]],
+    ["بورتفوليو إبداعي",           ["بورتفوليو","مصمم","فنان","إبداع","أعمالي","portfolio","designer","artist","creative","my work"]],
   ];
   for (const [type, keywords] of map) {
     if (keywords.some(k => text.includes(k))) return type;
@@ -1265,8 +1333,16 @@ export async function generateInstantWebsite(
   const extraLangCode = languages.find(l => l !== "ar" && l !== "en");
   const extraLangName = extraLangCode ? (EXTRA_LANG_NAMES[extraLangCode] || extraLangCode) : null;
 
-  const systemPrompt = `You are a multilingual website content generator for Saudi/Arab businesses. Generate professional website copy in Arabic, English${extraLangName ? `, and ${extraLangName}` : ""} from a user prompt.
-Return ONLY valid JSON, no markdown, no explanation.`;
+  const systemPrompt = `You are an expert multilingual website content generator specializing in Saudi/Arab businesses. Generate professional, conversion-optimized website copy in Arabic, English${extraLangName ? `, and ${extraLangName}` : ""} from a user prompt.
+
+CRITICAL RULES:
+1. Read the user prompt carefully and identify the EXACT type of business — be specific
+2. Generate content that is 100% relevant to the actual business described (مقاولات→construction services, تنظيف→cleaning services, محاسبة→accounting firm, etc.)
+3. ALL 6 services must be real services that this type of business actually offers — no generic filler
+4. If the business type is unusual or niche, use the closest category and still generate fully specific content
+5. Hero title must be powerful, benefit-driven, and specific to the industry
+6. Return ONLY valid JSON, no markdown, no explanation`;
+
 
   const extraLangBlock = extraLangCode && extraLangName ? `
   "business_name_${extraLangCode}": "brand name in ${extraLangName}",
@@ -1296,7 +1372,7 @@ Generate complete multilingual website content. Return this EXACT JSON structure
 {
   "business_name_ar": "brand name in Arabic",
   "business_name_en": "brand name in English",${extraLangBlock}
-  "business_type": "one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym",
+  "business_type": "one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym, ecommerce, tech, consulting, logistics, cleaning, photography, finance, hotel, charity, freelance",
   "ar": {
     "hero_title": "compelling Arabic headline, max 8 words",
     "hero_subtitle": "engaging Arabic subtitle, 1-2 sentences",
@@ -1342,8 +1418,10 @@ Generate complete multilingual website content. Return this EXACT JSON structure
 }
 
 Rules:
-- business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym
-- legal = law firms/offices, beauty = salons/spas/cosmetics, realestate = property/real estate, education = schools/academies/courses, events = event planning/weddings/conferences, automotive = cars/garages/auto services, luxury = perfume/jewelry/premium goods, gym = fitness/sports centers
+- business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym, ecommerce, tech, consulting, logistics, cleaning, photography, finance, hotel, charity, freelance
+- Mapping guide — pick the CLOSEST match: legal=law/attorneys, beauty=salons/spas/cosmetics, realestate=property/real estate, education=schools/academies/courses, events=event planning/weddings/conferences, automotive=cars/garages/auto services, luxury=perfume/jewelry/premium goods, gym=fitness/sports centers, ecommerce=online stores/retail, tech=software/IT/programming/apps, consulting=business advisory/management consulting, logistics=shipping/freight/delivery/supply chain, cleaning=cleaning services/facility management, photography=photographers/videographers/studios, finance=banks/accounting/investment/insurance, hotel=hotels/resorts/hospitality/accommodation, charity=NGOs/charities/foundations/social orgs, freelance=freelancers/independent contractors/solopreneurs
+- If the business doesn't fit any specific category, use 'general' — but always try to find the closest match first
+- IMPORTANT: generate content that is 100% specific to the ACTUAL business described, not generic placeholder text
 - Colors must match the business personality (warm for restaurant, professional for agency, etc.)
 - ALL services must be specific to this exact business type, not generic
 - hero_title must be exciting and benefit-driven${extraLangCode ? `\n- Include the "${extraLangCode}" section with authentic, natural ${extraLangName} translations` : ""}`;
