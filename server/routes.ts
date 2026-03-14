@@ -1113,6 +1113,51 @@ Sitemap: https://arabyweb.net/sitemap.xml
     }
   });
 
+  // Business clarity analysis: detect if user needs to clarify their business type
+  app.post("/api/analyze-business", isAuthenticated, async (req: any, res) => {
+    try {
+      const { activityType, businessName } = req.body as { activityType?: string; businessName?: string };
+      // Only ask for clarification when category is "other" or "services"
+      if (!businessName?.trim() || (activityType !== "other" && activityType !== "services")) {
+        return res.json({ needsClarification: false });
+      }
+      const { openai } = await import("./ai");
+      const model = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-5.2" : "gpt-4o-mini";
+      const response = await openai.chat.completions.create({
+        model,
+        messages: [
+          {
+            role: "system",
+            content: `You are a business type analyzer. Given an Arabic business name, determine if the business type is ambiguous. 
+Return JSON: { "clear": true/false, "question_ar": "Arabic clarification question", "options_ar": ["option1","option2","option3","option4"] }
+- If the name clearly indicates a specific business (e.g. "مطعم الريف" = restaurant, "شركة النقل السريع" = logistics), set clear:true
+- If the name is ambiguous or could be multiple business types (e.g. "نغم", "نور", "أمل"), set clear:false
+- Write the question in Arabic, starting with the business name
+- Provide 4 realistic options that the name could represent`,
+          },
+          {
+            role: "user",
+            content: `Business name: "${businessName.trim()}"`,
+          },
+        ],
+        max_completion_tokens: 300,
+        temperature: 0.3,
+        response_format: { type: "json_object" },
+      });
+      const analysis = JSON.parse(response.choices[0]?.message?.content || "{}");
+      if (analysis.clear === false) {
+        return res.json({
+          needsClarification: true,
+          question: analysis.question_ar || `ما هو نشاط "${businessName}" تحديداً؟`,
+          options: analysis.options_ar || [],
+        });
+      }
+      return res.json({ needsClarification: false });
+    } catch {
+      return res.json({ needsClarification: false });
+    }
+  });
+
   app.get("/api/admin/users", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
       const allUsers = await storage.getAllUsers();

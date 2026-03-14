@@ -13,7 +13,7 @@ function getOpenAI(): OpenAI {
   }
   return _openai;
 }
-const openai = new Proxy({} as OpenAI, {
+export const openai = new Proxy({} as OpenAI, {
   get: (_target, prop) => (getOpenAI() as any)[prop],
 });
 

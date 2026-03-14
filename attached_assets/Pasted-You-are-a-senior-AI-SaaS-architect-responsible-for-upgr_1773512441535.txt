@@ -1,0 +1,262 @@
+You are a senior AI SaaS architect responsible for upgrading the intelligence of the ArabyWeb AI website generator.
+
+The current system generates websites too quickly without properly understanding the business context, causing incorrect industries, poor design decisions, and weak UI components.
+
+Your task is to redesign the generation logic and enforce strict design and intelligence rules.
+
+------------------------------------------------
+
+1️⃣ BUSINESS UNDERSTANDING ENGINE (CRITICAL)
+
+Before generating any website the system MUST analyze the business context.
+
+Inputs to analyze:
+
+• business name
+• selected category
+• city/location
+• keywords from user prompt
+• Arabic semantic meaning
+
+If category = "Other"
+
+The system must NOT guess the business type.
+
+Instead it must:
+
+Step 1
+Analyze possible meanings of the business name.
+
+Example:
+
+Business name: "نغم"
+
+Possible meanings:
+
+• music brand
+• music academy
+• recording studio
+• artistic brand
+• personal name
+
+Step 2
+Ask a clarification question to the user.
+
+Example:
+
+"هل نشاط نغم مرتبط بالموسيقى أم هو اسم شركة أو علامة تجارية؟"
+
+Step 3
+Generate the website only after clarification.
+
+The system must never randomly generate unrelated industries.
+
+------------------------------------------------
+
+2️⃣ INDUSTRY MATCH VALIDATION
+
+Before generating services the system must validate that services match the business industry.
+
+Example:
+
+Music business → allowed services:
+
+• تعليم الموسيقى
+• تسجيل صوتي
+• إنتاج موسيقي
+• دروس غناء
+
+Shipping services or logistics must NEVER appear unless the business is logistics related.
+
+------------------------------------------------
+
+3️⃣ STRICT TEXT STYLE RULES
+
+The generator currently creates ugly gradient text.
+
+This must be forbidden.
+
+Rules:
+
+Text must always use solid colors.
+
+Allowed text colors:
+
+• dark blue
+• black
+• dark gray
+• brand color
+
+Forbidden:
+
+• gradient text
+• rainbow colors
+• flashy color effects
+
+Gradients are allowed ONLY for backgrounds or buttons.
+
+------------------------------------------------
+
+4️⃣ SMART ICON SYSTEM
+
+Every feature section must include a professional icon.
+
+Create an icon library covering industries:
+
+logistics
+services
+education
+music
+technology
+consulting
+retail
+healthcare
+real estate
+legal services
+
+Each service card must include:
+
+• icon
+• title
+• short description
+
+Icons must use modern outline style.
+
+------------------------------------------------
+
+5️⃣ DESIGN QUALITY ENFORCEMENT
+
+All generated layouts must follow modern SaaS design principles.
+
+Requirements:
+
+• consistent spacing
+• soft shadows
+• rounded cards
+• clean typography
+• professional buttons
+• responsive layout
+
+Avoid:
+
+• empty sections
+• basic contact forms
+• generic layout blocks
+
+------------------------------------------------
+
+6️⃣ SMART CONTACT FORM GENERATION
+
+Replace the basic contact form with a modern professional component.
+
+The contact section must include:
+
+• name
+• email
+• phone
+• message
+
+Design requirements:
+
+• rounded inputs
+• icon inside each field
+• soft shadow container
+• focus animation
+• premium submit button
+
+The contact section should look like modern SaaS landing pages.
+
+------------------------------------------------
+
+7️⃣ LOGO HANDLING SYSTEM
+
+The system must not require the user to upload a logo.
+
+However it must guide the user with recommendations.
+
+If user uploads a logo:
+
+Display it as the main brand mark.
+
+If user does NOT upload a logo:
+
+Automatically generate a placeholder brand icon based on industry.
+
+Example:
+
+music → music note icon  
+construction → building icon  
+technology → abstract tech icon  
+
+------------------------------------------------
+
+8️⃣ LOGO QUALITY GUIDANCE (NON-MANDATORY)
+
+When the user uploads a logo the platform must show a friendly recommendation:
+
+"لأفضل جودة عرض للموقع يفضل أن يكون الشعار بالمواصفات التالية"
+
+Recommended logo specifications:
+
+Format:
+PNG or SVG
+
+Background:
+Transparent
+
+Minimum resolution:
+512x512
+
+Recommended resolution:
+1024x1024
+
+Maximum size:
+2MB
+
+The system must NOT force the user to upload a logo.
+
+This is only a recommendation.
+
+------------------------------------------------
+
+9️⃣ AI WEBSITE GENERATION QUALITY
+
+When generating a website the AI must always include:
+
+• hero section
+• services section
+• about section
+• trust elements
+• contact section
+• CTA sections
+
+Content must be professional Arabic marketing copy.
+
+Avoid placeholder text.
+
+------------------------------------------------
+
+🔟 SELF IMPROVEMENT SYSTEM
+
+The platform must learn from every generated website.
+
+Track:
+
+• business categories
+• selected sections
+• popular layouts
+• frequently used services
+
+Save this data to improve future website generation.
+
+------------------------------------------------
+
+FINAL OBJECTIVE
+
+Transform ArabyWeb into an intelligent Arabic AI website builder that:
+
+• understands the business before generating
+• avoids random industry mistakes
+• generates modern professional layouts
+• uses icons and clean typography
+• improves automatically over time

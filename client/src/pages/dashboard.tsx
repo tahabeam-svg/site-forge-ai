@@ -66,6 +66,8 @@ import {
   MapPin,
   AtSign,
   Building2,
+  Info,
+  MessageSquare,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -349,6 +351,13 @@ export default function DashboardPage() {
   const progressInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
+  const [clarificationData, setClarificationData] = useState<{
+    question: string;
+    options: string[];
+  } | null>(null);
+  const [clarificationAnswer, setClarificationAnswer] = useState("");
+  const [isClarifying, setIsClarifying] = useState(false);
+
   function updateWizard(field: keyof WizardForm, value: string) {
     setWizardForm((prev) => ({ ...prev, [field]: value }));
   }
@@ -438,11 +447,44 @@ export default function DashboardPage() {
     };
   }, []);
 
-  async function handleInstantGenerate() {
+  async function handleClarificationSubmit() {
+    if (!clarificationAnswer.trim()) return;
+    setClarificationData(null);
+    setIsClarifying(false);
+    await handleInstantGenerate(clarificationAnswer);
+  }
+
+  async function handleInstantGenerate(clarificationNote?: string) {
     if (!wizardForm.siteName.trim()) return;
 
+    // Business clarity check: only when category is "other" or "services" and no clarification yet
+    if (!clarificationNote && (wizardForm.activityType === "other" || wizardForm.activityType === "services" || !wizardForm.activityType)) {
+      setIsClarifying(true);
+      try {
+        const res = await fetch("/api/analyze-business", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ activityType: wizardForm.activityType || "other", businessName: wizardForm.siteName }),
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (data.needsClarification && data.question) {
+          setClarificationData({ question: data.question, options: data.options || [] });
+          setClarificationAnswer("");
+          setIsClarifying(false);
+          return;
+        }
+      } catch {
+        // Fail silently — proceed to generation
+      }
+      setIsClarifying(false);
+    }
+
     const isAr = lang === "ar";
-    const structuredDesc = buildStructuredPrompt(wizardForm, isAr);
+    const baseDesc = buildStructuredPrompt(wizardForm, isAr);
+    const structuredDesc = clarificationNote
+      ? `${baseDesc}\nتوضيح النشاط: ${clarificationNote}`
+      : baseDesc;
     const projectName = wizardForm.siteName.trim().slice(0, 60);
 
     setIsInstantGenerating(true);
@@ -1342,6 +1384,18 @@ export default function DashboardPage() {
                     )}
                   </div>
 
+                  {/* Logo quality guidance */}
+                  {!wizardForm.logoPreview && (
+                    <div className="flex items-start gap-2 px-3 py-2.5 bg-violet-50 dark:bg-violet-950/30 rounded-lg border border-violet-100 dark:border-violet-900">
+                      <Info className="w-3.5 h-3.5 text-violet-500 mt-0.5 flex-shrink-0" />
+                      <p className="text-xs text-violet-700 dark:text-violet-300 leading-relaxed">
+                        {lang === "ar"
+                          ? "لأفضل جودة: PNG أو SVG، خلفية شفافة، 512×512 بكسل أو أكبر"
+                          : "Best quality: PNG or SVG, transparent background, 512×512px or larger"}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Extra Notes + Smart Suggestions */}
                   <div className="space-y-2">
                     <Label className="flex items-center gap-1.5 text-sm font-medium">
@@ -1401,13 +1455,19 @@ export default function DashboardPage() {
                         {t("cancel", lang)}
                       </Button>
                       <Button
-                        disabled={!wizardForm.siteName.trim()}
-                        onClick={handleInstantGenerate}
+                        disabled={!wizardForm.siteName.trim() || isClarifying}
+                        onClick={() => handleInstantGenerate()}
                         className="bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 gap-2"
                         data-testid="button-confirm-instant"
                       >
-                        <Zap className="w-4 h-4" />
-                        {lang === "ar" ? "أنشئ موقعي الآن" : "Generate My Website"}
+                        {isClarifying ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Zap className="w-4 h-4" />
+                        )}
+                        {isClarifying
+                          ? (lang === "ar" ? "جارٍ التحليل..." : "Analyzing...")
+                          : (lang === "ar" ? "أنشئ موقعي الآن" : "Generate My Website")}
                       </Button>
                     </div>
                   </div>
@@ -1457,6 +1517,66 @@ export default function DashboardPage() {
               </p>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Business Clarification Dialog */}
+      <Dialog open={!!clarificationData} onOpenChange={(open) => { if (!open) setClarificationData(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-violet-500" />
+              {lang === "ar" ? "توضيح النشاط" : "Business Clarification"}
+            </DialogTitle>
+            <DialogDescription>
+              {clarificationData?.question}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 mt-2">
+            {clarificationData?.options.map((opt, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setClarificationAnswer(opt)}
+                className={`w-full text-start px-4 py-3 rounded-xl border-2 transition-all text-sm font-medium ${
+                  clarificationAnswer === opt
+                    ? "border-violet-500 bg-violet-500/10 text-violet-700 dark:text-violet-300"
+                    : "border-border hover:border-violet-300 hover:bg-muted"
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+            {clarificationData?.options.length === 0 && (
+              <input
+                type="text"
+                value={clarificationAnswer}
+                onChange={(e) => setClarificationAnswer(e.target.value)}
+                placeholder={lang === "ar" ? "اكتب نوع النشاط..." : "Type your business type..."}
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm"
+              />
+            )}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button
+              onClick={handleClarificationSubmit}
+              disabled={!clarificationAnswer.trim()}
+              className="flex-1 bg-violet-600 hover:bg-violet-700 text-white"
+              data-testid="button-clarification-submit"
+            >
+              {lang === "ar" ? "متابعة الإنشاء ✨" : "Continue Generation ✨"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setClarificationData(null);
+                setClarificationAnswer("أخرى");
+                handleInstantGenerate("نشاط تجاري عام");
+              }}
+            >
+              {lang === "ar" ? "تخطَّ" : "Skip"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 

@@ -1135,7 +1135,7 @@ img{max-width:100%;display:block;object-fit:cover;}
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;}
 .stat-item{padding:2.25rem 1.5rem;text-align:center;border-inline-end:1px solid rgba(255,255,255,0.06);}
 .stat-item:last-child{border-inline-end:none;}
-.stat-num{display:block;font-family:${fontHeading};font-size:3.1rem;font-weight:900;background:linear-gradient(135deg,${primary} 30%,${accent});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.stat-num{display:block;font-family:${fontHeading};font-size:3.1rem;font-weight:900;color:${primary};line-height:1;}
 .stat-label{display:block;color:rgba(255,255,255,0.45);font-size:0.85rem;margin-top:0.6rem;font-weight:500;text-transform:uppercase;letter-spacing:1.5px;}
 
 /* ═══ SECTIONS ═══ */
