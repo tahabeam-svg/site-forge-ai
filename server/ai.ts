@@ -298,6 +298,21 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 
 ▸ HERO (FULL VIEWPORT + ANIMATED ORBS): min-height:100vh. Dark gradient overlay on background image. Add 2–3 large blurred orb blobs (CSS radial-gradient circles, 400–700px, filter:blur(80px), position:absolute, animated with @keyframes orbFloat). Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
 
+▸ CTA BUTTONS — STRICT RULES (NEVER VIOLATE):
+  ✅ Primary button: Use a SINGLE-HUE gradient (2 shades of same color family), e.g.:
+    - Violet: linear-gradient(135deg, #7c3aed, #4f46e5)
+    - Gold/Amber: linear-gradient(135deg, #d4a843, #b8860b)
+    - Red/Orange: linear-gradient(135deg, #dc2626, #ea580c)
+    - Teal/Green: linear-gradient(135deg, #0d9488, #059669)
+    - Navy/Blue: linear-gradient(135deg, #1e3a5f, #1d4ed8)
+  ❌ FORBIDDEN button gradients — NEVER mix unrelated hues:
+    - blue → yellow/gold (looks terrible, avoid completely)
+    - green → red, orange → blue, purple → yellow, cyan → orange
+    - ANY gradient that spans more than 90° of the color wheel
+  ✅ Button style: border-radius:50px; padding:0.85rem 2rem; font-weight:700; letter-spacing:0.02em; box-shadow:0 8px 24px rgba(PRIMARY,0.35); transition: transform 0.2s, box-shadow 0.2s;
+  ✅ Hover: transform:translateY(-2px); box-shadow:0 12px 32px rgba(PRIMARY,0.5);
+  ✅ Secondary/outline button: transparent background, 2px solid border matching hero text color (#fff or primary), same border-radius
+
 ▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing. STATS MUST BE RELEVANT TO THE SPECIFIC BUSINESS — Examples:
   * Restaurant/Cafe: "15+ سنة خبرة", "500+ وجبة يومياً", "98% رضا العملاء", "50+ طبق متنوع"
   * Medical/Clinic: "20+ طبيب متخصص", "10,000+ مريض تعالج", "15+ سنة خبرة", "98% نسبة الشفاء"
@@ -377,6 +392,7 @@ If the description contains "نمط التصميم المطلوب" or "Design st
   - Services: pure white cards on black background with thin gold border (1px solid #d4a843)
   - Stats: black background, gold gradient numbers, thin dividers
   - Minimal animations — no heavy effects, only smooth fade-ins
+  - CTA buttons: gold gradient (linear-gradient(135deg,#d4a843,#b8860b)), border-radius:50px, padding:0.9rem 2.5rem, box-shadow:0 8px 30px rgba(212,168,67,0.4), NEVER blue→yellow or any clashing hue combo
   - Feel: luxury brand, high-end, exclusive
 
 Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
@@ -724,6 +740,48 @@ function extractBusinessTypeFromHtml(html: string): string {
 }
 
 function enhanceVagueCommand(command: string, html: string, projectName: string, desc: string, lang: string): string {
+  // ── Luxury/elegance upgrade patterns ──
+  const luxuryPatterns = [
+    /[أا]جعل?\s*(التصميم|الموقع|الشكل|المظهر)\s*(فخم|أنيق|راقي|احترافي|أجمل|أفضل|أكثر\s*فخامة|أكثر\s*أناقة)/i,
+    /[أا]جعله?\s*(فخم|أنيق|راقي|أجمل|أفضل|احترافي)/i,
+    /فخم\s*وأنيق|أنيق\s*وفخم|أكثر\s*فخامة|أكثر\s*أناقة/i,
+    /make\s+(it|the\s+design|the\s+website)\s+(luxury|elegant|premium|beautiful|better|more\s+elegant)/i,
+    /luxury\s*(design|style|look)|elegant\s*(design|style)|premium\s*(look|design)/i,
+    /حسّن\s*(التصميم|الشكل|المظهر)/i,
+    /upgrade\s+(the\s+)?(design|look|style)/i,
+  ];
+  const isLuxury = luxuryPatterns.some(p => p.test(command));
+  if (isLuxury) {
+    const biz = extractBusinessTypeFromHtml(html) || "business";
+    return lang === "ar"
+      ? `${command}
+[[[INTERNAL — DO NOT SHOW — MANDATORY LUXURY REDESIGN]]]
+اجعل التصميم يبدو فاخراً وراقياً بتطبيق هذه التغييرات بشكل شامل:
+
+✅ لون الخلفية: استبدل كل الخلفيات الفاتحة بألوان داكنة عميقة (#0a0a0a أو #0f172a أو #060818)
+✅ ألوان الأزرار: زر CTA الرئيسي يجب أن يكون بتدرج راقي من لون واحد (مثال: #d4a843 → #b8860b) أو (#7c3aed → #4f46e5). ممنوع تماماً أي تدرج يخلط ألوان غير متناسقة (أزرق + أصفر، أخضر + برتقالي، إلخ)
+✅ الأزرار: استخدم border-radius:50px، padding:0.9rem 2.5rem، letter-spacing:0.04em، font-weight:700، box-shadow:0 8px 30px rgba(PRIMARY,0.4)
+✅ الكروت: خلفية داكنة، حدود رفيعة بلون ذهبي (#d4a843) أو Primary بشفافية 30%، ظل خفيف
+✅ الخطوط: زد letter-spacing على العناوين، line-height أكثر راحة، font-weight:900 للعناوين الكبيرة
+✅ أزل كل العناصر "الرخيصة": لا تدرجات قوس قزح، لا إطارات نيون بارزة، لا تجمّع بصري
+✅ الأقسام: زد padding (6rem 2rem) ليشعر بالاتساع والفخامة
+✅ احتفظ بكل المحتوى الحالي — غير الشكل فقط وليس المحتوى
+[[[END INTERNAL]]]`
+      : `${command}
+[[[INTERNAL — DO NOT SHOW — MANDATORY LUXURY REDESIGN]]]
+Transform the entire design into a luxury, high-end look:
+
+✅ Background: Replace all light backgrounds with deep darks (#0a0a0a, #0f172a, #060818)
+✅ CTA Buttons: Use single-hue elegant gradient (e.g., #d4a843 → #b8860b or #7c3aed → #4f46e5). NEVER mix unrelated hues (blue+yellow, green+orange, etc.)
+✅ Button style: border-radius:50px, padding:0.9rem 2.5rem, letter-spacing:0.04em, font-weight:700, box-shadow:0 8px 30px rgba(PRIMARY,0.4)
+✅ Cards: dark background, thin gold/accent border, subtle shadow — no garish gradients inside cards
+✅ Typography: increase letter-spacing on headings, more line-height, font-weight:900 for big titles
+✅ Remove "cheap" elements: no rainbow gradients, no harsh neon, no cluttered layouts
+✅ Sections: increase padding (6rem 2rem) for a spacious premium feel
+✅ Preserve all existing content — change visual style only, not content
+[[[END INTERNAL]]]`;
+  }
+
   const vaguePatterns = [
     /[أا]ر?يدك?\s*([أا]ن\s*)?ت?ضيف?\s*(من\s*)?(محتوى|قسم|كونتنت)/i,
     /[أا]ضف?\s*محتوى\s*(احتراف|مميز|جيد)/i,
@@ -847,7 +905,7 @@ CONTENT RULES (NEVER VIOLATE):
 7. NEVER use UI platform words as navigation links — the words "نشر", "معاينة", "تعديل", "dashboard", "editor" must NEVER appear as nav buttons/links in the generated website HTML. These words belong to the ArabyWeb editor interface, not to client websites. Use business-appropriate navigation like: "الرئيسية", "خدماتنا", "من نحن", "تواصل معنا", "أعمالنا", "المنتجات", etc.
 
 TECHNICAL GUIDELINES:
-- Maintain existing design quality and style
+- Maintain existing design quality and style UNLESS the command is asking for a full redesign (luxury/elegant/premium/better design) — in that case, apply full visual transformation
 - Use professional fonts: ${isArabic ? "Cairo (headings), Tajawal (body)" : "Inter/Poppins (headings), Inter (body)"}
 - Use Unsplash: https://images.unsplash.com/photo-{ID}?w=800&h=600&fit=crop
 - Use inline SVG Lucide-style icons when adding icons
