@@ -983,7 +983,8 @@ export default function EditorPage() {
                 </div>{/* end inner scroll container */}
               </TabsContent>
 
-              <TabsContent value="sections" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
+              <TabsContent value="sections" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0 pt-3 md:pt-0">
+                <div className="flex-1 overflow-y-auto px-3 pb-[72px] md:pb-3">
                 <div className="mt-2 space-y-3">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/20 border border-emerald-200 dark:border-emerald-800/40 px-3 py-2.5 flex items-center gap-2.5">
@@ -1069,9 +1070,11 @@ export default function EditorPage() {
                     <TooltipContent side="top">{lang === "ar" ? "إعادة إنشاء الموقع بالكامل بالذكاء الاصطناعي" : "Rebuild entire website from scratch with AI"}</TooltipContent>
                   </Tooltip>
                 </div>
+                </div>{/* end sections scroll */}
               </TabsContent>
 
-              <TabsContent value="media" className="flex-1 overflow-y-auto mt-0 px-3 pb-[72px] md:pb-3 pt-3 md:pt-0">
+              <TabsContent value="media" className="flex-1 flex flex-col overflow-hidden min-h-0 mt-0 pt-3 md:pt-0">
+                <div className="flex-1 overflow-y-auto px-3 pb-[72px] md:pb-3">
                 <div className="mt-2 space-y-4">
                   {/* Colored header banner */}
                   <div className="rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800/40 px-3 py-2.5 flex items-center gap-2.5">
@@ -1186,6 +1189,7 @@ export default function EditorPage() {
                     </div>
                   </div>
                 </div>
+                </div>{/* end media scroll */}
               </TabsContent>
 
               <TabsContent value="style" className="flex-1 flex flex-col overflow-hidden mt-0 pt-3 md:pt-0 relative pb-[72px] md:pb-0">
