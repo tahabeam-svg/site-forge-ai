@@ -1,0 +1,151 @@
+You are a senior AI SaaS engineer responsible for improving the ArabyWeb AI website generator.
+
+Fix the following critical issues in the platform.
+
+------------------------------------------------
+
+1️⃣ LANGUAGE GENERATION BUG
+
+Currently the system generates English automatically even when the user only selects Arabic + Turkish.
+
+This is incorrect behavior.
+
+RULE:
+
+The system must ONLY generate the languages explicitly selected by the user.
+
+Example:
+
+User selects:
+Arabic + Turkish
+
+The generated website must contain ONLY:
+
+Arabic
+Turkish
+
+English must NEVER be added unless explicitly requested.
+
+Implementation rule:
+
+selected_languages = user_input_languages
+
+for language in selected_languages:
+    generate_site(language)
+
+Do not generate any extra language.
+
+------------------------------------------------
+
+2️⃣ CONTACT FORM QUALITY (FOOTER)
+
+The generated contact form is extremely basic and looks unprofessional.
+
+Replace it with a modern professional contact component.
+
+The contact section must include:
+
+• modern card layout
+• beautiful input fields
+• clear spacing
+• icons inside fields
+• modern submit button
+• hover effects
+
+Form fields:
+
+Name
+Email
+Phone
+Message
+
+Design requirements:
+
+rounded inputs
+soft shadow
+focus animation
+responsive layout
+modern submit button with slight 3D effect
+
+Example style:
+
+border-radius: 10px
+box-shadow: 0 10px 25px rgba(0,0,0,0.1)
+
+Button:
+
+premium style
+hover animation
+elevated shadow
+
+------------------------------------------------
+
+3️⃣ LOGO / BRAND ICON SYSTEM
+
+Currently the system places the site name next to the logo incorrectly.
+
+Fix the branding logic.
+
+New rules:
+
+IF user uploads a logo:
+
+→ Display ONLY the uploaded logo
+
+Do NOT add text next to it.
+
+------------------------------------------------
+
+IF user does NOT upload a logo:
+
+The system must automatically generate a placeholder brand icon.
+
+Create an icon library including:
+
+shield
+building
+letter mark
+monogram
+abstract brand mark
+
+Choose the icon that best matches the business category.
+
+Example:
+
+Construction → building icon
+Law firm → shield icon
+Technology → abstract tech symbol
+
+Display the icon as the logo.
+
+------------------------------------------------
+
+4️⃣ VISUAL QUALITY STANDARD
+
+The generated UI must follow modern SaaS design standards.
+
+Avoid:
+
+cheap layout
+basic forms
+unbalanced spacing
+
+Follow:
+
+clean spacing
+soft shadows
+modern UI components
+consistent button system
+
+------------------------------------------------
+
+FINAL OBJECTIVE
+
+Improve the visual quality and logic of generated websites so that ArabyWeb produces modern, professional, and intelligent websites.
+
+The system must:
+
+respect user language selection
+generate professional contact sections
+use intelligent logo/icon logic
+produce clean modern UI
