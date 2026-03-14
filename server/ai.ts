@@ -165,7 +165,7 @@ STEP 0 — MANDATORY: EXTRACT FIRST
 
 ═══ SECTIONS (in order) ═══
 
-1. NAVBAR: Fixed, glassmorphism (background:rgba(5,8,22,0.8);backdrop-filter:blur(24px)). Brand = person's name in gradient text. Links: عن نفسي (#about), مهاراتي (#skills), أعمالي (#portfolio), تواصل معي (#contact). Mobile hamburger required.
+1. NAVBAR: Fixed, glassmorphism (background:rgba(5,8,22,0.8);backdrop-filter:blur(24px)). Brand = small inline SVG (id="aw-ai-logo", 32×32px, initials or field icon) + person's name in gradient text. Links: عن نفسي (#about), مهاراتي (#skills), أعمالي (#portfolio), تواصل معي (#contact). Mobile hamburger required. FOOTER: uses SVG only (id="aw-ai-logo-footer") + tagline, NEVER repeat the name in text form again.
 
 2. HERO: Full viewport. Background: stunning CSS mesh gradient (use 3 large animated orb blobs, filter:blur(80px), @keyframes orbFloat). Large animated name in gradient text (clamp(3rem,8vw,6rem), font-weight:900). Below: title/role badge with glass effect. Short powerful tagline. Two CTAs: gradient solid + glass outline. Include animated typing effect for the role using CSS.
 
@@ -212,7 +212,7 @@ STEP 0 — MANDATORY: EXTRACT FIRST
 
 ═══ SECTIONS (in order) ═══
 
-1. NAVBAR: Fixed glassmorphism (rgba dark + blur). Links: عن الفعالية (#about), البرنامج (#schedule), الصور (#gallery), التسجيل (#register). Mobile hamburger required. Brand = event name.
+1. NAVBAR: Fixed glassmorphism (rgba dark + blur). Links: عن الفعالية (#about), البرنامج (#schedule), الصور (#gallery), التسجيل (#register). Mobile hamburger required. Brand = small inline SVG (id="aw-ai-logo", 32×32px, icon matching event type) + event name in gradient text. FOOTER: SVG logo only (id="aw-ai-logo-footer") + tagline, NEVER repeat event name as text again.
 
 2. HERO: Full viewport. Background: high-quality event/venue Unsplash image with dark overlay gradient. 3 animated orb blobs for depth. Event name in massive gradient text (clamp(2.5rem,7vw,6rem), font-weight:900). Date and location badge prominently displayed. If date is future: add a live countdown timer (Days, Hours, Minutes, Seconds) with JS setInterval. CTA buttons: "سجّل الآن" (gradient) + "عرّف نفسك" (outline glass).
 
@@ -272,6 +272,7 @@ STEP 0 — MANDATORY: PARSE THE DESCRIPTION FIRST
 Before writing a single line of HTML, extract these from the user description:
 
 1. BUSINESS NAME: If the user mentions a name (e.g. "مطعم السعادة", "شركة النور", "Safa Clinic"), use it as the brand. If no name, invent a creative Arabic brand name that matches the business type. NEVER use "اسم الشركة" or "Your Business Name".
+   ⚠️ BUSINESS NAME REPETITION RULE: The business name in TEXT form must appear EXACTLY ONCE — only in the navbar brand text. Do NOT write it again in the footer, hero section tagline, about section heading, or anywhere else. Use the SVG logo (id="aw-ai-logo-footer") in the footer instead of repeating the text name.
 
 2. CITY/LOCATION: If mentioned (e.g. الرياض, جدة, Riyadh, مكة, الدمام), use it throughout — in hero subtitle, contact section, footer, Google Maps mention. Default: الرياض.
 
@@ -288,7 +289,12 @@ VISUAL DESIGN STANDARD 2025 — MANDATORY
 ═══════════════════════════════════════
 The website MUST look like it was designed in 2025 by a top-tier agency. Think Notion, Linear, Vercel, Stripe landing pages — but adapted for the Arab market.
 
-▸ NAVBAR (GLASSMORPHISM): position:fixed; background:rgba(5,8,22,0.72); backdrop-filter:blur(24px); border-bottom:1px solid rgba(255,255,255,0.08). ALWAYS visible and glassy — even at top of page. On scroll: background:rgba(5,8,22,0.97). Brand name uses white-to-accent gradient text.
+▸ NAVBAR (GLASSMORPHISM): position:fixed; background:rgba(5,8,22,0.72); backdrop-filter:blur(24px); border-bottom:1px solid rgba(255,255,255,0.08). ALWAYS visible and glassy — even at top of page. On scroll: background:rgba(5,8,22,0.97).
+  LOGO RULE — MANDATORY:
+  • Generate a small inline SVG logo as the brand mark in the navbar. Add id="aw-ai-logo" to the SVG element. The SVG should be 36×36px, use the brand's primary/accent colors, and include the first letter(s) or a simple icon that represents the business (e.g., a fork for restaurants, a star for luxury, a house for real estate). The business name in text follows the SVG logo.
+  • Example structure: <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;"><svg id="aw-ai-logo" width="36" height="36" viewBox="0 0 36 36">...</svg><span style="font-weight:800;font-size:1.1rem;background:linear-gradient(90deg,#fff,ACCENT);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">BUSINESS_NAME</span></a>
+  • The SVG MUST be meaningful and unique — NO generic circles. Create something that fits the business type.
+  • CRITICAL: The business name text MUST appear ONLY ONCE in the entire website — in the navbar only. NEVER repeat it in the footer or any other section. Footer uses only the SVG logo (id="aw-ai-logo-footer" — a smaller copy of the same SVG, 28×28px) followed by a tagline, NOT the business name text.
 
 ▸ HERO (FULL VIEWPORT + ANIMATED ORBS): min-height:100vh. Dark gradient overlay on background image. Add 2–3 large blurred orb blobs (CSS radial-gradient circles, 400–700px, filter:blur(80px), position:absolute, animated with @keyframes orbFloat). Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
 
@@ -799,7 +805,12 @@ TECHNICAL GUIDELINES:
 - Use inline SVG Lucide-style icons when adding icons
 - Preserve responsive design (add @media queries for new content)
 - Keep all existing sections unless explicitly asked to remove
-${imageDataUrl ? `- IMAGE ATTACHED: Replace the src of the logo <img> (or hero image if there is no logo) with the exact string __AW_IMG_001__ — the system will automatically replace it with the real image. Example: <img src="__AW_IMG_001__" alt="logo" style="height:48px;object-fit:contain;">` : ""}
+${imageDataUrl ? `- IMAGE ATTACHED — LOGO REPLACEMENT (MANDATORY):
+  1. Find the element with id="aw-ai-logo" (the AI-generated SVG logo in the navbar).
+  2. REPLACE THE ENTIRE SVG ELEMENT (including opening <svg ...> and closing </svg>) with: <img id="aw-ai-logo" src="__AW_IMG_001__" alt="logo" style="height:44px;width:auto;object-fit:contain;display:block;">
+  3. Also find id="aw-ai-logo-footer" and replace with: <img id="aw-ai-logo-footer" src="__AW_IMG_001__" alt="logo" style="height:32px;width:auto;object-fit:contain;display:block;">
+  4. If neither id is found, replace the hero background image src with __AW_IMG_001__ instead.
+  5. __AW_IMG_001__ is a placeholder — the system replaces it with the real image automatically. Never use a data:image URL.` : ""}
 
 PRESERVE CRITICAL ELEMENTS (NEVER REMOVE OR MODIFY):
 - NEVER remove or change the element with id="aw-lang-btn" (language toggle button). It must stay in the navbar exactly as-is.

@@ -597,7 +597,7 @@ export default function EditorPage() {
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => navigate(`/preview/${project.id}`)} data-testid="button-preview" className="hover:border-emerald-400 hover:text-emerald-600">
+                  <Button variant="outline" size="sm" onClick={() => window.open(`/preview/${project.id}`, "_blank")} data-testid="button-preview" className="hover:border-emerald-400 hover:text-emerald-600">
                     <Eye className="w-4 h-4 me-1" />
                     {t("preview", lang)}
                   </Button>
