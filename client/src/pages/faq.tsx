@@ -138,7 +138,7 @@ export default function FAQPage() {
     {
       category: "رصيد الذكاء",
       items: [
-        { q: "ما هو رصيد الذكاء؟", a: "رصيد الذكاء هو نظام جلسات الذكاء الاصطناعي في عربي ويب. كل تفاعل مع الذكاء الاصطناعي (مثل إنشاء موقع، تعديل ذكي، أو توليد محتوى تسويقي) يستهلك جلسة ذكاء واحدة. التعديلات المجانية لكل موقع مدرجة ضمن خطتك، وأي تعديل إضافي يخصم جلسة ذكاء واحدة." },
+        { q: "ما هو رصيد الذكاء؟", a: "رصيد الذكاء هو نظام جلسات الذكاء الاصطناعي في عربي ويب. التكلفة حسب النوع:\n• إنشاء موقع = جلسة ذكاء واحدة\n• تعديل ذكي إضافي = جلسة واحدة\n• توليد محتوى تسويقي = جلسة واحدة\n• توليد صورة بوست (DALL-E) = جلستَان\nالتعديلات المجانية لكل موقع مدرجة ضمن خطتك دون خصم." },
         { q: "ماذا يحدث عند نفاد رصيد الذكاء؟", a: "عند نفاد رصيدك، يمكنك شراء جلسات إضافية أو الانتظار حتى التجديد الشهري أو ترقية خطتك للحصول على جلسات أكثر." },
         { q: "هل تُرحّل الجلسات غير المستخدمة؟", a: "لا، الجلسات غير المستخدمة لا تُرحّل إلى الشهر التالي. يتم تجديد رصيد الذكاء بالكامل في بداية كل دورة فوترة." },
       ],
@@ -194,7 +194,7 @@ export default function FAQPage() {
     {
       category: "AI Credits",
       items: [
-        { q: "How do AI credits work?", a: "Each AI interaction (creating a website, AI editing, or marketing content) consumes one AI session. Free edits per project are included in your plan; extra edits beyond the limit cost 1 AI session each." },
+        { q: "How do AI credits work?", a: "Credit cost by action:\n• Generate website = 1 AI session\n• Extra AI edit = 1 AI session\n• Marketing content = 1 AI session\n• Post image generation (DALL-E) = 2 AI sessions\nFree edits per project are included in your plan at no extra cost." },
         { q: "What happens when I run out of AI credits?", a: "When your AI credits run out, you can purchase extra sessions, wait for the monthly renewal, or upgrade your plan for more sessions." },
         { q: "Do unused AI sessions roll over?", a: "No, unused AI sessions do not roll over to the next month. Your credits are fully renewed at the start of each billing cycle." },
       ],

@@ -286,10 +286,10 @@ export default function BillingPage() {
           </h3>
           <p className="text-xs text-muted-foreground mb-3">
             {lang === "ar"
-              ? "كل تفاعل مع الذكاء الاصطناعي يُستهلك جلسة ذكاء واحدة — سواء إنشاء موقع، تعديل ذكي، أو توليد محتوى تسويقي."
-              : "Every AI interaction consumes one AI session — whether generating a site, AI editing, or creating marketing content."}
+              ? "كل تفاعل مع الذكاء الاصطناعي يستهلك جلسات ذكاء — توليد الصور يستهلك جلستَين لاستخدامه نموذج أقوى."
+              : "Each AI interaction consumes AI sessions — image generation costs 2 sessions as it uses a more powerful model."}
           </p>
-          <div className="grid sm:grid-cols-3 gap-3 text-xs text-muted-foreground">
+          <div className="grid sm:grid-cols-4 gap-3 text-xs text-muted-foreground">
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "إنشاء موقع" : "Generate website"}</p>
               <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
@@ -299,8 +299,12 @@ export default function BillingPage() {
               <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
             </div>
             <div>
-              <p className="font-medium text-foreground">{lang === "ar" ? "تسويق بالذكاء الاصطناعي" : "AI marketing"}</p>
+              <p className="font-medium text-foreground">{lang === "ar" ? "محتوى تسويقي" : "Marketing content"}</p>
               <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
+            </div>
+            <div className="relative">
+              <p className="font-medium text-foreground">{lang === "ar" ? "توليد صورة بوست" : "Post image (DALL-E)"}</p>
+              <p className="text-violet-600 dark:text-violet-400 font-semibold">{lang === "ar" ? "2 جلسة ذكاء" : "2 AI sessions"}</p>
             </div>
           </div>
         </div>

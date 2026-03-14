@@ -1264,7 +1264,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const result = await generateSocialPostImage(topic, platform, language || "ar", postContent);
 
       if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        await db.update(users).set({ credits: sql`GREATEST(credits - 2, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
       }
 
       res.json(result);

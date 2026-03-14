@@ -171,7 +171,7 @@ export default function AIMarketingPage() {
       qc.invalidateQueries({ queryKey: ["/api/credits"] });
       qc.invalidateQueries({ queryKey: ["/api/subscription"] });
       qc.invalidateQueries({ queryKey: ["/api/me"] });
-      toast({ title: lang === "ar" ? "تم توليد الصورة!" : "Image generated!", description: lang === "ar" ? "تم خصم جلسة ذكاء واحدة." : "1 AI session deducted." });
+      toast({ title: lang === "ar" ? "تم توليد الصورة!" : "Image generated!", description: lang === "ar" ? "تم خصم جلستَي ذكاء (توليد الصور = 2 جلسات)." : "2 AI sessions deducted (image generation = 2 sessions)." });
     },
     onError: (err: any) => {
       toast({
@@ -466,8 +466,8 @@ export default function AIMarketingPage() {
                 )}
                 <p className="text-xs text-muted-foreground mt-2">
                   {lang === "ar"
-                    ? "• كل توليد محتوى تسويقي يخصم جلسة ذكاء واحدة من رصيدك المشترك مع منشئ المواقع"
-                    : "• Each marketing content generation costs 1 AI session, shared with the website builder"}
+                    ? "• توليد محتوى نصي = جلسة ذكاء واحدة · توليد صورة البوست = جلستَان"
+                    : "• Text content = 1 AI session · Post image generation = 2 AI sessions"}
                 </p>
               </Card>
             )}
@@ -584,7 +584,7 @@ export default function AIMarketingPage() {
                         ) : postImageUrl ? (
                           <><RefreshCw className="w-3 h-3" />{lang === "ar" ? "توليد جديد" : "Regenerate"}</>
                         ) : (
-                          <><Sparkles className="w-3 h-3 text-violet-600" />{lang === "ar" ? "توليد صورة" : "Generate Image"}<span className="text-[10px] opacity-60 flex items-center gap-0.5">(<BrainCircuit className="w-2.5 h-2.5" />1)</span></>
+                          <><Sparkles className="w-3 h-3 text-violet-600" />{lang === "ar" ? "توليد صورة" : "Generate Image"}<span className="text-[10px] opacity-60 flex items-center gap-0.5">(<BrainCircuit className="w-2.5 h-2.5" />2)</span></>
                         )}
                       </Button>
                     </div>
