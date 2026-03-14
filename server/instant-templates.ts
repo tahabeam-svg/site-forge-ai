@@ -40,6 +40,7 @@ export interface BilingualBusinessContent {
   email: string;
   primary_color: string;
   accent_color: string;
+  testimonials?: { name: string; role_ar: string; role_en: string; text_ar: string; text_en: string }[];
 }
 
 const BUSINESS_CONFIGS: Record<string, {
@@ -821,7 +822,10 @@ export function buildInstantWebsite(
       <div class="gallery-overlay"></div>
     </div>`).join("");
 
-  const testimonialsHtml = config.testimonials.map((t, i) => `
+  const activeTestimonials = (content.testimonials && content.testimonials.length >= 3)
+    ? content.testimonials
+    : config.testimonials;
+  const testimonialsHtml = activeTestimonials.map((t, i) => `
     <div class="testi-card" data-aos style="animation-delay:${i * 0.12}s">
       <div class="testi-top-row">
         <div class="testi-avatar">${t.name.charAt(0)}</div>
@@ -1087,36 +1091,81 @@ export function buildInstantWebsite(
 
 <!-- ===== FOOTER ===== -->
 <footer class="aw-footer">
-  <div class="aw-container footer-wrap">
-    <div class="footer-brand-col">
-      <span class="footer-logo" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</span>
-      <p class="footer-tagline" ${dDyn(ar.hero_subtitle.slice(0, 80), en.hero_subtitle.slice(0, 80), e3?.content.hero_subtitle?.slice(0, 80))}>${ar.hero_subtitle.slice(0, 80)}</p>
-    </div>
-    <div class="footer-links-col">
-      <div class="fl-heading" ${dUI("روابط سريعة", "Quick Links", "quick_links")}>روابط سريعة</div>
-      <a href="#about" ${dUI("من نحن", "About", "nav_about")}>من نحن</a>
-      <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>خدماتنا</a>
-      <a href="#gallery" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>أعمالنا</a>
-      <a href="#contact" ${dUI("تواصل معنا", "Contact", "nav_contact")}>تواصل معنا</a>
-    </div>
-    <div class="footer-contact-col">
-      <div class="fl-heading" ${dUI("تواصل معنا", "Get In Touch", "get_in_touch")}>تواصل معنا</div>
-      ${content.phone ? `<a href="tel:${content.phone}" dir="ltr">${content.phone}</a>` : ""}
-      ${content.email ? `<a href="mailto:${content.email}" dir="ltr">${content.email}</a>` : ""}
-      ${ar.address ? `<span ${dDyn(ar.address, en.address, e3?.content.address)}>${ar.address}</span>` : ""}
+
+  <!-- CTA Strip -->
+  <div class="footer-cta-strip">
+    <div class="footer-cta-strip-bg"></div>
+    <div class="aw-container footer-cta-inner">
+      <div class="fcta-text">
+        <h3 class="fcta-title" ${dUI("هل أنت مستعد للبدء؟", "Ready to Get Started?", "ready_title")}>${MULTILANG_UI[primaryLang]?.ready_title || "هل أنت مستعد للبدء؟"}</h3>
+        <p class="fcta-sub" ${dUI("تواصل معنا اليوم وابدأ رحلة نجاحك", "Contact us today and start your success journey", "ready_sub")}>${MULTILANG_UI[primaryLang]?.ready_sub || "تواصل معنا اليوم وابدأ رحلة نجاحك"}</p>
+      </div>
+      <a href="#contact" class="fcta-btn" ${dDyn(ar.cta_text, en.cta_text, e3?.content.cta_text)}>${initContent.cta_text}</a>
     </div>
   </div>
+
+  <!-- Main Columns -->
+  <div class="footer-main">
+    <div class="aw-container footer-wrap">
+
+      <div class="footer-brand-col">
+        <span class="footer-logo" ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</span>
+        <p class="footer-tagline" ${dDyn(ar.hero_subtitle.slice(0, 90), en.hero_subtitle.slice(0, 90), e3?.content.hero_subtitle?.slice(0, 90))}>${ar.hero_subtitle.slice(0, 90)}</p>
+        <div class="footer-socials">
+          ${content.phone ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="noreferrer noopener" aria-label="WhatsApp" class="social-icon si-wa">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+          </a>` : ""}
+          <a href="#" aria-label="Instagram" class="social-icon si-ig">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+          </a>
+          <a href="#" aria-label="X / Twitter" class="social-icon si-x">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="#" aria-label="TikTok" class="social-icon si-tt">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.75a8.28 8.28 0 0 0 4.83 1.54V6.84a4.84 4.84 0 0 1-1.06-.15z"/></svg>
+          </a>
+          <a href="#" aria-label="LinkedIn" class="social-icon si-li">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-links-col">
+        <div class="fl-heading" ${dUI("روابط سريعة", "Quick Links", "quick_links")}>${MULTILANG_UI[primaryLang]?.quick_links || "روابط سريعة"}</div>
+        <a href="#about" ${dUI("من نحن", "About", "nav_about")}>${MULTILANG_UI[primaryLang]?.nav_about || "من نحن"}</a>
+        <a href="#services" ${dUI("خدماتنا", "Services", "nav_services")}>${MULTILANG_UI[primaryLang]?.nav_services || "خدماتنا"}</a>
+        <a href="#gallery" ${dUI("أعمالنا", "Gallery", "nav_gallery")}>${MULTILANG_UI[primaryLang]?.nav_gallery || "أعمالنا"}</a>
+        <a href="#testimonials" ${dUI("آراء العملاء", "Reviews", "nav_reviews")}>${MULTILANG_UI[primaryLang]?.nav_reviews || "آراء العملاء"}</a>
+        <a href="#contact" ${dUI("تواصل معنا", "Contact", "nav_contact")}>${MULTILANG_UI[primaryLang]?.nav_contact || "تواصل"}</a>
+      </div>
+
+      <div class="footer-contact-col">
+        <div class="fl-heading" ${dUI("معلومات التواصل", "Get In Touch", "get_in_touch")}>${MULTILANG_UI[primaryLang]?.get_in_touch || "معلومات التواصل"}</div>
+        ${content.phone ? `<div class="fc-row">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.19 18.9a19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.07 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l.72-.72a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <a href="tel:${content.phone}" dir="ltr">${content.phone}</a>
+        </div>` : ""}
+        ${content.email ? `<div class="fc-row">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <a href="mailto:${content.email}" dir="ltr">${content.email}</a>
+        </div>` : ""}
+        ${ar.address ? `<div class="fc-row">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span ${dDyn(ar.address, en.address, e3?.content.address)}>${ar.address}</span>
+        </div>` : ""}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer Bottom -->
   <div class="footer-bottom">
     <div class="aw-container footer-bottom-inner">
-      <p>© 2026 <span ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</span>. <span ${dUI("جميع الحقوق محفوظة.", "All Rights Reserved.", "rights")}>جميع الحقوق محفوظة.</span></p>
-      <div class="footer-socials">
-        ${content.phone ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="noreferrer noopener" aria-label="WhatsApp" class="social-icon"><i class="fa-brands fa-whatsapp"></i></a>` : ""}
-        <a href="#" aria-label="Instagram" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#" aria-label="Twitter/X" class="social-icon"><i class="fa-brands fa-x-twitter"></i></a>
-        <a href="#" aria-label="LinkedIn" class="social-icon"><i class="fa-brands fa-linkedin-in"></i></a>
-      </div>
+      <p>© ${new Date().getFullYear()} <span ${dDyn(content.business_name_ar, content.business_name_en, e3?.businessName)}>${content.business_name_ar}</span>. <span ${dUI("جميع الحقوق محفوظة.", "All Rights Reserved.", "rights")}>${MULTILANG_UI[primaryLang]?.rights || "جميع الحقوق محفوظة."}</span></p>
+      <p class="footer-powered">Powered by <a href="https://arabyweb.net" target="_blank" style="color:${accent};text-decoration:none;font-weight:700;">ArabyWeb</a></p>
     </div>
   </div>
+
 </footer>
 
 <!-- WhatsApp Float -->
@@ -1408,21 +1457,46 @@ input,textarea,select,button{font:inherit;}
 .form-submit:active{transform:translateY(1px);}
 
 /* ═══ FOOTER ═══ */
-.aw-footer{background:linear-gradient(160deg,${dark} 0%,#060c18 100%);padding:5rem 0 0;position:relative;overflow:hidden;}
-.aw-footer::before{content:'';position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,${primary}12 0%,transparent 65%);top:-300px;${dir==="rtl"?"left:-200px":"right:-200px"};pointer-events:none;}
-.footer-wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:4rem;padding-bottom:4rem;border-bottom:1px solid rgba(255,255,255,0.07);}
-.footer-logo{font-family:${fontHeading};font-size:1.5rem;font-weight:900;background:linear-gradient(135deg,#fff 20%,${accent} 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.02em;}
-.footer-tagline{color:rgba(255,255,255,0.35);font-size:0.9rem;line-height:1.75;margin-top:0.75rem;max-width:280px;}
-.fl-heading{font-size:0.77rem;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;color:${accent};margin-bottom:1.25rem;}
-.footer-links-col,.footer-contact-col{display:flex;flex-direction:column;gap:0.75rem;}
-.footer-links-col a,.footer-contact-col a,.footer-contact-col span{color:rgba(255,255,255,0.38);font-size:0.9rem;transition:color 0.2s;}
-.footer-links-col a:hover,.footer-contact-col a:hover{color:#fff;}
-.footer-bottom{padding:1.5rem 0;border-top:1px solid rgba(255,255,255,0.06);}
-.footer-bottom-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
-.footer-bottom p{color:rgba(255,255,255,0.2);font-size:0.85rem;}
-.footer-socials{display:flex;align-items:center;gap:0.75rem;}
-.social-icon{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.42);display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:all 0.25s;}
-.social-icon:hover{background:linear-gradient(135deg,${primary},${accent});border-color:transparent;color:#fff;transform:translateY(-3px);}
+.aw-footer{background:linear-gradient(175deg,${dark} 0%,#050c1a 100%);position:relative;overflow:hidden;}
+.aw-footer::after{content:'';position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,${primary}0d 0%,transparent 65%);bottom:-400px;${dir==="rtl"?"left:-200px":"right:-200px"};pointer-events:none;}
+
+/* --- Footer CTA Strip --- */
+.footer-cta-strip{position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,0.06);}
+.footer-cta-strip-bg{position:absolute;inset:0;background:linear-gradient(135deg,${primary}22 0%,${accent}18 100%);pointer-events:none;}
+.footer-cta-inner{display:flex;align-items:center;justify-content:space-between;gap:2rem;padding:3.5rem 0;flex-wrap:wrap;position:relative;z-index:1;}
+.fcta-text{flex:1;min-width:200px;}
+.fcta-title{font-family:${fontHeading};font-size:1.65rem;font-weight:900;color:#fff;letter-spacing:-0.02em;margin-bottom:0.4rem;}
+.fcta-sub{color:rgba(255,255,255,0.55);font-size:0.95rem;}
+.fcta-btn{display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,${primary},${accent});color:#fff;padding:0.9rem 2.25rem;border-radius:12px;font-weight:700;font-size:1rem;white-space:nowrap;box-shadow:0 8px 24px ${primary}45,inset 0 1px 0 rgba(255,255,255,0.15);transition:transform 0.25s,box-shadow 0.25s;flex-shrink:0;}
+.fcta-btn:hover{transform:translateY(-2px);box-shadow:0 16px 36px ${primary}60,inset 0 1px 0 rgba(255,255,255,0.15);}
+
+/* --- Footer Main --- */
+.footer-main{padding:4rem 0 3rem;}
+.footer-wrap{display:grid;grid-template-columns:2fr 1fr 1fr;gap:4rem;}
+.footer-logo{font-family:${fontHeading};font-size:1.65rem;font-weight:900;background:linear-gradient(135deg,#fff 20%,${accent} 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.02em;display:block;margin-bottom:0.9rem;}
+.footer-tagline{color:rgba(255,255,255,0.38);font-size:0.9rem;line-height:1.8;max-width:270px;margin-bottom:1.75rem;}
+.footer-socials{display:flex;align-items:center;gap:0.65rem;flex-wrap:wrap;}
+.social-icon{width:40px;height:40px;border-radius:0.65rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.09);color:rgba(255,255,255,0.45);display:flex;align-items:center;justify-content:center;transition:all 0.28s;}
+.social-icon:hover{border-color:transparent;color:#fff;transform:translateY(-3px);}
+.si-wa:hover{background:#25D366;box-shadow:0 8px 20px rgba(37,211,102,0.35);}
+.si-ig:hover{background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);box-shadow:0 8px 20px rgba(220,39,67,0.35);}
+.si-x:hover{background:#000;box-shadow:0 8px 20px rgba(0,0,0,0.4);}
+.si-tt:hover{background:#000;box-shadow:0 8px 20px rgba(0,0,0,0.4);}
+.si-li:hover{background:#0077b5;box-shadow:0 8px 20px rgba(0,119,181,0.35);}
+.fl-heading{font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:${accent};margin-bottom:1.5rem;}
+.footer-links-col,.footer-contact-col{display:flex;flex-direction:column;gap:0.85rem;}
+.footer-links-col a{color:rgba(255,255,255,0.4);font-size:0.9rem;transition:color 0.2s,padding-inline-start 0.2s;display:inline-flex;align-items:center;}
+.footer-links-col a:hover{color:#fff;padding-inline-start:0.35rem;}
+.fc-row{display:flex;align-items:center;gap:0.7rem;color:rgba(255,255,255,0.4);font-size:0.9rem;}
+.fc-row svg{flex-shrink:0;opacity:0.55;}
+.fc-row a,.fc-row span{color:rgba(255,255,255,0.4);transition:color 0.2s;}
+.fc-row a:hover{color:rgba(255,255,255,0.9);}
+
+/* --- Footer Bottom --- */
+.footer-bottom{border-top:1px solid rgba(255,255,255,0.06);padding:1.5rem 0;}
+.footer-bottom-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;}
+.footer-bottom p,.footer-powered{color:rgba(255,255,255,0.2);font-size:0.82rem;}
+.footer-powered{color:rgba(255,255,255,0.18)!important;font-size:0.78rem!important;}
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1024px){
@@ -1458,6 +1532,10 @@ input,textarea,select,button{font:inherit;}
   .contact-form-card{padding:2rem;}
   .form-row-2{grid-template-columns:1fr;}
   .footer-wrap{grid-template-columns:1fr;gap:2rem;}
+  .footer-cta-inner{flex-direction:column;gap:1.5rem;}
+  .fcta-title{font-size:1.35rem;}
+  .fcta-btn{width:100%;justify-content:center;}
+  .footer-main{padding:3rem 0 2rem;}
   .aw-section{padding:4.5rem 0;}
   .contact-section{padding:4rem 0!important;}
 }
@@ -1469,6 +1547,7 @@ input,textarea,select,button{font:inherit;}
   .sec-title{font-size:1.75rem;}
   .contact-info-panel{padding:2rem 1.5rem;}
   .contact-form-card{padding:1.75rem 1.5rem;}
+  .fcta-title{font-size:1.2rem;}
 }
 `;
 

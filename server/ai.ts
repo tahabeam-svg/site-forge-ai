@@ -1344,30 +1344,56 @@ export async function generateInstantWebsite(
     ...(extraLangName ? [extraLangName] : [])
   ].join(", ");
 
-  const systemPrompt = `You are an expert multilingual website content generator specializing in Saudi/Arab businesses. Generate professional, conversion-optimized website copy in ${langsList} from a user prompt.
+  const systemPrompt = `You are an elite website content strategist and copywriter specializing in the Saudi/Arab market. You produce conversion-optimized, psychologically compelling, 100% authentic website content — never generic filler, never clichés. Think like a top agency copywriter who deeply researches each business before writing a single word.
 
-CRITICAL RULES:
-1. The prompt often starts with "نوع النشاط: X" (activity type) — this is the MOST IMPORTANT signal for business_type selection. Always map it:
-   - مطعم وكافيه → "restaurant"
-   - عيادة وصحة → "medical"
-   - تجميل وعناية → "beauty"
-   - تعليم وتدريب → "education"
-   - عقارات → "realestate"
-   - تقنية ومتاجر → "tech" or "ecommerce" (pick based on the business description)
-   - تصميم وإبداع → "agency"
-   - فعاليات → "events"
-   - خدمات وأعمال → infer from the business name/description: نظافة/تنظيف="cleaning", كهرباء/صيانة="general", نقل/شحن="logistics", مقاولات/بناء="agency", otherwise "general"
-   - محاماة واستشارات → "legal" or "consulting"
-   - موقع شخصي → "portfolio"
-   - رومانسي / هدية → "general"
-   - Activity type: Restaurant → "restaurant", Medical → "medical", Beauty → "beauty", Education → "education", etc.
-   - Anything else → use closest match or "general"
-2. The business NAME ("الاسم: X") is JUST the brand name — NEVER use it to determine business type. "نغم" could be cleaning, "نور" could be a clinic, etc.
-3. Generate content that is 100% relevant to the actual business described — no generic filler
-4. ALL 6 services must be real services that this business type actually offers
-5. Hero title must be powerful, benefit-driven, and specific to the industry
-6. For buttons in color_palette: use modern premium button style — border-radius:12px, proper box-shadow with depth (NOT pill-shaped 50px radius), no rainbow/multicolor gradients
-7. Return ONLY valid JSON, no markdown, no explanation`;
+═══════════════════════════════════════
+BUSINESS TYPE MAPPING (MANDATORY)
+═══════════════════════════════════════
+The prompt starts with "نوع النشاط: X" — this is the PRIMARY signal for business_type:
+  مطعم وكافيه         → "restaurant"
+  عيادة وصحة          → "medical"
+  تجميل وعناية        → "beauty"
+  تعليم وتدريب        → "education"
+  عقارات              → "realestate"
+  تقنية ومتاجر        → detect from desc: software/apps="tech", online store="ecommerce"
+  تصميم وإبداع        → "agency"
+  فعاليات             → "events"
+  خدمات وأعمال        → detect: نظافة/تنظيف="cleaning", نقل/شحن="logistics", بناء/مقاولات="agency", كهرباء/صيانة="general"
+  محاماة واستشارات    → "legal" or "consulting"
+  موقع شخصي          → "portfolio"
+  رومانسي / هدية      → "general"
+
+NEVER use the business NAME to determine its type. "نور" could be a clinic, restaurant, or tech company.
+
+═══════════════════════════════════════
+QUALITY STANDARDS — NON-NEGOTIABLE
+═══════════════════════════════════════
+1. HERO TITLES must be VALUE PROPOSITIONS — what the customer GETS, not what you do:
+   ✓ "أسنانك أبيض خلال 45 دقيقة فقط"  ✓ "وجبات أصيلة تُذكّرك بمطبخ جدتك"
+   ✗ "عيادة أسنان متخصصة"              ✗ "مطعم متميز للعائلة"
+
+2. ABOUT TEXT must tell a compelling STORY: why this business was founded, what problem it solves, what makes it different from competitors, why customers choose them specifically.
+
+3. ALL 6 SERVICES must be hyper-specific to what this EXACT business offers — no generic "خدمة عملاء" or "جودة عالية". Real service names with real descriptions.
+
+4. TESTIMONIALS must sound AUTHENTICALLY HUMAN:
+   - Use realistic Saudi/Arab names (محمد القحطاني، نورة الشمري، عبدالله العتيبي، رنا المطيري...)
+   - Include SPECIFIC details that make it feel real (timeframe, result, specific service used)
+   - Natural speech, not marketing-speak
+   - 3 testimonials covering different customer segments
+
+5. COLORS must match the brand personality AND industry expectations:
+   - Restaurant: warm oranges/reds, appetite-stimulating
+   - Medical: trust blues, clean whites
+   - Beauty: soft pinks/purples, feminine luxury  
+   - Tech: modern blues/purples, professional
+   - Legal: navy/gold, authority and trust
+   - Education: optimistic greens/blues
+   - Real estate: premium grays/golds
+
+6. Generate content in ${langsList} — every field must be authentic translation, not just word-for-word literal copy.
+
+7. Return ONLY valid JSON. No markdown, no explanation, no commentary.`;
 
 
   const extraLangBlock = extraLangCode && extraLangName ? `
@@ -1392,70 +1418,92 @@ CRITICAL RULES:
     "seo_description": "${extraLangName} meta description 150-155 chars"
   },` : "";
 
-  const userPrompt = `User prompt: "${prompt}"
+  const userPrompt = `Business request: "${prompt}"
 
-Generate complete multilingual website content. Return this EXACT JSON structure:
+Generate complete, professional, conversion-optimized website content. Return this EXACT JSON:
 {
-  "business_name_ar": "brand name in Arabic",
+  "business_name_ar": "brand name in Arabic (keep original if given)",
   "business_name_en": "brand name in English",${extraLangBlock}
-  "business_type": "one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym, ecommerce, tech, consulting, logistics, cleaning, photography, finance, hotel, charity, freelance",
+  "business_type": "EXACT match from: restaurant|agency|startup|portfolio|medical|general|legal|beauty|realestate|education|events|automotive|luxury|gym|ecommerce|tech|consulting|logistics|cleaning|photography|finance|hotel|charity|freelance",
   "ar": {
-    "hero_title": "compelling Arabic headline, max 8 words",
-    "hero_subtitle": "engaging Arabic subtitle, 1-2 sentences",
-    "about_title": "Arabic about section heading",
-    "about_text": "2-3 Arabic sentences about the business",
+    "hero_title": "POWERFUL value-proposition headline in Arabic, max 8 words — what the customer GETS",
+    "hero_subtitle": "1-2 compelling Arabic sentences that build desire and trust",
+    "about_title": "Creative Arabic section heading (NOT just 'من نحن')",
+    "about_text": "3 Arabic sentences: (1) founding story/mission, (2) what makes this business unique, (3) promise to the customer",
     "services": [
-      {"title": "Arabic service name", "desc": "Arabic short description"},
-      {"title": "Arabic service name", "desc": "Arabic short description"},
-      {"title": "Arabic service name", "desc": "Arabic short description"},
-      {"title": "Arabic service name", "desc": "Arabic short description"},
-      {"title": "Arabic service name", "desc": "Arabic short description"},
-      {"title": "Arabic service name", "desc": "Arabic short description"}
+      {"title": "Specific service name", "desc": "Specific 1-sentence description mentioning a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description mentioning a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description mentioning a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description mentioning a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description mentioning a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description mentioning a real benefit"}
     ],
-    "cta_text": "Arabic CTA button text, 2-4 words",
-    "contact_description": "1-2 Arabic sentences inviting contact",
+    "cta_text": "Action-oriented Arabic CTA, 2-4 words",
+    "contact_description": "1-2 warm Arabic sentences inviting customers to reach out",
     "address": "المملكة العربية السعودية",
-    "seo_title": "Arabic SEO title max 60 chars",
-    "seo_description": "Arabic meta description 150-155 chars"
+    "seo_title": "Arabic SEO title with business name + main keyword, max 60 chars",
+    "seo_description": "Arabic meta description with main value prop + CTA, 150-155 chars"
   },
   ${needsEnglish ? `"en": {
-    "hero_title": "compelling English headline, max 8 words",
-    "hero_subtitle": "engaging English subtitle, 1-2 sentences",
-    "about_title": "English about section heading",
-    "about_text": "2-3 English sentences about the business",
+    "hero_title": "POWERFUL English value-proposition headline, max 8 words",
+    "hero_subtitle": "1-2 compelling English sentences that build desire and trust",
+    "about_title": "Creative English section heading",
+    "about_text": "3 English sentences: founding story, uniqueness, promise to customer",
     "services": [
-      {"title": "English service name", "desc": "English short description"},
-      {"title": "English service name", "desc": "English short description"},
-      {"title": "English service name", "desc": "English short description"},
-      {"title": "English service name", "desc": "English short description"},
-      {"title": "English service name", "desc": "English short description"},
-      {"title": "English service name", "desc": "English short description"}
+      {"title": "Specific service name", "desc": "Specific 1-sentence description with a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description with a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description with a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description with a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description with a real benefit"},
+      {"title": "Specific service name", "desc": "Specific 1-sentence description with a real benefit"}
     ],
-    "cta_text": "English CTA button text, 2-4 words",
-    "contact_description": "1-2 English sentences inviting contact",
+    "cta_text": "Action-oriented English CTA, 2-4 words",
+    "contact_description": "1-2 warm English sentences inviting customers to reach out",
     "address": "Saudi Arabia",
-    "seo_title": "English SEO title max 60 chars",
-    "seo_description": "English meta description 150-155 chars"
+    "seo_title": "English SEO title with business name + main keyword, max 60 chars",
+    "seo_description": "English meta description with main value prop + CTA, 150-155 chars"
   },` : ""}
-  "phone": "+966 5X XXX XXXX",
+  "testimonials": [
+    {
+      "name": "Realistic Saudi/Arab full name (e.g. محمد القحطاني)",
+      "role_ar": "their job or description in Arabic (e.g. ربة منزل، رجل أعمال)",
+      "role_en": "their role in English",
+      "text_ar": "2-3 sentences in natural Arabic — specific details about their experience, result they got, why they recommend this business",
+      "text_en": "2-3 sentences natural English translation"
+    },
+    {
+      "name": "Different realistic Arabic name",
+      "role_ar": "different customer segment role",
+      "role_en": "role in English",
+      "text_ar": "Different specific testimonial with a different angle/benefit",
+      "text_en": "Natural English version"
+    },
+    {
+      "name": "Third realistic Arabic name",
+      "role_ar": "another customer type",
+      "role_en": "role in English",
+      "text_ar": "Third unique testimonial covering yet another benefit/feature",
+      "text_en": "Natural English version"
+    }
+  ],
+  "phone": "+966 5X XXX XXXX (realistic Saudi format)",
   "email": "info@${emailSlug}.sa",
-  "primary_color": "#hexcolor that fits the business type",
-  "accent_color": "#hexcolor complementary accent"
+  "primary_color": "#hexcolor — must fit the industry's visual language",
+  "accent_color": "#hexcolor — complementary, creates visual harmony"
 }
 
-Rules:
-- business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym, ecommerce, tech, consulting, logistics, cleaning, photography, finance, hotel, charity, freelance
-- Mapping guide — pick the CLOSEST match: legal=law/attorneys, beauty=salons/spas/cosmetics, realestate=property/real estate, education=schools/academies/courses, events=event planning/weddings/conferences, automotive=cars/garages/auto services, luxury=perfume/jewelry/premium goods, gym=fitness/sports centers, ecommerce=online stores/retail, tech=software/IT/programming/apps, consulting=business advisory/management consulting, logistics=shipping/freight/delivery/supply chain, cleaning=cleaning services/facility management, photography=photographers/videographers/studios, finance=banks/accounting/investment/insurance, hotel=hotels/resorts/hospitality/accommodation, charity=NGOs/charities/foundations/social orgs, freelance=freelancers/independent contractors/solopreneurs
-- If the business doesn't fit any specific category, use 'general' — but always try to find the closest match first
-- IMPORTANT: generate content that is 100% specific to the ACTUAL business described, not generic placeholder text
-- Colors must match the business personality (warm for restaurant, professional for agency, etc.)
-- ALL services must be specific to this exact business type, not generic
-- hero_title must be exciting and benefit-driven${extraLangCode ? `\n- Include the "${extraLangCode}" section with authentic, natural ${extraLangName} translations` : ""}`;
+VALIDATION RULES — verify before returning:
+✓ business_type is exactly one of the allowed values
+✓ hero_title is benefit/outcome focused, NOT just a business description
+✓ All 6 services are SPECIFIC to this exact business — zero generic items
+✓ All 3 testimonials have different names, different customer roles, different specific details
+✓ Colors match industry expectations (restaurant=warm, medical=blue, beauty=pink/purple, etc.)
+✓ about_text tells a story, not just "we provide excellent services"${extraLangCode ? `\n✓ Include authentic "${extraLangCode}" section with natural ${extraLangName} content` : ""}`;
 
   const model = process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-5.2" : "gpt-4.1-mini";
   console.log("Instant generation using model:", model, "| languages:", languages.join(","));
 
-  const tokenLimit = extraLangCode ? 3200 : 2000;
+  const tokenLimit = extraLangCode ? 4500 : 3000;
   const response = await openai.chat.completions.create({
     model,
     messages: [
