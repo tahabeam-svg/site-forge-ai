@@ -474,7 +474,7 @@ export default function AIMarketingPage() {
           </div>
 
           <div>
-            {result ? (
+            {result && (
               <Card className="p-5 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-semibold flex items-center gap-2">
