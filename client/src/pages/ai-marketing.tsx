@@ -564,62 +564,6 @@ export default function AIMarketingPage() {
                     <span className="font-medium text-foreground">{result.bestTimeToPost}</span>
                   </div>
 
-                  {/* Generate Post Image section */}
-                  <div className="border-t border-border pt-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium flex items-center gap-1.5">
-                        <ImageIcon className="w-3.5 h-3.5 text-violet-600" />
-                        {lang === "ar" ? "صورة البوست (مربعة 1:1)" : "Post Image (Square 1:1)"}
-                      </label>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => imageMutation.mutate()}
-                        disabled={imageMutation.isPending || noCredits}
-                        className="text-xs h-7 gap-1"
-                        data-testid="button-generate-post-image"
-                      >
-                        {imageMutation.isPending ? (
-                          <><Loader2 className="w-3 h-3 animate-spin" />{lang === "ar" ? "جاري..." : "Generating..."}</>
-                        ) : postImageUrl ? (
-                          <><RefreshCw className="w-3 h-3" />{lang === "ar" ? "توليد جديد" : "Regenerate"}</>
-                        ) : (
-                          <><Sparkles className="w-3 h-3 text-violet-600" />{lang === "ar" ? "توليد صورة" : "Generate Image"}<span className="text-[10px] opacity-60 flex items-center gap-0.5">(<BrainCircuit className="w-2.5 h-2.5" />2)</span></>
-                        )}
-                      </Button>
-                    </div>
-                    {postImageUrl ? (
-                      <div className="relative group rounded-xl overflow-hidden border border-border">
-                        <img
-                          src={postImageUrl}
-                          alt="Generated post image"
-                          className="w-full aspect-square object-cover"
-                          data-testid="img-generated-post"
-                        />
-                        <a
-                          href={postImageUrl}
-                          download="post-image.png"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="absolute bottom-3 end-3 flex items-center gap-1.5 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                          data-testid="button-download-post-image"
-                        >
-                          <Download className="w-3 h-3" />
-                          {lang === "ar" ? "تنزيل" : "Download"}
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="w-full aspect-square rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                        <ImageIcon className="w-10 h-10 opacity-20" />
-                        <p className="text-xs text-center px-4">
-                          {lang === "ar"
-                            ? "اضغط على «توليد صورة» لإنشاء صورة مربعة مناسبة للبوست"
-                            : "Click «Generate Image» to create a square image for your post"}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
                   {/* WhatsApp share button */}
                   <a
                     href={`https://wa.me/?text=${encodeURIComponent(
@@ -651,6 +595,85 @@ export default function AIMarketingPage() {
                     ? "اختر المنصة، حدد النبرة، واكتب موضوعك — الذكاء الاصطناعي سيتولى الباقي"
                     : "Choose a platform, select a tone, and write your topic — AI will do the rest"}
                 </p>
+              </Card>
+            )}
+
+            {/* ─── Standalone Image Generation Card (always visible) ─── */}
+            {!needsUpgrade && (
+              <Card className="p-5 space-y-4 mt-4" data-testid="card-image-generation">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-violet-600" />
+                    {lang === "ar" ? "توليد صورة البوست" : "Post Image Generator"}
+                  </h3>
+                  <Badge variant="outline" className="text-violet-600 border-violet-300 text-xs">
+                    DALL-E 3 · {lang === "ar" ? "2 جلسات" : "2 sessions"}
+                  </Badge>
+                </div>
+
+                <p className="text-xs text-muted-foreground">
+                  {lang === "ar"
+                    ? "أنشئ صورة مربعة احترافية مناسبة للنشر على منصات التواصل الاجتماعي. يمكنك توليدها قبل أو بعد توليد المحتوى النصي."
+                    : "Generate a professional square image for social media posts. You can generate it before or after creating text content."}
+                </p>
+
+                <Button
+                  className="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white"
+                  onClick={() => {
+                    if (!topic.trim()) {
+                      toast({
+                        title: lang === "ar" ? "أدخل موضوع المحتوى أولاً" : "Enter a topic first",
+                        description: lang === "ar" ? "اكتب موضوع المحتوى في الحقل على اليسار ثم اضغط توليد الصورة." : "Write a topic in the field on the left, then click Generate Image.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    imageMutation.mutate();
+                  }}
+                  disabled={imageMutation.isPending || noCredits}
+                  data-testid="button-generate-post-image"
+                >
+                  {imageMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 me-2 animate-spin" />{lang === "ar" ? "جاري التوليد..." : "Generating..."}</>
+                  ) : postImageUrl ? (
+                    <><RefreshCw className="w-4 h-4 me-2" />{lang === "ar" ? "توليد صورة جديدة" : "Regenerate Image"}</>
+                  ) : (
+                    <><Sparkles className="w-4 h-4 me-2" />{lang === "ar" ? "توليد صورة البوست" : "Generate Post Image"}</>
+                  )}
+                </Button>
+
+                {postImageUrl ? (
+                  <div className="relative group rounded-xl overflow-hidden border border-border">
+                    <img
+                      src={postImageUrl}
+                      alt="Generated post image"
+                      className="w-full aspect-square object-cover"
+                      data-testid="img-generated-post"
+                    />
+                    <a
+                      href={postImageUrl}
+                      download="post-image.png"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute bottom-3 end-3 flex items-center gap-1.5 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      data-testid="button-download-post-image"
+                    >
+                      <Download className="w-3 h-3" />
+                      {lang === "ar" ? "تنزيل الصورة" : "Download Image"}
+                    </a>
+                  </div>
+                ) : (
+                  <div className="w-full aspect-square rounded-xl border-2 border-dashed border-violet-200 dark:border-violet-800 bg-violet-50/30 dark:bg-violet-950/10 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center opacity-20">
+                      <ImageIcon className="w-7 h-7 text-white" />
+                    </div>
+                    <p className="text-xs text-center px-6 leading-relaxed">
+                      {lang === "ar"
+                        ? "أدخل موضوع المحتوى أعلاه ثم اضغط «توليد صورة البوست» لإنشاء صورة مربعة احترافية"
+                        : "Enter a content topic above, then click «Generate Post Image» to create a professional square image"}
+                    </p>
+                  </div>
+                )}
               </Card>
             )}
           </div>

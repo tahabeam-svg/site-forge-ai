@@ -637,7 +637,7 @@ export default function EditorPage() {
                 {lang === "ar" ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="bottom">{lang === "ar" ? "العودة إلى لوحة التحكم" : "Back to Dashboard"}</TooltipContent>
+            <TooltipContent side="bottom">{lang === "ar" ? "العودة إلى مواقعي" : "Back to My Sites"}</TooltipContent>
           </Tooltip>
           <Separator orientation="vertical" className="h-6" />
           <div className="min-w-0">

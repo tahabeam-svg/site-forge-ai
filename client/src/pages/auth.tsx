@@ -385,7 +385,7 @@ export default function AuthPage() {
             </h1>
             <p className="text-muted-foreground">
               {isLogin
-                ? isAr ? "سجّل دخولك للمتابعة إلى لوحة التحكم" : "Sign in to continue to your dashboard"
+                ? isAr ? "سجّل دخولك للمتابعة إلى مواقعك" : "Sign in to continue to your sites"
                 : isAr ? "أنشئ حسابك وابدأ ببناء موقعك الاحترافي" : "Create your account and start building"
               }
             </p>

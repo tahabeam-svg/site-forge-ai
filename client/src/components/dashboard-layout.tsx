@@ -231,7 +231,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <span key={i} className="flex items-center gap-1">
                       {i > 0 && <span>/</span>}
                       <span className={i === arr.length - 1 ? "text-foreground font-medium capitalize" : "capitalize"}>
-                        {seg === "dashboard" ? (lang === "ar" ? "لوحة التحكم" : "Dashboard")
+                        {seg === "dashboard" ? (lang === "ar" ? "مواقعي" : "My Sites")
                          : seg === "editor" ? (lang === "ar" ? "المحرر" : "Editor")
                          : seg === "billing" ? (lang === "ar" ? "الفواتير" : "Billing")
                          : seg === "settings" ? (lang === "ar" ? "الإعدادات" : "Settings")

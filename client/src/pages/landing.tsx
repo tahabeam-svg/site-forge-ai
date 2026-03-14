@@ -1033,7 +1033,7 @@ export default function LandingPage() {
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
                 <li><a href="/templates" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-templates">{lang === "ar" ? "القوالب" : "Templates"}</a></li>
-                <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "لوحة التحكم" : "Dashboard"}</a></li>
+                <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "مواقعي" : "My Sites"}</a></li>
               </ul>
             </div>
 
