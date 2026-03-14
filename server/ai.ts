@@ -298,20 +298,24 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 
 ▸ HERO (FULL VIEWPORT + ANIMATED ORBS): min-height:100vh. Dark gradient overlay on background image. Add 2–3 large blurred orb blobs (CSS radial-gradient circles, 400–700px, filter:blur(80px), position:absolute, animated with @keyframes orbFloat). Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
 
-▸ CTA BUTTONS — STRICT RULES (NEVER VIOLATE):
+▸ CTA BUTTONS — MANDATORY PREMIUM DESIGN SYSTEM (NEVER VIOLATE):
   ✅ Primary button: Use a SINGLE-HUE gradient (2 shades of same color family), e.g.:
     - Violet: linear-gradient(135deg, #7c3aed, #4f46e5)
     - Gold/Amber: linear-gradient(135deg, #d4a843, #b8860b)
     - Red/Orange: linear-gradient(135deg, #dc2626, #ea580c)
     - Teal/Green: linear-gradient(135deg, #0d9488, #059669)
     - Navy/Blue: linear-gradient(135deg, #1e3a5f, #1d4ed8)
-  ❌ FORBIDDEN button gradients — NEVER mix unrelated hues:
-    - blue → yellow/gold (looks terrible, avoid completely)
-    - green → red, orange → blue, purple → yellow, cyan → orange
-    - ANY gradient that spans more than 90° of the color wheel
-  ✅ Button style: border-radius:50px; padding:0.85rem 2rem; font-weight:700; letter-spacing:0.02em; box-shadow:0 8px 24px rgba(PRIMARY,0.35); transition: transform 0.2s, box-shadow 0.2s;
-  ✅ Hover: transform:translateY(-2px); box-shadow:0 12px 32px rgba(PRIMARY,0.5);
-  ✅ Secondary/outline button: transparent background, 2px solid border matching hero text color (#fff or primary), same border-radius
+  ❌ ABSOLUTELY FORBIDDEN button gradients — NEVER mix unrelated hues:
+    - blue → yellow/gold, green → red, orange → blue, purple → yellow, cyan → orange
+    - ANY gradient spanning more than 90° of the color wheel
+    - Childish rainbow gradients, garish neon, or low-contrast color combos
+  ✅ PRIMARY BUTTON BASE STYLE (MANDATORY):
+    border-radius:12px; padding:14px 26px; font-weight:600; letter-spacing:0.02em;
+    box-shadow:0 6px 16px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15);
+    transition:transform 0.2s ease, box-shadow 0.2s ease; cursor:pointer;
+  ✅ HOVER STATE (MANDATORY): transform:translateY(-2px); box-shadow:0 12px 28px rgba(PRIMARY,0.45), 0 4px 8px rgba(0,0,0,0.15);
+  ✅ ACTIVE STATE (MANDATORY): add onmousedown="this.style.transform='translateY(1px)'" onmouseup="this.style.transform='translateY(-2px)'"
+  ✅ Secondary/outline button: transparent background, 2px solid border matching primary color, same border-radius:12px
 
 ▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing. STATS MUST BE RELEVANT TO THE SPECIFIC BUSINESS — Examples:
   * Restaurant/Cafe: "15+ سنة خبرة", "500+ وجبة يومياً", "98% رضا العملاء", "50+ طبق متنوع"
@@ -392,7 +396,7 @@ If the description contains "نمط التصميم المطلوب" or "Design st
   - Services: pure white cards on black background with thin gold border (1px solid #d4a843)
   - Stats: black background, gold gradient numbers, thin dividers
   - Minimal animations — no heavy effects, only smooth fade-ins
-  - CTA buttons: gold gradient (linear-gradient(135deg,#d4a843,#b8860b)), border-radius:50px, padding:0.9rem 2.5rem, box-shadow:0 8px 30px rgba(212,168,67,0.4), NEVER blue→yellow or any clashing hue combo
+  - CTA buttons: gold gradient (linear-gradient(135deg,#d4a843,#b8860b)), border-radius:12px, padding:14px 28px, font-weight:600, box-shadow:0 6px 16px rgba(212,168,67,0.35), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15), NEVER blue→yellow or any clashing hue combo; hover:transform:translateY(-2px) box-shadow stronger; active:translateY(1px)
   - Feel: luxury brand, high-end, exclusive
 
 Language: ${isArabic ? "Arabic RTL — add dir='rtl' on root element. All text in Arabic." : "English LTR — all text in English."}
@@ -585,7 +589,7 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanat
           <div style="position: relative; z-index: 1;">
             <h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 800;">${description}</h1>
             <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 2rem;">${isArabic ? "مرحباً بكم في موقعنا الاحترافي" : "Welcome to our professional website"}</p>
-            <a href="#contact" style="display: inline-block; padding: 0.875rem 2.5rem; background: linear-gradient(135deg, #e2b04a, #d4a843); color: #1a1a2e; border-radius: 2rem; font-weight: 700; text-decoration: none; font-size: 1rem;">${isArabic ? "تواصل معنا" : "Contact Us"}</a>
+            <a href="#contact" style="display: inline-block; padding: 14px 26px; background: linear-gradient(135deg, #e2b04a, #d4a843); color: #1a1a2e; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 1rem; box-shadow: 0 6px 16px rgba(226,176,74,0.4), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2); transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 28px rgba(226,176,74,0.5), 0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 16px rgba(226,176,74,0.4), 0 2px 4px rgba(0,0,0,0.1)'" onmousedown="this.style.transform='translateY(1px)'" onmouseup="this.style.transform='translateY(-2px)'">${isArabic ? "تواصل معنا" : "Contact Us"}</a>
           </div>
         </header>
         <section style="padding: 4rem 2rem; text-align: center;">
@@ -1040,7 +1044,7 @@ User is asking "where is ${what}" — they want it ADDED if missing, not any exi
 
 ✅ لون الخلفية: استبدل كل الخلفيات الفاتحة بألوان داكنة عميقة (#0a0a0a أو #0f172a أو #060818)
 ✅ ألوان الأزرار: زر CTA الرئيسي يجب أن يكون بتدرج راقي من لون واحد (مثال: #d4a843 → #b8860b) أو (#7c3aed → #4f46e5). ممنوع تماماً أي تدرج يخلط ألوان غير متناسقة (أزرق + أصفر، أخضر + برتقالي، إلخ)
-✅ الأزرار: استخدم border-radius:50px، padding:0.9rem 2.5rem، letter-spacing:0.04em، font-weight:700، box-shadow:0 8px 30px rgba(PRIMARY,0.4)
+✅ الأزرار: استخدم border-radius:12px، padding:14px 26px، font-weight:600، box-shadow:0 6px 16px rgba(0,0,0,0.15) 0 2px 4px rgba(0,0,0,0.1) inset 0 1px 0 rgba(255,255,255,0.15)، hover: translateY(-2px)+ظل أقوى، active: translateY(1px)
 ✅ الكروت: خلفية داكنة، حدود رفيعة بلون ذهبي (#d4a843) أو Primary بشفافية 30%، ظل خفيف
 ✅ الخطوط: زد letter-spacing على العناوين، line-height أكثر راحة، font-weight:900 للعناوين الكبيرة
 ✅ أزل كل العناصر "الرخيصة": لا تدرجات قوس قزح، لا إطارات نيون بارزة، لا تجمّع بصري
@@ -1053,7 +1057,7 @@ Transform the entire design into a luxury, high-end look:
 
 ✅ Background: Replace all light backgrounds with deep darks (#0a0a0a, #0f172a, #060818)
 ✅ CTA Buttons: Use single-hue elegant gradient (e.g., #d4a843 → #b8860b or #7c3aed → #4f46e5). NEVER mix unrelated hues (blue+yellow, green+orange, etc.)
-✅ Button style: border-radius:50px, padding:0.9rem 2.5rem, letter-spacing:0.04em, font-weight:700, box-shadow:0 8px 30px rgba(PRIMARY,0.4)
+✅ Button style: border-radius:12px, padding:14px 26px, font-weight:600, box-shadow:0 6px 16px rgba(0,0,0,0.15) and 0 2px 4px rgba(0,0,0,0.1) and inset 0 1px 0 rgba(255,255,255,0.15); hover:translateY(-2px)+stronger shadow; active:translateY(1px)
 ✅ Cards: dark background, thin gold/accent border, subtle shadow — no garish gradients inside cards
 ✅ Typography: increase letter-spacing on headings, more line-height, font-weight:900 for big titles
 ✅ Remove "cheap" elements: no rainbow gradients, no harsh neon, no cluttered layouts
@@ -1355,7 +1359,8 @@ CRITICAL RULES:
 3. Generate content that is 100% relevant to the actual business described — no generic filler
 4. ALL 6 services must be real services that this business type actually offers
 5. Hero title must be powerful, benefit-driven, and specific to the industry
-6. Return ONLY valid JSON, no markdown, no explanation`;
+6. For buttons in color_palette: use modern premium button style — border-radius:12px, proper box-shadow with depth (NOT pill-shaped 50px radius), no rainbow/multicolor gradients
+7. Return ONLY valid JSON, no markdown, no explanation`;
 
 
   const extraLangBlock = extraLangCode && extraLangName ? `

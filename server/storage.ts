@@ -1,7 +1,7 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback, creditPurchases } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback, CreditPurchase, InsertCreditPurchase } from "@shared/schema";
-import { eq, desc, sql, count, like } from "drizzle-orm";
+import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback, creditPurchases, aiGeneratedBlocks, generationLogs } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback, CreditPurchase, InsertCreditPurchase, AiGeneratedBlock, GenerationLog } from "@shared/schema";
+import { eq, desc, sql, count, like, and, gte } from "drizzle-orm";
 
 export interface IStorage {
   getProjectsByUser(userId: string): Promise<Project[]>;
@@ -66,6 +66,14 @@ export interface IStorage {
   updateCreditPurchase(id: number, data: Partial<CreditPurchase>): Promise<CreditPurchase | undefined>;
   getCreditPurchasesByUser(userId: string): Promise<CreditPurchase[]>;
   getAllCreditPurchases(): Promise<CreditPurchase[]>;
+
+  // Component Library & Learning System
+  saveGeneratedBlock(block: { businessType: string; designStyle?: string; websiteLanguage?: string; prompt: string; htmlContent: string; seoTitle?: string; colorPalette?: any }): Promise<AiGeneratedBlock>;
+  findSimilarBlock(businessType: string, designStyle?: string, websiteLanguage?: string): Promise<AiGeneratedBlock | undefined>;
+  incrementBlockUsage(id: number): Promise<void>;
+  getTopBlocks(limit?: number): Promise<AiGeneratedBlock[]>;
+  logGeneration(log: { userId?: string; businessType?: string; designStyle?: string; websiteLanguage?: string; prompt?: string; success?: boolean; generationMs?: number; usedCachedBlock?: boolean; cachedBlockId?: number }): Promise<void>;
+  getGenerationStats(): Promise<{ totalGenerations: number; successRate: number; topBusinessTypes: { type: string; count: number }[]; avgGenerationMs: number; cacheHitRate: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -350,6 +358,89 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCreditPurchases(): Promise<CreditPurchase[]> {
     return db.select().from(creditPurchases).orderBy(desc(creditPurchases.createdAt));
+  }
+
+  // ─── Component Library & Learning System ─────────────────────────────────
+  async saveGeneratedBlock(block: { businessType: string; designStyle?: string; websiteLanguage?: string; prompt: string; htmlContent: string; seoTitle?: string; colorPalette?: any }): Promise<AiGeneratedBlock> {
+    const [result] = await db.insert(aiGeneratedBlocks).values({
+      businessType: block.businessType,
+      designStyle: block.designStyle || "dark-modern",
+      websiteLanguage: block.websiteLanguage || "ar",
+      prompt: block.prompt,
+      htmlContent: block.htmlContent,
+      seoTitle: block.seoTitle,
+      colorPalette: block.colorPalette,
+      usageCount: 1,
+      rating: 0,
+      isPublic: true,
+    }).returning();
+    return result;
+  }
+
+  async findSimilarBlock(businessType: string, designStyle?: string, websiteLanguage?: string): Promise<AiGeneratedBlock | undefined> {
+    const conditions: any[] = [eq(aiGeneratedBlocks.businessType, businessType)];
+    if (designStyle) conditions.push(eq(aiGeneratedBlocks.designStyle, designStyle));
+    if (websiteLanguage) conditions.push(eq(aiGeneratedBlocks.websiteLanguage, websiteLanguage));
+    const [result] = await db.select().from(aiGeneratedBlocks)
+      .where(and(...conditions))
+      .orderBy(desc(aiGeneratedBlocks.usageCount))
+      .limit(1);
+    return result;
+  }
+
+  async incrementBlockUsage(id: number): Promise<void> {
+    await db.update(aiGeneratedBlocks)
+      .set({ usageCount: sql`${aiGeneratedBlocks.usageCount} + 1` })
+      .where(eq(aiGeneratedBlocks.id, id));
+  }
+
+  async getTopBlocks(limit = 10): Promise<AiGeneratedBlock[]> {
+    return db.select().from(aiGeneratedBlocks)
+      .orderBy(desc(aiGeneratedBlocks.usageCount))
+      .limit(limit);
+  }
+
+  async logGeneration(log: { userId?: string; businessType?: string; designStyle?: string; websiteLanguage?: string; prompt?: string; success?: boolean; generationMs?: number; usedCachedBlock?: boolean; cachedBlockId?: number }): Promise<void> {
+    await db.insert(generationLogs).values({
+      userId: log.userId,
+      businessType: log.businessType,
+      designStyle: log.designStyle,
+      websiteLanguage: log.websiteLanguage,
+      prompt: log.prompt?.slice(0, 500),
+      success: log.success ?? true,
+      generationMs: log.generationMs,
+      usedCachedBlock: log.usedCachedBlock ?? false,
+      cachedBlockId: log.cachedBlockId,
+    });
+  }
+
+  async getGenerationStats(): Promise<{ totalGenerations: number; successRate: number; topBusinessTypes: { type: string; count: number }[]; avgGenerationMs: number; cacheHitRate: number }> {
+    const [totals] = await db.select({
+      total: count(),
+      successful: sql<number>`SUM(CASE WHEN success = true THEN 1 ELSE 0 END)::int`,
+      avgMs: sql<number>`AVG(generation_ms)::int`,
+      cached: sql<number>`SUM(CASE WHEN used_cached_block = true THEN 1 ELSE 0 END)::int`,
+    }).from(generationLogs);
+
+    const byType = await db.select({
+      type: generationLogs.businessType,
+      count: count(),
+    }).from(generationLogs)
+      .where(sql`business_type IS NOT NULL`)
+      .groupBy(generationLogs.businessType)
+      .orderBy(desc(count()))
+      .limit(10);
+
+    const total = totals?.total ?? 0;
+    const successful = totals?.successful ?? 0;
+    const cached = totals?.cached ?? 0;
+    return {
+      totalGenerations: total,
+      successRate: total > 0 ? Math.round((successful / total) * 100) : 0,
+      topBusinessTypes: byType.map(r => ({ type: r.type || "unknown", count: Number(r.count) })),
+      avgGenerationMs: totals?.avgMs ?? 0,
+      cacheHitRate: total > 0 ? Math.round((cached / total) * 100) : 0,
+    };
   }
 }
 

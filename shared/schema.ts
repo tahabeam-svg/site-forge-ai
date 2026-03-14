@@ -174,6 +174,39 @@ export const leads = pgTable("leads", {
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
+// ─── Component Library & Learning System ────────────────────────────────────
+export const aiGeneratedBlocks = pgTable("ai_generated_blocks", {
+  id: serial("id").primaryKey(),
+  businessType: text("business_type").notNull(),
+  designStyle: text("design_style").default("dark-modern"),
+  websiteLanguage: text("website_language").default("ar"),
+  prompt: text("prompt").notNull(),
+  htmlContent: text("html_content").notNull(),
+  seoTitle: text("seo_title"),
+  colorPalette: jsonb("color_palette"),
+  usageCount: integer("usage_count").default(1),
+  rating: integer("rating").default(0),
+  isPublic: boolean("is_public").default(true),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const generationLogs = pgTable("generation_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id"),
+  businessType: text("business_type"),
+  designStyle: text("design_style"),
+  websiteLanguage: text("website_language").default("ar"),
+  prompt: text("prompt"),
+  success: boolean("success").default(true),
+  generationMs: integer("generation_ms"),
+  usedCachedBlock: boolean("used_cached_block").default(false),
+  cachedBlockId: integer("cached_block_id"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export type AiGeneratedBlock = typeof aiGeneratedBlocks.$inferSelect;
+export type GenerationLog = typeof generationLogs.$inferSelect;
+
 export const creditPurchases = pgTable("credit_purchases", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(),

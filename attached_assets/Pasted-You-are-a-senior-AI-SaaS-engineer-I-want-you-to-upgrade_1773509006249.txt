@@ -1,0 +1,204 @@
+You are a senior AI SaaS engineer.
+
+I want you to upgrade my existing AI website builder platform "ArabyWeb" to make it significantly smarter, more professional in design, and capable of learning from generated websites and user requests.
+
+The platform is already working, but it needs major improvements in 4 core areas:
+
+1️⃣ DESIGN QUALITY (MANDATORY RULE)
+
+The generated websites currently produce ugly gradient buttons. This must stop.
+
+Implement a mandatory design system rule:
+
+ALL generated websites MUST follow a modern UI system with beautiful, premium buttons.
+
+Buttons must include:
+
+• subtle 3D depth
+• soft shadow
+• hover elevation
+• micro interaction
+• modern rounded corners
+• premium color palette
+
+Button design specification:
+
+Base style:
+- border-radius: 12px
+- box-shadow: 0 6px 16px rgba(0,0,0,0.15)
+- padding: 14px 26px
+- font-weight: 600
+- smooth transition
+
+Hover effect:
+- transform: translateY(-2px)
+- stronger shadow
+- highlight effect
+
+Active state:
+- slight press effect (translateY(1px))
+
+ABSOLUTELY FORBIDDEN:
+- random gradients
+- childish colors
+- low quality button styles
+
+The system must enforce this rule in every generated site.
+
+If the AI generates a button violating the design system, it must automatically rewrite the component.
+
+---
+
+2️⃣ SMART CONTENT GENERATION
+
+Improve the AI engine so that it understands the business activity immediately and generates high-quality Arabic marketing content.
+
+Process:
+
+User writes:
+"شركة مقاولات في الرياض"
+or
+"مطعم بيتزا"
+
+The AI must automatically generate:
+
+• Hero title
+• Professional marketing description
+• Services section
+• Trust elements
+• SEO optimized text
+• Call-to-action sections
+
+Content rules:
+
+• Arabic must be fluent and professional
+• Use persuasive marketing language
+• Avoid generic filler text
+• Optimize text for SEO automatically
+
+---
+
+3️⃣ CODE MEMORY + AI FALLBACK
+
+ArabyWeb must maintain a component library database.
+
+Database tables should include:
+
+saved_templates
+saved_sections
+saved_components
+industry_templates
+ai_generated_blocks
+
+Generation logic:
+
+Step 1
+Search database for existing matching component.
+
+Step 2
+If found → reuse it.
+
+Step 3
+If NOT found → call AI to generate new code.
+
+Step 4
+Save the newly generated component in the database.
+
+This creates a growing intelligent component library.
+
+---
+
+4️⃣ SELF LEARNING PLATFORM
+
+ArabyWeb must become smarter over time.
+
+Implement a learning system:
+
+Track:
+
+• user prompts
+• generated websites
+• most used sections
+• most successful layouts
+• most clicked buttons
+
+Save them into a learning database.
+
+Then the AI must prioritize:
+
+• best performing layouts
+• most used content structures
+• most successful call-to-actions
+
+This creates a continuously improving platform.
+
+---
+
+5️⃣ AI SALES & SUPPORT CHATBOT
+
+Create an intelligent chatbot integrated into ArabyWeb.
+
+Features:
+
+• answers visitors questions
+• helps users create their websites
+• suggests templates
+• acts as sales agent
+• acts as support agent
+
+Chatbot must support:
+
+• Arabic
+• English
+• dialect detection
+
+Learning ability:
+
+Every conversation must be saved and used to improve responses.
+
+Chatbot must learn from:
+
+• user questions
+• successful answers
+• customer interactions
+
+---
+
+6️⃣ PERFORMANCE REQUIREMENTS
+
+Websites must be:
+
+• fast loading
+• SEO optimized
+• mobile first
+• clean modern layout
+
+Use:
+
+Next.js
+TailwindCSS
+Component system
+Reusable sections
+
+---
+
+7️⃣ FINAL OBJECTIVE
+
+Transform ArabyWeb from a simple website generator into a:
+
+SMART AI WEBSITE CREATION PLATFORM
+
+capable of:
+
+• generating high quality websites
+• learning from every generated site
+• improving automatically
+• helping users with an AI assistant
+• building a growing library of templates and components
+
+The system must always prioritize:
+
+professional design
+high quality Arabic content
+reusable components
+self learning architecture

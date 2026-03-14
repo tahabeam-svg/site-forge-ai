@@ -245,6 +245,48 @@ export async function seedDatabase() {
     console.error("Index migration warning:", e.message);
   }
 
+  // ── AI Component Library & Learning System tables ───────────────────────────
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS ai_generated_blocks (
+        id SERIAL PRIMARY KEY,
+        business_type TEXT NOT NULL,
+        design_style TEXT DEFAULT 'dark-modern',
+        website_language TEXT DEFAULT 'ar',
+        prompt TEXT NOT NULL,
+        html_content TEXT NOT NULL,
+        seo_title TEXT,
+        color_palette JSONB,
+        usage_count INTEGER DEFAULT 1,
+        rating INTEGER DEFAULT 0,
+        is_public BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS generation_logs (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR,
+        business_type TEXT,
+        design_style TEXT,
+        website_language TEXT DEFAULT 'ar',
+        prompt TEXT,
+        success BOOLEAN DEFAULT true,
+        generation_ms INTEGER,
+        used_cached_block BOOLEAN DEFAULT false,
+        cached_block_id INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_ai_blocks_business_type ON ai_generated_blocks(business_type)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_ai_blocks_usage ON ai_generated_blocks(usage_count DESC)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_gen_logs_user ON generation_logs(user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_gen_logs_type ON generation_logs(business_type)`);
+    console.log("Migration: AI component library & learning tables ensured");
+  } catch (e: any) {
+    console.error("AI learning tables migration warning:", e.message);
+  }
+
   // Template versioning — bump TEMPLATE_VERSION to force regeneration
   const TEMPLATE_VERSION = "v3-gulf-avatars";
   try {

@@ -487,6 +487,8 @@ export default function DashboardPage() {
         language: lang,
         websiteLanguage: wizardForm.websiteLanguage || "ar",
         websiteLanguages: allLangs.length > 0 ? allLangs : [wizardForm.websiteLanguage || "ar"],
+        activityType: wizardForm.activityType || "other",
+        designStyle: wizardForm.designStyle || "dark-modern",
       };
       if (wizardForm.logoDataUrl) genPayload.logoDataUrl = wizardForm.logoDataUrl;
       if (wizardForm.whatsapp) genPayload.whatsapp = wizardForm.whatsapp;

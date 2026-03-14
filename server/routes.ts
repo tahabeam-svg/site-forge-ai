@@ -664,6 +664,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const description = req.body.description || project.description || project.name;
       const logoDataUrl: string | undefined = req.body.logoDataUrl;
       const whatsappNumber: string | undefined = req.body.whatsapp ? String(req.body.whatsapp).replace(/\s/g, "") : undefined;
+      const activityType: string = req.body.activityType || "other";
+      const designStyle: string = req.body.designStyle || "dark-modern";
 
       // ─── Credit check for paid users before generation ───────────────────────
       const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2, credits: userCreditsInst } = await getUserPlanInfo(req.user.id);
@@ -678,7 +680,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
+      const genStartTime = Date.now();
       const generated = await generateInstantWebsite(description, language, websiteLanguages, websiteLanguage);
+      const genMs = Date.now() - genStartTime;
       let baseHtml = generated.html;
 
       // Inject user logo into the site if provided
@@ -754,9 +758,45 @@ Sitemap: https://arabyweb.net/sitemap.xml
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
       }
 
+      // ─── Learning System: Auto-save to component library (async, non-blocking) ──
+      setImmediate(async () => {
+        try {
+          await storage.saveGeneratedBlock({
+            businessType: activityType,
+            designStyle,
+            websiteLanguage,
+            prompt: description.slice(0, 500),
+            htmlContent: finalHtml2,
+            seoTitle: generated.seoTitle,
+            colorPalette: generated.colorPalette,
+          });
+          await storage.logGeneration({
+            userId: req.user.id,
+            businessType: activityType,
+            designStyle,
+            websiteLanguage,
+            prompt: description.slice(0, 500),
+            success: true,
+            generationMs: genMs,
+            usedCachedBlock: false,
+          });
+        } catch (e: any) {
+          console.warn("Learning system save warning:", e?.message);
+        }
+      });
+
       res.json(updated);
     } catch (err: any) {
       console.error("Instant generation error:", err?.message || err);
+      try {
+        await storage.logGeneration({
+          userId: req.user?.id,
+          businessType: req.body?.activityType || "other",
+          designStyle: req.body?.designStyle,
+          prompt: (req.body?.description || "").slice(0, 200),
+          success: false,
+        });
+      } catch {}
       const project = await storage.getProject(parseInt(req.params.id));
       if (project) await storage.updateProject(project.id, { status: "error" });
       res.status(500).json({ message: "Failed to generate website instantly", detail: err?.message || "Unknown error" });
@@ -1000,6 +1040,18 @@ Sitemap: https://arabyweb.net/sitemap.xml
       res.json(stats);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  app.get("/api/admin/learning-stats", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const [genStats, topBlocks] = await Promise.all([
+        storage.getGenerationStats(),
+        storage.getTopBlocks(20),
+      ]);
+      res.json({ generationStats: genStats, topBlocks });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch learning stats" });
     }
   });
 
