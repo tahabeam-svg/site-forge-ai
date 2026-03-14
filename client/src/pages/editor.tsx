@@ -131,6 +131,7 @@ export default function EditorPage() {
   const [loadingStep, setLoadingStep] = useState(0);
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const chatMsgsRef = useRef<HTMLDivElement>(null);
+  const [pendingUserMsg, setPendingUserMsg] = useState<string | null>(null);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -168,7 +169,7 @@ export default function EditorPage() {
       });
     });
     return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
-  }, [messages]);
+  }, [messages, pendingUserMsg]);
 
   // Prevent page body from scrolling on the editor (mobile fix)
   useEffect(() => {
@@ -324,14 +325,21 @@ export default function EditorPage() {
       }
       return res.json();
     },
+    onMutate: (input) => {
+      // Show user message immediately (optimistic UI)
+      const cmd = typeof input === "object" && input !== null ? (input as any).cmd : (input || editCommand);
+      if (cmd) setPendingUserMsg(cmd);
+      setEditCommand("");
+    },
     onSuccess: () => {
+      setPendingUserMsg(null);
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
-      setEditCommand("");
     },
     onError: (err: any) => {
+      setPendingUserMsg(null);
       if (err.message === "limit_reached") {
         setLimitReached(true);
       } else {
@@ -458,8 +466,7 @@ export default function EditorPage() {
       setActiveTab("chat");
       requestAnimationFrame(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }));
     } else if (trimmed) {
-      editMutation.mutate(trimmed);
-      setEditCommand("");
+      editMutation.mutate(trimmed); // setEditCommand("") is handled in onMutate
     }
   };
 
@@ -855,6 +862,17 @@ export default function EditorPage() {
                       </div>
                     </div>
                   ))}
+                  {/* Optimistic user message — shows immediately on send */}
+                  {pendingUserMsg && (
+                    <div className="flex gap-2" data-testid="chat-message-pending">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-emerald-100 text-emerald-700">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <div className="text-[0.9rem] leading-relaxed rounded-xl px-4 py-2.5 max-w-[88%] bg-emerald-50 dark:bg-emerald-950/30 text-foreground">
+                        {pendingUserMsg}
+                      </div>
+                    </div>
+                  )}
                   {editMutation.isPending && (
                     <div className="flex gap-2">
                       <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">

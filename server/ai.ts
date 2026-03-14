@@ -740,6 +740,55 @@ function extractBusinessTypeFromHtml(html: string): string {
 }
 
 function enhanceVagueCommand(command: string, html: string, projectName: string, desc: string, lang: string): string {
+  // ── "أين X" / "where is X" — user wants X ADDED, not existing content deleted ──
+  const whereIsPatterns = [
+    /^[أا]ين\s+(.+)$/i,
+    /^وين\s+(.+)$/i,
+    /^فين\s+(.+)$/i,
+    /^where\s+is\s+(.+)$/i,
+    /^where'?s\s+(.+)$/i,
+  ];
+  for (const p of whereIsPatterns) {
+    const m = command.match(p);
+    if (m) {
+      const what = m[1].trim();
+      // Burger menu special case
+      const isBurger = /منيو\s*برجر|برجر\s*منيو|hamburger|burger\s*menu|قائمة.*جانب|قائمة.*منسدل/i.test(what);
+      if (isBurger) {
+        return lang === "ar"
+          ? `أضف قائمة برجر (hamburger menu) في الناف بار للجوال إذا لم تكن موجودة بالفعل. لا تحذف أي عنصر موجود في الناف بار أو في الموقع.
+[[[INTERNAL — HAMBURGER MENU ADD ONLY]]]
+المستخدم يسأل "أين منيو برجر" — هذا يعني إضافته، وليس حذف الناف بار.
+الإجراء المطلوب:
+1. إذا كان id="aw-menu-btn" موجوداً بالفعل → لا تفعل شيئاً، وأخبر المستخدم أنه موجود
+2. إذا لم يكن موجوداً → أضف زر الهامبرجر للناف بار فقط (انظر قواعد MOBILE HAMBURGER MENU في التعليمات)
+❌ ممنوع تماماً حذف أي عنصر من الناف بار أو الموقع
+[[[END INTERNAL]]]`
+          : `Add a hamburger menu to the navbar for mobile if it doesn't already exist. Do NOT remove any existing navbar or page content.
+[[[INTERNAL — HAMBURGER MENU ADD ONLY]]]
+User asked "where is burger menu" — they want it ADDED, not any content deleted.
+1. If id="aw-menu-btn" already exists → do nothing, tell user it's already there
+2. If it doesn't exist → add hamburger button to navbar only
+❌ NEVER delete any existing navbar element or page section
+[[[END INTERNAL]]]`;
+      }
+      // Generic "where is X" → add X
+      return lang === "ar"
+        ? `أضف "${what}" إذا لم يكن موجوداً بالفعل في الموقع. لا تحذف أي محتوى موجود.
+[[[INTERNAL — ADD MISSING ELEMENT]]]
+المستخدم يسأل "أين ${what}" — هذا يعني أنه يريد إضافته إذا كان مفقوداً، وليس حذف أي شيء.
+❌ ممنوع حذف أي عنصر موجود في الناف بار أو الموقع
+✅ فقط أضف "${what}" بشكل لائق يتناسب مع تصميم الموقع الحالي
+[[[END INTERNAL]]]`
+        : `Add "${what}" to the website if it doesn't already exist. Do NOT remove any existing content.
+[[[INTERNAL — ADD MISSING ELEMENT]]]
+User is asking "where is ${what}" — they want it ADDED if missing, not any existing content deleted.
+❌ NEVER delete any existing navbar element or page section
+✅ Only ADD "${what}" in a way that fits the current design
+[[[END INTERNAL]]]`;
+    }
+  }
+
   // ── Luxury/elegance upgrade patterns ──
   const luxuryPatterns = [
     /[أا]جعل?\s*(التصميم|الموقع|الشكل|المظهر)\s*(فخم|أنيق|راقي|احترافي|أجمل|أفضل|أكثر\s*فخامة|أكثر\s*أناقة)/i,
@@ -917,6 +966,13 @@ ${imageDataUrl ? `- IMAGE ATTACHED — LOGO REPLACEMENT (MANDATORY):
   3. Also find id="aw-ai-logo-footer" and replace with: <img id="aw-ai-logo-footer" src="__AW_IMG_001__" alt="logo" style="height:32px;width:auto;object-fit:contain;display:block;">
   4. If neither id is found, replace the hero background image src with __AW_IMG_001__ instead.
   5. __AW_IMG_001__ is a placeholder — the system replaces it with the real image automatically. Never use a data:image URL.` : ""}
+
+⚠️ CRITICAL ANTI-DESTRUCTIVE RULES (HIGHEST PRIORITY):
+- NEVER delete or remove the navbar/nav element. If you need to modify it, only ADD to it.
+- NEVER delete existing page sections (hero, services, gallery, contact, footer, etc.) unless the user EXPLICITLY says "remove" or "delete" or "احذف" or "أزل".
+- If the user asks WHERE something is ("أين X"/"where is X"), they want it ADDED — never delete anything.
+- "أين منيو برجر" = ADD a hamburger menu — do NOT touch, delete, or restructure the existing navbar.
+- Preserve ALL existing content: text, images, links, and structure — only ADD or MODIFY as requested.
 
 PRESERVE CRITICAL ELEMENTS (NEVER REMOVE OR MODIFY):
 - NEVER remove or change the element with id="aw-lang-btn" (language toggle button). It must stay in the navbar exactly as-is.
