@@ -16,10 +16,39 @@ import { db } from "./db";
 import { users, subscriptions, creditPurchases } from "@shared/schema";
 import { eq, sql, and, gte, desc, lt } from "drizzle-orm";
 
-const ENCRYPTION_KEY = crypto.createHash("sha256").update(process.env.SESSION_SECRET || "arabyweb-fallback-key").digest();
+if (!process.env.SESSION_SECRET) {
+  console.error("[FATAL] SESSION_SECRET environment variable is not set. Token encryption is disabled.");
+}
+const ENCRYPTION_KEY = process.env.SESSION_SECRET
+  ? crypto.createHash("sha256").update(process.env.SESSION_SECRET).digest()
+  : null;
 const IV_LENGTH = 16;
 
+// Per-user AI rate limiter: max 8 requests per minute per user
+const _aiRateLimiter = new Map<number, { count: number; resetAt: number }>();
+const AI_RATE_LIMIT_MAX = 8;
+const AI_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+function checkAiRateLimit(userId: number): boolean {
+  const now = Date.now();
+  const rec = _aiRateLimiter.get(userId);
+  if (!rec || now > rec.resetAt) {
+    _aiRateLimiter.set(userId, { count: 1, resetAt: now + AI_RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (rec.count >= AI_RATE_LIMIT_MAX) return false;
+  rec.count++;
+  return true;
+}
+// Clean up stale entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [uid, rec] of _aiRateLimiter) {
+    if (now > rec.resetAt) _aiRateLimiter.delete(uid);
+  }
+}, 5 * 60 * 1000);
+
 function encryptToken(text: string): string {
+  if (!ENCRYPTION_KEY) throw new Error("SESSION_SECRET is not set; token encryption unavailable.");
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv("aes-256-cbc", ENCRYPTION_KEY, iv);
   let encrypted = cipher.update(text, "utf8", "hex");
@@ -28,6 +57,7 @@ function encryptToken(text: string): string {
 }
 
 function decryptToken(text: string): string {
+  if (!ENCRYPTION_KEY) throw new Error("SESSION_SECRET is not set; token decryption unavailable.");
   const [ivHex, encrypted] = text.split(":");
   if (!ivHex || !encrypted) throw new Error("Invalid encrypted token format");
   const iv = Buffer.from(ivHex, "hex");
@@ -533,6 +563,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
       if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
+      if (!checkAiRateLimit(userId)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
+      }
 
       const language = req.body.language || "ar";
       const description = req.body.description || project.description || project.name;
@@ -604,6 +637,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
       if (!project) return res.status(404).json({ message: "Project not found" });
       if (project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
       if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
+      if (!checkAiRateLimit(req.user.id)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
+      }
 
       const language = req.body.language || "ar";
       const websiteLanguage: string = req.body.websiteLanguage || "ar";
@@ -696,6 +732,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
       if (!project) return res.status(404).json({ message: "Project not found" });
       const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      if (!checkAiRateLimit(userId)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
+      }
 
       const parsed = editCommandSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Edit command is required" });
@@ -1139,6 +1178,10 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
   app.post("/api/marketing/generate", isAuthenticated, async (req: any, res) => {
     try {
+      if (!checkAiRateLimit(req.user.id)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
+      }
+
       const { isFreePlan, isUserAdmin, planName, credits } = await getUserPlanInfo(req.user.id);
 
       if (isFreePlan && !isUserAdmin) {
@@ -1163,8 +1206,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
         const requestedPlatform = (req.body?.platform || "").toLowerCase();
         if (!allowedPlatforms.includes(requestedPlatform)) {
           const planLabel = planName === "pro"
-            ? { ar: "الاحترافية (Instagram + TikTok)", en: "Pro (Instagram + TikTok)" }
-            : { ar: "الأعمال (Instagram + TikTok + Facebook)", en: "Business (Instagram + TikTok + Facebook)" };
+            ? { ar: "الاحترافية (Instagram + X/Twitter)", en: "Pro (Instagram + X/Twitter)" }
+            : { ar: "الأعمال (Instagram + X/Twitter + Facebook)", en: "Business (Instagram + X/Twitter + Facebook)" };
           return res.status(403).json({
             message: "platform_not_allowed",
             messageAr: `هذه المنصة غير متاحة في خطتك الحالية. خطة ${planLabel.ar} تتيح لك المنصات المحددة فقط. قم بالترقية للوصول إلى المزيد.`,

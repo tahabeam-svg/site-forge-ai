@@ -476,7 +476,7 @@ export async function sendSubscriptionStartedEmail(to: string, plan: string, end
            ["Credits Added", `${credits} AI credits`],
            ["Renewal Date", endStr],
          ])}
-         ${infoBox(`✅ Included in your plan: Website Builder + <strong>AI Marketing</strong> (Instagram, TikTok, Twitter, LinkedIn & more). Each content generation uses 1 credit from your balance.`, "#10b981")}
+         ${infoBox(`✅ Included in your plan: Website Builder + <strong>AI Marketing</strong> (Instagram, X/Twitter, Facebook — based on your plan). Each content generation uses 1 credit from your balance.`, "#10b981")}
          ${btn("https://arabyweb.net/dashboard", "Start Using")}`,
     isAr
   );

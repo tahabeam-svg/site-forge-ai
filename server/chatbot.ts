@@ -204,7 +204,7 @@ CONSULTATION TRIGGER:
 - Credits never expire — they stay in your account until used
 
 【3. AI Marketing & Social Media Content】
-- Generates ready-to-post content for Instagram, Twitter/X, TikTok, Facebook, LinkedIn, YouTube
+- Generates ready-to-post content for Instagram, X/Twitter, Facebook (based on your plan)
 - Supports Arabic dialects, formal Arabic, and English
 - Captions, hashtags, stories, campaigns, monthly content calendars
 - INCLUDED in paid plans — no separate marketing subscription needed:
@@ -240,7 +240,7 @@ SMART QUALIFYING QUESTIONS (use naturally):
 - "What type of business do you have?"
 - "Do you currently have a website?"
 - "How many posts do you publish on social media per week?"
-- "Which platforms do you use — Instagram, TikTok, LinkedIn?"
+- "Which platforms do you use — Instagram, X/Twitter, Facebook?"
 - "Are you looking for a website, marketing content, or both?"
 - "What's your approximate monthly digital marketing budget?"
 
@@ -311,7 +311,7 @@ ${dialectInstruction}
 - اللغة تُختار في الخطوة الأولى من معالج إنشاء الموقع
 
 【٤. محتوى التسويق والسوشيال ميديا بالذكاء الاصطناعي】
-- يُنشئ محتوى جاهزاً للنشر على Instagram, Twitter/X, TikTok, Facebook, LinkedIn, YouTube
+- يُنشئ محتوى جاهزاً للنشر على Instagram, Twitter/X, Facebook (حسب الباقة)
 - يدعم اللهجات العربية والعربية الفصحى والإنجليزية
 - كابشن، هاشتاقات، ستوري، حملات، تقويم محتوى شهري
 - مشمول في الباقات المدفوعة — لا توجد باقة تسويق منفصلة:
