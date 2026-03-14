@@ -827,15 +827,16 @@ export function buildInstantWebsite(
     : config.testimonials;
   const testimonialsHtml = activeTestimonials.map((t, i) => `
     <div class="testi-card" data-aos style="animation-delay:${i * 0.12}s">
-      <div class="testi-top-row">
+      <div class="testi-quote-mark">&ldquo;</div>
+      <p class="testi-text" data-ar="${esc(t.text_ar)}" data-en="${esc(t.text_en)}"${e3code ? ` data-${e3code}="${esc(t.text_en)}"` : ""}>${t.text_ar}</p>
+      <div class="testi-footer">
         <div class="testi-avatar">${t.name.charAt(0)}</div>
-        <div class="testi-meta">
+        <div class="testi-info">
           <div class="testi-name">${t.name}</div>
           <div class="testi-role" ${dDyn(t.role_ar, t.role_en, e3code ? t.role_en : undefined)}>${t.role_ar}</div>
         </div>
+        <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
       </div>
-      <div class="testi-stars">${STAR_SVG.repeat(5)}</div>
-      <p class="testi-text" data-ar="${esc(t.text_ar)}" data-en="${esc(t.text_en)}"${e3code ? ` data-${e3code}="${esc(t.text_en)}"` : ""}>${t.text_ar}</p>
     </div>`).join("");
 
   const whatsappNum = content.phone.replace(/\D/g, "");
