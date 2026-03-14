@@ -128,6 +128,7 @@ export default function EditorPage() {
   const [msgAreaHeight, setMsgAreaHeight] = useState<number | null>(null);
   const [showTemplateBrowser, setShowTemplateBrowser] = useState(false);
   const [templateCategory, setTemplateCategory] = useState("all");
+  const [loadingStep, setLoadingStep] = useState(0);
 
   const { data: project, isLoading } = useQuery<Project>({
     queryKey: ["/api/projects", projectId],
@@ -195,6 +196,13 @@ export default function EditorPage() {
     });
     return () => cancelAnimationFrame(id);
   }, [limitReached, chatImagePreview, activeTab]);
+
+  // Cycle loading steps while editMutation is pending
+  useEffect(() => {
+    if (!editMutation.isPending) { setLoadingStep(0); return; }
+    const id = setInterval(() => setLoadingStep(s => (s + 1) % 3), 2800);
+    return () => clearInterval(id);
+  }, [editMutation.isPending]);
 
   // One-time scroll hint for the style tab
   useEffect(() => {
@@ -769,7 +777,7 @@ export default function EditorPage() {
                 className="overflow-y-auto mt-0 px-4 py-3 md:flex-1"
                 style={msgAreaHeight !== null ? { height: msgAreaHeight, flex: "none" } : undefined}
               >
-                <div className="space-y-4">
+                <div className="flex flex-col justify-end min-h-full gap-4">
                   {messages.map((msg) => (
                     <div
                       key={msg.id}
@@ -822,9 +830,13 @@ export default function EditorPage() {
                       <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center shrink-0">
                         <Bot className="w-4 h-4" />
                       </div>
-                      <div className="text-[0.9rem] bg-muted rounded-xl px-4 py-2.5 flex items-center gap-2">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        {lang === "ar" ? "جاري التعديل..." : "Applying changes..."}
+                      <div className="text-[0.9rem] bg-muted rounded-xl px-4 py-2.5 flex items-center gap-2 min-w-0">
+                        <Loader2 className="w-4 h-4 animate-spin shrink-0 text-violet-500" />
+                        <span className="truncate text-muted-foreground">
+                          {lang === "ar"
+                            ? (["جاري تحليل طلبك...", "جاري تطبيق التعديلات...", "اللمسات الأخيرة..."][loadingStep])
+                            : (["Analyzing your request...", "Applying changes...", "Final touches..."][loadingStep])}
+                        </span>
                       </div>
                     </div>
                   )}

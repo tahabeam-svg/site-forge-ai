@@ -958,8 +958,8 @@ No markdown, no code blocks, no explanation outside the JSON.`;
         { role: "system", content: systemPrompt },
         { role: "user", content: userContent as any },
       ],
-      max_completion_tokens: 16384,
-      temperature: 0.5,
+      max_completion_tokens: 10000,
+      temperature: 0.3,
     });
     rawContent = response.choices[0]?.message?.content || "";
   } catch (primaryErr: any) {
@@ -973,8 +973,8 @@ No markdown, no code blocks, no explanation outside the JSON.`;
             { role: "system", content: systemPrompt },
             { role: "user", content: userContent as any },
           ],
-          max_completion_tokens: 16384,
-          temperature: 0.5,
+          max_completion_tokens: 10000,
+          temperature: 0.3,
         });
         rawContent = resp.choices[0]?.message?.content || "";
         lastErr = null;
