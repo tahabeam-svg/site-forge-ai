@@ -582,20 +582,6 @@ export default function AIMarketingPage() {
                   </a>
                 </div>
               </Card>
-            ) : (
-              <Card className="p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-4">
-                  <Sparkles className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">
-                  {lang === "ar" ? "أنشئ محتوى تسويقي مذهل" : "Create Amazing Marketing Content"}
-                </h3>
-                <p className="text-muted-foreground text-sm max-w-sm">
-                  {lang === "ar"
-                    ? "اختر المنصة، حدد النبرة، واكتب موضوعك — الذكاء الاصطناعي سيتولى الباقي"
-                    : "Choose a platform, select a tone, and write your topic — AI will do the rest"}
-                </p>
-              </Card>
             )}
 
             {/* ─── Standalone Image Generation Card (always visible) ─── */}
