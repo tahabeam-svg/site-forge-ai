@@ -1,6 +1,6 @@
 export interface BusinessContent {
   business_name: string;
-  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general";
+  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym";
   hero_title: string;
   hero_subtitle: string;
   about_title: string;
@@ -33,7 +33,7 @@ export interface LangContent {
 export interface BilingualBusinessContent {
   business_name_ar: string;
   business_name_en: string;
-  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general";
+  business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym";
   ar: LangContent;
   en: LangContent;
   phone: string;
@@ -173,6 +173,166 @@ const BUSINESS_CONFIGS: Record<string, {
       { name: "أم عبدالله الرشيدي", role_ar: "مريضة سابقة", role_en: "Former Patient", text_ar: "رعاية طبية ممتازة وفريق متخصص يُشعرك بالاهتمام الحقيقي. شفيت بفضل الله ثم بفضل جهودهم.", text_en: "Excellent medical care with a specialized team that makes you feel truly cared for." },
       { name: "أحمد البلوي", role_ar: "مراجع منتظم", role_en: "Regular Patient", text_ar: "أفضل مستشفى تعاملت معه من حيث النظافة والتنظيم وكفاءة الكوادر الطبية.", text_en: "Best hospital I've dealt with in terms of cleanliness, organization and medical staff efficiency." },
       { name: "سمر الجهني", role_ar: "مريضة", role_en: "Patient", text_ar: "جميع الأطباء متميزون والتشخيص دقيق. أنصح الجميع بهذا المستشفى بكل ثقة.", text_en: "All doctors are excellent and diagnosis is accurate. I recommend this hospital to everyone with full confidence." },
+    ],
+  },
+  legal: {
+    primary: "#1e3a5f", accent: "#c9a84c", dark: "#0a0f1a",
+    icons: ["fa-scale-balanced","fa-gavel","fa-file-contract","fa-shield-halved","fa-handshake","fa-building-columns"],
+    hero_image: "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1521587765099-8835e7201186?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1664575602276-acd073f104c1?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"20+", label_ar:"سنة خبرة", label_en:"Years Experience" }, { num:"500+", label_ar:"قضية ناجحة", label_en:"Cases Won" }, { num:"98%", label_ar:"رضا العملاء", label_en:"Client Satisfaction" }, { num:"50+", label_ar:"محامٍ متخصص", label_en:"Specialist Lawyers" }],
+    testimonials: [
+      { name:"عبدالله الزهراني", role_ar:"رجل أعمال", role_en:"Businessman", text_ar:"المكتب تجاوز كل توقعاتي في القضية التجارية. محترفون وملتزمون بالنتائج.", text_en:"The office exceeded all my expectations in the commercial case. Professional and results-driven." },
+      { name:"نورا الحربي", role_ar:"مديرة تنفيذية", role_en:"Executive Director", text_ar:"خبرة قانونية عالية ومتخصصة في السوق السعودي. أنصح بهم بشدة.", text_en:"High legal expertise specialized in the Saudi market. Highly recommended." },
+      { name:"فهد القحطاني", role_ar:"مستثمر", role_en:"Investor", text_ar:"دفاع احترافي وصريح، وفّروا لي حقوقي كاملة. شكراً على الأمانة والكفاءة.", text_en:"Professional and honest defense, they secured all my rights. Thank you for your integrity and efficiency." },
+    ],
+  },
+  beauty: {
+    primary: "#be185d", accent: "#f59e0b", dark: "#1a0010",
+    icons: ["fa-scissors","fa-spa","fa-face-smile","fa-star","fa-wand-magic-sparkles","fa-leaf"],
+    hero_image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1487412947147-5cebf100d293?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1516975080664-ed2fc6a32937?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"8+", label_ar:"سنوات خبرة", label_en:"Years Experience" }, { num:"5000+", label_ar:"عميلة سعيدة", label_en:"Happy Clients" }, { num:"50+", label_ar:"خدمة متخصصة", label_en:"Specialist Services" }, { num:"4.9", label_ar:"تقييم العملاء", label_en:"Client Rating" }],
+    testimonials: [
+      { name:"سارة العتيبي", role_ar:"طالبة جامعية", role_en:"University Student", text_ar:"أحلى تجربة! الصالون نظيف وأنيق والمهارة عالية جداً. صارت ثقتي بنفسي أعلى.", text_en:"Amazing experience! The salon is clean, elegant and the skill level is very high. My self-confidence soared." },
+      { name:"ريم الشمري", role_ar:"مديرة أعمال", role_en:"Business Manager", text_ar:"خدمات VIP بأسعار معقولة. هذا هو الصالون الأول الذي يفهم بالضبط ما أريده.", text_en:"VIP services at reasonable prices. This is the first salon that understands exactly what I want." },
+      { name:"هنود المالكي", role_ar:"مؤثرة رقمية", role_en:"Digital Influencer", text_ar:"أنصح به لكل النساء! الفريق رائع والنتائج تدوم طويلاً. الجمال الحقيقي يبدأ من هنا.", text_en:"I recommend it to all women! The team is amazing and results last long. True beauty starts here." },
+    ],
+  },
+  realestate: {
+    primary: "#059669", accent: "#f59e0b", dark: "#001a10",
+    icons: ["fa-building","fa-house","fa-key","fa-map-location-dot","fa-city","fa-handshake"],
+    hero_image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"15+", label_ar:"سنة في السوق", label_en:"Years in Market" }, { num:"2000+", label_ar:"وحدة مُسلَّمة", label_en:"Units Delivered" }, { num:"98%", label_ar:"رضا العملاء", label_en:"Client Satisfaction" }, { num:"5B+", label_ar:"ريال حجم المبيعات", label_en:"SAR Sales Volume" }],
+    testimonials: [
+      { name:"خالد الدوسري", role_ar:"مستثمر عقاري", role_en:"Real Estate Investor", text_ar:"تجربة احترافية من البداية للنهاية. ساعدوني في إيجاد أفضل استثمار بالرياض.", text_en:"Professional experience from start to finish. Helped me find the best investment in Riyadh." },
+      { name:"منى السبيعي", role_ar:"ربة منزل", role_en:"Homeowner", text_ar:"شريت شقتي الأولى بخطوات بسيطة وبدون ضغط. الفريق كان صادقاً وأمانته ممتازة.", text_en:"I bought my first apartment in simple steps without pressure. The team was honest and trustworthy." },
+      { name:"سعد الغامدي", role_ar:"رجل أعمال", role_en:"Businessman", text_ar:"أحسن شركة عقارية تعاملت معها. سرعة في التنفيذ وشفافية كاملة في التعامل.", text_en:"Best real estate company I've worked with. Fast execution and complete transparency in dealing." },
+    ],
+  },
+  education: {
+    primary: "#1e3a8a", accent: "#f97316", dark: "#050d1a",
+    icons: ["fa-graduation-cap","fa-book-open","fa-chalkboard-teacher","fa-award","fa-lightbulb","fa-users"],
+    hero_image: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1577896851231-70ef18881754?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1588072432836-e10032774350?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"10+", label_ar:"سنوات خبرة", label_en:"Years Experience" }, { num:"5000+", label_ar:"طالب تخرج", label_en:"Graduates" }, { num:"95%", label_ar:"نسبة النجاح", label_en:"Success Rate" }, { num:"200+", label_ar:"كورس متخصص", label_en:"Specialized Courses" }],
+    testimonials: [
+      { name:"يوسف الحربي", role_ar:"طالب جامعي", role_en:"University Student", text_ar:"غيّر مسيرتي التعليمية بالكامل. الطريقة التعليمية مبتكرة وتناسب كل الأعمار.", text_en:"Completely changed my educational path. The teaching method is innovative and suits all ages." },
+      { name:"لمياء الغامدي", role_ar:"والدة", role_en:"Parent", text_ar:"ابني تحسن مستواه بشكل واضح بعد الالتحاق هنا. المعلمون متفانون ومتفاعلون.", text_en:"My son's level improved significantly after joining here. Teachers are dedicated and engaging." },
+      { name:"أحمد المنصور", role_ar:"موظف حكومي", role_en:"Government Employee", text_ar:"كورسات احترافية بشهادات معتمدة. طوّرت مهاراتي وحصلت على ترقية في العمل.", text_en:"Professional courses with accredited certificates. Developed my skills and got a work promotion." },
+    ],
+  },
+  events: {
+    primary: "#7c3aed", accent: "#f59e0b", dark: "#0f0520",
+    icons: ["fa-calendar-star","fa-music","fa-champagne-glasses","fa-camera","fa-microphone","fa-gift"],
+    hero_image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1511578314322-379afb476865?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1478147427282-58a87a433000?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"500+", label_ar:"فعالية منظَّمة", label_en:"Events Organized" }, { num:"50K+", label_ar:"ضيف سعيد", label_en:"Happy Guests" }, { num:"12+", label_ar:"سنة خبرة", label_en:"Years Experience" }, { num:"4.9", label_ar:"تقييم العملاء", label_en:"Client Rating" }],
+    testimonials: [
+      { name:"بدر العجمي", role_ar:"مدير شركة", role_en:"Company Director", text_ar:"نظّموا مؤتمرنا السنوي بشكل رائع. كل تفصيل كان مثالياً وفريق العمل محترف جداً.", text_en:"They organized our annual conference brilliantly. Every detail was perfect and the team was very professional." },
+      { name:"حصة الدوسري", role_ar:"عروس", role_en:"Bride", text_ar:"حفل زفافي كان حلماً حقيقياً! التنظيم والديكور تجاوزا كل توقعاتي. شكراً من القلب.", text_en:"My wedding was a real dream! The organization and decor exceeded all my expectations. Thank you from the heart." },
+      { name:"طلال الزهراني", role_ar:"مدير تسويق", role_en:"Marketing Manager", text_ar:"فعالية إطلاق منتجنا كانت ناجحة بامتياز. عدد الزوار تجاوز التوقعات بفضل إدارتهم الممتازة.", text_en:"Our product launch event was an outstanding success. Visitor numbers exceeded expectations thanks to their excellent management." },
+    ],
+  },
+  automotive: {
+    primary: "#1e293b", accent: "#ef4444", dark: "#050a14",
+    icons: ["fa-car","fa-wrench","fa-gear","fa-oil-can","fa-car-burst","fa-gauge-high"],
+    hero_image: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1562141961-b6d9dd57b5cf?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"15+", label_ar:"سنة خبرة", label_en:"Years Experience" }, { num:"20K+", label_ar:"سيارة صيانة", label_en:"Cars Serviced" }, { num:"50+", label_ar:"فني متخصص", label_en:"Expert Technicians" }, { num:"100%", label_ar:"ضمان الجودة", label_en:"Quality Guarantee" }],
+    testimonials: [
+      { name:"محمد العتيبي", role_ar:"صاحب سيارة", role_en:"Car Owner", text_ar:"أفضل مركز صيانة بالرياض. الفنيون محترفون والسعر معقول جداً مقارنة بالوكالة.", text_en:"Best maintenance center in Riyadh. Technicians are professional and prices are very reasonable compared to dealerships." },
+      { name:"عبدالعزيز الشهري", role_ar:"رجل أعمال", role_en:"Businessman", text_ar:"يصلحون سيارتي دائماً بأمانة وبدون مفاجآت في الفاتورة. أثق فيهم ثقة عمياء.", text_en:"They always fix my car honestly and without billing surprises. I trust them blindly." },
+      { name:"تركي الحربي", role_ar:"موظف", role_en:"Employee", text_ar:"سرعة الخدمة مذهلة! جاؤوا لموقعي وأصلحوا سيارتي في نفس اليوم. خدمة استثنائية.", text_en:"Amazing service speed! They came to my location and fixed my car the same day. Exceptional service." },
+    ],
+  },
+  luxury: {
+    primary: "#0a0a0a", accent: "#d4a843", dark: "#080808",
+    icons: ["fa-gem","fa-crown","fa-star","fa-diamond","fa-gift","fa-award"],
+    hero_image: "https://images.unsplash.com/photo-1541643600914-78b084683601?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1588776814546-1ffbb7c4f58a?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1416339306562-f3d12fefd36f?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"20+", label_ar:"سنة حرفية", label_en:"Years of Craft" }, { num:"10K+", label_ar:"عميل VIP", label_en:"VIP Clients" }, { num:"100%", label_ar:"مواد أصلية", label_en:"Authentic Materials" }, { num:"50+", label_ar:"دولة نشحن إليها", label_en:"Countries Served" }],
+    testimonials: [
+      { name:"الأمير بندر", role_ar:"مقتنٍ للفن", role_en:"Art Collector", text_ar:"جودة استثنائية وخدمة تليق بأرقى العملاء. كل قطعة تحكي قصة من الفخامة والتميز.", text_en:"Exceptional quality and service worthy of the most distinguished clients. Every piece tells a story of luxury." },
+      { name:"نوف الراشد", role_ar:"سيدة أعمال", role_en:"Businesswoman", text_ar:"تجربة تسوق فريدة ومميزة. الاهتمام بالتفاصيل والتغليف الفاخر يجعل كل هدية لا تُنسى.", text_en:"A unique and distinguished shopping experience. The attention to detail and luxury packaging makes every gift unforgettable." },
+      { name:"فيصل الأنصاري", role_ar:"مستثمر", role_en:"Investor", text_ar:"منتجات أصيلة بجودة عالمية. هذا المستوى من الفخامة نادر في السوق السعودي.", text_en:"Authentic products with world-class quality. This level of luxury is rare in the Saudi market." },
+    ],
+  },
+  gym: {
+    primary: "#dc2626", accent: "#f97316", dark: "#0a0505",
+    icons: ["fa-dumbbell","fa-fire","fa-person-running","fa-heart-pulse","fa-trophy","fa-bolt"],
+    hero_image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1600&h=900&fit=crop&q=85",
+    about_image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop&q=80",
+    gallery_images: [
+      "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1598971639058-fab3c3109a00?w=600&h=400&fit=crop&q=75",
+      "https://images.unsplash.com/photo-1549060279-7e168fcee0c2?w=600&h=400&fit=crop&q=75",
+    ],
+    stats: [{ num:"5+", label_ar:"سنوات خبرة", label_en:"Years Experience" }, { num:"2000+", label_ar:"عضو نشط", label_en:"Active Members" }, { num:"50+", label_ar:"أجهزة حديثة", label_en:"Modern Equipment" }, { num:"20+", label_ar:"مدرب معتمد", label_en:"Certified Trainers" }],
+    testimonials: [
+      { name:"يزيد المطيري", role_ar:"رياضي", role_en:"Athlete", text_ar:"أفضل صالة بالرياض! المعدات حديثة والمدربون محترفون. خسرت 15 كيلو في 3 أشهر.", text_en:"Best gym in Riyadh! Modern equipment and professional trainers. Lost 15kg in 3 months." },
+      { name:"رنا الحميدان", role_ar:"موظفة", role_en:"Employee", text_ar:"بيئة تحفيزية ومريحة. الجدول التدريبي منظم ومناسب لأوقاتي. أنصح به بشدة للمرأة السعودية.", text_en:"Motivating and comfortable environment. The training schedule is organized and suits my times. Highly recommended for Saudi women." },
+      { name:"عمر السليمان", role_ar:"مدير", role_en:"Manager", text_ar:"الاشتراك يستحق كل ريال. المدرب الشخصي غيّر حياتي وأسلوبي في التفكير بالصحة.", text_en:"The subscription is worth every riyal. The personal trainer changed my life and my mindset about health." },
     ],
   },
   general: {

@@ -394,14 +394,46 @@ export default function EditorPage() {
     },
   });
 
-  // Compress image to max 600px wide, JPEG quality 0.75 — reduces base64 size drastically
+  // Remove near-white background from canvas (for logos)
+  function removeWhiteBackground(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, threshold = 230): boolean {
+    const { width, height } = canvas;
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const d = imageData.data;
+    // Sample 4 corners + center-edges to detect if white background
+    const sampleIdxs = [
+      0,
+      (width - 1) * 4,
+      (height - 1) * width * 4,
+      ((height - 1) * width + width - 1) * 4,
+      Math.floor(width / 2) * 4,
+    ];
+    let whiteCount = 0;
+    for (const idx of sampleIdxs) {
+      if (d[idx] > threshold && d[idx + 1] > threshold && d[idx + 2] > threshold && d[idx + 3] > 200) {
+        whiteCount++;
+      }
+    }
+    if (whiteCount < 3) return false; // Not a white background
+    // Flood-fill from corners to remove white bg (edges → inward)
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      if (r > threshold && g > threshold && b > threshold) {
+        d[i + 3] = 0;
+      }
+    }
+    ctx.putImageData(imageData, 0, 0);
+    return true;
+  }
+
+  // Compress image. For likely logos (PNG/small), attempt white bg removal → output PNG
   const compressImage = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const img = new window.Image();
         img.onload = () => {
-          const MAX = 600;
+          const isLikelyLogo = file.type === "image/png" || file.type === "image/svg+xml" || Math.max(img.width, img.height) <= 800;
+          const MAX = isLikelyLogo ? 400 : 600;
           const ratio = Math.min(1, MAX / Math.max(img.width, img.height));
           const w = Math.round(img.width * ratio);
           const h = Math.round(img.height * ratio);
@@ -411,7 +443,12 @@ export default function EditorPage() {
           const ctx = canvas.getContext("2d");
           if (!ctx) return reject(new Error("Canvas not available"));
           ctx.drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", 0.75));
+          if (isLikelyLogo) {
+            const removed = removeWhiteBackground(canvas, ctx);
+            resolve(canvas.toDataURL(removed ? "image/png" : "image/jpeg", removed ? undefined : 0.8));
+          } else {
+            resolve(canvas.toDataURL("image/jpeg", 0.75));
+          }
         };
         img.onerror = () => reject(new Error("Failed to load image"));
         img.src = e.target?.result as string;

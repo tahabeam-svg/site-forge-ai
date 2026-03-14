@@ -2,7 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite, generateSocialPostImage } from "./ai";
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
@@ -1238,6 +1238,43 @@ Sitemap: https://arabyweb.net/sitemap.xml
     } catch (err) {
       console.error("Marketing generation error:", err);
       res.status(500).json({ message: "Failed to generate content" });
+    }
+  });
+
+  // ── Generate social media post image (DALL-E 3) ────────────────────────────
+  app.post("/api/marketing/generate-image", isAuthenticated, async (req: any, res) => {
+    try {
+      if (!checkAiRateLimit(req.user.id)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به. انتظر دقيقة.", messageEn: "Too many requests. Please wait a moment." });
+      }
+
+      const { isFreePlan, isUserAdmin, credits } = await getUserPlanInfo(req.user.id);
+
+      if (isFreePlan && !isUserAdmin) {
+        return res.status(402).json({ message: "upgrade_required", messageAr: "توليد الصور متاح للخطط المدفوعة فقط.", messageEn: "Image generation is available on paid plans only." });
+      }
+
+      if (!isUserAdmin && credits <= 0) {
+        return res.status(402).json({ message: "insufficient_credits", messageAr: "انتهى رصيد جلسات الذكاء.", messageEn: "Your AI credits are depleted." });
+      }
+
+      const { topic, platform, language, postContent } = req.body;
+      if (!topic || !platform) return res.status(400).json({ message: "topic and platform are required" });
+
+      const result = await generateSocialPostImage(topic, platform, language || "ar", postContent);
+
+      if (!isUserAdmin) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+      }
+
+      res.json(result);
+    } catch (err: any) {
+      console.error("Image generation error:", err);
+      const isContentPolicy = err?.message?.includes("content_policy") || err?.message?.includes("safety");
+      if (isContentPolicy) {
+        return res.status(400).json({ message: "content_policy", messageAr: "لا يمكن توليد هذه الصورة. حاول بموضوع مختلف.", messageEn: "Cannot generate this image. Try a different topic." });
+      }
+      res.status(500).json({ message: "Failed to generate image" });
     }
   });
 

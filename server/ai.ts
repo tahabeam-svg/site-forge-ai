@@ -717,6 +717,59 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks. The post fi
   }
 }
 
+// ─── Social Media Post Image Generation (DALL-E) ────────────────────────────
+export async function generateSocialPostImage(
+  topic: string,
+  platform: string,
+  language: string = "ar",
+  postContent?: string
+): Promise<{ url: string; revisedPrompt?: string }> {
+  const isArabic = language === "ar";
+
+  const platformStyle: Record<string, string> = {
+    instagram: "vibrant, high-contrast, aesthetically pleasing, Instagram-worthy, lifestyle photography style",
+    twitter: "clean, bold, impactful, minimal, eye-catching graphic style",
+    facebook: "warm, engaging, community-feel, professional yet approachable",
+    linkedin: "professional, corporate, clean, business-oriented",
+    tiktok: "trendy, youthful, vibrant, Gen-Z aesthetic, dynamic",
+    youtube: "cinematic, thumbnail style, high contrast, bold text space",
+  };
+
+  const style = platformStyle[platform] || "professional, high quality, modern";
+
+  const imagePrompt = `Create a professional square social media post image (1:1 ratio) for ${platform}.
+
+Topic: ${topic}
+${postContent ? `Post context: ${postContent.slice(0, 200)}` : ""}
+
+Visual style: ${style}
+Market: Saudi Arabia / Arab world
+Aesthetic requirements:
+- NO text or Arabic text in the image (text will be added separately)
+- High quality, professional photography or illustration
+- Colors that work for ${platform} feed
+- Clean composition with clear focal point
+- Modern, premium feel suitable for Saudi/Gulf market
+
+The image should visually represent: ${topic}`;
+
+  const response = await openai.images.generate({
+    model: "dall-e-3",
+    prompt: imagePrompt,
+    n: 1,
+    size: "1024x1024",
+    quality: "standard",
+  });
+
+  const imageUrl = response.data?.[0]?.url;
+  if (!imageUrl) throw new Error("No image generated");
+
+  return {
+    url: imageUrl,
+    revisedPrompt: response.data?.[0]?.revised_prompt,
+  };
+}
+
 // ─── Smart command pre-processor ────────────────────────────────────────────
 
 function extractBusinessTypeFromHtml(html: string): string {
@@ -1133,7 +1186,7 @@ Generate complete multilingual website content. Return this EXACT JSON structure
 {
   "business_name_ar": "brand name in Arabic",
   "business_name_en": "brand name in English",${extraLangBlock}
-  "business_type": "one of: restaurant, agency, startup, portfolio, medical, general",
+  "business_type": "one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym",
   "ar": {
     "hero_title": "compelling Arabic headline, max 8 words",
     "hero_subtitle": "engaging Arabic subtitle, 1-2 sentences",
@@ -1179,7 +1232,8 @@ Generate complete multilingual website content. Return this EXACT JSON structure
 }
 
 Rules:
-- business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general
+- business_type must be exactly one of: restaurant, agency, startup, portfolio, medical, general, legal, beauty, realestate, education, events, automotive, luxury, gym
+- legal = law firms/offices, beauty = salons/spas/cosmetics, realestate = property/real estate, education = schools/academies/courses, events = event planning/weddings/conferences, automotive = cars/garages/auto services, luxury = perfume/jewelry/premium goods, gym = fitness/sports centers
 - Colors must match the business personality (warm for restaurant, professional for agency, etc.)
 - ALL services must be specific to this exact business type, not generic
 - hero_title must be exciting and benefit-driven${extraLangCode ? `\n- Include the "${extraLangCode}" section with authentic, natural ${extraLangName} translations` : ""}`;

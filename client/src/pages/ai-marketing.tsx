@@ -28,6 +28,9 @@ import {
   BrainCircuit,
   ShoppingCart,
   AlertTriangle,
+  ImageIcon,
+  Download,
+  RefreshCw,
 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 
@@ -80,6 +83,7 @@ export default function AIMarketingPage() {
   const [selectedTone, setSelectedTone] = useState("professional");
   const [result, setResult] = useState<SocialContent | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [postImageUrl, setPostImageUrl] = useState<string | null>(null);
 
   const { data: subscription } = useQuery<{ plan: string; credits: number; isAdmin?: boolean }>({
     queryKey: ["/api/subscription"],
@@ -116,6 +120,7 @@ export default function AIMarketingPage() {
     },
     onSuccess: (data: SocialContent) => {
       setResult(data);
+      setPostImageUrl(null);
       qc.invalidateQueries({ queryKey: ["/api/credits"] });
       qc.invalidateQueries({ queryKey: ["/api/subscription"] });
       qc.invalidateQueries({ queryKey: ["/api/me"] });
@@ -144,6 +149,36 @@ export default function AIMarketingPage() {
           variant: "destructive",
         });
       }
+    },
+  });
+
+  const imageMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/marketing/generate-image", {
+        topic,
+        platform: selectedPlatform,
+        language: lang,
+        postContent: result?.post,
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw err;
+      }
+      return res.json() as Promise<{ url: string }>;
+    },
+    onSuccess: (data) => {
+      setPostImageUrl(data.url);
+      qc.invalidateQueries({ queryKey: ["/api/credits"] });
+      qc.invalidateQueries({ queryKey: ["/api/subscription"] });
+      qc.invalidateQueries({ queryKey: ["/api/me"] });
+      toast({ title: lang === "ar" ? "تم توليد الصورة!" : "Image generated!", description: lang === "ar" ? "تم خصم جلسة ذكاء واحدة." : "1 AI session deducted." });
+    },
+    onError: (err: any) => {
+      toast({
+        title: lang === "ar" ? "فشل توليد الصورة" : "Image generation failed",
+        description: lang === "ar" ? (err.messageAr || "حاول مجدداً") : (err.messageEn || "Please try again"),
+        variant: "destructive",
+      });
     },
   });
 
@@ -527,6 +562,62 @@ export default function AIMarketingPage() {
                     <Clock className="w-3.5 h-3.5" />
                     <span>{lang === "ar" ? "أفضل وقت للنشر:" : "Best time to post:"}</span>
                     <span className="font-medium text-foreground">{result.bestTimeToPost}</span>
+                  </div>
+
+                  {/* Generate Post Image section */}
+                  <div className="border-t border-border pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium flex items-center gap-1.5">
+                        <ImageIcon className="w-3.5 h-3.5 text-violet-600" />
+                        {lang === "ar" ? "صورة البوست (مربعة 1:1)" : "Post Image (Square 1:1)"}
+                      </label>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => imageMutation.mutate()}
+                        disabled={imageMutation.isPending || noCredits}
+                        className="text-xs h-7 gap-1"
+                        data-testid="button-generate-post-image"
+                      >
+                        {imageMutation.isPending ? (
+                          <><Loader2 className="w-3 h-3 animate-spin" />{lang === "ar" ? "جاري..." : "Generating..."}</>
+                        ) : postImageUrl ? (
+                          <><RefreshCw className="w-3 h-3" />{lang === "ar" ? "توليد جديد" : "Regenerate"}</>
+                        ) : (
+                          <><Sparkles className="w-3 h-3 text-violet-600" />{lang === "ar" ? "توليد صورة" : "Generate Image"}<span className="text-[10px] opacity-60 flex items-center gap-0.5">(<BrainCircuit className="w-2.5 h-2.5" />1)</span></>
+                        )}
+                      </Button>
+                    </div>
+                    {postImageUrl ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-border">
+                        <img
+                          src={postImageUrl}
+                          alt="Generated post image"
+                          className="w-full aspect-square object-cover"
+                          data-testid="img-generated-post"
+                        />
+                        <a
+                          href={postImageUrl}
+                          download="post-image.png"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="absolute bottom-3 end-3 flex items-center gap-1.5 bg-black/70 text-white text-xs px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          data-testid="button-download-post-image"
+                        >
+                          <Download className="w-3 h-3" />
+                          {lang === "ar" ? "تنزيل" : "Download"}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="w-full aspect-square rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                        <ImageIcon className="w-10 h-10 opacity-20" />
+                        <p className="text-xs text-center px-4">
+                          {lang === "ar"
+                            ? "اضغط على «توليد صورة» لإنشاء صورة مربعة مناسبة للبوست"
+                            : "Click «Generate Image» to create a square image for your post"}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   {/* WhatsApp share button */}
