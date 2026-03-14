@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { runQualityCheck } from "./design-system.js";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -1533,6 +1534,32 @@ VALIDATION RULES — verify before returning:
       parsed.business_name_en = parsed.business_name_ar;
     }
     bilingualContent = parsed;
+
+    // ── Design System Quality Gate ────────────────────────────
+    const qReport = runQualityCheck({
+      ar: parsed.ar,
+      primary_color: parsed.primary_color || "#000",
+      accent_color:  parsed.accent_color  || "#000",
+      testimonials:  parsed.testimonials,
+    });
+    if (qReport.passed) {
+      console.log(`[AI Quality] ✓ Score ${qReport.score}/100${qReport.warnings.length ? ` | Warnings: ${qReport.warnings.join("; ")}` : ""}`);
+    } else {
+      console.warn(`[AI Quality] ✗ Score ${qReport.score}/100 — Issues: ${qReport.issues.join("; ")}`);
+      // Patch fallback values so the template still renders gracefully
+      if (parsed.ar.services.length < 6) {
+        while (parsed.ar.services.length < 6) parsed.ar.services.push({ title: "خدمة إضافية", desc: "خدمة متميزة مصممة لتلبية احتياجاتكم" });
+        while (parsed.en.services.length < 6) parsed.en.services.push({ title: "Additional Service", desc: "A premium service designed to meet your needs" });
+      }
+      if (!parsed.testimonials || parsed.testimonials.length < 3) {
+        parsed.testimonials = (parsed.testimonials || []).concat([
+          { name: "عبدالله الحارثي", role_ar: "عميل مميز", role_en: "Premium Client", text_ar: "تجربة رائعة واحترافية عالية جداً، أنصح بشدة بالتعامل مع هذه الشركة المتميزة.", text_en: "Amazing experience and very high professionalism. I highly recommend dealing with this distinguished company." },
+          { name: "سارة المطيري", role_ar: "رائدة أعمال", role_en: "Entrepreneur", text_ar: "خدمة لا مثيل لها وفريق عمل محترف، ساعدوني كثيراً في تحقيق أهدافي.", text_en: "Unmatched service and professional team, they helped me greatly in achieving my goals." },
+          { name: "محمد الغامدي", role_ar: "مدير تنفيذي", role_en: "Executive Manager", text_ar: "سعيد جداً بنتائج التعاون، الجودة والدقة في العمل تستحق كل الثقة والاحترام.", text_en: "Very satisfied with the results of our cooperation, the quality and accuracy deserve full trust and respect." },
+        ].slice(0, 3 - (parsed.testimonials?.length || 0)));
+      }
+    }
+
     // Extract extra language content if present
     if (extraLangCode && parsed[extraLangCode]) {
       extraLang = {

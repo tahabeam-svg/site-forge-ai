@@ -1,3 +1,5 @@
+import { buildButtonCSS, buildComponentCSS, runQualityCheck, getIconSVG, TOKENS, LAYOUT } from "./design-system.js";
+
 export interface BusinessContent {
   business_name: string;
   business_type: "restaurant" | "agency" | "startup" | "portfolio" | "medical" | "general" | "legal" | "beauty" | "realestate" | "education" | "events" | "automotive" | "luxury" | "gym" | "ecommerce" | "tech" | "consulting" | "logistics" | "cleaning" | "photography" | "finance" | "hotel" | "charity" | "freelance";
@@ -721,9 +723,7 @@ const FA_TO_SVG: Record<string, string> = {
 };
 
 function getSvcIcon(iconClass: string): string {
-  const svg = FA_TO_SVG[iconClass];
-  if (!svg) return FA_TO_SVG["fa-briefcase"];
-  return svg;
+  return getIconSVG(iconClass);
 }
 
 const STAR_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
@@ -1232,8 +1232,39 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="nor
 })();
 </script>`;
 
+  // ── Quality Check ──────────────────────────────────────────
+  const qr = runQualityCheck({
+    ar: content.ar,
+    primary_color: primary,
+    accent_color: accent,
+    testimonials: content.testimonials,
+  });
+  if (!qr.passed) {
+    console.warn(`[DesignSystem] Quality check FAILED (score=${qr.score}/100):`, qr.issues);
+  } else {
+    console.log(`[DesignSystem] Quality check PASSED (score=${qr.score}/100)`, qr.warnings.length ? `Warnings: ${qr.warnings.join("; ")}` : "");
+  }
+
+  // ── Design System Token Snapshot (for CSS vars) ──────────
+  const DS = {
+    containerMax:  LAYOUT.containerMax,
+    sectionPadV:   LAYOUT.sectionPadV,
+    cardGap:       LAYOUT.cardGap,
+    cardRadius:    TOKENS.radius.card,
+    btnRadius:     TOKENS.radius.button,
+    shadowCard:    TOKENS.shadow.card,
+    easeSpring:    TOKENS.ease.spring,
+  };
+
   const css = `
 ${fontImport}
+
+/* ═══════════════════════════════════════════════════════════
+   ArabyWeb Design System CSS
+   Container: ${DS.containerMax} | Section Padding: ${DS.sectionPadV}
+   Card Radius: ${DS.cardRadius} | Button Radius: ${DS.btnRadius}
+   Card Gap: ${DS.cardGap}
+═══════════════════════════════════════════════════════════ */
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;font-size:16px;}
@@ -1497,6 +1528,33 @@ input,textarea,select,button{font:inherit;}
 .footer-bottom-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;}
 .footer-bottom p,.footer-powered{color:rgba(255,255,255,0.2);font-size:0.82rem;}
 .footer-powered{color:rgba(255,255,255,0.18)!important;font-size:0.78rem!important;}
+
+/* ════ DESIGN SYSTEM: Unified Button System ════ */
+${buildButtonCSS(primary, accent, fontBody)}
+
+/* ── Button aliases (legacy classes → design system) ── */
+.btn-glow,.btn-primary-solid,.mob-cta-link{--_p:${primary};--_a:${accent};}
+.btn-glow,.btn-primary-solid{display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,${primary},${accent});color:#fff;padding:14px 28px;border-radius:12px;font-weight:600;font-size:1rem;box-shadow:0 6px 16px rgba(0,0,0,0.15),0 2px 4px rgba(0,0,0,0.1),inset 0 1px 0 rgba(255,255,255,0.15);transition:transform 0.25s cubic-bezier(.22,1,.36,1),box-shadow 0.25s ease;}
+.btn-glow:hover,.btn-primary-solid:hover{transform:translateY(-2px);box-shadow:0 12px 28px ${primary}55,0 4px 8px rgba(0,0,0,0.15);}
+.btn-glow:active,.btn-primary-solid:active{transform:translateY(1px);}
+.btn-ghost{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.28);color:#fff;padding:14px 24px;border-radius:12px;font-weight:600;font-size:1rem;backdrop-filter:blur(10px);transition:transform 0.25s cubic-bezier(.22,1,.36,1),box-shadow 0.25s,background 0.2s,border-color 0.2s;}
+.btn-ghost:hover{background:rgba(255,255,255,0.14);border-color:rgba(255,255,255,0.5);transform:translateY(-2px);}
+.btn-ghost:active{transform:translateY(1px);}
+.btn-white{display:inline-flex;align-items:center;gap:0.5rem;background:#fff;color:${primary};padding:14px 28px;border-radius:12px;font-weight:700;font-size:1rem;box-shadow:0 6px 16px rgba(0,0,0,0.15),0 2px 4px rgba(0,0,0,0.08);transition:transform 0.25s cubic-bezier(.22,1,.36,1),box-shadow 0.25s;white-space:nowrap;}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,0.25);}
+.btn-white:active{transform:translateY(1px);}
+
+/* ════ DESIGN SYSTEM: Icon System ════ */
+/* Icons use inline SVG — no external CDN required */
+/* Service card icons are MANDATORY (quality check validates presence) */
+.service-icon-wrap svg{width:32px;height:32px;color:${primary};stroke:${primary};fill:none;transition:all 0.35s;flex-shrink:0;}
+.service-icon-wrap svg[fill="currentColor"]{fill:${primary};stroke:none;}
+.service-card:hover .service-icon-wrap svg{color:#fff;stroke:#fff;fill:none;}
+.service-card:hover .service-icon-wrap svg[fill="currentColor"]{fill:#fff;stroke:none;}
+
+/* ════ DESIGN SYSTEM: Layout Constraints ════ */
+/* Container max: ${LAYOUT.containerMax} | Section V-pad: ${LAYOUT.sectionPadV} */
+/* Card grid gap: ${LAYOUT.cardGap} | Card radius: ${TOKENS.radius.card} */
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1024px){
