@@ -35,7 +35,7 @@ type WebsiteCategory = "romantic" | "portfolio" | "event" | "business";
 
 function detectWebsiteCategory(description: string): WebsiteCategory {
   const d = description.toLowerCase();
-  const romantic = ["حبيبت","حبيبي","حبيبه","عشيقت","زوجت","زوجي","girlfriend","boyfriend","lover","sweetheart","my love","بحبك","احبك","أحبك","ذكرى زواج","عيد زواج","عيد حب","valentine","anniversary","قلبي","رفيقت","رفيقي","لحبيبي","لحبيبتي","لزوجتي","لزوجي","أميرت","أميرتي","نغم","نور","ريم","لين","روان","ريان","هند","سارة","مريم","فاطمة","ياسمين","لحبيب","صديقتي","girlfriend website","love website"];
+  const romantic = ["حبيبت","حبيبي","حبيبه","عشيقت","زوجت","زوجي","girlfriend","boyfriend","lover","sweetheart","my love","بحبك","احبك","أحبك","ذكرى زواج","عيد زواج","عيد حب","valentine","anniversary","قلبي","رفيقت","رفيقي","لحبيبي","لحبيبتي","لزوجتي","لزوجي","أميرت","أميرتي","لحبيب","صديقتي","girlfriend website","love website","موقع هدية","هدية رقمية","gift for my","surprise for my"];
   const portfolio = ["بورتفوليو","portfolio","أعمالي","موهبتي","مصور","مصمم","فنان","معلم","مدرس","طبيب","مهندس","محامي","شخصي","personal","resume","cv","سيرة ذاتية","شاعر","كاتب","موسيقي","فريلانسر","freelancer","مستقل","مطور","developer","ux designer","ui designer","مترجم","translator","مدرب","coach","influencer","مؤثر","youtuber","content creator","صانع محتوى"];
   const event = ["حفل","مناسبة","زفاف","خطوبة","عقد قران","حفلة","wedding","party","event","exhibition","معرض","مهرجان","festival","سوق","قرن","ختان","تخرج","graduation","عيد ميلاد موقع","birthday website","ملتقى","مؤتمر","conference","summit","قمة","ندوة","seminar","workshop","ورشة عمل","launch event","حفل إطلاق"];
   if (romantic.some(k => d.includes(k))) return "romantic";
@@ -1336,10 +1336,24 @@ export async function generateInstantWebsite(
   const systemPrompt = `You are an expert multilingual website content generator specializing in Saudi/Arab businesses. Generate professional, conversion-optimized website copy in Arabic, English${extraLangName ? `, and ${extraLangName}` : ""} from a user prompt.
 
 CRITICAL RULES:
-1. Read the user prompt carefully and identify the EXACT type of business — be specific
-2. Generate content that is 100% relevant to the actual business described (مقاولات→construction services, تنظيف→cleaning services, محاسبة→accounting firm, etc.)
-3. ALL 6 services must be real services that this type of business actually offers — no generic filler
-4. If the business type is unusual or niche, use the closest category and still generate fully specific content
+1. The prompt often starts with "نوع النشاط: X" (activity type) — this is the MOST IMPORTANT signal for business_type selection. Always map it:
+   - مطعم وكافيه → "restaurant"
+   - عيادة وصحة → "medical"
+   - تجميل وعناية → "beauty"
+   - تعليم وتدريب → "education"
+   - عقارات → "realestate"
+   - تقنية ومتاجر → "tech" or "ecommerce" (pick based on the business description)
+   - تصميم وإبداع → "agency"
+   - فعاليات → "events"
+   - خدمات وأعمال → infer from the business name/description: نظافة/تنظيف="cleaning", كهرباء/صيانة="general", نقل/شحن="logistics", مقاولات/بناء="agency", otherwise "general"
+   - محاماة واستشارات → "legal" or "consulting"
+   - موقع شخصي → "portfolio"
+   - رومانسي / هدية → "general"
+   - Activity type: Restaurant → "restaurant", Medical → "medical", Beauty → "beauty", Education → "education", etc.
+   - Anything else → use closest match or "general"
+2. The business NAME ("الاسم: X") is JUST the brand name — NEVER use it to determine business type. "نغم" could be cleaning, "نور" could be a clinic, etc.
+3. Generate content that is 100% relevant to the actual business described — no generic filler
+4. ALL 6 services must be real services that this business type actually offers
 5. Hero title must be powerful, benefit-driven, and specific to the industry
 6. Return ONLY valid JSON, no markdown, no explanation`;
 

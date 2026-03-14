@@ -683,10 +683,11 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
       // Inject user logo into the site if provided
       if (logoDataUrl && logoDataUrl.startsWith("data:image/")) {
-        const logoImg = `<img id="aw-ai-logo" src="${logoDataUrl}" alt="logo" style="height:44px;width:auto;object-fit:contain;display:block;">`;
-        const logoImgFooter = `<img id="aw-ai-logo-footer" src="${logoDataUrl}" alt="logo" style="height:32px;width:auto;object-fit:contain;display:block;">`;
+        const logoStyle = "height:44px;width:auto;object-fit:contain;display:block;mix-blend-mode:multiply;";
+        const logoStyleFooter = "height:32px;width:auto;object-fit:contain;display:block;mix-blend-mode:multiply;";
+        const logoImg = `<img id="aw-ai-logo" src="${logoDataUrl}" alt="logo" style="${logoStyle}">`;
+        const logoImgFooter = `<img id="aw-ai-logo-footer" src="${logoDataUrl}" alt="logo" style="${logoStyleFooter}">`;
         if (baseHtml.includes('id="aw-ai-logo"') || baseHtml.includes("id='aw-ai-logo'")) {
-          // Replace AI-generated SVG logo with the user's uploaded logo image
           baseHtml = baseHtml.replace(/<svg[^>]*id=["']aw-ai-logo["'][^>]*>[\s\S]*?<\/svg>/gi, logoImg);
           baseHtml = baseHtml.replace(/<img[^>]*id=["']aw-ai-logo["'][^>]*\/?>/gi, logoImg);
           baseHtml = baseHtml.replace(/<svg[^>]*id=["']aw-ai-logo-footer["'][^>]*>[\s\S]*?<\/svg>/gi, logoImgFooter);
@@ -694,13 +695,12 @@ Sitemap: https://arabyweb.net/sitemap.xml
         } else if (baseHtml.includes('class="aw-brand"') || baseHtml.includes("class='aw-brand'")) {
           baseHtml = baseHtml.replace(
             /(<a[^>]*class=["']aw-brand["'][^>]*>)/gi,
-            `$1<img src="${logoDataUrl}" alt="logo" style="height:36px;width:auto;object-fit:contain;vertical-align:middle;margin-inline-end:8px;">`
+            `$1<img src="${logoDataUrl}" alt="logo" style="height:36px;width:auto;object-fit:contain;vertical-align:middle;margin-inline-end:8px;mix-blend-mode:multiply;">`
           );
         } else if (baseHtml.includes("__AW_IMG_001__")) {
           baseHtml = baseHtml.replace(/__AW_IMG_001__/g, logoDataUrl);
         } else {
-          // Fallback: inject as floating logo in hero
-          const heroImgTag = `<img src="${logoDataUrl}" alt="logo" style="height:64px;width:auto;object-fit:contain;margin:0 auto 16px;display:block;">`;
+          const heroImgTag = `<img src="${logoDataUrl}" alt="logo" style="height:64px;width:auto;object-fit:contain;margin:0 auto 16px;display:block;mix-blend-mode:multiply;">`;
           baseHtml = baseHtml.replace(/(<section[^>]*class=["'][^"']*aw-hero[^"']*["'][^>]*>)/i, `$1${heroImgTag}`);
         }
       }

@@ -1242,9 +1242,14 @@ export default function DashboardPage() {
                     />
                   </div>
 
+                  {!wizardForm.activityType && wizardForm.siteName.trim() && (
+                    <p className="text-xs text-red-500 text-end pb-1">
+                      {lang === "ar" ? "⚠️ يرجى اختيار نوع النشاط أولاً" : "⚠️ Please select an activity type first"}
+                    </p>
+                  )}
                   <div className="flex justify-end pt-1">
                     <Button
-                      disabled={!wizardForm.siteName.trim()}
+                      disabled={!wizardForm.siteName.trim() || !wizardForm.activityType}
                       onClick={() => setWizardStep(2)}
                       className="bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90 gap-2"
                       data-testid="button-next-step"

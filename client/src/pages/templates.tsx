@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import DashboardLayout from "@/components/dashboard-layout";
-import { Crown, Sparkles, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Crown, Sparkles, Loader2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 
 type TemplateSummary = Omit<Template, "previewHtml" | "previewCss">;
 type PaginatedTemplates = { data: TemplateSummary[]; total: number; page: number; limit: number };
@@ -45,6 +45,14 @@ export default function TemplatesPage() {
       : "free website templates Arabic, restaurant website template, store template, company website template",
     lang: isAr ? "ar" : "en",
   });
+
+  const { data: meData } = useQuery<{ plan: string }>({
+    queryKey: ["/api/me"],
+    enabled: isAuthenticated,
+    staleTime: 60 * 1000,
+  });
+  const userPlan = meData?.plan || "free";
+  const isFree = userPlan === "free";
 
   const categoryParam = activeCategory !== "all" ? `&category=${activeCategory}` : "";
   const queryKey = [`/api/templates?summary=true&page=${page}&limit=${LIMIT}${categoryParam}`];
@@ -99,6 +107,28 @@ export default function TemplatesPage() {
     return t(key as any, lang) || cat;
   };
 
+  const handleUseTemplate = (template: TemplateSummary) => {
+    if (!isAuthenticated) {
+      toast({
+        title: isAr ? "سجّل دخولك أولاً" : "Please login first",
+        description: isAr ? "يجب تسجيل الدخول لاستخدام القوالب" : "You need to login to use templates",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+    if (isFree && template.isPremium) {
+      toast({
+        title: isAr ? "🔒 قالب مميز" : "🔒 Premium Template",
+        description: isAr ? "هذا القالب متاح للمشتركين في الخطة المدفوعة فقط. قم بالترقية للوصول إليه." : "This template is for paid plan subscribers only. Upgrade to access it.",
+        variant: "destructive",
+      });
+      navigate("/billing");
+      return;
+    }
+    createFromTemplate.mutate(template.id);
+  };
+
   return (
     <DashboardLayout>
       <div className="p-6 lg:p-8 max-w-7xl mx-auto">
@@ -111,6 +141,15 @@ export default function TemplatesPage() {
               ? `اختر من ${total} قالب احترافي للبدء بسرعة أو استخدم الذكاء الاصطناعي لإنشاء تصميم فريد`
               : `Choose from ${total} professional templates or use AI to create a unique design`}
           </p>
+          {isFree && isAuthenticated && (
+            <div className="mt-3 flex items-center gap-2 text-xs bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-3 py-2 text-amber-700 dark:text-amber-400">
+              <Crown className="w-3.5 h-3.5 shrink-0" />
+              <span>{isAr ? "القوالب المميزة 🔒 متاحة للخطط المدفوعة فقط." : "Premium templates 🔒 are for paid plans only."}</span>
+              <button onClick={() => navigate("/billing")} className="underline font-semibold ms-1">
+                {isAr ? "اشترك الآن" : "Upgrade"}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2 mb-8">
@@ -134,76 +173,84 @@ export default function TemplatesPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {templates.map((template, i) => (
-                <motion.div
-                  key={template.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: Math.min(i * 0.03, 0.4) }}
-                >
-                  <Card className="hover-elevate group" data-testid={`card-template-${template.id}`}>
-                    <div className="relative h-48 bg-muted rounded-t-lg overflow-hidden">
-                      {template.thumbnail ? (
-                        <img
-                          src={template.thumbnail}
-                          alt={isAr && template.nameAr ? template.nameAr : template.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
-                          data-testid={`img-template-${template.id}`}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950 dark:to-teal-900">
-                          <Sparkles className="w-12 h-12 text-emerald-400 opacity-40" />
-                        </div>
-                      )}
-                      {template.isPremium && (
-                        <div className="absolute top-3 right-3 z-10">
-                          <Badge className="bg-amber-500/90 text-white">
-                            <Crown className="w-3 h-3 me-1" />
-                            {t("premium", lang)}
-                          </Badge>
-                        </div>
-                      )}
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold mb-1" data-testid={`text-template-name-${template.id}`}>
-                        {isAr && template.nameAr ? template.nameAr : template.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {isAr && template.descriptionAr ? template.descriptionAr : template.description}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="capitalize">
-                          {categoryLabel(template.category)}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          className="ms-auto"
-                          onClick={() => {
-                            if (!isAuthenticated) {
-                              toast({ title: isAr ? "سجّل دخولك أولاً" : "Please login first", description: isAr ? "يجب تسجيل الدخول لاستخدام القوالب" : "You need to login to use templates", variant: "destructive" });
-                              navigate("/auth");
-                              return;
-                            }
-                            createFromTemplate.mutate(template.id);
-                          }}
-                          disabled={loadingTemplateId !== null}
-                          data-testid={`button-use-template-${template.id}`}
-                        >
-                          {loadingTemplateId === template.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <>
-                              <Sparkles className="w-3.5 h-3.5 me-1" />
-                              {t("selectTemplate", lang)}
-                            </>
-                          )}
-                        </Button>
+              {templates.map((template, i) => {
+                const isPremiumLocked = isFree && template.isPremium;
+                return (
+                  <motion.div
+                    key={template.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: Math.min(i * 0.03, 0.4) }}
+                  >
+                    <Card className={`hover-elevate group ${isPremiumLocked ? "opacity-85" : ""}`} data-testid={`card-template-${template.id}`}>
+                      <div className="relative h-48 bg-muted rounded-t-lg overflow-hidden">
+                        {template.thumbnail ? (
+                          <img
+                            src={template.thumbnail}
+                            alt={isAr && template.nameAr ? template.nameAr : template.name}
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            loading="lazy"
+                            data-testid={`img-template-${template.id}`}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-emerald-950 dark:to-teal-900">
+                            <Sparkles className="w-12 h-12 text-emerald-400 opacity-40" />
+                          </div>
+                        )}
+                        {template.isPremium && (
+                          <div className="absolute top-3 right-3 z-10">
+                            <Badge className="bg-amber-500/90 text-white">
+                              <Crown className="w-3 h-3 me-1" />
+                              {t("premium", lang)}
+                            </Badge>
+                          </div>
+                        )}
+                        {isPremiumLocked && (
+                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center backdrop-blur-[1px]">
+                            <div className="bg-white/90 dark:bg-black/80 rounded-full p-2">
+                              <Lock className="w-5 h-5 text-amber-600" />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold mb-1" data-testid={`text-template-name-${template.id}`}>
+                          {isAr && template.nameAr ? template.nameAr : template.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {isAr && template.descriptionAr ? template.descriptionAr : template.description}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="capitalize">
+                            {categoryLabel(template.category)}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            className={`ms-auto ${isPremiumLocked ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}`}
+                            onClick={() => handleUseTemplate(template)}
+                            disabled={loadingTemplateId !== null}
+                            data-testid={`button-use-template-${template.id}`}
+                          >
+                            {loadingTemplateId === template.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : isPremiumLocked ? (
+                              <>
+                                <Lock className="w-3.5 h-3.5 me-1" />
+                                {isAr ? "ترقية" : "Upgrade"}
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-3.5 h-3.5 me-1" />
+                                {t("selectTemplate", lang)}
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {totalPages > 1 && (
