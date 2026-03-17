@@ -149,8 +149,7 @@ IMAGES (Unsplash):
 
 ${MOBILE_RESPONSIVE_MANDATORY}
 
-Return EXACTLY this JSON (no markdown, no explanation):
-{"html":"complete HTML (no html/head/body tags, use ${dirAttr} on root div, inline <script> at bottom)","css":"complete CSS: Google Fonts @import, full reset (box-sizing:border-box, overflow-x:hidden), all components, all animations, MANDATORY mobile breakpoints @media(max-width:768px) collapsing ALL grids to 1 column, @media(max-width:480px) font size fixes. Include MOBILE_RESPONSIVE_MANDATORY rules.","seoTitle":"${isArabic ? "Arabic" : "English"} title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <head>, Google Fonts @import, Font Awesome 6 CDN link, all animations, responsive breakpoints, and all JS in a <script> at end of <body>. Output ONLY pure HTML. No JSON. No markdown code blocks.`;
   }
 
   if (category === "portfolio") {
@@ -195,8 +194,7 @@ Font: ${font}
 Mobile hamburger: ${mobileMenu}
 ${MOBILE_RESPONSIVE_MANDATORY}
 
-Return EXACTLY this JSON (no markdown):
-{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom with IntersectionObserver + skill bar animations + navbar scroll)","css":"complete CSS: Google Fonts @import, full reset (box-sizing:border-box, overflow-x:hidden, img max-width:100%), all components, animations, MANDATORY @media(max-width:768px) collapsing ALL grids to 1 column, @media(max-width:480px) font size fixes.","seoTitle":"Personal/Portfolio SEO title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <head>, Google Fonts @import, Font Awesome 6 CDN link, all animations including skill progress bars and scroll reveals, responsive breakpoints, and all JS in a <script> at end of <body>. Output ONLY pure HTML. No JSON. No markdown code blocks.`;
   }
 
   if (category === "event") {
@@ -240,8 +238,7 @@ Font: ${font}
 Mobile hamburger: ${mobileMenu}
 ${MOBILE_RESPONSIVE_MANDATORY}
 
-Return EXACTLY this JSON (no markdown):
-{"html":"complete HTML (no html/head/body tags, ${dirAttr} on root div, inline <script> at bottom with countdown timer, scroll reveals, navbar effect)","css":"complete CSS: Google Fonts @import, full reset (box-sizing:border-box, overflow-x:hidden, img max-width:100%), all components, animations (@keyframes fadeUp, orbFloat), MANDATORY @media(max-width:768px) all grids collapse to 1 column !important, @media(max-width:480px) font size clamp fixes.","seoTitle":"Event SEO title max 60 chars","seoDescription":"description 150-160 chars","sections":["section names"],"colorPalette":{"primary":"#hex","secondary":"#hex","accent":"#hex","background":"#hex","text":"#hex"}}`;
+Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <head>, Google Fonts @import, Font Awesome 6 CDN link, countdown timer JS, all animations, responsive breakpoints, and all JS in a <script> at end of <body>. Output ONLY pure HTML. No JSON. No markdown code blocks.`;
   }
 
   // Default: business
@@ -515,17 +512,19 @@ Subtle gray (#f8fafc) for alternating sections
 
 ${MOBILE_RESPONSIVE_MANDATORY}
 
-Return EXACTLY this JSON object (no markdown, no explanation):
-{
-  "html": "Complete HTML (no <html>/<head>/<body> tags). Use ${dirAttr} on root div. Include WhatsApp float button. Include inline <script> at bottom for animations.",
-  "css": "Complete CSS: Google Fonts @import at top, full reset (box-sizing:border-box on *, overflow-x:hidden on body, img max-width:100%), all components, animations (@keyframes fadeUp, @keyframes countUp, @keyframes orbFloat), MANDATORY breakpoints: @media(max-width:1024px){services/gallery → 2 cols} @media(max-width:768px){ALL grids/multi-col → 1 col !important, nav-links display:none, hamburger display:block, padding 1rem} @media(max-width:480px){font sizes clamped}. MUST include .aw-reveal and .aw-visible classes. MUST include min-width:0 on all grid children to prevent overflow.",
-  "seoTitle": "${isArabic ? "Arabic" : "English"} SEO title (max 60 chars)",
-  "seoDescription": "${isArabic ? "Arabic" : "English"} meta description (150-160 chars)",
-  "sections": ["${isArabic ? "Arabic" : "English"} section names list"],
-  "colorPalette": {"primary": "#hex", "secondary": "#hex", "accent": "#hex", "background": "#hex", "text": "#hex"}
-}
-
-IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanation.`;
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+OUTPUT FORMAT — MANDATORY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
+• Start with exactly: <!DOCTYPE html>
+• Include ALL CSS inside a single <style> tag in <head> — Google Fonts @import MUST be first line of CSS, then full reset (*, box-sizing:border-box, overflow-x:hidden on html/body, img max-width:100%), then ALL component styles, then ALL @keyframes animations, then ALL responsive @media queries
+• Responsive breakpoints MANDATORY in CSS: @media(max-width:1024px){2-col grids} @media(max-width:768px){1-col, hide nav-links, show hamburger} @media(max-width:480px){font-size clamp adjustments}
+• Include Font Awesome 6 CDN <link> in <head>
+• <title> = ${isArabic ? "Arabic" : "English"} SEO title (50-60 chars)
+• <meta name="description"> = ${isArabic ? "Arabic" : "English"} meta description (150-160 chars)
+• Include ALL 8+ sections: navbar, hero, stats, about, services, gallery, testimonials, contact, footer
+• All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
+• Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.`;
 
   const prompt = basePrompt;
   const model = getModel();
@@ -576,12 +575,34 @@ IMPORTANT: Return ONLY the JSON object, no markdown, no code blocks, no explanat
     return css;
   }
 
+  // Parse full HTML document response
+  function parseFullHtmlResponse(rawContent: string): GeneratedWebsite {
+    const cleaned = rawContent.replace(/^```html\n?|^```\n?|```\n?$/gm, "").trim();
+    // Find the DOCTYPE or <html> start
+    const htmlStart = cleaned.indexOf("<!DOCTYPE") !== -1 ? cleaned.indexOf("<!DOCTYPE") :
+                      cleaned.indexOf("<html") !== -1 ? cleaned.indexOf("<html") : -1;
+    const fullHtml = htmlStart >= 0 ? cleaned.slice(htmlStart) : cleaned;
+
+    if (!fullHtml || fullHtml.length < 500) throw new Error("Empty HTML response");
+
+    const sanitized = sanitizeNavLinks(fullHtml);
+    const titleMatch = sanitized.match(/<title>([^<]*)<\/title>/i);
+    const descMatch = sanitized.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)/i)
+                   || sanitized.match(/<meta[^>]*content=["']([^"']*)[^>]*name=["']description["']/i);
+    return {
+      html: sanitized,
+      css: "",
+      seoTitle: titleMatch?.[1]?.trim() || description.slice(0, 60),
+      seoDescription: descMatch?.[1]?.trim() || "",
+      sections: isArabic
+        ? ["الرئيسية", "من نحن", "خدماتنا", "أعمالنا", "آراء العملاء", "تواصل معنا"]
+        : ["Hero", "About", "Services", "Gallery", "Testimonials", "Contact"],
+      colorPalette: { primary: "#7c3aed", secondary: "#4f46e5", accent: "#06b6d4", background: "#050814", text: "#ffffff" },
+    };
+  }
+
   try {
-    const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    const parsed = JSON.parse(cleaned);
-    parsed.html = sanitizeNavLinks(parsed.html || "");
-    parsed.css = sanitizeCss(parsed.css || "");
-    return parsed as GeneratedWebsite;
+    return parseFullHtmlResponse(content);
   } catch {
     return {
       html: `<div ${dirAttr} style="font-family: ${fontFamily}; max-width: 1200px; margin: 0 auto; padding: 2rem;">
@@ -1225,10 +1246,14 @@ MOBILE HAMBURGER MENU RULES:
   * In CSS: @media(max-width:768px){.aw-nav-links{display:none!important;}#aw-menu-btn{display:block!important;}}
   * NEVER place the hamburger button or mobile menu outside the navbar or in page content sections.
 
+IMPORTANT — DETECT HTML FORMAT:
+- If the input HTML starts with "<!DOCTYPE html>" or "<html": it is a COMPLETE HTML document with CSS embedded in <style> tags. Return the ENTIRE modified document in the "html" field, and return "" (empty string) for "css".
+- If the input HTML is a fragment (no <!DOCTYPE>): return the modified HTML fragment in "html" and the updated CSS in "css".
+
 Return ONLY a JSON object with these 3 fields:
 {
-  "html": "complete updated HTML",
-  "css": "complete updated CSS",
+  "html": "complete updated HTML (full document if input was full document, fragment otherwise)",
+  "css": "updated CSS (empty string if CSS is embedded in the HTML document)",
   "summary": "${isArabic ? "رسالة قصيرة بالعربية (1-2 جملة) تصف ما تم تغييره بالضبط. كن محدداً وودياً. مثال: 'تم إضافة قسم الأسعار مع 3 باقات احترافية ✅'" : "Short English message (1-2 sentences) describing exactly what changed. Be specific. Example: 'Added a 3-tier pricing section with SAR prices tailored to your business ✅'"}"
 }
 

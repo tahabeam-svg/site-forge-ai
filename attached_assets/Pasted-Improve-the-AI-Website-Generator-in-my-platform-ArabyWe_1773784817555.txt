@@ -1,0 +1,196 @@
+Improve the AI Website Generator in my platform ArabyWeb.
+
+Current problem:
+
+The AI already generates websites but the results look weak and unprofessional.
+
+The layouts are basic, sections feel random, and the preview button does not work correctly.
+
+The system must be upgraded to generate high quality professional websites comparable to agency-level designs.
+
+IMPORTANT
+
+Do NOT modify the existing systems such as:
+
+Messaging system
+Subscription system
+Payment system
+
+Only improve the website generation and preview system.
+
+---
+
+FIX THE PREVIEW SYSTEM
+
+The preview button must open a real live preview of the generated website.
+
+When the user clicks preview:
+
+• Render the website instantly
+• Open it in a preview panel or new tab
+• No page reload errors
+• No blank pages
+
+The preview must render the website dynamically from the stored website JSON.
+
+---
+
+AI WEBSITE GENERATION QUALITY
+
+The AI must stop generating basic template-style websites.
+
+Instead generate professional layouts using modern UI/UX principles.
+
+Every website must include:
+
+Hero section with strong visual impact
+Clear headline
+Supporting subheadline
+Primary call to action button
+
+Followed by structured sections:
+
+About
+Services
+Features or benefits
+Gallery or portfolio
+Testimonials
+FAQ
+Contact form
+Footer
+
+---
+
+MODERN DESIGN LAYOUTS
+
+Avoid simple stacked sections.
+
+Use modern layouts such as:
+
+Card grids
+Image + text split sections
+Alternating layouts
+Icon based services
+Background color separation
+
+---
+
+DESIGN STYLES
+
+Allow the AI to automatically select a style based on the business type.
+
+Styles include:
+
+Luxury
+Corporate
+Modern
+Minimal
+Creative
+
+Each style must define:
+
+Color palette
+Typography
+Section spacing
+Button styles
+
+---
+
+IMAGE QUALITY
+
+Images must be relevant to the business.
+
+Examples:
+
+Perfume business → luxury perfume bottles
+Restaurant → restaurant interior
+Construction → construction workers and projects
+Law firm → professional office environment
+
+Avoid generic or irrelevant images.
+
+---
+
+VISUAL HIERARCHY
+
+Ensure strong visual hierarchy.
+
+Large hero title
+Clear spacing between sections
+Readable text sizes
+Consistent typography scale
+
+---
+
+SPACING SYSTEM
+
+Use professional spacing values.
+
+Section padding: 80px to 120px
+Grid spacing: 24px to 32px
+Card padding: 24px
+
+The layout must feel clean and premium.
+
+---
+
+RESPONSIVE DESIGN
+
+All generated websites must be fully responsive.
+
+Desktop
+Tablet
+Mobile
+
+Mobile layouts must be optimized and not just scaled down.
+
+---
+
+PERFORMANCE
+
+Optimize generated websites for speed.
+
+Lazy load images
+Compress images
+Minimize scripts
+
+---
+
+WEBSITE STRUCTURE
+
+Each website should be generated as structured JSON.
+
+Example:
+
+{
+hero: {},
+about: {},
+services: [],
+gallery: [],
+testimonials: [],
+faq: [],
+contact: {}
+}
+
+The frontend should render the website dynamically from this structure.
+
+---
+
+ARABIC FIRST
+
+The platform must support Arabic RTL layout.
+
+Use Arabic fonts such as:
+
+Cairo
+Tajawal
+
+Text content must be generated in Arabic.
+
+---
+
+FINAL GOAL
+
+The generated websites must look like they were designed by professional web design agencies, not simple AI templates.
+
+The preview system must work perfectly so users can immediately see their generated website.
