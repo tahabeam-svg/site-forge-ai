@@ -682,21 +682,23 @@ Sitemap: https://arabyweb.net/sitemap.xml
       await storage.updateProject(project.id, { status: "generating" });
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
-      // ─── AI Industry Engine: detect industry + enrich prompt ─────────────────
+      // ─── AI Industry Engine: detect industry (for logging/learning only) ────
       const isArabicUI = language === "ar";
       const mappedIndustryId = mapActivityToIndustry(activityType);
-      const { enrichedPrompt, industryId, industryProfile } = runIndustryEngine(
+      const { industryId } = runIndustryEngine(
         description,
         isArabicUI,
         mappedIndustryId
       );
 
       const genStartTime = Date.now();
-      // Build WhatsApp-enriched prompt so AI can embed it naturally in the site
-      const promptWithExtras = whatsappNumber
-        ? `${enrichedPrompt}\n\nواتساب الأعمال: ${whatsappNumber} — أضف زر واتساب عائم (أسفل يسار الشاشة) وزر واتساب في قسم التواصل.`
-        : enrichedPrompt;
-      const generated = await generateWebsite(promptWithExtras, websiteLanguage);
+      // Pass the raw user description to generateWebsite — it has its own
+      // expert system prompt. Adding structured metadata here caused the AI
+      // to render it as literal website text. We only append WhatsApp naturally.
+      const cleanPrompt = whatsappNumber
+        ? `${description}\n\nأضف زر واتساب عائم (bottom-right) يفتح الواتساب: ${whatsappNumber}`
+        : description;
+      const generated = await generateWebsite(cleanPrompt, websiteLanguage);
       const genMs = Date.now() - genStartTime;
       let baseHtml = generated.html;
 
