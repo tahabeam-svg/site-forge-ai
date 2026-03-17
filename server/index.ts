@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -11,6 +12,9 @@ declare module "http" {
     rawBody: unknown;
   }
 }
+
+// Enable gzip/brotli compression for all responses — reduces data transfer by ~70%
+app.use(compression({ level: 6 }));
 
 app.use(
   express.json({

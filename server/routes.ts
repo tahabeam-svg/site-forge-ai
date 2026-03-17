@@ -514,7 +514,12 @@ Sitemap: https://arabyweb.net/sitemap.xml
       if (!project.generatedHtml) return res.status(404).send("No preview available");
       const html = buildPreviewHtml(project);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      // If a version param is provided the URL is unique per update — cache it for 30 minutes
+      if (req.query.v) {
+        res.setHeader("Cache-Control", "private, max-age=1800, immutable");
+      } else {
+        res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+      }
       res.setHeader("X-Content-Type-Options", "nosniff");
       res.send(html);
     } catch (err) {
