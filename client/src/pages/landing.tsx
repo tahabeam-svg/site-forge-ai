@@ -5,7 +5,6 @@ import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import type { Template } from "@shared/schema";
 import {
   Sparkles,
   Palette,
@@ -102,10 +101,6 @@ export default function LandingPage() {
     }
   });
 
-  const { data: allTemplates = [] } = useQuery<Omit<Template, "previewHtml" | "previewCss">[]>({
-    queryKey: ["/api/templates?summary=true"],
-    staleTime: 10 * 60 * 1000,
-  });
   const { data: meData } = useQuery<{ plan: string }>({
     queryKey: ["/api/me"],
     enabled: isAuthenticated,
@@ -113,7 +108,6 @@ export default function LandingPage() {
   });
   const userPlan = meData?.plan || "free";
   const isPaidUser = isAuthenticated && userPlan !== "free";
-  const featuredTemplates = allTemplates.slice(0, 10);
   const lang = language;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [typeIndex, setTypeIndex] = useState(0);
@@ -184,7 +178,6 @@ export default function LandingPage() {
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
               <a href="#marketing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-marketing">{lang === "ar" ? "التسويق" : "Marketing"}</a>
               <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-pricing">{t("pricing", lang)}</a>
-              <a href="/templates" onClick={(e) => { e.preventDefault(); navigate("/templates"); }} className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-templates">{t("templates", lang)}</a>
             </div>
             <div className="flex items-center gap-2">
               <LanguageToggle />
@@ -212,7 +205,6 @@ export default function LandingPage() {
             <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("features", lang)}</a>
             <a href="#marketing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{lang === "ar" ? "التسويق" : "Marketing"}</a>
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("pricing", lang)}</a>
-            <a href="/templates" onClick={(e) => { e.preventDefault(); setMobileMenuOpen(false); navigate("/templates"); }} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("templates", lang)}</a>
             <div className="pt-2 border-t">
               {isAuthenticated ? (
                 <Button onClick={() => { setMobileMenuOpen(false); navigate("/dashboard"); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600" data-testid="button-dashboard-mobile">
@@ -375,84 +367,6 @@ export default function LandingPage() {
             ))}
           </motion.div>
 
-        </div>
-
-        {/* ─── Template Strip (between hero text and browser mockup) ─── */}
-        <div className="pb-10 overflow-hidden" id="templates-strip">
-          <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-8 mb-5 flex items-center justify-between">
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-white">
-                {lang === "ar" ? "أكثر من 400 قالب جاهز" : "400+ Ready-made Templates"}
-              </h2>
-              <p className="text-white/50 text-sm mt-0.5">
-                {lang === "ar" ? "ابدأ موقعك الآن بلمسة واحدة" : "Launch your site instantly"}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/templates")}
-              className="border-white/20 text-white/70 hover:text-white hover:bg-white/10 text-xs shrink-0"
-              data-testid="button-landing-browse-templates"
-            >
-              {lang === "ar" ? "تصفح الكل" : "Browse All"}
-              <ChevronRight className="w-3.5 h-3.5 ms-1" />
-            </Button>
-          </div>
-          <div
-            className="flex gap-3 px-5 sm:px-6 lg:px-8 overflow-x-auto pb-2"
-            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
-          >
-            {featuredTemplates.length > 0 ? featuredTemplates.map((tpl, i) => (
-              <button
-                key={tpl.id}
-                onClick={() => navigate("/templates")}
-                className="shrink-0 group cursor-pointer focus:outline-none"
-                data-testid={`button-landing-template-${i}`}
-              >
-                <div className="w-48 h-32 sm:w-60 sm:h-40 rounded-xl overflow-hidden border border-white/10 group-hover:border-emerald-400/60 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-emerald-500/10 relative">
-                  <img
-                    src={tpl.thumbnail || `https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=280&fit=crop`}
-                    alt={lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-2.5 start-3 end-3">
-                      <p className="text-white text-xs font-semibold truncate">
-                        {lang === "ar" && tpl.nameAr ? tpl.nameAr : tpl.name}
-                      </p>
-                      {tpl.isPremium && (
-                        <span className="inline-flex items-center gap-0.5 text-[10px] bg-amber-500 text-white rounded px-1.5 py-0.5 mt-1">
-                          <Crown className="w-2.5 h-2.5" />
-                          {lang === "ar" ? "مميز" : "Premium"}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </button>
-            )) : Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="shrink-0 w-48 h-32 sm:w-60 sm:h-40 rounded-xl bg-white/[0.05] border border-white/[0.08] animate-pulse" />
-            ))}
-            <button
-              onClick={() => navigate("/templates")}
-              className="shrink-0 w-48 h-32 sm:w-60 sm:h-40 rounded-xl border-2 border-dashed border-emerald-500/30 bg-gradient-to-br from-emerald-950/40 to-teal-950/40 flex flex-col items-center justify-center gap-2.5 hover:border-emerald-500/70 hover:from-emerald-950/60 transition-all duration-300 group focus:outline-none"
-              data-testid="button-landing-all-templates"
-            >
-              <div className="w-11 h-11 rounded-full bg-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Sparkles className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div className="text-center">
-                <p className="text-white/90 text-sm font-bold">
-                  {lang === "ar" ? "تصفح الكل" : "See All"}
-                </p>
-                <p className="text-white/40 text-xs mt-0.5">
-                  {lang === "ar" ? `+${allTemplates.length || 400} قالب` : `+${allTemplates.length || 400} templates`}
-                </p>
-              </div>
-            </button>
-          </div>
         </div>
 
         <div className="relative z-20 max-w-5xl mx-auto px-5 sm:px-6 text-center">
@@ -1032,7 +946,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-sm">
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
-                <li><a href="/templates" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-templates">{lang === "ar" ? "القوالب" : "Templates"}</a></li>
+                <li><a href="/ai-builder" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-builder">{lang === "ar" ? "منشئ AI" : "AI Builder"}</a></li>
                 <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "مواقعي" : "My Sites"}</a></li>
               </ul>
             </div>

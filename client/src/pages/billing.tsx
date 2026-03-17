@@ -221,8 +221,8 @@ export default function BillingPage() {
       icon: Building2,
       credits: 200,
       features: lang === "ar"
-        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + إكس/تويتر + فيسبوك", "200 جلسة ذكاء/شهر", "دعم أولوية 24/7", "قوالب حصرية وتعاون الفريق", "بدون شعار عربي ويب"]
-        : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — Instagram + X/Twitter + Facebook", "200 AI sessions/month", "Priority 24/7 support", "Premium templates & team collaboration", "No ArabyWeb badge"],
+        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + إكس/تويتر + فيسبوك", "200 جلسة ذكاء/شهر", "دعم أولوية 24/7", "تعديلات غير محدودة بالذكاء الاصطناعي", "بدون شعار عربي ويب"]
+        : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — Instagram + X/Twitter + Facebook", "200 AI sessions/month", "Priority 24/7 support", "Unlimited AI edits & customization", "No ArabyWeb badge"],
     },
   ];
 
