@@ -20,13 +20,10 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   LayoutDashboard,
-  FolderOpen,
-  LayoutTemplate,
   Settings,
   LogOut,
   Globe2,
   CreditCard,
-  Shield,
   Sparkles,
   BarChart3,
   Wallet,
@@ -60,8 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const creditsPercent = Math.min((credits / maxCredits) * 100, 100);
 
   const menuItems = [
-    { title: t("dashboard", lang), url: "/dashboard", icon: LayoutDashboard, group: "main" },
-    { title: t("templates", lang), url: "/templates", icon: LayoutTemplate, group: "main" },
+    { title: lang === "ar" ? "الرئيسية" : "Home", url: "/dashboard", icon: LayoutDashboard, group: "main" },
     { title: lang === "ar" ? "التحليلات" : "Analytics", url: "/analytics", icon: BarChart3, group: "main" },
     { title: lang === "ar" ? "التسويق بالذكاء الاصطناعي" : "AI Marketing", url: "/marketing", icon: Sparkles, group: "tools" },
     { title: lang === "ar" ? "نشر GitHub" : "GitHub Deploy", url: "/github-deploy", icon: Github, group: "tools" },
@@ -120,6 +116,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </SidebarHeader>
 
             <SidebarContent className="py-2">
+              {/* My Sites button */}
+              <SidebarGroup className="pb-0">
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        onClick={() => window.dispatchEvent(new CustomEvent("openMySites"))}
+                        data-testid="button-sidebar-mysites"
+                        className="flex items-center gap-2.5 font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300"
+                      >
+                        <Globe2 className="w-4 h-4 shrink-0" />
+                        <span>{lang === "ar" ? "مواقعي" : "My Sites"}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+
               {/* Main Navigation */}
               <SidebarGroup>
                 <div className="px-3 py-1 mb-1">
