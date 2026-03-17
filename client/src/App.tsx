@@ -30,6 +30,7 @@ import PaymentTestPage from "@/pages/payment-test";
 import IncidentResponsePage from "@/pages/incident-response";
 import FreeWebsitePage from "@/pages/free-website";
 import FreeStorePage from "@/pages/free-store";
+import AIBuilderPage from "@/pages/ai-builder";
 
 import { useEffect } from "react";
 
@@ -90,6 +91,7 @@ function Router() {
       <Route path="/payment-test">{() => <ProtectedRoute component={PaymentTestPage} />}</Route>
       <Route path="/free-website" component={FreeWebsitePage} />
       <Route path="/free-store" component={FreeStorePage} />
+      <Route path="/ai-builder">{() => <ProtectedRoute component={AIBuilderPage} />}</Route>
       <Route component={NotFound} />
     </Switch>
   );

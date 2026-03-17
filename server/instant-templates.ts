@@ -998,11 +998,11 @@ export function buildInstantWebsite(
 </section>
 
 <!-- ===== TESTIMONIALS ===== -->
-<section id="testimonials" class="aw-section bg-dark">
+<section id="testimonials" class="aw-section testi-section">
   <div class="aw-container">
     <div class="sec-head" data-aos>
-      <span class="eyebrow" style="color:${accent}" ${dUI("آراء العملاء", "Testimonials", "testi_eyebrow")}>آراء العملاء</span>
-      <h2 class="sec-title" style="color:#fff" ${dUI("ماذا يقول عملاؤنا", "What Our Clients Say", "testi_title")}>ماذا يقول عملاؤنا</h2>
+      <span class="eyebrow" style="color:${primary}" ${dUI("آراء العملاء", "Testimonials", "testi_eyebrow")}>آراء العملاء</span>
+      <h2 class="sec-title" ${dUI("ماذا يقول عملاؤنا", "What Our Clients Say", "testi_title")}>ماذا يقول عملاؤنا</h2>
       <div class="title-line center"></div>
     </div>
     <div class="testi-grid">
@@ -1425,27 +1425,33 @@ input,textarea,select,button{font:inherit;}
 .btn-white:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,0.25),0 4px 8px rgba(0,0,0,0.12);}
 .btn-white:active{transform:translateY(1px);}
 
-/* ═══ TESTIMONIALS ═══ */
+/* ═══ TESTIMONIALS — Light Card Design ═══ */
+.testi-section{background:linear-gradient(175deg,#f8faff 0%,#eef2ff 100%);position:relative;overflow:hidden;}
+.testi-section::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,${primary}09 0%,transparent 70%);top:-160px;${dir==="rtl"?"right:-160px":"left:-160px"};pointer-events:none;}
+.testi-section .sec-title{color:#0f172a;}
+.testi-section .eyebrow{color:${primary}!important;}
+.testi-section .title-line{background:linear-gradient(90deg,${primary},${accent});}
 .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.75rem;}
 .testi-card{
-  background:rgba(255,255,255,0.08);
-  border:1px solid rgba(255,255,255,0.13);
-  border-top:3px solid transparent;
-  border-image:linear-gradient(90deg,${primary},${accent}) 1;
-  border-radius:0 0 1.5rem 1.5rem;
-  padding:2rem 1.75rem 1.75rem;
-  transition:transform 0.35s cubic-bezier(.22,1,.36,1),background 0.35s,box-shadow 0.35s;
-  display:flex;flex-direction:column;gap:0;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.05);
+  border-radius:1.75rem;
+  padding:2.25rem;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04),0 8px 32px rgba(0,0,0,0.05);
+  display:flex;flex-direction:column;
+  transition:transform 0.35s cubic-bezier(.22,1,.36,1),box-shadow 0.35s;
+  position:relative;overflow:hidden;
 }
-.testi-card:hover{background:rgba(255,255,255,0.13);transform:translateY(-8px);box-shadow:0 24px 60px rgba(0,0,0,0.3),0 0 0 1px rgba(255,255,255,0.12);}
-.testi-top-row{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem;}
-.testi-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.35rem;font-weight:900;flex-shrink:0;box-shadow:0 4px 16px ${primary}55;}
-.testi-meta{flex:1;min-width:0;}
-.testi-name{color:#fff;font-weight:700;font-size:1rem;letter-spacing:-0.01em;}
-.testi-role{color:${accent};font-size:0.8rem;font-weight:600;margin-top:0.2rem;letter-spacing:0.3px;}
-.testi-stars{display:flex;gap:3px;margin-bottom:1rem;}
-.testi-text{color:rgba(255,255,255,0.88);font-size:0.96rem;line-height:1.9;font-style:normal;flex:1;}
+.testi-card::before{content:'';position:absolute;top:0;${dir==="rtl"?"right":"left"}:0;width:100%;height:3px;background:linear-gradient(90deg,${primary},${accent});}
+.testi-card:hover{transform:translateY(-6px);box-shadow:0 8px 30px rgba(0,0,0,0.07),0 20px 60px rgba(0,0,0,0.07);}
+.testi-quote-mark{font-size:4.5rem;line-height:0.9;color:${primary};opacity:0.12;font-family:Georgia,serif;font-weight:900;display:block;margin-bottom:0.5rem;user-select:none;}
+.testi-text{color:#475569;font-size:0.97rem;line-height:1.95;flex:1;margin-bottom:1.5rem;}
+.testi-footer{display:flex;align-items:center;gap:0.9rem;padding-top:1.25rem;border-top:1px solid #f1f5f9;}
+.testi-avatar{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,${primary},${accent});color:#fff;display:flex;align-items:center;justify-content:center;font-family:${fontHeading};font-size:1.15rem;font-weight:900;flex-shrink:0;box-shadow:0 4px 14px ${primary}40;}
+.testi-info{flex:1;min-width:0;}
+.testi-name{color:#1e293b;font-weight:700;font-size:0.95rem;letter-spacing:-0.01em;}
+.testi-role{color:${primary};font-size:0.78rem;font-weight:600;margin-top:0.18rem;opacity:0.85;}
+.testi-stars{display:flex;gap:2px;flex-shrink:0;margin-bottom:0;margin-inline-start:auto;}
 
 /* ═══ CONTACT ═══ */
 .contact-section{background:linear-gradient(160deg,#f0f4ff 0%,#f8fafb 100%);padding:6rem 0!important;}

@@ -632,6 +632,16 @@ export default function DashboardPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1.5 h-8 text-xs border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/10"
+              onClick={() => navigate("/ai-builder")}
+              data-testid="button-ai-builder"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {lang === "ar" ? "المبني AI" : "AI Builder"}
+            </Button>
             <Button size="sm" className="gap-1.5 h-8 text-xs bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:opacity-90" onClick={() => setInstantDialogOpen(true)} data-testid="button-new-project">
               <Plus className="w-3.5 h-3.5" />
               {t("newProject", lang)}

@@ -1,0 +1,208 @@
+Upgrade ArabyWeb AI Website Generator to produce agency-level professional websites instead of generic AI layouts.
+
+The system must behave like a professional web design agency and not like a simple template generator.
+
+GOAL
+
+Every generated website must look like it was designed by a professional UI/UX designer.
+
+The design quality must be comparable to high-end agency websites.
+
+DESIGN INTELLIGENCE SYSTEM
+
+Create an AI Design Director module.
+
+This module evaluates the business type and automatically chooses the best design structure.
+
+Instead of simple sections, the system must design a complete user experience.
+
+HERO SECTION REQUIREMENTS
+
+The hero section must always be visually strong.
+
+Include:
+
+High quality background image
+Clear headline
+Supporting sub headline
+Primary CTA button
+Optional secondary CTA
+Trust indicators if applicable
+
+The hero must occupy at least 70vh height.
+
+VISUAL HIERARCHY
+
+The AI must ensure proper visual hierarchy.
+
+Large headline
+Readable spacing
+Clear section separation
+Consistent typography scale
+
+Avoid cluttered layouts.
+
+MODERN SECTION DESIGN
+
+Sections must not be plain text blocks.
+
+Use modern layouts such as:
+
+Card grids
+Feature highlights
+Icon based services
+Image + text split layouts
+Alternating sections
+Background color changes
+
+SPACING SYSTEM
+
+Use a professional spacing scale.
+
+Example:
+
+Section padding: 80px to 120px
+Card spacing: 24px
+Grid gaps: 32px
+
+The layout must feel premium and breathable.
+
+IMAGE QUALITY
+
+Images must be carefully selected.
+
+Avoid random generic images.
+
+Images must match the business type and feel professional.
+
+Examples:
+
+Luxury perfume stores
+Corporate offices
+Restaurant interiors
+Construction projects
+
+DESIGN STYLE SYSTEM
+
+The AI must choose a consistent design style.
+
+Supported styles:
+
+Luxury
+Corporate
+Modern
+Minimal
+Creative
+
+Each style must have its own:
+
+Color palette
+Typography scale
+Layout pattern
+Image treatment
+
+ANIMATION SYSTEM
+
+Add subtle modern animations.
+
+Examples:
+
+Fade-in sections
+Hover card effects
+Smooth scroll reveal
+Button hover transitions
+
+Animations must be elegant and not distracting.
+
+RESPONSIVE DESIGN
+
+The website must look perfect on:
+
+Desktop
+Tablet
+Mobile
+
+Mobile layout must be optimized and not just scaled down.
+
+BUSINESS SPECIFIC DESIGN
+
+The layout must adapt to the business type.
+
+Examples:
+
+Restaurant → menu section
+Real estate → property grid
+Perfume store → product showcase
+Law firm → credibility focused layout
+Construction company → project gallery
+
+SMART CONTENT GENERATION
+
+Content must be professional and persuasive.
+
+Avoid generic AI text.
+
+Use marketing style copywriting.
+
+Example:
+
+Instead of
+
+"Our services are high quality"
+
+Use
+
+"We deliver premium solutions designed to help your business grow and stand out in a competitive market."
+
+SEO STRUCTURE
+
+Automatically generate:
+
+SEO optimized titles
+Meta descriptions
+Heading structure
+Alt image text
+Schema structured data
+
+PERFORMANCE OPTIMIZATION
+
+The generated website must be fast.
+
+Optimize images
+Lazy load sections
+Minimize scripts
+
+Target high performance score.
+
+TECHNOLOGY STACK
+
+Frontend:
+
+Next.js
+Tailwind CSS
+
+Backend:
+
+Node.js
+
+Database:
+
+PostgreSQL
+
+AI:
+
+OpenAI API
+
+ARABIC FIRST
+
+The platform must support Arabic RTL layout perfectly.
+
+Use Arabic fonts:
+
+Cairo
+Tajawal
+IBM Plex Arabic
+
+FINAL RESULT
+
+Each generated website should look like it was designed by a professional web design agency rather than a simple AI website builder.

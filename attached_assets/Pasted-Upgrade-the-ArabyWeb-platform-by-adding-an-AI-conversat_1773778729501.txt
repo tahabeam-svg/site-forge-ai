@@ -1,0 +1,143 @@
+Upgrade the ArabyWeb platform by adding an AI conversational website builder and editor.
+
+IMPORTANT RULE
+
+Do NOT modify or rebuild any existing core systems.
+
+The following systems already exist and must remain unchanged:
+
+Messaging system
+Subscription system
+Payment system
+User authentication
+User dashboard
+
+These systems are already working and must continue to operate exactly as they currently do.
+
+The AI features must be implemented as a new layer connected to the existing platform.
+
+SYSTEM ARCHITECTURE RULE
+
+Add the AI builder as a separate module that integrates with the current system without altering existing code logic.
+
+The new module should interact with the existing systems only through APIs or service calls.
+
+AI WEBSITE GENERATION
+
+Add a new AI website generator where users can create a website with a single prompt.
+
+Example:
+
+User prompt:
+"I want a luxury perfume store website in Riyadh called Layali Perfume with WhatsApp contact."
+
+The AI should generate a full website automatically.
+
+AI WEBSITE EDITOR
+
+After a website is created, users must be able to modify it through an AI chat editor.
+
+Examples:
+
+Change colors to black and gold
+Add WhatsApp button
+Upload logo
+Replace hero image
+Add services
+Add gallery images
+Add pricing section
+Modify text
+
+The AI processes these commands and updates the website structure.
+
+FILE UPLOAD IN CHAT
+
+Users must be able to upload:
+
+Logo files
+Gallery images
+Hero images
+
+The AI automatically places them in the correct sections.
+
+WEBSITE DATA STRUCTURE
+
+Each website must be stored as structured JSON.
+
+Example:
+
+{
+hero: {},
+about: {},
+services: [],
+gallery: [],
+testimonials: [],
+faq: [],
+contact: {}
+}
+
+The frontend renders the website dynamically based on this structure.
+
+LIVE PREVIEW
+
+The website preview must update instantly after every AI action.
+
+No page refresh required.
+
+AI DESIGN SYSTEM
+
+The AI must automatically apply professional design styles:
+
+Luxury
+Corporate
+Modern
+Minimal
+
+This should affect:
+
+Color palette
+Typography
+Spacing
+Layout structure
+
+INTEGRATION WITH EXISTING SYSTEMS
+
+The AI builder must integrate with the existing systems without modifying them.
+
+Messaging system:
+AI assistant messages should appear inside the existing messaging interface.
+
+Subscription system:
+Access to AI features must depend on the user's current subscription plan.
+
+Payment system:
+Payments and upgrades must continue to be handled by the existing payment system.
+
+DO NOT replace or rebuild these systems.
+
+TECH STACK
+
+Frontend:
+Next.js + Tailwind
+
+Backend:
+Node.js
+
+Database:
+PostgreSQL
+
+AI:
+OpenAI API
+
+ARABIC FIRST
+
+The system must support Arabic RTL layout and Arabic content generation.
+
+Use Arabic fonts such as:
+
+Cairo
+Tajawal
+
+FINAL GOAL
+
+Enhance ArabyWeb with AI-powered website generation and editing while keeping all existing systems fully intact and unchanged.

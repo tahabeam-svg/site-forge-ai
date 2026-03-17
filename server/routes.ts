@@ -1,5 +1,6 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import { registerAiBuilderRoutes } from "./ai-builder";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
 import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite, generateSocialPostImage } from "./ai";
@@ -2619,6 +2620,9 @@ For Netlify/Vercel:
       res.status(500).json({ message: "Failed to update feedback" });
     }
   });
+
+  // ── AI Builder Module (additive, does not modify existing routes) ──────────
+  registerAiBuilderRoutes(app, isAuthenticated);
 
   return httpServer;
 }
