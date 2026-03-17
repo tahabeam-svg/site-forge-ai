@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { registerAiBuilderRoutes } from "./ai-builder";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateInstantWebsite, generateSocialPostImage } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage } from "./ai";
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
@@ -692,7 +692,11 @@ Sitemap: https://arabyweb.net/sitemap.xml
       );
 
       const genStartTime = Date.now();
-      const generated = await generateInstantWebsite(enrichedPrompt, language, websiteLanguages, websiteLanguage);
+      // Build WhatsApp-enriched prompt so AI can embed it naturally in the site
+      const promptWithExtras = whatsappNumber
+        ? `${enrichedPrompt}\n\nواتساب الأعمال: ${whatsappNumber} — أضف زر واتساب عائم (أسفل يسار الشاشة) وزر واتساب في قسم التواصل.`
+        : enrichedPrompt;
+      const generated = await generateWebsite(promptWithExtras, websiteLanguage);
       const genMs = Date.now() - genStartTime;
       let baseHtml = generated.html;
 
