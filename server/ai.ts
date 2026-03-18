@@ -599,9 +599,20 @@ SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشا
   - Do NOT use: "خدمة ممتازة"، "جودة رائعة"، "أوصي بهم" as standalone sentences — add specific details after
   * 5-star ratings using fa-star icons
 
-▸ CONTACT: 2-column. Contact info with icon boxes. WhatsApp button. Right side: white card with gradient border, clean form inputs with focus ring.
+▸ CONTACT (id="contact"): 2-column section on dark background. LEFT COLUMN — real contact info boxes with gradient icon circles:
+  • Phone (fa-phone): Use number from description OR default +966 51 234 5678
+  • WhatsApp (fa-whatsapp): SAME number as phone — big green WhatsApp button with "تواصل عبر واتساب" text
+  • Email (fa-envelope): Use email from description OR default info@[businessname].sa
+  • Address (fa-location-dot): Use city from description OR الرياض، المملكة العربية السعودية
+  • Working hours (fa-clock): السبت–الخميس: 9ص – 10م (adapt to business type)
+  RIGHT COLUMN — white card (gradient border) with clean contact form: Full name, Phone, Message, Submit button (primary gradient color).
 
-▸ FOOTER: Very dark background with radial glow orb. 3-column layout. Brand uses gradient text. Subtle dividers. Social icons circle on hover.
+▸ FOOTER: NEVER omit the footer. It is required on every website. Structure:
+  • Background: very dark (#050814 to #0a0a1a gradient) with subtle radial glow orb (primary color, 600px, opacity 0.08)
+  • 3-column grid: [Brand+tagline+social] [Quick links] [Contact info]
+  • Brand: SVG logo (id="aw-ai-logo-footer", 28×28px) + tagline text (NOT the business name again)
+  • Social links: Instagram, Twitter/X, Snapchat — circle hover effect with primary color fill
+  • Bottom bar: thin border, copyright text + "Powered by ArabyWeb.net"
 
 ▸ ANIMATIONS: Use cubic-bezier(.22,1,.36,1) for all transitions. @keyframes fadeUp, orbFloat, pulse, scrollBounce. IntersectionObserver for scroll reveals.
 
@@ -682,14 +693,29 @@ NAVIGATION — SINGLE-PAGE ANCHORS ONLY
 - NEVER use "نشر", "معاينة", "تعديل", "publish", "preview", "edit" as nav text
 
 ═══════════════════════════════════════
-MOBILE HAMBURGER MENU — REQUIRED
+MOBILE HAMBURGER MENU — REQUIRED (EXACT PATTERN — DO NOT DEVIATE)
 ═══════════════════════════════════════
-Add EXACTLY this hamburger button pattern inside the nav:
-<button id="aw-menu-btn" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var o=m.style.display==='flex';m.style.display=o?'none':'flex';})()" style="display:none;background:none;border:none;cursor:pointer;padding:8px;color:inherit;">
+⚠️ This EXACT implementation is MANDATORY. The hamburger MUST work on mobile. DO NOT use inline display:none on the button.
+
+STEP A — Add this CSS rule (NO inline style on the button, only CSS controls visibility):
+.aw-hamburger { display:none; background:none; border:none; cursor:pointer; padding:8px; color:inherit; }
+.aw-nav-links { display:flex; gap:2rem; align-items:center; }
+@media(max-width:768px) {
+  .aw-nav-links { display:none; }
+  .aw-hamburger { display:flex; align-items:center; justify-content:center; }
+  #aw-mobile-menu { display:none; flex-direction:column; position:absolute; top:100%; left:0; right:0; background:rgba(5,8,22,0.97); backdrop-filter:blur(16px); padding:1.5rem; gap:1rem; border-top:1px solid rgba(255,255,255,0.1); }
+  #aw-mobile-menu.open { display:flex; }
+}
+
+STEP B — Inside the <nav>, add EXACTLY:
+<button class="aw-hamburger" aria-label="القائمة" onclick="var m=document.getElementById('aw-mobile-menu');m.classList.toggle('open')">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 </button>
-Mobile menu div: id="aw-mobile-menu", style="display:none;flex-direction:column;..." — each link closes menu on click.
-CSS: @media(max-width:768px){ .aw-nav-links{display:none!important;} #aw-menu-btn{display:block!important;} }
+<div id="aw-mobile-menu">
+  <!-- Repeat nav links here, each closes menu on click: onclick="document.getElementById('aw-mobile-menu').classList.remove('open')" -->
+</div>
+
+STEP C — The .aw-nav-links div wraps the desktop nav links and is hidden on mobile via CSS (NOT inline style).
 
 ═══════════════════════════════════════
 JAVASCRIPT — MANDATORY INLINE SCRIPT
@@ -739,11 +765,13 @@ Image URL format:
 ⚠️ Use at least 7 DIFFERENT images total. NEVER repeat the same photo ID twice on the page.
 
 ═══════════════════════════════════════
-WHATSAPP BUTTON — REQUIRED FOR ARAB MARKET
+WHATSAPP FLOATING BUTTON — ABSOLUTELY MANDATORY ⚠️
 ═══════════════════════════════════════
-Add a WhatsApp floating button (bottom-right, fixed position) AND a WhatsApp link in the contact section.
-Pattern: <a href="https://wa.me/966500000000" target="_blank" style="position:fixed;bottom:1.75rem;${isArabic ? "left" : "right"}:1.75rem;z-index:999;background:#25D366;color:#fff;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,0.5);transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-  <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+⛔ This element is REQUIRED on EVERY website. NEVER omit it. Place it BEFORE the closing </body> tag.
+Copy this EXACT code — do NOT change the structure, only update the phone number if provided:
+
+<a id="aw-whatsapp-btn" href="https://wa.me/966512345678" target="_blank" rel="noopener" style="position:fixed;bottom:1.75rem;${isArabic ? "left" : "right"}:1.75rem;z-index:9999;background:#25D366;color:#fff;width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,0.55),0 4px 10px rgba(0,0,0,0.15);transition:transform 0.3s,box-shadow 0.3s;text-decoration:none;" onmouseover="this.style.transform='scale(1.12)';this.style.boxShadow='0 12px 32px rgba(37,211,102,0.65),0 6px 14px rgba(0,0,0,0.18)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 8px 25px rgba(37,211,102,0.55),0 4px 10px rgba(0,0,0,0.15)'">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
 </a>
 
 ═══════════════════════════════════════
@@ -780,7 +808,38 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
 • <meta name="description"> = ${isArabic ? "Arabic" : "English"} meta description (150-160 chars)
 • Include ALL 8+ sections: navbar, hero, stats, about, services, gallery, testimonials, contact, footer
 • All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
-• Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.`;
+• Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.
+
+═══════════════════════════════════════
+PROFESSIONAL CONTENT DEPTH — MANDATORY
+═══════════════════════════════════════
+Use your knowledge of this specific business type to write expert-level, realistic content that ONLY an industry insider would write:
+
+• SERVICES: Write the actual service names professionals use in this industry. A dental clinic lists "تركيب التيجان الزركونية", "تبييض الأسنان بالليزر", not "خدمة طبية 1".
+• ABOUT: Write a compelling brand story. For a restaurant: mention the chef's origins, the secret recipe, the sourcing of ingredients. For a clinic: mention the doctor's specialty, years of residency, certifications.
+• HERO HEADLINE: Write a desire-triggering headline that speaks to the customer's deepest want. For a grills restaurant: "أشهى المشاوي الحجازية — بنكهة البيت وجودة المطاعم الفاخرة". NEVER use a generic tagline.
+• STATS: Research-calibrated numbers. A local café won't have "500 عميل يومياً". Think realistically.
+• CTA: Write the specific action relevant to THIS business. Restaurant = "اطلب الآن", Clinic = "احجز موعدك", Agency = "احصل على عرض مجاني".
+• WORKING HOURS: Adapt realistically. Restaurant = till 2AM. Clinic = 8AM-8PM. Gym = 5AM-12AM.
+• PRICING HINTS: Mention price tier signals (لا تكشف أسعاراً محددة بالضرورة) that match the business positioning.
+
+═══════════════════════════════════════
+⚠️ PRE-FLIGHT CHECKLIST — VERIFY BEFORE CLOSING </html>
+═══════════════════════════════════════
+Before ending the HTML, confirm ALL of these exist in your output:
+□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links + .aw-hamburger button + #aw-mobile-menu
+□ <section id="hero"> with background-image, dark overlay, animated orbs, hero text, 2 CTA buttons
+□ <section id="stats"> or stats bar with 4 animated counters
+□ <section id="about"> with 2-column layout, image with gradient border, checklist items
+□ <section id="services"> with minimum 6 service cards using Font Awesome icons
+□ <section id="gallery"> with 6 Unsplash images from the provided list
+□ <section id="testimonials"> with 3 glassmorphism cards
+□ <section id="contact"> with contact info (phone, WhatsApp CTA, email, address, hours) + contact form
+□ <footer> with 3-column layout, SVG logo (id="aw-ai-logo-footer"), social links, copyright
+□ WhatsApp floating button (id="aw-whatsapp-btn") with position:fixed — MUST be present
+□ Font Awesome CDN <link> in <head>
+□ <script> at end of body with IntersectionObserver + counter animation + hamburger logic
+□ @media(max-width:768px) CSS with .aw-nav-links hidden + .aw-hamburger visible`;
 
   // Inject randomized images — tries Unsplash Search API first, falls back to IMAGE_BANK
   const imageSection = await buildImagePromptSection(description);
