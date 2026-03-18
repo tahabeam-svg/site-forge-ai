@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 
-const PAYMOB_BASE = "https://ksa.paymob.com/api";
+const PAYMOB_BASE = "https://accept.paymob.com/api";
 
 async function getPaymobConfig() {
   const apiKey = await storage.getSetting("paymob_api_key");
