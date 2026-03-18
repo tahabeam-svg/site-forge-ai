@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="flex items-center gap-2.5 w-full"
                 data-testid="link-brand-sidebar"
               >
-                <BrandName lang={lang} className="text-sm leading-tight" logoSize={36} />
+                <BrandName lang={lang} className="text-sm leading-tight" logoSize={44} />
                 <div className="text-start min-w-0">
                   <div className="text-[10px] text-muted-foreground leading-tight">{lang === "ar" ? "منشئ المواقع" : "Website Builder"}</div>
                 </div>

@@ -169,7 +169,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 h-16">
             <button onClick={() => { navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5 cursor-pointer" data-testid="link-brand-home">
-              <BrandName lang={lang} className="text-lg" logoSize={42} />
+              <BrandName lang={lang} className="text-lg" logoSize={50} />
             </button>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
@@ -894,7 +894,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <div className="flex items-center gap-2.5 mb-3">
-                <BrandName lang={lang} className="text-xl" logoSize={44} />
+                <BrandName lang={lang} className="text-xl" logoSize={52} />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {lang === "ar"
