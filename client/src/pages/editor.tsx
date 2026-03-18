@@ -192,11 +192,14 @@ export default function EditorPage() {
     mutationFn: async () => {
       const desc = project?.description || project?.name;
       const projLang = (project as any)?.language || lang;
+      const savedPalette = (project as any)?.colorPalette as { primary?: string; accent?: string } | null;
       const res = await apiRequest("POST", `/api/projects/${projectId}/generate-instant`, {
         description: desc,
         language: lang,
         websiteLanguage: projLang,
         websiteLanguages: [projLang],
+        ...(savedPalette?.primary ? { primaryColor: savedPalette.primary } : {}),
+        ...(savedPalette?.accent ? { accentColor: savedPalette.accent } : {}),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));

@@ -838,7 +838,13 @@ function buildPlacesPromptSection(data: PlacesResult): string {
   return lines.join("\n");
 }
 
-export async function generateWebsite(description: string, language: string = "ar"): Promise<GeneratedWebsite> {
+export interface GenerateWebsiteOptions {
+  primaryColor?: string;
+  accentColor?: string;
+  designStyle?: string;
+}
+
+export async function generateWebsite(description: string, language: string = "ar", options: GenerateWebsiteOptions = {}): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
   const dirAttr = isArabic ? 'dir="rtl"' : 'dir="ltr"';
   const arabicFonts = "'Cairo', 'Tajawal', 'IBM Plex Sans Arabic', sans-serif";
@@ -1243,22 +1249,77 @@ Copy this EXACT code — do NOT change the structure, only update the phone numb
 ═══════════════════════════════════════
 COLOR PALETTE GUIDELINES
 ═══════════════════════════════════════
-Pick a unique, business-appropriate palette. Avoid cliché generic blue (#2196f3 type):
-- Restaurant/Grills/Food: warm reds/oranges (#c0392b + #e67e22) or deep charcoal with amber (#1a0a00 + #f59e0b)
-- Coffee/Cafe: warm brown/cream (#6f4e37 + #d4a843)
-- Luxury/Perfume/Jewelry: near-black with gold (#0a0a0a + #d4a843) or deep purple with rose-gold (#1a0033 + #b8860b)
-- Medical/Clinic/Pharmacy: teal/cyan (#0d9488 + #0284c7) or deep blue (#1e40af + #06b6d4)
-- Tech/Startup/Software: violet/purple (#7c3aed + #06b6d4) or dark with electric green (#030712 + #22c55e)
-- Corporate/Agency/Consulting: deep navy (#1e3a5f + #2563eb) or slate with indigo (#0f172a + #6366f1)
-- Beauty/Salon/Spa: rose/mauve (#be185d + #f43f5e) or blush with gold (#fdf2f8 dark sections + #be185d)
-- Real Estate/Property: charcoal/emerald (#1a2e1a + #059669) or navy/gold (#0f172a + #f59e0b)
-- Fashion/Retail: bold black/white with accent (#0a0a0a + #ef4444) or fashion purple (#4a0072 + #e879f9)
-- Education/Academy: deep blue/orange (#1e3a8a + #f97316) or emerald/gold (#064e3b + #fbbf24)
-- Automotive/Transport: steel blue (#1e293b + #3b82f6) or racing red (#7f1d1d + #ef4444)
-- Events/Entertainment: electric purple (#4a0072 + #a855f7) or festival amber (#78350f + #f59e0b)
-Dark background for: hero, stats bar, testimonials section, footer
-Light/white background for: about, services
-Subtle gray (#f8fafc) for alternating sections
+⚠️ CRITICAL: If mandatory colors were specified at the TOP of this prompt, use THOSE EXACT colors. Skip this section if colors were already given.
+Otherwise, choose a UNIQUE palette from the options below. NEVER default to generic #2196f3 blue. NEVER repeat the same palette for the same industry — pick a DIFFERENT option each time.
+
+RESTAURANT / GRILL / FOOD (pick ONE variety):
+  A: Deep mahogany + amber (#7c2d12 primary, #f59e0b accent) — bold, Saudi BBQ
+  B: Noir charcoal + hot orange (#1a0a00 primary, #ea580c accent) — street food modern
+  C: Dark espresso + gold (#3b1106 primary, #fbbf24 accent) — fine dining
+  D: Warm coffee brown + cream gold (#6f4e37 primary, #d4a843 accent) — cafe chic
+
+MEDICAL / CLINIC / PHARMACY (pick ONE variety — NEVER always use #0f4c81):
+  A: Deep teal + sky (#0d9488 primary, #0284c7 accent) — clean modern clinic
+  B: Rich navy + electric cyan (#1e40af primary, #22d3ee accent) — high-tech hospital
+  C: Dark slate-blue + emerald (#164e63 primary, #34d399 accent) — wellness center
+  D: Deep purple + violet (#4c1d95 primary, #7c3aed accent) — specialty clinic
+  E: Forest teal + gold (#0c4a6e primary, #f59e0b accent) — premium healthcare
+
+LUXURY / PERFUME / JEWELRY (pick ONE variety):
+  A: Near-black + warm gold (#0a0a0a primary, #d4a843 accent) — classic luxury
+  B: Midnight navy + rose-gold (#1a1a2e primary, #c9a96e accent) — refined elegance
+  C: Deep violet + champagne (#1c0a2e primary, #e879f9 accent) — avant-garde fashion
+  D: Pure charcoal + platinum (#18181b primary, #a1a1aa accent) — ultra-minimal luxury
+
+TECH / STARTUP / SOFTWARE (pick ONE variety):
+  A: Indigo + cyan (#3730a3 primary, #22d3ee accent) — SaaS product
+  B: Electric violet + teal (#7c3aed primary, #06b6d4 accent) — AI/tech startup
+  C: Near-black + electric green (#030712 primary, #22c55e accent) — developer tool
+  D: Deep slate + aurora purple (#0f172a primary, #a855f7 accent) — dark modern SaaS
+
+BEAUTY / SALON / SPA (pick ONE variety):
+  A: Deep rose + hot pink (#831843 primary, #f472b6 accent) — vibrant beauty
+  B: Crimson + coral (#be185d primary, #f43f5e accent) — bold salon
+  C: Royal purple + fuchsia (#581c87 primary, #e879f9 accent) — luxury spa
+  D: Deep plum + lavender (#4a0072 primary, #c084fc accent) — premium wellness
+
+REAL ESTATE / PROPERTY (pick ONE variety):
+  A: Navy + gold (#1e3a5f primary, #d4af37 accent) — established agency
+  B: Forest green + emerald (#1a2e1a primary, #059669 accent) — sustainable property
+  C: Charcoal + amber (#0f172a primary, #f59e0b accent) — premium listings
+  D: Deep indigo + lavender (#312e81 primary, #a78bfa accent) — modern realty
+
+EDUCATION / ACADEMY (pick ONE variety):
+  A: Deep blue + orange (#1e3a8a primary, #f97316 accent) — dynamic learning
+  B: Emerald + gold (#064e3b primary, #fbbf24 accent) — prestigious academy
+  C: Royal navy + lime (#1e3a5f primary, #22c55e accent) — online education
+  D: Deep indigo + amber (#312e81 primary, #f59e0b accent) — professional training
+
+AGENCY / MARKETING (pick ONE variety):
+  A: Deep navy + electric blue (#1e3a5f primary, #2563eb accent) — corporate
+  B: Slate black + indigo (#0f172a primary, #6366f1 accent) — creative studio
+  C: Dark stone + orange (#1c1917 primary, #f97316 accent) — bold agency
+  D: Near-black + aurora violet (#18181b primary, #a78bfa accent) — premium agency
+
+AUTOMOTIVE (pick ONE variety):
+  A: Steel slate + blue (#1e293b primary, #3b82f6 accent) — modern dealer
+  B: Racing red + crimson (#7f1d1d primary, #ef4444 accent) — performance
+  C: Midnight + electric blue (#0c1445 primary, #60a5fa accent) — luxury auto
+
+HOTEL / RESORT (pick ONE variety):
+  A: Deep warm black + gold (#1a0a00 primary, #d4a843 accent) — 5-star resort
+  B: Forest + teal (#064e3b primary, #10b981 accent) — eco-luxury
+  C: Deep ocean + sky (#0c4a6e primary, #38bdf8 accent) — seaside resort
+
+GYM / FITNESS (pick ONE variety):
+  A: Deep red + blood orange (#1a0000 primary, #ef4444 accent) — intense energy
+  B: Pitch black + neon green (#0a0a0a primary, #22c55e accent) — CrossFit/performance
+  C: Dark stone + electric orange (#1c1917 primary, #f97316 accent) — lifestyle fitness
+
+⚠️ SECTION CONTRAST RULE:
+• Hero, stats bar, testimonials, footer → DARK backgrounds (primary color or near-black derived from it)
+• About, services, FAQ → white (#ffffff) or very light (#f8fafc) backgrounds for contrast
+• Alternate: never use 2 dark sections back-to-back without a light section between them
 
 ${MOBILE_RESPONSIVE_MANDATORY}
 
@@ -1357,7 +1418,35 @@ CSS:
   }
 
   const variationToken = `\n[Variation seed: ${Date.now()}-${Math.random().toString(36).slice(2,7)}]`;
-  let prompt = basePrompt.replace("USE_IMAGES_PLACEHOLDER", imageSection);
+
+  // ── Mandatory brand color injection ─────────────────────────────────────────
+  // When primaryColor/accentColor are supplied (from ai-builder parse-prompt),
+  // inject them at the very top of the user prompt so the AI cannot deviate.
+  let colorOverride = "";
+  if (options.primaryColor || options.accentColor) {
+    const pc = options.primaryColor || "#1e293b";
+    const ac = options.accentColor || "#6366f1";
+    colorOverride = `
+⛔⛔⛔ MANDATORY BRAND COLORS — HIGHEST PRIORITY — DO NOT CHANGE ⛔⛔⛔
+The following colors have been selected for this brand. You MUST use them throughout the ENTIRE website.
+PRIMARY COLOR: ${pc}
+ACCENT COLOR: ${ac}
+
+Usage rules (MANDATORY):
+• All gradient buttons → linear-gradient(135deg, ${pc}, ${ac}) — no exceptions
+• All icon boxes, gradient borders, and brand highlights → use ${pc} and ${ac}
+• Hero headline gradient text → from ${pc} to ${ac}
+• Stats numbers gradient text → ${pc} to ${ac}
+• Navbar brand name gradient → ${pc} to ${ac}
+• Service card hover gradient border → ${pc} to ${ac}
+• CTA band gradient background → derived from ${pc} darkened + ${ac}
+• Do NOT replace ${pc} with a different primary. Do NOT replace ${ac} with a different accent.
+⛔⛔⛔ END MANDATORY COLOR BLOCK ⛔⛔⛔
+
+`;
+  }
+
+  let prompt = colorOverride + basePrompt.replace("USE_IMAGES_PLACEHOLDER", imageSection);
   if (placesSection) prompt = placesSection + "\n\n" + prompt;
   if (mapsSection)   prompt = prompt + "\n\n" + mapsSection;
   prompt += variationToken;

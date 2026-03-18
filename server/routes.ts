@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { registerAiBuilderRoutes } from "./ai-builder";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage, GenerateWebsiteOptions } from "./ai";
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
@@ -660,6 +660,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const whatsappNumber: string | undefined = req.body.whatsapp ? String(req.body.whatsapp).replace(/\s/g, "") : undefined;
       const activityType: string = req.body.activityType || "other";
       const designStyle: string = req.body.designStyle || "dark-modern";
+      const primaryColor: string | undefined = req.body.primaryColor && /^#[0-9a-f]{3,8}$/i.test(req.body.primaryColor) ? req.body.primaryColor : undefined;
+      const accentColor: string | undefined = req.body.accentColor && /^#[0-9a-f]{3,8}$/i.test(req.body.accentColor) ? req.body.accentColor : undefined;
 
       // ─── Credit check for ALL users before generation ────────────────────────
       const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2, credits: userCreditsInst } = await getUserPlanInfo(req.user.id);
@@ -690,7 +692,12 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const cleanPrompt = whatsappNumber
         ? `${description}\n\nأضف زر واتساب عائم (bottom-right) يفتح الواتساب: ${whatsappNumber}`
         : description;
-      const generated = await generateWebsite(cleanPrompt, websiteLanguage);
+      const genColorOptions: GenerateWebsiteOptions = {
+        ...(primaryColor ? { primaryColor } : {}),
+        ...(accentColor ? { accentColor } : {}),
+        ...(designStyle !== "dark-modern" ? { designStyle } : {}),
+      };
+      const generated = await generateWebsite(cleanPrompt, websiteLanguage, genColorOptions);
       const genMs = Date.now() - genStartTime;
       let baseHtml = generated.html;
 

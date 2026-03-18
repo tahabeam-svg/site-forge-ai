@@ -406,6 +406,8 @@ export default function AIBuilderPage() {
         description: enrichedDesc,
         activityType: extractedInfo.activityType,
         designStyle: extractedInfo.designStyle,
+        primaryColor: extractedInfo.primaryColor,
+        accentColor: extractedInfo.accentColor,
         whatsapp: extractedInfo.whatsapp || extractedInfo.phone || "",
       });
       const generated = await genRes.json();

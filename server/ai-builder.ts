@@ -33,17 +33,78 @@ Return ONLY valid JSON with EXACTLY these fields:
   "suggestions": ["3 short Arabic edit suggestions the user can use after generation"]
 }
 
-Color & style guide:
-- Luxury perfume/fashion/jewelry → primaryColor:#1a1a2e, accentColor:#c9a96e, designStyle:luxury
-- Restaurant/café → primaryColor:#7c2d12, accentColor:#f59e0b, designStyle:dark-modern
-- Medical/clinic → primaryColor:#0f4c81, accentColor:#06b6d4, designStyle:corporate
-- Real estate → primaryColor:#1e3a5f, accentColor:#d4af37, designStyle:luxury
-- Tech/startup → primaryColor:#3730a3, accentColor:#06b6d4, designStyle:dark-modern
-- Beauty/salon → primaryColor:#831843, accentColor:#f472b6, designStyle:minimal
-- Education → primaryColor:#1e3a5f, accentColor:#22c55e, designStyle:corporate
-- Default → primaryColor:#1e293b, accentColor:#6366f1, designStyle:dark-modern
+Color & style guide — IMPORTANT: Pick ONE palette from the options below (vary your pick — do NOT always pick the first one):
 
-IMPORTANT: Never return colors with luminance > 0.5 (no white/light primaries).`,
+LUXURY / PERFUME / JEWELRY / FASHION:
+  Option A → primaryColor:#1a1a2e, accentColor:#c9a96e, designStyle:luxury
+  Option B → primaryColor:#0a0a0a, accentColor:#d4a843, designStyle:luxury
+  Option C → primaryColor:#1a0033, accentColor:#b8860b, designStyle:luxury
+  Option D → primaryColor:#1c0a2e, accentColor:#e879f9, designStyle:luxury
+
+RESTAURANT / CAFÉ / GRILL / FOOD:
+  Option A → primaryColor:#7c2d12, accentColor:#f59e0b, designStyle:dark-modern
+  Option B → primaryColor:#1a0a00, accentColor:#ea580c, designStyle:dark-modern
+  Option C → primaryColor:#3b1106, accentColor:#fbbf24, designStyle:dark-modern
+  Option D → primaryColor:#6f4e37, accentColor:#d4a843, designStyle:dark-modern
+
+MEDICAL / CLINIC / PHARMACY / HOSPITAL:
+  Option A → primaryColor:#0d9488, accentColor:#0284c7, designStyle:corporate
+  Option B → primaryColor:#1e40af, accentColor:#22d3ee, designStyle:corporate
+  Option C → primaryColor:#0c4a6e, accentColor:#06b6d4, designStyle:corporate
+  Option D → primaryColor:#164e63, accentColor:#34d399, designStyle:corporate
+  Option E → primaryColor:#4c1d95, accentColor:#7c3aed, designStyle:dark-modern
+
+REAL ESTATE / PROPERTY:
+  Option A → primaryColor:#1e3a5f, accentColor:#d4af37, designStyle:luxury
+  Option B → primaryColor:#1a2e1a, accentColor:#059669, designStyle:luxury
+  Option C → primaryColor:#0f172a, accentColor:#f59e0b, designStyle:luxury
+  Option D → primaryColor:#312e81, accentColor:#a78bfa, designStyle:dark-modern
+
+TECH / STARTUP / SOFTWARE / APP:
+  Option A → primaryColor:#3730a3, accentColor:#22d3ee, designStyle:dark-modern
+  Option B → primaryColor:#7c3aed, accentColor:#06b6d4, designStyle:dark-modern
+  Option C → primaryColor:#030712, accentColor:#22c55e, designStyle:dark-modern
+  Option D → primaryColor:#0f172a, accentColor:#a855f7, designStyle:dark-modern
+
+BEAUTY / SALON / SPA:
+  Option A → primaryColor:#831843, accentColor:#f472b6, designStyle:minimal
+  Option B → primaryColor:#be185d, accentColor:#f43f5e, designStyle:minimal
+  Option C → primaryColor:#581c87, accentColor:#e879f9, designStyle:dark-modern
+  Option D → primaryColor:#4a0072, accentColor:#c084fc, designStyle:luxury
+
+EDUCATION / ACADEMY / SCHOOL:
+  Option A → primaryColor:#1e3a8a, accentColor:#f97316, designStyle:corporate
+  Option B → primaryColor:#064e3b, accentColor:#fbbf24, designStyle:corporate
+  Option C → primaryColor:#1e3a5f, accentColor:#22c55e, designStyle:corporate
+  Option D → primaryColor:#312e81, accentColor:#f59e0b, designStyle:dark-modern
+
+AGENCY / MARKETING / CREATIVE:
+  Option A → primaryColor:#1e3a5f, accentColor:#2563eb, designStyle:dark-modern
+  Option B → primaryColor:#0f172a, accentColor:#6366f1, designStyle:dark-modern
+  Option C → primaryColor:#1c1917, accentColor:#f97316, designStyle:dark-modern
+  Option D → primaryColor:#18181b, accentColor:#a78bfa, designStyle:dark-modern
+
+AUTOMOTIVE / TRANSPORT:
+  Option A → primaryColor:#1e293b, accentColor:#3b82f6, designStyle:dark-modern
+  Option B → primaryColor:#7f1d1d, accentColor:#ef4444, designStyle:dark-modern
+  Option C → primaryColor:#0c1445, accentColor:#60a5fa, designStyle:dark-modern
+
+HOTEL / RESORT / TOURISM:
+  Option A → primaryColor:#1a0a00, accentColor:#d4a843, designStyle:luxury
+  Option B → primaryColor:#064e3b, accentColor:#10b981, designStyle:luxury
+  Option C → primaryColor:#0c4a6e, accentColor:#38bdf8, designStyle:luxury
+
+GYM / FITNESS / SPORT:
+  Option A → primaryColor:#1a0000, accentColor:#ef4444, designStyle:dark-modern
+  Option B → primaryColor:#0a0a0a, accentColor:#22c55e, designStyle:dark-modern
+  Option C → primaryColor:#1c1917, accentColor:#f97316, designStyle:dark-modern
+
+DEFAULT:
+  Option A → primaryColor:#1e293b, accentColor:#6366f1, designStyle:dark-modern
+  Option B → primaryColor:#0f172a, accentColor:#a855f7, designStyle:dark-modern
+  Option C → primaryColor:#18181b, accentColor:#3b82f6, designStyle:dark-modern
+
+IMPORTANT: Never return colors with luminance > 0.5 (no white/light primaries). Always pick a DIFFERENT option each call — rotate through options to create variety.`,
           },
           { role: "user", content: prompt.trim() },
         ],
