@@ -260,9 +260,9 @@
     background-clip: text;
   }
   .brand-logo-ar {
-    font-family: 'Readex Pro', 'Cairo', sans-serif;
-    font-weight: 600;
-    letter-spacing: 0.03em;
+    font-family: 'Noto Kufi Arabic', 'Cairo', sans-serif;
+    font-weight: 900;
+    letter-spacing: 0.04em;
     background: linear-gradient(135deg, #22c55e, #15803d);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
