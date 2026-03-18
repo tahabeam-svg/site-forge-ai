@@ -31,6 +31,11 @@ import FreeWebsitePage from "@/pages/free-website";
 import FreeStorePage from "@/pages/free-store";
 import AIBuilderPage from "@/pages/ai-builder";
 import TemplatesPage from "@/pages/templates";
+import BlogPage from "@/pages/blog";
+import BlogPostPage from "@/pages/blog-post";
+import SeoAiWebsiteBuilderPage from "@/pages/seo-ai-website-builder";
+import SeoDigitalMarketingPage from "@/pages/seo-digital-marketing";
+import SeoWebsiteSaudiArabiaPage from "@/pages/seo-website-saudi-arabia";
 
 import { useEffect } from "react";
 
@@ -92,6 +97,11 @@ function Router() {
       <Route path="/free-store" component={FreeStorePage} />
       <Route path="/ai-builder">{() => <ProtectedRoute component={AIBuilderPage} />}</Route>
       <Route path="/templates">{() => <ProtectedRoute component={TemplatesPage} />}</Route>
+      <Route path="/blog" component={BlogPage} />
+      <Route path="/blog/:slug" component={BlogPostPage} />
+      <Route path="/ai-website-builder" component={SeoAiWebsiteBuilderPage} />
+      <Route path="/digital-marketing-ai" component={SeoDigitalMarketingPage} />
+      <Route path="/website-saudi-arabia" component={SeoWebsiteSaudiArabiaPage} />
       <Route component={NotFound} />
     </Switch>
   );

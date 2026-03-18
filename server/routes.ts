@@ -261,6 +261,10 @@ Allow: /faq
 Allow: /free-website
 Allow: /free-store
 Allow: /blog
+Allow: /blog/
+Allow: /ai-website-builder
+Allow: /digital-marketing-ai
+Allow: /website-saudi-arabia
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /auth
@@ -359,16 +363,62 @@ Disallow: /
   <url>
     <loc>${base}/free-website</loc>
     <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/free-website" />
   </url>
 
   <url>
     <loc>${base}/free-store</loc>
     <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/free-store" />
   </url>
+
+  <!-- SEO Landing Pages — High Priority -->
+  <url>
+    <loc>${base}/ai-website-builder</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.98</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/ai-website-builder" />
+  </url>
+
+  <url>
+    <loc>${base}/digital-marketing-ai</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.97</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/digital-marketing-ai" />
+  </url>
+
+  <url>
+    <loc>${base}/website-saudi-arabia</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.97</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/website-saudi-arabia" />
+  </url>
+
+  <!-- Blog -->
+  <url>
+    <loc>${base}/blog</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="${base}/blog" />
+  </url>
+
+  <url><loc>${base}/blog/how-to-create-website-with-ai-free</loc><lastmod>2026-03-10</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>${base}/blog/free-digital-marketing-small-business</loc><lastmod>2026-03-08</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>${base}/blog/ai-website-builder-vs-wordpress</loc><lastmod>2026-03-05</lastmod><changefreq>monthly</changefreq><priority>0.82</priority></url>
+  <url><loc>${base}/blog/seo-guide-arabic-websites-2026</loc><lastmod>2026-03-01</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
+  <url><loc>${base}/blog/free-online-store-saudi-arabia</loc><lastmod>2026-02-25</lastmod><changefreq>monthly</changefreq><priority>0.82</priority></url>
+  <url><loc>${base}/blog/ai-content-marketing-instagram-tiktok</loc><lastmod>2026-02-20</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>${base}/blog/website-design-restaurants-shops-saudi</loc><lastmod>2026-02-15</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
+  <url><loc>${base}/blog/whatsapp-marketing-business-saudi</loc><lastmod>2026-02-10</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
+  <url><loc>${base}/blog/website-hosting-options-saudi-businesses</loc><lastmod>2026-02-05</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
 
   <!-- Legal -->
   <url>

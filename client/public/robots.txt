@@ -7,8 +7,12 @@ Allow: /templates
 Allow: /faq
 Allow: /terms
 Allow: /privacy
-Allow: /billing
 Allow: /auth
+Allow: /ai-website-builder
+Allow: /digital-marketing-ai
+Allow: /website-saudi-arabia
+Allow: /blog
+Allow: /blog/
 
 # Block dashboard and private pages
 Disallow: /dashboard
@@ -16,6 +20,10 @@ Disallow: /admin
 Disallow: /editor/
 Disallow: /marketing
 Disallow: /api/
+Disallow: /billing
+Disallow: /settings
+Disallow: /analytics
+Disallow: /secure-admin
 
 # Block query strings on certain paths
 Disallow: /*?*session*
@@ -32,3 +40,21 @@ Crawl-delay: 10
 
 User-agent: MJ12bot
 Disallow: /
+
+# Allow AI crawlers with crawl-delay
+User-agent: GPTBot
+Allow: /
+Allow: /blog/
+Allow: /ai-website-builder
+Allow: /digital-marketing-ai
+Allow: /website-saudi-arabia
+Crawl-delay: 5
+
+User-agent: ClaudeBot
+Allow: /
+Allow: /blog/
+Crawl-delay: 5
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1

@@ -941,6 +941,10 @@ export default function LandingPage() {
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
                 <li><a href="/ai-builder" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-builder">{lang === "ar" ? "منشئ AI" : "AI Builder"}</a></li>
+                <li><a href="/ai-website-builder" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "موقع بالذكاء الاصطناعي" : "AI Website Builder"}</a></li>
+                <li><a href="/digital-marketing-ai" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "تسويق رقمي" : "Digital Marketing"}</a></li>
+                <li><a href="/website-saudi-arabia" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "مواقع السعودية" : "Saudi Arabia"}</a></li>
+                <li><a href="/blog" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-blog">{lang === "ar" ? "المدونة" : "Blog"}</a></li>
                 <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "مواقعي" : "My Sites"}</a></li>
               </ul>
             </div>
