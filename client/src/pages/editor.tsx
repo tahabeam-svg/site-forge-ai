@@ -25,7 +25,6 @@ import {
   Smartphone,
   Wand2,
   Download,
-  Bot,
   User,
   X,
   ImagePlus,
@@ -647,8 +646,8 @@ export default function EditorPage() {
                   {/* Welcome message if no messages */}
                   {messages.length === 0 && !pendingUserMsg && (
                     <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 flex items-center justify-center shrink-0">
-                        <Bot className="w-4 h-4" />
+                      <div className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-950/40 flex items-center justify-center shrink-0 overflow-hidden">
+                        <img src="/logo.png" alt="ArabyWeb AI" className="w-6 h-6 object-contain" />
                       </div>
                       <div className="text-[0.9rem] leading-relaxed rounded-xl px-4 py-3 bg-muted text-muted-foreground max-w-[88%]">
                         {lang === "ar"
@@ -662,12 +661,15 @@ export default function EditorPage() {
                   {/* Chat messages */}
                   {messages.map((msg) => (
                     <div key={msg.id} className="flex gap-2" data-testid={`chat-message-${msg.id}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${
                         msg.role === "user"
-                          ? "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300"
-                          : "bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300"
+                          ? "bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300"
+                          : "bg-green-50 dark:bg-green-950/40"
                       }`}>
-                        {msg.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                        {msg.role === "user"
+                          ? <User className="w-4 h-4" />
+                          : <img src="/logo.png" alt="ArabyWeb AI" className="w-6 h-6 object-contain" />
+                        }
                       </div>
                       <div className={`text-[0.9rem] leading-relaxed rounded-xl px-4 py-2.5 max-w-[88%] ${
                         msg.role === "user"
