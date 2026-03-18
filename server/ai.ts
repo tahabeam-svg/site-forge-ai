@@ -558,6 +558,60 @@ Before writing a single line of HTML, extract these from the user description:
 CRITICAL: Every section of this website must feel 100% custom-built for THIS specific business. Generic text like "نقدم أفضل الخدمات" or "خدمة 1" is ABSOLUTELY FORBIDDEN.
 
 ═══════════════════════════════════════
+STEP 1 — SMART SECTION SELECTION (READ BEFORE WRITING HTML)
+═══════════════════════════════════════
+Based on the business type you detected, SELECT the relevant BONUS sections from the list below and include them in the page — in addition to the mandatory 8 sections:
+
+🍽️ RESTAURANT / CAFE / GRILL → Add:
+  A. INTERACTIVE MENU SECTION (id="menu"): Tabbed menu with JavaScript tab switching. Tabs = food categories specific to this restaurant (e.g. مشاوي | أرز | مقبلات | مشروبات | حلويات). Each tab shows a 3-column card grid with: food photo (Unsplash), dish name, 1-line description, price in SAR. Tab switching via onclick class toggle (no page reload). Add to navbar: "القائمة" → #menu
+  B. DELIVERY PLATFORMS STRIP: مرسول | هنقرستيشن | كريم | شبيب logos as clickable badges
+  C. RESERVATION FORM: Small section with: Date picker, Time selector, Guest count (1-2, 3-5, 6+), Name, Phone, Reserve button
+
+🏥 CLINIC / MEDICAL / PHARMACY → Add:
+  A. DOCTORS/TEAM SECTION: 3-4 doctor cards. Each: professional photo (Unsplash medical), doctor name (Arabic), specialty, credentials badge (MBBS, MD, etc.), book appointment button
+  B. APPOINTMENT BOOKING SECTION (id="booking"): Modern form: patient name, phone, date picker, specialty dropdown, doctor dropdown, notes textarea. Submit shows success message via JavaScript.
+  C. FAQ ACCORDION: 5 questions specific to this medical field (e.g. for dental: "هل تبييض الأسنان آمن؟")
+
+🏢 AGENCY / MARKETING / CREATIVE → Add:
+  A. PORTFOLIO/CASE STUDIES (id="portfolio"): Filterable grid by project type. Filter buttons: الكل | هوية بصرية | تصميم مواقع | تسويق رقمي. On filter click: hide/show items with CSS transition. Each item: project image, title, brief result ("زيادة المبيعات 340%")
+  B. PROCESS SECTION: 4-step numbered visual process. Each step: number (big gradient), title, description. Connected by dashed line.
+  C. CLIENTS LOGO STRIP: 8 well-known brand logos as SVG placeholders with grayscale filter, color on hover
+
+🏠 REAL ESTATE → Add:
+  A. PROPERTY LISTINGS (id="properties"): Filter bar: نوع (شقة/فيلا/أرض) | المدينة | السعر. Grid of 6 property cards: photo, price, beds/baths/sqm specs, location, "اتصل الآن" + "احجز جولة" buttons
+  B. MAP EMBED PLACEHOLDER: Styled div with Google Maps look and "موقعنا في خريطة غوغل" button
+  C. MORTGAGE CALCULATOR: Simple JS calculator — price, down payment, years → monthly installment result
+
+💄 BEAUTY / SALON / SPA → Add:
+  A. SERVICE MENU WITH PRICES: 2-column table with categories. Each service: name, description, duration, price range in SAR. Styled as beautiful price list.
+  B. BEFORE/AFTER GALLERY: CSS-based image comparison slider (clip-path technique)
+  C. ONLINE BOOKING MINI-FORM: Service select, date, time, stylist preference
+
+💪 GYM / FITNESS → Add:
+  A. CLASS SCHEDULE TABLE: Weekly timetable (Sat-Thu). Each cell: class name, instructor, time, available spots. Color-coded by type.
+  B. MEMBERSHIP PLANS: 3 tiers (شهري | ربع سنوي | سنوي) with features checklist and price. Middle plan highlighted as "الأفضل قيمة".
+  C. TRANSFORMATION GALLERY: Before/after client results with testimonial
+
+🎓 EDUCATION / ACADEMY → Add:
+  A. COURSES GRID: Cards with: course image, title, instructor, duration (hours), level (مبتدئ/متوسط/متقدم), price, "سجل الآن" button
+  B. INSTRUCTORS SECTION: 3-4 instructor profiles with specialty and rating
+  C. ENROLLMENT FORM: Course select, name, phone, experience level, submit
+
+🚗 AUTOMOTIVE → Add:
+  A. VEHICLES/SERVICES GRID with filter by type
+  B. BOOKING SERVICE APPOINTMENT: date, car model, service type
+  C. COMPARE PACKAGES: side-by-side comparison table
+
+🌐 TECH / SOFTWARE / STARTUP → Add:
+  A. PRODUCT FEATURES with screenshots/mockup
+  B. PRICING TIERS: 3 plans (مجاني | احترافي | مؤسسي) with feature comparison table
+  C. INTEGRATION LOGOS: compatible platforms strip
+
+⛔ UNIVERSAL for ALL business types — ALWAYS include:
+  D. FAQ ACCORDION: 5–6 questions unique to this exact business. Each Q/A uses JS onclick toggle (max-height:0 → max-height:500px; transition:max-height 0.4s ease). Styled with gradient icon and expand/collapse arrow.
+  E. WORKING CONTACT FORM: JavaScript validation — check empty fields, show red border + error message. On submit: hide form, show success animation + "شكراً! سنتواصل معك قريباً" message.
+
+═══════════════════════════════════════
 VISUAL DESIGN STANDARD 2025 — MANDATORY
 ═══════════════════════════════════════
 The website MUST look like it was designed in 2025 by a top-tier agency. Think Notion, Linear, Vercel, Stripe landing pages — but adapted for the Arab market.
@@ -604,7 +658,13 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 ▸ SERVICES: 3-column grid. Cards use CSS GRADIENT BORDER trick: background:linear-gradient(white,white) padding-box, linear-gradient(135deg,PRIMARY,ACCENT) border-box; border:1.5px solid transparent. On hover: translateY(-12px), stronger shadow, full gradient border revealed. Icon box rotates on hover, fills with gradient.
 SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشاوي", services should be "مشاوي لحم", "دجاج مشوي", "أرز سعودي", "مقبلات", "عصائر طازجة", "توصيل منزلي". NEVER use generic "خدمة احترافية" or "Service 1".
 
-▸ GALLERY: 3-column grid with border-radius:1.25rem. Hover: image scale(1.1) + dark gradient overlay + eye icon appears (scale from 0.5 to 1). Use 6 REAL Unsplash images relevant to the specific business type (restaurant=food photos, clinic=medical, etc.).
+▸ GALLERY (id="gallery"): 3-column masonry-style grid. Hover: image scale(1.06) + dark gradient overlay + eye icon (fa-eye) appears. LIGHTBOX — clicking any gallery image opens a fullscreen overlay:
+  - Overlay: position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.92); display:flex; align-items:center; justify-content:center
+  - Shows enlarged image + left/right navigation arrows + X close button
+  - Close on X click or overlay click outside image
+  - Full lightbox JavaScript: openLightbox(imgSrc, index), closeLightbox(), prevImage(), nextImage()
+  - Store all gallery image srcs in a JavaScript array for navigation
+  Use 6 REAL Unsplash images relevant to the specific business type.
 
 ▸ CTA BAND: Full-width gradient background. Large bold headline personalized for THIS business (e.g. for a restaurant: "هل أنت جائع؟ اطلب أشهى المشاوي الآن"). Decorative radial glow orb in corner.
 
@@ -736,18 +796,65 @@ STEP B — Inside the <nav>, add EXACTLY:
 STEP C — The .aw-nav-links div wraps the desktop nav links and is hidden on mobile via CSS (NOT inline style).
 
 ═══════════════════════════════════════
-JAVASCRIPT — MANDATORY INLINE SCRIPT
+JAVASCRIPT — COMPLETE INTERACTIVE FEATURES (ALL REQUIRED)
 ═══════════════════════════════════════
-At the bottom of the HTML, include a <script> tag with:
-1. Scroll-triggered animations using IntersectionObserver:
-   - Add class "aw-reveal" to elements you want animated
-   - Observer adds class "aw-visible" when element enters viewport
-   - CSS: .aw-reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s ease,transform 0.7s ease;} .aw-visible{opacity:1;transform:translateY(0);}
-2. Navbar scroll effect:
-   - On scroll > 60px: add class "scrolled" to nav element
-   - CSS .nav.scrolled: background:rgba(15,23,42,0.97);backdrop-filter:blur(16px);box-shadow:0 4px 30px rgba(0,0,0,0.25)
-3. Counter animation for stats:
-   - On IntersectionObserver trigger, animate number from 0 to target value over 1500ms
+Include ONE <script> tag at end of body with ALL of these features:
+
+1. SCROLL ANIMATIONS (IntersectionObserver):
+   .aw-reveal{opacity:0;transform:translateY(40px);transition:opacity 0.7s cubic-bezier(.22,1,.36,1),transform 0.7s cubic-bezier(.22,1,.36,1);}
+   .aw-visible{opacity:1;transform:none;}
+   Observer threshold:0.15 — adds "aw-visible" when element enters viewport.
+
+2. NAVBAR SCROLL EFFECT:
+   scroll > 60px → nav gets class "scrolled" → background:rgba(5,8,22,0.97); box-shadow:0 4px 30px rgba(0,0,0,0.3)
+
+3. COUNTER ANIMATION (for stats section):
+   On IntersectionObserver trigger, animate from 0 to data-target over 1800ms using requestAnimationFrame.
+   HTML: <span class="aw-counter" data-target="500" data-suffix="+">0</span>
+   JS parses data-target and data-suffix, animates smoothly, adds suffix when done.
+
+4. GALLERY LIGHTBOX:
+   const galleryImgs = []; // Populate with all gallery image src URLs on DOMContentLoaded
+   function openLightbox(src, idx) { ... show overlay with img, set currentIndex }
+   function closeLightbox() { ... hide overlay }
+   function prevImg() { currentIndex = (currentIndex - 1 + galleryImgs.length) % galleryImgs.length; ... }
+   function nextImg() { currentIndex = (currentIndex + 1) % galleryImgs.length; ... }
+   document.addEventListener('keydown', e => { if e.key==='ArrowLeft' prevImg(); if ArrowRight nextImg(); if Escape closeLightbox() })
+   Lightbox HTML (add to body): <div id="aw-lightbox" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;flex-direction:column;gap:1rem;"><img id="aw-lb-img" style="max-width:90vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.5)"><div style="display:flex;gap:1rem;"><button onclick="event.stopPropagation();prevImg()" style="...">&#8592;</button><button onclick="event.stopPropagation();closeLightbox()" style="...">&#10005;</button><button onclick="event.stopPropagation();nextImg()" style="...">&#8594;</button></div></div>
+
+5. FAQ ACCORDION:
+   function toggleFaq(el) { var answer = el.nextElementSibling; var isOpen = answer.style.maxHeight; answer.style.maxHeight = isOpen ? '' : answer.scrollHeight+'px'; el.querySelector('.faq-icon').style.transform = isOpen ? 'rotate(0)' : 'rotate(45deg)'; }
+   CSS: .faq-answer{max-height:0;overflow:hidden;transition:max-height 0.4s ease;}
+   Each FAQ item: <div class="faq-q" onclick="toggleFaq(this)"><span>السؤال</span><span class="faq-icon" style="transition:transform 0.3s">+</span></div><div class="faq-answer"><p>الجواب</p></div>
+
+6. CONTACT FORM VALIDATION:
+   function validateForm(formId) {
+     let valid = true;
+     document.querySelectorAll('#'+formId+' [required]').forEach(field => {
+       if (!field.value.trim()) { field.style.borderColor='#ef4444'; valid = false; }
+       else { field.style.borderColor=''; }
+     });
+     if (valid) { document.getElementById(formId).style.display='none'; document.getElementById(formId+'-success').style.display='flex'; }
+     return false; // prevent real submit
+   }
+   Success message div (hidden by default): <div id="FORMID-success" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:3rem;text-align:center;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:#22c55e;"></i><h3>شكراً! سنتواصل معك خلال 24 ساعة</h3></div>
+
+7. TABS SYSTEM (for restaurant menu, packages, etc.):
+   function switchTab(tabGroup, tabId) {
+     document.querySelectorAll('[data-tab-group="'+tabGroup+'"]').forEach(el => el.classList.remove('active'));
+     document.querySelectorAll('[data-tab-content="'+tabGroup+'"]').forEach(el => el.style.display='none');
+     document.querySelector('[data-tab="'+tabId+'"]').classList.add('active');
+     document.getElementById(tabId).style.display='grid';
+   }
+   // Set first tab active by default on DOMContentLoaded
+
+8. PORTFOLIO FILTER (for agencies):
+   function filterProjects(category) {
+     document.querySelectorAll('.portfolio-item').forEach(item => {
+       item.style.display = (category === 'all' || item.dataset.category === category) ? 'block' : 'none';
+     });
+     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === category));
+   }
 
 ═══════════════════════════════════════
 ICONS — FONT AWESOME 6 FREE (MANDATORY)
@@ -844,19 +951,39 @@ Use your knowledge of this specific business type to write expert-level, realist
 ⚠️ PRE-FLIGHT CHECKLIST — VERIFY BEFORE CLOSING </html>
 ═══════════════════════════════════════
 Before ending the HTML, confirm ALL of these exist in your output:
-□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links + .aw-hamburger button + #aw-mobile-menu
-□ <section id="hero"> with background-image, dark overlay, animated orbs, hero text, 2 CTA buttons
-□ <section id="stats"> or stats bar with 4 animated counters
-□ <section id="about"> with 2-column layout, image with gradient border, checklist items
-□ <section id="services"> with minimum 6 service cards using Font Awesome icons
-□ <section id="gallery"> with 6 Unsplash images from the provided list
-□ <section id="testimonials"> with 3 glassmorphism cards
-□ <section id="contact"> with contact info (phone, WhatsApp CTA, email, address, hours) + contact form
-□ <footer> with 3-column layout, SVG logo (id="aw-ai-logo-footer"), social links, copyright
-□ WhatsApp floating button (id="aw-whatsapp-btn") with position:fixed — MUST be present
-□ Font Awesome CDN <link> in <head>
-□ <script> at end of body with IntersectionObserver + counter animation + hamburger logic
-□ @media(max-width:768px) CSS with .aw-nav-links hidden + .aw-hamburger visible`;
+
+STRUCTURE:
+□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links + .aw-hamburger button + #aw-mobile-menu div
+□ <section id="hero"> with background-image, dark overlay, animated orbs, large hero text, 2 CTA buttons
+□ Stats bar/section with 4 animated counters using data-target + data-suffix attributes
+□ <section id="about"> with 2-column, image with gradient border, checklist items, brand story text
+□ <section id="services"> with 6+ specific service cards using Font Awesome icons (NOT generic names)
+□ <section id="gallery"> with 6 Unsplash images + lightbox onclick
+□ FAQ section with 5 accordion items using toggleFaq() — questions specific to this business
+□ <section id="testimonials"> with 3 glassmorphism cards + specific testimonial text
+□ <section id="contact"> with contact info (phone/WhatsApp/email/address/hours) + form with validateForm()
+□ Form success div (id="contact-form-success" or similar) hidden by default
+□ 1–3 category-specific BONUS sections from STEP 1 list above
+□ <footer> with 3-column, SVG logo (id="aw-ai-logo-footer"), tagline, social icons, copyright + "Powered by ArabyWeb.net"
+□ WhatsApp floating button (id="aw-whatsapp-btn") position:fixed — MUST be before </body>
+□ Lightbox div (id="aw-lightbox") injected in body
+
+JAVASCRIPT (single <script> at end):
+□ IntersectionObserver scroll reveals (aw-reveal → aw-visible)
+□ Counter animation using requestAnimationFrame + data-target
+□ Navbar scroll effect (class "scrolled" on scroll > 60px)
+□ toggleFaq() function for FAQ accordion
+□ validateForm() function for contact form + success message display
+□ Lightbox functions: openLightbox(), closeLightbox(), prevImg(), nextImg() + keyboard listener
+□ Tab switching function (if menu/tabs used)
+□ Portfolio filter function (if agency/portfolio used)
+□ Hamburger: classList.toggle('open') on #aw-mobile-menu
+
+CSS:
+□ @media(max-width:768px): .aw-nav-links{display:none} + .aw-hamburger{display:flex}
+□ .faq-answer{max-height:0;overflow:hidden;transition:max-height 0.4s ease}
+□ #aw-lightbox when open: display:flex
+□ All hover states and transitions defined`;
 
   // Inject randomized images — tries Unsplash Search API first, falls back to IMAGE_BANK
   const imageSection = await buildImagePromptSection(description);
