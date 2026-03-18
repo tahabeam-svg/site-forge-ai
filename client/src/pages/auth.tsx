@@ -188,25 +188,13 @@ export default function AuthPage() {
     const reason = params.get("reason");
     const ar = localStorage.getItem("arabyweb-lang") !== "en";
     if (error === "google") {
-      const decodedReason = reason ? decodeURIComponent(reason) : "";
-      // Detect Replit dev environment quota errors — not a real Google error
-      if (decodedReason.includes("data transfer quota") || decodedReason.includes("quota")) {
-        toast({
-          title: ar ? "بيئة التطوير محدودة" : "Dev Environment Limited",
-          description: ar
-            ? "افتح arabyweb.net مباشرة في المتصفح لتسجيل الدخول بـ Google"
-            : "Open arabyweb.net directly in your browser to sign in with Google",
-          variant: "destructive",
-        });
-      } else {
-        const reasonMap: Record<string, string> = {
-          no_user: ar ? "لم يتم التعرف على حسابك في Google" : "Could not identify your Google account",
-          session: ar ? "مشكلة في حفظ الجلسة، حاول مجدداً" : "Session error, please try again",
-          redirect_uri_mismatch: ar ? "رابط التوجيه غير مطابق في إعدادات Google" : "Google OAuth redirect URI mismatch",
-        };
-        const msg = (reason && reasonMap[reason]) || (decodedReason || (ar ? "فشل تسجيل الدخول عبر Google" : "Google login failed"));
-        toast({ title: ar ? "خطأ في Google" : "Google Login Error", description: msg, variant: "destructive" });
-      }
+      const reasonMap: Record<string, string> = {
+        no_user: ar ? "لم يتم التعرف على حسابك في Google" : "Could not identify your Google account",
+        session: ar ? "مشكلة في حفظ الجلسة، حاول مجدداً" : "Session error, please try again",
+        redirect_uri_mismatch: ar ? "رابط التوجيه غير مطابق في إعدادات Google" : "Google OAuth redirect URI mismatch",
+      };
+      const msg = (reason && reasonMap[reason]) || (reason ? decodeURIComponent(reason) : (ar ? "فشل تسجيل الدخول عبر Google" : "Google login failed"));
+      toast({ title: ar ? "خطأ في Google" : "Google Login Error", description: msg, variant: "destructive" });
       window.history.replaceState({}, "", window.location.pathname);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
