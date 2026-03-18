@@ -28,12 +28,12 @@ async function getAuthToken(): Promise<string> {
     let errBody = "";
     try { errBody = await res.text(); } catch {}
     console.error("[Paymob] Auth failed — HTTP", res.status, errBody);
-    throw new Error(`Paymob authentication failed (HTTP ${res.status}): ${errBody.slice(0, 200)}`);
+    throw new Error("PAYMOB_AUTH_FAILED");
   }
   const data = await res.json();
   if (!data.token) {
     console.error("[Paymob] Auth response has no token:", JSON.stringify(data).slice(0, 300));
-    throw new Error("Paymob authentication failed: no token in response");
+    throw new Error("PAYMOB_AUTH_FAILED");
   }
   return data.token;
 }

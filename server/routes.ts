@@ -1752,6 +1752,13 @@ When asking for clarification:
       res.json({ iframeUrl, orderId, subscriptionId: sub.id });
     } catch (err: any) {
       console.error("Payment initiation error:", err);
+      if (err.message === "PAYMOB_AUTH_FAILED") {
+        return res.status(503).json({
+          message: "PAYMOB_AUTH_FAILED",
+          messageAr: "بوابة الدفع غير متاحة مؤقتاً. يرجى المحاولة لاحقاً أو التواصل مع الدعم.",
+          messageEn: "Payment gateway is temporarily unavailable. Please try again later or contact support.",
+        });
+      }
       res.status(500).json({ message: err.message || "Failed to initiate payment" });
     }
   });
@@ -1839,6 +1846,13 @@ When asking for clarification:
       res.json({ iframeUrl, orderId, credits, amountSAR: credits });
     } catch (err: any) {
       console.error("Buy credits error:", err);
+      if (err.message === "PAYMOB_AUTH_FAILED") {
+        return res.status(503).json({
+          message: "PAYMOB_AUTH_FAILED",
+          messageAr: "بوابة الدفع غير متاحة مؤقتاً. يرجى المحاولة لاحقاً أو التواصل مع الدعم.",
+          messageEn: "Payment gateway is temporarily unavailable. Please try again later or contact support.",
+        });
+      }
       res.status(500).json({ message: err.message || "Failed to initiate credit purchase" });
     }
   });

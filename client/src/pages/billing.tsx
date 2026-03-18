@@ -65,9 +65,14 @@ export default function BillingPage() {
   const parseErrMsg = (err: any): string => {
     try {
       const raw: string = err?.message || "";
+      if (raw.includes("PAYMOB_AUTH_FAILED") || raw.includes("authentication failed") || raw.includes("incorrect credentials")) {
+        return lang === "ar"
+          ? "بوابة الدفع غير متاحة مؤقتاً. يرجى المحاولة لاحقاً أو التواصل مع الدعم."
+          : "Payment gateway is temporarily unavailable. Please try again later or contact support.";
+      }
       const jsonPart = raw.slice(raw.indexOf("{"));
       const parsed = JSON.parse(jsonPart);
-      return parsed?.message || raw;
+      return parsed?.messageAr && lang === "ar" ? parsed.messageAr : (parsed?.messageEn && lang === "en" ? parsed.messageEn : parsed?.message || raw);
     } catch {
       return err?.message || (lang === "ar" ? "حدث خطأ غير متوقع" : "An unexpected error occurred");
     }
