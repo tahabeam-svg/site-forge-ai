@@ -100,8 +100,18 @@ function wrap(content: string, isAr: boolean): string {
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <!-- Header -->
         <tr>
-          <td style="background:linear-gradient(135deg,#059669,#0d9488);padding:28px 32px;text-align:${isAr ? "right" : "left"};">
-            <span style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">🌐 ArabyWeb.net</span>
+          <td style="background:linear-gradient(135deg,#059669,#0d9488);padding:24px 32px;text-align:${isAr ? "right" : "left"};">
+            <table cellpadding="0" cellspacing="0" style="display:inline-table;">
+              <tr>
+                <td style="vertical-align:middle;padding-${isAr ? "left" : "right"}:12px;">
+                  <div style="width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;line-height:44px;text-align:center;">🌐</div>
+                </td>
+                <td style="vertical-align:middle;">
+                  <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.2;">ArabyWeb</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:2px;">${isAr ? "منصة بناء المواقع بالذكاء الاصطناعي" : "AI-Powered Website Builder"}</div>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
         <!-- Body -->
@@ -137,8 +147,9 @@ function p(text: string, muted = false): string {
   return `<p style="margin:0 0 12px;font-size:15px;line-height:1.7;color:${color};">${text}</p>`;
 }
 
-function infoBox(content: string, color = "#10b981"): string {
-  return `<div style="background:${color}15;border-${true ? "right" : "left"}:4px solid ${color};border-radius:8px;padding:16px 20px;margin:16px 0;">${content}</div>`;
+function infoBox(content: string, color = "#10b981", isAr = true): string {
+  const side = isAr ? "right" : "left";
+  return `<div style="background:${color}15;border-${side}:4px solid ${color};border-radius:8px;padding:16px 20px;margin:16px 0;">${content}</div>`;
 }
 
 function statRow(label: string, value: string): string {
@@ -179,7 +190,7 @@ export async function sendWelcomeEmail(to: string, name: string, isAr = true) {
          ${p("يسعدنا انضمامك لعائلة ArabyWeb. أنت الآن قادر على بناء مواقع إلكترونية احترافية بالذكاء الاصطناعي في ثوانٍ معدودة.")}
          ${infoBox(`<strong>ماذا يمكنك فعله الآن؟</strong><br>
            ✅ إنشاء موقعك الأول مجاناً<br>
-           ✅ استخدام 10 جلسات ذكاء اصطناعي مجانية<br>
+           ✅ استخدام 5 جلسات ذكاء اصطناعي مجانية<br>
            ✅ اختيار من عشرات القوالب الجاهزة`)}
          ${btn("https://arabyweb.net/dashboard", "ابدأ الآن →")}
          ${p("إذا احتجت أي مساعدة، فريق الدعم لديك دائماً.", true)}`
@@ -187,8 +198,8 @@ export async function sendWelcomeEmail(to: string, name: string, isAr = true) {
          ${p("We're thrilled to have you join ArabyWeb. You can now build professional websites with AI in seconds.")}
          ${infoBox(`<strong>What you can do now:</strong><br>
            ✅ Create your first website for free<br>
-           ✅ Use 10 free AI sessions<br>
-           ✅ Choose from dozens of ready templates`)}
+           ✅ Use 5 free AI sessions<br>
+           ✅ Choose from dozens of ready templates`, "#10b981", false)}
          ${btn("https://arabyweb.net/dashboard", "Get Started →")}
          ${p("If you need any help, our support team is always here for you.", true)}`,
     isAr
@@ -229,12 +240,12 @@ export async function sendGoogleWelcomeEmail(to: string, name: string, isAr = tr
          ${p("لقد أنشأت حسابك بنجاح عبر حساب Google الخاص بك. أنت الآن جاهز لبناء مواقع ذكية واحترافية.")}
          ${infoBox("🔒 حسابك مرتبط بـ Google — لا تحتاج لكلمة مرور منفصلة للدخول.")}
          ${btn("https://arabyweb.net/dashboard", "اذهب للوحة التحكم")}
-         ${p("رصيدك المجاني: 10 جلسات ذكاء اصطناعي", true)}`
+         ${p("رصيدك المجاني: 5 جلسات ذكاء اصطناعي", true)}`
       : `${h1(`Hello ${firstName}!`)}
          ${p("You successfully created your account using Google. You're now ready to build smart, professional websites.")}
-         ${infoBox("🔒 Your account is linked to Google — no separate password needed to sign in.")}
+         ${infoBox("🔒 Your account is linked to Google — no separate password needed to sign in.", "#10b981", false)}
          ${btn("https://arabyweb.net/dashboard", "Go to Dashboard")}
-         ${p("Your free balance: 10 AI sessions", true)}`,
+         ${p("Your free balance: 5 AI sessions", true)}`,
     isAr
   );
   return sendMail(to, subject, html, "noreply");

@@ -1815,7 +1815,7 @@ When asking for clarification:
           paymobOrderId: `TEST-CREDITS-${Date.now()}`,
           paymobTransactionId: null,
         });
-        const amountSAR = credits;
+        const amountSAR = parseFloat((credits * 1.15).toFixed(2));
         return res.json({ testMode: true, testUrl: `/payment-test?type=credits&credits=${credits}&purchaseId=${purchase.id}&amount=${amountSAR}` });
       }
 
@@ -1843,7 +1843,7 @@ When asking for clarification:
       });
 
       const iframeUrl = await getIframeUrl(paymentToken);
-      res.json({ iframeUrl, orderId, credits, amountSAR: credits });
+      res.json({ iframeUrl, orderId, credits, amountSAR: parseFloat((credits * 1.15).toFixed(2)) });
     } catch (err: any) {
       console.error("Buy credits error:", err);
       if (err.message === "PAYMOB_AUTH_FAILED") {
@@ -1894,7 +1894,7 @@ When asking for clarification:
               companyName: (subRow as any).invoiceCompanyName || undefined,
               taxNumber: (subRow as any).invoiceTaxNumber || undefined,
               description: `اشتراك خطة ${planNameAr} — ArabyWeb.net (شهري)`,
-              amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
+              amountWithVatSar: parseFloat(amountSar.toFixed(2)),
               invoiceType: "subscription",
               planOrCredits: planNameAr,
             };
@@ -1925,7 +1925,7 @@ When asking for clarification:
               companyName: (purchase as any).invoiceCompanyName || undefined,
               taxNumber: (purchase as any).invoiceTaxNumber || undefined,
               description: `شراء ${purchase.credits} جلسة ذكاء اصطناعي — ArabyWeb.net`,
-              amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
+              amountWithVatSar: parseFloat(amountSar.toFixed(2)),
               invoiceType: "credits",
               planOrCredits: `${purchase.credits} جلسة`,
             };
@@ -1999,7 +1999,7 @@ When asking for clarification:
                 companyName: (creditPurchase as any).invoiceCompanyName || undefined,
                 taxNumber: (creditPurchase as any).invoiceTaxNumber || undefined,
                 description: `شراء ${creditPurchase.credits} جلسة ذكاء اصطناعي — ArabyWeb.net`,
-                amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
+                amountWithVatSar: parseFloat(amountSar.toFixed(2)),
                 invoiceType: "credits",
                 planOrCredits: `${creditPurchase.credits} جلسة`,
               };
@@ -2053,7 +2053,7 @@ When asking for clarification:
               companyName: (sub as any).invoiceCompanyName || undefined,
               taxNumber: (sub as any).invoiceTaxNumber || undefined,
               description: `اشتراك خطة ${planNameAr} — ArabyWeb.net (شهري)`,
-              amountWithVatSar: parseFloat((amountSar * 1.15).toFixed(2)),
+              amountWithVatSar: parseFloat(amountSar.toFixed(2)),
               invoiceType: "subscription",
               planOrCredits: planNameAr,
             };
