@@ -596,10 +596,25 @@ async function fetchUnsplashImages(query: string, count: number = 6): Promise<st
     if (!resp.ok) { console.warn(`[Unsplash] HTTP ${resp.status} for "${query}"`); return []; }
     const data = await resp.json() as { results: Array<{ id: string; urls: { raw: string } }> };
     if (!data.results?.length) return [];
-    // Pick `count` random results from top 15
     const pool = data.results.slice(0, Math.min(15, data.results.length));
     const shuffled = shuffleAndPick(pool, count);
     return shuffled.map(r => r.urls.raw.split("?")[0]);
+  } catch { return []; }
+}
+
+/** Fetch images from Pexels API — used as fallback when Unsplash returns nothing. */
+async function fetchPexelsImages(query: string, count: number = 6): Promise<string[]> {
+  const apiKey = process.env.PEXELS_API_KEY;
+  if (!apiKey) return [];
+  try {
+    const apiUrl = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=${Math.min(count * 3, 30)}&orientation=landscape`;
+    const resp = await fetch(apiUrl, { headers: { Authorization: apiKey } });
+    if (!resp.ok) { console.warn(`[Pexels] HTTP ${resp.status} for "${query}"`); return []; }
+    const data = await resp.json() as { photos: Array<{ src: { large2x: string; landscape: string; large: string } }> };
+    if (!data.photos?.length) return [];
+    const pool = data.photos.slice(0, Math.min(15, data.photos.length));
+    const shuffled = shuffleAndPick(pool, count);
+    return shuffled.map(p => p.src.landscape || p.src.large2x || p.src.large);
   } catch { return []; }
 }
 
@@ -621,32 +636,49 @@ async function buildImagePromptSection(description: string): Promise<string> {
     fetchUnsplashImages(galleryQuery, 6),
   ]);
 
-  const liveHeroBase = heroUrls[0] || null;
-  const liveGalleryBases = galleryUrls.length >= 4 ? galleryUrls : [];
+  // ── Pexels fallback if Unsplash returned nothing ────────────────────────────
+  let liveHeroBase = heroUrls[0] || null;
+  let liveGalleryBases = galleryUrls.length >= 4 ? galleryUrls : [];
+  let imageSource = "Unsplash";
+
+  if (!liveHeroBase) {
+    const [pexHero, pexGallery] = await Promise.all([
+      fetchPexelsImages(heroQuery, 2),
+      fetchPexelsImages(galleryQuery, 6),
+    ]);
+    if (pexHero[0]) {
+      liveHeroBase = pexHero[0];
+      liveGalleryBases = pexGallery.length >= 4 ? pexGallery : [];
+      imageSource = "Pexels";
+    }
+  }
 
   let lines: string;
 
   if (liveHeroBase) {
-    const heroUrl = `${liveHeroBase}?w=1920&h=1080&fit=crop&q=90&auto=format`;
+    const isUnsplashUrl = liveHeroBase.includes("unsplash.com");
+    const heroUrl = isUnsplashUrl
+      ? `${liveHeroBase}?w=1920&h=1080&fit=crop&q=90&auto=format`
+      : liveHeroBase;
     const heroLine = `  1. ${heroUrl}  ← USE THIS AS HERO BACKGROUND (category:${cat})`;
 
     let galleryLines: string;
     if (liveGalleryBases.length >= 4) {
-      // Real gallery images from Unsplash — all specific to this category
-      galleryLines = liveGalleryBases.map((base, i) =>
-        `  ${i + 2}. ${base}?w=700&h=500&fit=crop&q=85&auto=format  ← GALLERY image ${i + 1}`
-      ).join("\n");
+      galleryLines = liveGalleryBases.map((base, i) => {
+        const isUnsplash = base.includes("unsplash.com") && !base.includes("?");
+        const url = isUnsplash ? `${base}?w=700&h=500&fit=crop&q=85&auto=format` : base;
+        return `  ${i + 2}. ${url}  ← GALLERY image ${i + 1}`;
+      }).join("\n");
     } else {
-      // Fallback to bank for gallery
       galleryLines = bankUrls.slice(0, 8).map((url, i) =>
         `  ${i + 2}. ${url}`
       ).join("\n");
     }
     lines = `${heroLine}\n${galleryLines}`;
-    console.log(`[Unsplash] ✓ cat:${cat} hero+gallery fetched. hero:${liveHeroBase.slice(-20)} gallery:${liveGalleryBases.length} imgs`);
+    console.log(`[${imageSource}] ✓ cat:${cat} hero+gallery fetched. gallery:${liveGalleryBases.length} imgs`);
   } else {
     lines = bankUrls.map((url, i) => `  ${i + 1}. ${url}`).join("\n");
-    console.log(`[Unsplash] Fallback IMAGE_BANK for cat:${cat}`);
+    console.log(`[Images] Fallback IMAGE_BANK for cat:${cat}`);
   }
 
   return `Business category detected: "${cat}"
@@ -693,6 +725,117 @@ function extractBusinessType(desc: string): string {
     if (m) return m[1].trim();
   }
   return "";
+}
+
+// ─── Categories where a physical location map makes sense ────────────────────
+const LOCATION_CATEGORIES = new Set([
+  "restaurant", "cafe", "grill", "medical", "hotel", "gym", "beauty",
+  "automotive", "supermarket", "pharmacy", "legal", "education", "events",
+  "furniture", "decor", "travel", "security", "printing",
+]);
+
+/** Extract a city or area name from the user description. */
+function extractLocationQuery(desc: string, businessName: string): string {
+  const citiesAr = ["الرياض","جدة","الدمام","مكة","المدينة","أبها","الطائف","تبوك","الخبر","القطيف","الجبيل","ينبع","نجران","جازان","الباحة","سكاكا","عرعر","بريدة","عنيزة","الاحساء","القصيم","حائل","ظهران","العليا","حفر الباطن"];
+  const citiesEn = ["Riyadh","Jeddah","Dammam","Mecca","Medina","Abha","Taif","Tabuk","Khobar","Jubail","Yanbu","Najran","Jazan","Baha","Sakaka","Arar","Buraidah","Hail","Dhahran","Al-Hasa"];
+  for (const city of citiesAr) {
+    if (desc.includes(city)) {
+      return [businessName, city, "Saudi Arabia"].filter(Boolean).join(" ");
+    }
+  }
+  for (const city of citiesEn) {
+    if (desc.toLowerCase().includes(city.toLowerCase())) {
+      return [businessName, city, "Saudi Arabia"].filter(Boolean).join(" ");
+    }
+  }
+  const inMatch = desc.match(/(?:في|بـ?)\s+([^\s،,\.؟!]{3,20})/);
+  if (inMatch) return [businessName, inMatch[1], "Saudi Arabia"].filter(Boolean).join(" ");
+  return businessName ? `${businessName} Saudi Arabia` : "";
+}
+
+/** Google Places API result shape */
+interface PlacesResult {
+  name?: string;
+  address?: string;
+  phone?: string;
+  rating?: number;
+  totalRatings?: number;
+  hours?: string[];
+  lat?: number;
+  lng?: number;
+}
+
+/** Fetch real business data from Google Places Text Search + Details. */
+async function fetchGooglePlacesData(query: string): Promise<PlacesResult | null> {
+  const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+  if (!apiKey || !query) return null;
+  try {
+    const searchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=ar&region=SA&key=${apiKey}`;
+    const searchResp = await fetch(searchUrl);
+    if (!searchResp.ok) return null;
+    const searchData = await searchResp.json() as any;
+    if (searchData.status !== "OK" || !searchData.results?.length) return null;
+    const place = searchData.results[0];
+
+    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=formatted_phone_number,opening_hours&language=ar&key=${apiKey}`;
+    const detailsResp = await fetch(detailsUrl);
+    let phone = "", hours: string[] = [];
+    if (detailsResp.ok) {
+      const det = await detailsResp.json() as any;
+      if (det.status === "OK" && det.result) {
+        phone = det.result.formatted_phone_number || "";
+        hours = det.result.opening_hours?.weekday_text || [];
+      }
+    }
+    return {
+      name: place.name,
+      address: place.formatted_address,
+      phone,
+      rating: place.rating,
+      totalRatings: place.user_ratings_total,
+      hours,
+      lat: place.geometry?.location?.lat,
+      lng: place.geometry?.location?.lng,
+    };
+  } catch (e) {
+    console.warn("[Places] Error:", e);
+    return null;
+  }
+}
+
+/** Build a prompt section telling the AI to embed a real Google Map. */
+function buildMapsPromptSection(locationQuery: string, isArabic: boolean, places?: PlacesResult | null): string {
+  let embedUrl: string;
+  if (places?.lat && places?.lng) {
+    embedUrl = `https://maps.google.com/maps?q=${places.lat},${places.lng}&z=16&output=embed&hl=${isArabic ? "ar" : "en"}`;
+  } else {
+    embedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(locationQuery)}&output=embed&hl=${isArabic ? "ar" : "en"}`;
+  }
+  return `
+GOOGLE MAP REQUIREMENT — MANDATORY:
+Add an interactive Google Map iframe inside the contact section (id="contact").
+This is FREE — no API key required. Use this EXACT iframe embed (copy verbatim):
+
+<iframe
+  src="${embedUrl}"
+  width="100%" height="380"
+  style="border:0;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.14);display:block;margin-top:24px;"
+  allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+</iframe>
+
+Place the map below the contact info / form, spanning full width. On mobile (max-width:768px), keep height:280px.`;
+}
+
+/** Build a prompt section with real business data from Google Places. */
+function buildPlacesPromptSection(data: PlacesResult): string {
+  const lines = ["REAL BUSINESS DATA (verified from Google Maps — use this in the website, do NOT invent placeholders):"];
+  if (data.name)         lines.push(`• Business Name: ${data.name}`);
+  if (data.address)      lines.push(`• Address: ${data.address}`);
+  if (data.phone)        lines.push(`• Phone: ${data.phone}`);
+  if (data.rating)       lines.push(`• Google Rating: ${data.rating}/5 ⭐ (${data.totalRatings || 0} reviews)`);
+  if (data.hours?.length) lines.push(`• Working Hours:\n  ${data.hours.slice(0, 7).join("\n  ")}`);
+  lines.push("Use the above real address in the contact section footer. Use the real phone number for WhatsApp & call buttons.");
+  return lines.join("\n");
 }
 
 export async function generateWebsite(description: string, language: string = "ar"): Promise<GeneratedWebsite> {
@@ -1187,14 +1330,40 @@ CSS:
 □ #aw-lightbox when open: display:flex
 □ All hover states and transitions defined`;
 
-  // Inject randomized images — tries Unsplash Search API first, falls back to IMAGE_BANK
+  // Inject randomized images — tries Unsplash Search API first, then Pexels, then IMAGE_BANK
   const imageSection = await buildImagePromptSection(description);
+
+  // ── Google Places + Maps integration ────────────────────────────────────────
+  const imgCat = detectImageCategory(description);
+  const businessName = extractBusinessName(description);
+  const locationQuery = extractLocationQuery(description, businessName);
+  let placesSection = "";
+  let mapsSection = "";
+
+  if (LOCATION_CATEGORIES.has(imgCat)) {
+    let placesData: PlacesResult | null = null;
+    if (locationQuery) {
+      placesData = await fetchGooglePlacesData(locationQuery);
+      if (placesData) {
+        placesSection = buildPlacesPromptSection(placesData);
+        console.log(`[Places] ✓ ${placesData.name} | ${placesData.address}`);
+      }
+    }
+    const mapsQuery = locationQuery || extractBusinessType(description) + " Saudi Arabia";
+    if (mapsQuery) {
+      mapsSection = buildMapsPromptSection(mapsQuery, isArabic, placesData);
+      console.log(`[Maps] Embed URL built for: ${mapsQuery}`);
+    }
+  }
+
   const variationToken = `\n[Variation seed: ${Date.now()}-${Math.random().toString(36).slice(2,7)}]`;
-  const prompt = basePrompt
-    .replace("USE_IMAGES_PLACEHOLDER", imageSection)
-    + variationToken;
+  let prompt = basePrompt.replace("USE_IMAGES_PLACEHOLDER", imageSection);
+  if (placesSection) prompt = placesSection + "\n\n" + prompt;
+  if (mapsSection)   prompt = prompt + "\n\n" + mapsSection;
+  prompt += variationToken;
+
   const model = getModel();
-  console.log("Using AI model:", model, "| Category:", category, "| Images injected for:", detectImageCategory(description));
+  console.log("Using AI model:", model, "| Category:", category, "| ImgCat:", imgCat, "| Maps:", !!mapsSection, "| Places:", !!placesSection);
   const response = await openai.chat.completions.create({
     model,
     messages: [
