@@ -148,7 +148,7 @@ export default function DomainsPage() {
           )}
         </Card>
 
-        {/* Upgrade card */}
+        {/* Info card — domains will be Pro feature on launch */}
         <Card className="p-5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950 border-emerald-200 dark:border-emerald-800" data-testid="card-domain-upgrade">
           <div className="flex items-start gap-4">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0">
@@ -156,16 +156,13 @@ export default function DomainsPage() {
             </div>
             <div>
               <h3 className="font-semibold">
-                {lang === "ar" ? "نطاقات مخصصة متاحة في الخطة الاحترافية" : "Custom domains available on Pro plan"}
+                {lang === "ar" ? "النطاقات المخصصة ستكون ضمن الخطة الاحترافية" : "Custom domains will be part of the Pro plan"}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
                 {lang === "ar"
-                  ? "قم بالترقية لربط نطاقك المخصص (.sa, .com) مع شهادة SSL مجانية"
-                  : "Upgrade to connect your custom domain (.sa, .com) with free SSL certificate"}
+                  ? "عند إطلاق الميزة، ستتمكن من ربط نطاقك المخصص (.sa, .com) مع شهادة SSL مجانية عبر الخطة الاحترافية."
+                  : "When the feature launches, Pro plan subscribers will be able to connect custom domains (.sa, .com) with a free SSL certificate."}
               </p>
-              <Button size="sm" className="mt-3 bg-emerald-600" data-testid="button-upgrade-domains">
-                {lang === "ar" ? "ترقية الآن" : "Upgrade Now"}
-              </Button>
             </div>
           </div>
         </Card>
