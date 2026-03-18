@@ -66,8 +66,20 @@ function detectInputLang(text: string): "ar" | "en" {
 }
 
 export default function ChatWidget() {
-  const { language } = useAuth();
+  const { language, user, isAuthenticated } = useAuth();
   const uiLang: "ar" | "en" = language === "en" ? "en" : "ar";
+
+  const userFirstName = (user as any)?.firstName || "";
+  const userLastName = (user as any)?.lastName || "";
+  const userProfileImage = (user as any)?.profileImageUrl || "";
+  const userDisplayName = userFirstName || ((user as any)?.email?.split("@")[0]) || "";
+  const userInitials = userFirstName && userLastName
+    ? (userFirstName[0] + userLastName[0]).toUpperCase()
+    : userFirstName
+      ? userFirstName[0].toUpperCase()
+      : userDisplayName
+        ? userDisplayName[0].toUpperCase()
+        : "؟";
 
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -100,7 +112,13 @@ export default function ChatWidget() {
       setProactiveBubble(null);
       sessionStorage.setItem(STORAGE_KEY, "1");
       if (messages.length === 0) {
-        addBotMessage(uiLang === "ar" ? OPENING_AR : OPENING_EN);
+        let openingMsg = uiLang === "ar" ? OPENING_AR : OPENING_EN;
+        if (isAuthenticated && userFirstName) {
+          openingMsg = uiLang === "ar"
+            ? `أهلاً ${userFirstName}! 😊\n\nأنا مساعدك الذكي، يسعدني مساعدتك في بناء موقعك الاحترافي أو إنشاء محتوى السوشيال ميديا بالذكاء الاصطناعي.\n\nكيف يمكنني مساعدتك اليوم؟`
+            : `Welcome back, ${userFirstName}! 😊\n\nI'm your AI assistant — happy to help you build your professional website or generate social media content.\n\nHow can I help you today?`;
+        }
+        addBotMessage(openingMsg);
       }
       setTimeout(() => inputRef.current?.focus(), 300);
     }
@@ -328,9 +346,9 @@ export default function ChatWidget() {
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ fontFamily: isRTL ? "'Cairo', sans-serif" : "'Inter', sans-serif" }}>
                 {messages.map(msg => (
-                  <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+                  <div key={msg.id} className={`flex items-end gap-2 ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                     {msg.sender === "bot" && (
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0 me-2 mt-auto">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
                         <Sparkles className="w-3.5 h-3.5 text-white" />
                       </div>
                     )}
@@ -343,6 +361,17 @@ export default function ChatWidget() {
                     >
                       {msg.text}
                     </div>
+                    {msg.sender === "user" && (
+                      <div className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden border-2 border-emerald-400/60">
+                        {userProfileImage ? (
+                          <img src={userProfileImage} alt={userDisplayName} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-[10px] font-bold">
+                            {userInitials}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
 
