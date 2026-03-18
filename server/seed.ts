@@ -225,6 +225,8 @@ export async function seedDatabase() {
     await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_title TEXT`);
     await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS seo_description TEXT`);
     await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS website_languages TEXT[] DEFAULT ARRAY['ar']::text[]`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS design_style TEXT DEFAULT 'modern'`);
+    await db.execute(sql`ALTER TABLE projects ADD COLUMN IF NOT EXISTS html_history JSONB DEFAULT '[]'::jsonb`);
     await db.execute(sql`UPDATE projects SET edit_count = 0 WHERE edit_count IS NULL`);
     await db.execute(sql`UPDATE projects SET website_languages = ARRAY[COALESCE(website_language,'ar')]::text[] WHERE website_languages IS NULL`);
     console.log("Migration: projects table columns ensured");

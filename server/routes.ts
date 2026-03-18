@@ -7,6 +7,7 @@ import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSoci
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
+import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData } from "./email";
 import { z } from "zod";
@@ -633,6 +634,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
         sections: generated.sections,
         status: "generated",
         editCount: 0,
+        designStyle: detectDesignStyle(description, ""),
+        htmlHistory: [] as any,
       });
 
       if (!isFreePlan && !isUserAdmin) {
@@ -768,6 +771,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
         content: (language === "ar" ? "تم إنشاء الموقع فورياً ✨" : "Website generated instantly ✨") + freePlanNote2,
       });
 
+      // Auto-detect design style from description + activity type, save to project
+      const detectedDesignStyle = detectDesignStyle(description, activityType);
+
       const updated = await storage.updateProject(project.id, {
         generatedHtml: finalHtml2,
         generatedCss: generated.css,
@@ -777,6 +783,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
         sections: generated.sections,
         status: "generated",
         editCount: 0,
+        designStyle: detectedDesignStyle,
+        htmlHistory: [] as any,
         websiteLanguage,
         websiteLanguages,
       });
@@ -844,6 +852,78 @@ Sitemap: https://arabyweb.net/sitemap.xml
       if (!parsed.success) return res.status(400).json({ message: "Edit command is required" });
       const { command, language, imageDataUrl } = parsed.data;
       const lang = language || "ar";
+
+      // ─── Design Style Change Detection ─────────────────────────────────────
+      const styleChangeMap: Record<string, string> = {
+        "luxury": "luxury", "فاخر": "luxury", "راقي": "luxury", "ذهبي": "luxury",
+        "corporate": "corporate", "احترافي": "corporate", "شركة": "corporate", "مؤسسي": "corporate",
+        "modern": "modern", "عصري": "modern", "حديث": "modern",
+        "minimal": "minimal", "بسيط": "minimal", "نظيف": "minimal", "مينيمال": "minimal",
+        "creative": "creative", "إبداعي": "creative", "ابداعي": "creative", "فني": "creative",
+      };
+      const styleChangeKw = ["change style", "change the style", "غير النمط", "بدّل النمط", "غير الأسلوب", "change design", "غير التصميم", "switch style", "style to", "النمط إلى", "النمط الى"];
+      const isStyleChangeCmd = styleChangeKw.some(kw => command.toLowerCase().includes(kw));
+      if (isStyleChangeCmd) {
+        let newStyle: string | null = null;
+        for (const [kw, style] of Object.entries(styleChangeMap)) {
+          if (command.toLowerCase().includes(kw)) { newStyle = style; break; }
+        }
+        if (newStyle) {
+          await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
+          await storage.updateProject(project.id, { designStyle: newStyle });
+          const styleLabels: Record<string, Record<string, string>> = {
+            luxury: { ar: "فاخر (ذهبي وداكن)", en: "Luxury (Gold & Dark)" },
+            corporate: { ar: "احترافي (أزرق)", en: "Corporate (Blue)" },
+            modern: { ar: "عصري (بنفسجي)", en: "Modern (Purple)" },
+            minimal: { ar: "بسيط (أبيض وأسود)", en: "Minimal (B&W)" },
+            creative: { ar: "إبداعي (وردي وذهبي)", en: "Creative (Pink & Gold)" },
+          };
+          const lbl = styleLabels[newStyle] || { ar: newStyle, en: newStyle };
+          await storage.addChatMessage({
+            projectId: project.id, role: "assistant",
+            content: lang === "ar"
+              ? `🎨 تم تغيير أسلوب التصميم إلى **${lbl.ar}**. أعد توليد الموقع لتطبيق الأسلوب الجديد.`
+              : `🎨 Design style changed to **${lbl.en}**. Regenerate the site to apply the new style.`,
+          });
+          return res.json(project);
+        }
+      }
+
+      // ─── Undo Command Detection ──────────────────────────────────────────────
+      const undoKeywords = ["تراجع", "undo", "ارجع للسابق", "ارجع", "الخطوة السابقة", "استرجع", "رجّع", "رجع", "undone", "revert", "rollback"];
+      const isUndoCommand = undoKeywords.some(kw => command.toLowerCase().includes(kw));
+
+      if (isUndoCommand) {
+        const history = (project.htmlHistory as Array<{ html: string; css: string; ts: number }>) || [];
+        if (history.length === 0) {
+          await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
+          await storage.addChatMessage({
+            projectId: project.id,
+            role: "assistant",
+            content: lang === "ar"
+              ? "⚠️ لا يوجد إصدار سابق للرجوع إليه. هذا هو أول نسخة من الموقع."
+              : "⚠️ No previous version to undo. This is the first version of your site.",
+          });
+          return res.json(project);
+        }
+        const prev = history[history.length - 1];
+        const newHistory = history.slice(0, -1);
+        await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
+        await storage.addChatMessage({
+          projectId: project.id,
+          role: "assistant",
+          content: lang === "ar"
+            ? `↩️ تم التراجع عن آخر تعديل. (${history.length - 1} نسخ محفوظة)`
+            : `↩️ Last edit undone. (${history.length - 1} saved version${history.length - 1 !== 1 ? "s" : ""} remaining)`,
+        });
+        const undone = await storage.updateProject(project.id, {
+          generatedHtml: prev.html,
+          generatedCss: prev.css,
+          htmlHistory: newHistory as any,
+          editCount: Math.max(0, (project.editCount ?? 1) - 1),
+        });
+        return res.json(undone);
+      }
 
       // ─── Plan-based edit limits with credit deduction ───────────────────────
       const { isUserAdmin: isAdminEdit, planName: planNameEdit, credits: userCreditsEdit } = await getUserPlanInfo(userId);
@@ -945,10 +1025,16 @@ Sitemap: https://arabyweb.net/sitemap.xml
         content: result.summary + remainingNote,
       });
 
+      // ─── Save current version to history before overwriting (max 10 versions) ──
+      const currentHistory = (project.htmlHistory as Array<{ html: string; css: string; ts: number }>) || [];
+      const newHistoryEntry = { html: project.generatedHtml || "", css: project.generatedCss || "", ts: Date.now() };
+      const newHistory = [...currentHistory, newHistoryEntry].slice(-10);
+
       const updated = await storage.updateProject(project.id, {
         generatedHtml: finalEditHtml,
         generatedCss: result.css,
         editCount: newEditCount,
+        htmlHistory: newHistory as any,
       });
 
       res.json(updated);

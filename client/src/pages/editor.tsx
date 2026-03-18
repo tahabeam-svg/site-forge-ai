@@ -33,6 +33,7 @@ import {
   Lock,
   RefreshCw,
   AlertTriangle,
+  Undo2,
 } from "lucide-react";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
@@ -457,7 +458,14 @@ export default function EditorPage() {
           <Separator orientation="vertical" className="h-6" />
           <div className="min-w-0">
             <h1 className="text-sm font-semibold truncate" data-testid="text-project-name-desktop">{project.name}</h1>
-            <p className="text-xs text-muted-foreground truncate">{project.description || ""}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs text-muted-foreground truncate">{project.description || ""}</p>
+              {(project as any).designStyle && (project as any).designStyle !== "dark-modern" && (
+                <Badge variant="outline" className="text-[9px] px-1 h-3.5 shrink-0 font-normal border-violet-300 text-violet-500 dark:border-violet-700 dark:text-violet-400" data-testid="badge-design-style">
+                  {{luxury:"✨",corporate:"🏢",modern:"⚡",minimal:"◻️",creative:"🎨"}[(project as any).designStyle] || "🎨"} {(project as any).designStyle}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -798,6 +806,35 @@ export default function EditorPage() {
                     </button>
                   </div>
                 )}
+
+                {/* Undo bar — show when history has entries */}
+                {(() => {
+                  const historyLen = ((project as any)?.htmlHistory as any[] | null)?.length ?? 0;
+                  return historyLen > 0 ? (
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-2.5 text-xs gap-1.5 rounded-lg border-violet-200 dark:border-violet-800/40 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20"
+                            onClick={() => {
+                              editMutation.mutate(lang === "ar" ? "تراجع" : "undo");
+                            }}
+                            disabled={editMutation.isPending || isRegenerating}
+                            data-testid="button-undo-edit"
+                          >
+                            <Undo2 className="w-3 h-3" />
+                            {lang === "ar" ? `تراجع (${historyLen})` : `Undo (${historyLen})`}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          {lang === "ar" ? "الرجوع للتعديل السابق" : "Revert to previous edit"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  ) : null;
+                })()}
 
                 {/* Input row */}
                 <div className="flex gap-1.5 items-end">

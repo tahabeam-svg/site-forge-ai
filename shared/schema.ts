@@ -19,6 +19,8 @@ export const projects = pgTable("projects", {
   colorPalette: jsonb("color_palette"),
   sections: jsonb("sections"),
   editCount: integer("edit_count").default(0).notNull(),
+  designStyle: text("design_style").default("modern"),
+  htmlHistory: jsonb("html_history").default(sql`'[]'::jsonb`),
   websiteLanguage: varchar("website_language").default("ar"),
   websiteLanguages: text("website_languages").array().default(sql`ARRAY['ar']::text[]`),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
