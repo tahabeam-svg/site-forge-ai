@@ -11,10 +11,10 @@ import {
   ArrowRight, Sparkles, Loader2, Send, Monitor, Tablet,
   Smartphone, Wand2, Upload, RefreshCw, ExternalLink,
   Bot, User, Check, X, ChevronRight, ImagePlus, Paperclip,
-  Zap, Globe, MapPin, Phone, Palette,
+  Zap, Globe, MapPin, Phone, Palette, CheckSquare, Square,
 } from "lucide-react";
 
-type Step = "welcome" | "parsing" | "confirming" | "creating" | "editing";
+type Step = "welcome" | "parsing" | "clarifying" | "confirming" | "creating" | "editing";
 type Viewport = "desktop" | "tablet" | "mobile";
 type MobileTab = "chat" | "preview";
 
@@ -32,16 +32,33 @@ interface ExtractedInfo {
   websiteLanguages: string[];
   designStyle: string;
   suggestions: string[];
+  siteGoal?: string;
+  requestedSections?: string[];
+}
+
+interface SmartQuestion {
+  id: string;
+  field: string;
+  question: string;
+  type: "choice" | "multi-choice";
+  options: { label: string; value: string }[];
+  allowCustom: boolean;
+  customPlaceholder?: string;
+  customFirst?: boolean;
+  minSelect?: number;
+  hint?: string;
 }
 
 interface ChatEntry {
   id: string;
   role: "user" | "assistant";
   content: string;
-  type?: "text" | "confirm-card" | "progress" | "error" | "image";
+  type?: "text" | "confirm-card" | "progress" | "error" | "image" | "quick-reply" | "multi-choice";
   data?: ExtractedInfo;
+  question?: SmartQuestion;
   imageUrl?: string;
   timestamp?: Date;
+  answered?: boolean;
 }
 
 const DESIGN_STYLES = [
@@ -113,9 +130,17 @@ export default function AIBuilderPage() {
   const [isBusy, setIsBusy] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<{ dataUrl: string; name: string } | null>(null);
 
+  // Smart questions state
+  const [pendingQuestions, setPendingQuestions] = useState<SmartQuestion[]>([]);
+  const [collectedAnswers, setCollectedAnswers] = useState<Record<string, string | string[]>>({});
+  const [multiSelectBuffer, setMultiSelectBuffer] = useState<string[]>([]);
+  const [customInputValue, setCustomInputValue] = useState("");
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
   const chatScrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLTextAreaElement>(null);
+  const customInputRef = useRef<HTMLInputElement>(null);
 
   const previewSrc = projectId
     ? `/api/projects/${projectId}/preview-html?v=${previewKey}`
@@ -146,6 +171,16 @@ export default function AIBuilderPage() {
     setChatEntries(prev => [...prev, { ...entry, id: uid(), timestamp: new Date() }]);
   }
 
+  function markLastQuestionAnswered() {
+    setChatEntries(prev =>
+      prev.map((e, i) =>
+        i === prev.length - 1 && (e.type === "quick-reply" || e.type === "multi-choice")
+          ? { ...e, answered: true }
+          : e
+      )
+    );
+  }
+
   async function handleSendPrompt() {
     const prompt = userInput.trim();
     if (!prompt || isBusy) return;
@@ -153,7 +188,7 @@ export default function AIBuilderPage() {
     setIsBusy(true);
     setStep("parsing");
     addEntry({ role: "user", content: prompt });
-    addEntry({ role: "assistant", content: isAr ? "أقرأ وصفك وأحلله..." : "Reading and analyzing your description...", type: "progress" });
+    addEntry({ role: "assistant", content: "أقرأ وصفك وأحلله...", type: "progress" });
     setUserInput("");
 
     try {
@@ -162,18 +197,165 @@ export default function AIBuilderPage() {
       if (!res.ok) throw new Error(body.message || "Failed");
 
       const info: ExtractedInfo = body.data;
-      // Override designStyle if user explicitly selected one
       info.designStyle = selectedStyle || info.designStyle;
       setExtractedInfo(info);
+      setChatEntries(prev => prev.filter(e => e.type !== "progress"));
+
+      // Add confirmation that we understood the basics
+      addEntry({
+        role: "assistant",
+        content: `فهمت! سأبني موقع **${info.businessNameAr}** (${ACTIVITY_LABELS[info.activityType] || info.activityType}).\n\nلأبني لك الموقع الأمثل، أحتاج بعض التفاصيل:`,
+        type: "text",
+      });
+
+      // Fetch smart questions
+      const qRes = await apiRequest("POST", "/api/ai-builder/smart-questions", { parsedInfo: info });
+      const qBody = await qRes.json();
+      if (!qRes.ok) throw new Error(qBody.message || "Failed to get questions");
+
+      const questions: SmartQuestion[] = qBody.questions || [];
+
+      if (questions.length === 0) {
+        // No questions needed → show confirm card directly
+        addEntry({ role: "assistant", content: "هذا ما سأبنيه لك:", type: "text" });
+        addEntry({ role: "assistant", content: "", type: "confirm-card", data: info });
+        setStep("confirming");
+      } else {
+        setPendingQuestions(questions);
+        setCollectedAnswers({});
+        setStep("clarifying");
+        // Ask first question
+        askNextQuestion(questions, 0);
+      }
+    } catch (err: any) {
+      setChatEntries(prev => prev.filter(e => e.type !== "progress"));
+      addEntry({ role: "assistant", content: "حدث خطأ أثناء تحليل الوصف. أعد المحاولة.", type: "error" });
+      setStep("welcome");
+    } finally {
+      setIsBusy(false);
+    }
+  }
+
+  function askNextQuestion(questions: SmartQuestion[], index: number) {
+    if (index >= questions.length) return;
+    const q = questions[index];
+    addEntry({
+      role: "assistant",
+      content: q.question,
+      type: q.type === "multi-choice" ? "multi-choice" : "quick-reply",
+      question: q,
+      answered: false,
+    });
+  }
+
+  async function handleQuickReply(question: SmartQuestion, value: string, label: string) {
+    if (value === "__custom__") {
+      setShowCustomInput(true);
+      setCustomInputValue("");
+      setTimeout(() => customInputRef.current?.focus(), 100);
+      return;
+    }
+
+    markLastQuestionAnswered();
+    setShowCustomInput(false);
+
+    // Add user reply bubble
+    addEntry({ role: "user", content: label });
+
+    const newAnswers = { ...collectedAnswers };
+    if (value !== "__skip__") {
+      newAnswers[question.field] = value;
+    }
+    setCollectedAnswers(newAnswers);
+
+    // Move to next question
+    const currentIndex = pendingQuestions.findIndex(q => q.id === question.id);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < pendingQuestions.length) {
+      setTimeout(() => askNextQuestion(pendingQuestions, nextIndex), 400);
+    } else {
+      await finalizeClarification(newAnswers);
+    }
+  }
+
+  async function handleCustomInputSubmit(question: SmartQuestion) {
+    const val = customInputValue.trim();
+    if (!val) return;
+
+    setShowCustomInput(false);
+    markLastQuestionAnswered();
+
+    addEntry({ role: "user", content: val });
+
+    const newAnswers = { ...collectedAnswers, [question.field]: val };
+    setCollectedAnswers(newAnswers);
+
+    const currentIndex = pendingQuestions.findIndex(q => q.id === question.id);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < pendingQuestions.length) {
+      setTimeout(() => askNextQuestion(pendingQuestions, nextIndex), 400);
+    } else {
+      await finalizeClarification(newAnswers);
+    }
+  }
+
+  function handleMultiSelectToggle(value: string) {
+    setMultiSelectBuffer(prev =>
+      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+    );
+  }
+
+  async function handleMultiSelectConfirm(question: SmartQuestion) {
+    const selected = multiSelectBuffer.length > 0 ? multiSelectBuffer : ["services", "contact"];
+    const labels = selected.map(v => question.options.find(o => o.value === v)?.label || v).join("، ");
+
+    markLastQuestionAnswered();
+    setMultiSelectBuffer([]);
+
+    addEntry({ role: "user", content: `الأقسام المختارة: ${labels}` });
+
+    const newAnswers = { ...collectedAnswers, [question.field]: selected };
+    setCollectedAnswers(newAnswers);
+
+    const currentIndex = pendingQuestions.findIndex(q => q.id === question.id);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < pendingQuestions.length) {
+      setTimeout(() => askNextQuestion(pendingQuestions, nextIndex), 400);
+    } else {
+      await finalizeClarification(newAnswers);
+    }
+  }
+
+  async function finalizeClarification(answers: Record<string, string | string[]>) {
+    if (!extractedInfo) return;
+
+    setIsBusy(true);
+    addEntry({ role: "assistant", content: "ممتاز! أجمع كل المعلومات...", type: "progress" });
+
+    try {
+      const res = await apiRequest("POST", "/api/ai-builder/merge-answers", {
+        parsedInfo: extractedInfo,
+        answers,
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || "Merge failed");
+
+      const merged: ExtractedInfo = body.data;
+      setExtractedInfo(merged);
 
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
-      addEntry({ role: "assistant", content: isAr ? "فهمت! هذا ما سأبنيه لك:" : "Got it! Here's what I'll build:", type: "text" });
-      addEntry({ role: "assistant", content: "", type: "confirm-card", data: info });
+      addEntry({ role: "assistant", content: "رائع! هذا ما سأبنيه لك:", type: "text" });
+      addEntry({ role: "assistant", content: "", type: "confirm-card", data: merged });
       setStep("confirming");
     } catch (err: any) {
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
-      addEntry({ role: "assistant", content: isAr ? "حدث خطأ أثناء تحليل الوصف. أعد المحاولة." : "Error analyzing description. Please try again.", type: "error" });
-      setStep("welcome");
+      // Fallback: use original info
+      addEntry({ role: "assistant", content: "هذا ما سأبنيه لك:", type: "text" });
+      addEntry({ role: "assistant", content: "", type: "confirm-card", data: extractedInfo });
+      setStep("confirming");
     } finally {
       setIsBusy(false);
     }
@@ -184,8 +366,8 @@ export default function AIBuilderPage() {
     setIsBusy(true);
     setStep("creating");
 
-    addEntry({ role: "user", content: isAr ? "تأكيد — ابدأ الإنشاء ✓" : "Confirmed — Start building ✓" });
-    addEntry({ role: "assistant", content: isAr ? "ممتاز! جاري إنشاء موقعك الآن..." : "Great! Building your website now...", type: "progress" });
+    addEntry({ role: "user", content: "تأكيد — ابدأ الإنشاء ✓" });
+    addEntry({ role: "assistant", content: "ممتاز! جاري إنشاء موقعك الآن...", type: "progress" });
 
     try {
       const createRes = await apiRequest("POST", "/api/projects", {
@@ -201,11 +383,27 @@ export default function AIBuilderPage() {
       const pid = project.id;
       setProjectId(pid);
 
+      // Build enriched description with sections and goal
+      let enrichedDesc = extractedInfo.descriptionAr;
+      if (extractedInfo.requestedSections?.length) {
+        enrichedDesc += ` | الأقسام المطلوبة: ${extractedInfo.requestedSections.join(", ")}`;
+      }
+      if (extractedInfo.siteGoal) {
+        const goalMap: Record<string, string> = {
+          leads: "هدف الموقع: استقبال اتصالات واستفسارات",
+          sales: "هدف الموقع: بيع منتجات وخدمات",
+          bookings: "هدف الموقع: حجز مواعيد",
+          portfolio: "هدف الموقع: عرض الأعمال",
+          branding: "هدف الموقع: التعريف بالنشاط",
+        };
+        enrichedDesc += ` | ${goalMap[extractedInfo.siteGoal] || ""}`;
+      }
+
       const genRes = await apiRequest("POST", `/api/projects/${pid}/generate-instant`, {
         language: "ar",
         websiteLanguage: extractedInfo.websiteLanguages[0] || "ar",
         websiteLanguages: extractedInfo.websiteLanguages,
-        description: extractedInfo.descriptionAr,
+        description: enrichedDesc,
         activityType: extractedInfo.activityType,
         designStyle: extractedInfo.designStyle,
         whatsapp: extractedInfo.whatsapp || extractedInfo.phone || "",
@@ -220,9 +418,7 @@ export default function AIBuilderPage() {
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
       addEntry({
         role: "assistant",
-        content: isAr
-          ? `✨ موقعك جاهز! يمكنك الآن تعديله من خلال المحادثة.\n\nجرّب مثلاً:\n${extractedInfo.suggestions.map(s => `• ${s}`).join("\n")}`
-          : `✨ Your website is ready! You can now edit it through chat.\n\nTry for example:\n• Change colors to black and gold\n• Add a pricing section\n• Modify the hero text`,
+        content: `✨ موقعك جاهز! يمكنك الآن تعديله من خلال المحادثة.\n\nجرّب مثلاً:\n${extractedInfo.suggestions.map(s => `• ${s}`).join("\n")}`,
       });
       setStep("editing");
       setMobileTab("preview");
@@ -231,7 +427,7 @@ export default function AIBuilderPage() {
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
       addEntry({
         role: "assistant",
-        content: (isAr ? "حدث خطأ: " : "Error: ") + (err?.message || "Unknown error"),
+        content: "حدث خطأ: " + (err?.message || "Unknown error"),
         type: "error",
       });
       setStep("confirming");
@@ -245,13 +441,17 @@ export default function AIBuilderPage() {
     setStep("welcome");
     setChatEntries([]);
     setUserInput("");
+    setPendingQuestions([]);
+    setCollectedAnswers({});
+    setMultiSelectBuffer([]);
+    setShowCustomInput(false);
   }
 
   async function handleEdit() {
     const cmd = editInput.trim();
     if ((!cmd && !uploadedImage) || !projectId || isBusy) return;
 
-    const finalCmd = cmd || (isAr ? "أضف هذه الصورة في الموقع" : "Add this image to the website");
+    const finalCmd = cmd || "أضف هذه الصورة في الموقع";
     setIsBusy(true);
     setEditInput("");
 
@@ -263,7 +463,7 @@ export default function AIBuilderPage() {
     const imageDataUrl = uploadedImage?.dataUrl;
     setUploadedImage(null);
 
-    addEntry({ role: "assistant", content: isAr ? "جاري تطبيق التعديل..." : "Applying changes...", type: "progress" });
+    addEntry({ role: "assistant", content: "جاري تطبيق التعديل...", type: "progress" });
 
     try {
       const res = await apiRequest("POST", `/api/projects/${projectId}/edit`, {
@@ -279,8 +479,7 @@ export default function AIBuilderPage() {
       setPreviewKey(k => k + 1);
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
 
-      // Fetch the latest AI message from chat history
-      let aiMsg = isAr ? "✅ تم التعديل بنجاح!" : "✅ Edit applied successfully!";
+      let aiMsg = "✅ تم التعديل بنجاح!";
       try {
         const msgsRes = await fetch(`/api/projects/${projectId}/messages`);
         if (msgsRes.ok) {
@@ -295,7 +494,7 @@ export default function AIBuilderPage() {
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
       addEntry({
         role: "assistant",
-        content: (isAr ? "⚠️ " : "⚠️ ") + (err?.message || "Edit failed"),
+        content: "⚠️ " + (err?.message || "Edit failed"),
         type: "error",
       });
     } finally {
@@ -307,9 +506,9 @@ export default function AIBuilderPage() {
     try {
       const dataUrl = await compressImage(file);
       setUploadedImage({ dataUrl, name: file.name });
-      toast({ description: isAr ? `تم رفع الصورة: ${file.name}` : `Image uploaded: ${file.name}` });
+      toast({ description: `تم رفع الصورة: ${file.name}` });
     } catch {
-      toast({ description: isAr ? "فشل رفع الصورة" : "Failed to upload image", variant: "destructive" });
+      toast({ description: "فشل رفع الصورة", variant: "destructive" });
     }
   }
 
@@ -319,14 +518,12 @@ export default function AIBuilderPage() {
     if (file && file.type.startsWith("image/")) handleFileUpload(file);
   }, []);
 
-  const ACTIVITY_LABELS: Record<string, string> = {
-    restaurant: "مطعم / كافيه", medical: "طبي / عيادة", retail: "متجر / تجزئة",
-    services: "خدمات", realestate: "عقارات", education: "تعليم / تدريب",
-    hotel: "فندق / ضيافة", automotive: "سيارات", beauty: "تجميل / صالون",
-    technology: "تقنية / برمجة", other: "أخرى",
-  };
+  // Find the current active question (last unanswered quick-reply/multi-choice)
+  const activeQuestion = step === "clarifying"
+    ? chatEntries.findLast(e => (e.type === "quick-reply" || e.type === "multi-choice") && !e.answered)
+    : null;
 
-  if (step === "welcome" || step === "parsing" || step === "confirming") {
+  if (step === "welcome" || step === "parsing" || step === "clarifying" || step === "confirming") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950/30 to-slate-950 flex flex-col" dir="rtl">
         {/* Header */}
@@ -337,60 +534,81 @@ export default function AIBuilderPage() {
             data-testid="btn-back-to-dashboard"
           >
             <ArrowRight className="w-4 h-4" />
-            <span>{isAr ? "لوحة التحكم" : "Dashboard"}</span>
+            <span>لوحة التحكم</span>
           </button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center">
               <Sparkles className="w-4 h-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-white/90">
-              {isAr ? "المبني AI" : "AI Builder"}
-            </span>
+            <span className="text-sm font-bold text-white/90">المبني AI</span>
           </div>
           <div className="w-24" />
         </header>
 
         <div className="flex-1 flex flex-col items-center justify-start px-4 py-10 overflow-y-auto">
-          <div className="w-full max-w-2xl flex flex-col gap-6">
+          <div className="w-full max-w-2xl flex flex-col gap-5">
 
-            {/* Welcome hero (only on first visit) */}
+            {/* Welcome hero */}
             {chatEntries.length === 0 && (
               <div className="text-center mb-2">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-indigo-600/20 border border-violet-500/30 mb-4 mx-auto">
                   <Sparkles className="w-8 h-8 text-violet-400" />
                 </div>
                 <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2" style={{ fontFamily: "'Cairo', sans-serif" }}>
-                  {isAr ? "أنشئ موقعك بجملة واحدة" : "Build your website with one sentence"}
+                  أنشئ موقعك بجملة واحدة
                 </h1>
                 <p className="text-white/50 text-sm md:text-base max-w-md mx-auto leading-relaxed">
-                  {isAr
-                    ? "أخبرني عن نشاطك التجاري وسأبني لك موقعاً احترافياً خلال ثوانٍ — بدون كود، بدون تصميم"
-                    : "Tell me about your business and I'll build a professional website in seconds — no code, no design needed"}
+                  أخبرني عن نشاطك التجاري وسأبني لك موقعاً احترافياً خلال ثوانٍ — بدون كود، بدون تصميم
                 </p>
               </div>
             )}
 
             {/* Chat entries */}
-            {chatEntries.map(entry => (
-              <ChatBubble
-                key={entry.id}
-                entry={entry}
-                isAr={isAr}
-                onConfirm={entry.type === "confirm-card" ? handleConfirm : undefined}
-                onCancel={entry.type === "confirm-card" ? handleCancel : undefined}
-                confirmBusy={step === "creating"}
-                activityLabels={ACTIVITY_LABELS}
-              />
-            ))}
+            <div ref={chatScrollRef} className="flex flex-col gap-4">
+              {chatEntries.map((entry, idx) => (
+                <ChatBubble
+                  key={entry.id}
+                  entry={entry}
+                  isAr={isAr}
+                  onConfirm={entry.type === "confirm-card" ? handleConfirm : undefined}
+                  onCancel={entry.type === "confirm-card" ? handleCancel : undefined}
+                  confirmBusy={step === "creating"}
+                  activityLabels={ACTIVITY_LABELS}
+                />
+              ))}
+
+              {/* Active question UI */}
+              {activeQuestion && !isBusy && (
+                <div className="flex flex-col gap-2 pr-9">
+                  {activeQuestion.type === "quick-reply" && activeQuestion.question && (
+                    <QuickReplyButtons
+                      question={activeQuestion.question}
+                      onSelect={(val, label) => handleQuickReply(activeQuestion.question!, val, label)}
+                      showCustomInput={showCustomInput}
+                      customInputValue={customInputValue}
+                      onCustomInputChange={setCustomInputValue}
+                      onCustomInputSubmit={() => handleCustomInputSubmit(activeQuestion.question!)}
+                      customInputRef={customInputRef}
+                    />
+                  )}
+                  {activeQuestion.type === "multi-choice" && activeQuestion.question && (
+                    <MultiChoiceButtons
+                      question={activeQuestion.question}
+                      selected={multiSelectBuffer}
+                      onToggle={handleMultiSelectToggle}
+                      onConfirm={() => handleMultiSelectConfirm(activeQuestion.question!)}
+                    />
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Welcome screen: style selector + input */}
             {(step === "welcome" || step === "parsing") && (
               <>
                 {/* Design Style Selector */}
                 <div>
-                  <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">
-                    {isAr ? "نمط التصميم" : "Design Style"}
-                  </p>
+                  <p className="text-xs font-semibold text-white/40 uppercase tracking-widest mb-3">نمط التصميم</p>
                   <div className="grid grid-cols-4 gap-2">
                     {DESIGN_STYLES.map(style => (
                       <button
@@ -404,7 +622,7 @@ export default function AIBuilderPage() {
                         data-testid={`btn-style-${style.id}`}
                       >
                         <div className="text-xl mb-1">{style.icon}</div>
-                        <div className="text-xs font-bold text-white/80">{isAr ? style.labelAr : style.labelEn}</div>
+                        <div className="text-xs font-bold text-white/80">{style.labelAr}</div>
                         <div className="text-[10px] text-white/40 mt-0.5">{style.desc}</div>
                       </button>
                     ))}
@@ -422,18 +640,13 @@ export default function AIBuilderPage() {
                         handleSendPrompt();
                       }
                     }}
-                    placeholder={isAr
-                      ? "مثال: أريد موقع لمتجر عطور فاخر اسمه ليالي في الرياض، مع رقم واتساب"
-                      : "Example: I want a luxury perfume store website called Layali in Riyadh with WhatsApp contact"
-                    }
+                    placeholder="مثال: أريد موقع لمتجر عطور فاخر اسمه ليالي في الرياض، مع رقم واتساب"
                     className="min-h-[110px] resize-none text-sm bg-white/5 border-white/10 text-white placeholder:text-white/25 rounded-xl pr-4 pl-4 pt-4 pb-14 focus:border-violet-500/50 focus:ring-0 leading-relaxed"
                     disabled={isBusy}
                     data-testid="input-prompt"
                   />
                   <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                    <span className="text-xs text-white/20">
-                      {isAr ? "Enter للإرسال" : "Enter to send"}
-                    </span>
+                    <span className="text-xs text-white/20">Enter للإرسال</span>
                     <Button
                       onClick={handleSendPrompt}
                       disabled={!userInput.trim() || isBusy}
@@ -442,16 +655,16 @@ export default function AIBuilderPage() {
                       data-testid="btn-send-prompt"
                     >
                       {isBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
-                      {isAr ? "ابدأ الإنشاء" : "Start Building"}
+                      ابدأ الإنشاء
                     </Button>
                   </div>
                 </div>
 
                 {/* Example prompts */}
                 <div>
-                  <p className="text-xs text-white/30 mb-2">{isAr ? "أمثلة:" : "Examples:"}</p>
+                  <p className="text-xs text-white/30 mb-2">أمثلة:</p>
                   <div className="flex flex-col gap-1.5">
-                    {(isAr ? EXAMPLE_PROMPTS_AR : EXAMPLE_PROMPTS_EN).map((ex, i) => (
+                    {EXAMPLE_PROMPTS_AR.map((ex, i) => (
                       <button
                         key={i}
                         onClick={() => setUserInput(ex)}
@@ -483,7 +696,7 @@ export default function AIBuilderPage() {
             data-testid="btn-back-editing"
           >
             <ArrowRight className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{isAr ? "لوحة التحكم" : "Dashboard"}</span>
+            <span className="hidden sm:inline">لوحة التحكم</span>
           </button>
           <Separator orientation="vertical" className="h-4 bg-white/10" />
           <div className="flex items-center gap-1.5">
@@ -491,12 +704,12 @@ export default function AIBuilderPage() {
               <Sparkles className="w-3 h-3 text-white" />
             </div>
             <span className="text-xs font-bold text-white/80 truncate max-w-[150px]">
-              {extractedInfo?.businessNameAr || (isAr ? "موقعي" : "My Website")}
+              {extractedInfo?.businessNameAr || "موقعي"}
             </span>
           </div>
         </div>
 
-        {/* Viewport switcher (desktop only) */}
+        {/* Viewport switcher */}
         <div className="hidden md:flex items-center gap-1 bg-white/5 rounded-lg p-0.5">
           {(["desktop", "tablet", "mobile"] as Viewport[]).map(v => {
             const Icon = v === "desktop" ? Monitor : v === "tablet" ? Tablet : Smartphone;
@@ -520,7 +733,7 @@ export default function AIBuilderPage() {
                 onClick={() => { setPreviewKey(k => k + 1); }}
                 className="hidden sm:flex items-center gap-1.5 text-xs text-white/40 hover:text-white/70 transition-colors"
                 data-testid="btn-refresh-preview"
-                title={isAr ? "تحديث المعاينة" : "Refresh preview"}
+                title="تحديث المعاينة"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
@@ -530,7 +743,7 @@ export default function AIBuilderPage() {
                 data-testid="btn-open-editor"
               >
                 <ExternalLink className="w-3 h-3" />
-                {isAr ? "فتح المحرر" : "Open Editor"}
+                فتح المحرر
               </button>
             </>
           )}
@@ -544,15 +757,11 @@ export default function AIBuilderPage() {
             key={tab}
             onClick={() => setMobileTab(tab)}
             className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
-              mobileTab === tab
-                ? "text-violet-400 border-b-2 border-violet-500"
-                : "text-white/40"
+              mobileTab === tab ? "text-violet-400 border-b-2 border-violet-500" : "text-white/40"
             }`}
             data-testid={`btn-tab-${tab}`}
           >
-            {tab === "chat"
-              ? (isAr ? "💬 المحادثة" : "💬 Chat")
-              : (isAr ? "👁 المعاينة" : "👁 Preview")}
+            {tab === "chat" ? "💬 المحادثة" : "👁 المعاينة"}
           </button>
         ))}
       </div>
@@ -561,7 +770,6 @@ export default function AIBuilderPage() {
       <div className="flex-1 flex overflow-hidden min-h-0">
         {/* ── Chat Panel ── */}
         <div className={`flex flex-col border-r border-white/8 bg-black/20 ${mobileTab === "preview" ? "hidden md:flex" : "flex"} w-full md:w-[380px] lg:w-[420px] flex-shrink-0`}>
-          {/* Messages */}
           <div
             ref={chatScrollRef}
             className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 min-h-0"
@@ -576,7 +784,7 @@ export default function AIBuilderPage() {
             ))}
           </div>
 
-          {/* Quick suggestions */}
+          {/* Quick suggestions in editing */}
           {step === "editing" && extractedInfo?.suggestions && chatEntries.filter(e => e.role === "user").length <= 1 && (
             <div className="px-4 pb-2">
               <div className="flex flex-wrap gap-1.5">
@@ -596,7 +804,6 @@ export default function AIBuilderPage() {
 
           {/* Input area */}
           <div className="border-t border-white/8 bg-black/30 p-3 flex-shrink-0">
-            {/* Uploaded image preview */}
             {uploadedImage && (
               <div className="mb-2 flex items-center gap-2 bg-white/5 rounded-lg p-2 border border-white/10">
                 <img src={uploadedImage.dataUrl} alt="" className="w-10 h-10 rounded object-cover flex-shrink-0" />
@@ -622,10 +829,7 @@ export default function AIBuilderPage() {
                     handleEdit();
                   }
                 }}
-                placeholder={isAr
-                  ? "اطلب أي تعديل... (مثال: غيّر اللون إلى ذهبي)"
-                  : "Request any change... (e.g. Change color to gold)"
-                }
+                placeholder="اطلب أي تعديل... (مثال: غيّر اللون إلى ذهبي)"
                 disabled={isBusy}
                 className="min-h-[72px] max-h-[160px] resize-none bg-transparent border-0 text-sm text-white placeholder:text-white/20 rounded-xl py-3 px-3 focus-visible:ring-0 leading-relaxed"
                 data-testid="input-edit-command"
@@ -642,7 +846,7 @@ export default function AIBuilderPage() {
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/35 hover:text-white/60 transition-all"
-                    title={isAr ? "رفع صورة" : "Upload image"}
+                    title="رفع صورة"
                     data-testid="btn-upload-image"
                   >
                     <Paperclip className="w-3.5 h-3.5" />
@@ -659,7 +863,7 @@ export default function AIBuilderPage() {
               </div>
             </div>
             <p className="text-[10px] text-white/20 text-center mt-1.5">
-              {isAr ? "اسحب وأفلت صورة لرفعها • Enter للإرسال" : "Drag & drop an image • Enter to send"}
+              اسحب وأفلت صورة لرفعها • Enter للإرسال
             </p>
           </div>
         </div>
@@ -691,10 +895,7 @@ export default function AIBuilderPage() {
                   }
                 </div>
                 <p className="text-sm font-medium text-white/40">
-                  {step === "creating"
-                    ? (isAr ? "جاري إنشاء موقعك..." : "Building your website...")
-                    : (isAr ? "المعاينة ستظهر هنا بعد الإنشاء" : "Preview will appear here after generation")
-                  }
+                  {step === "creating" ? "جاري إنشاء موقعك..." : "المعاينة ستظهر هنا بعد الإنشاء"}
                 </p>
                 {step === "creating" && (
                   <div className="mt-4 w-48 mx-auto">
@@ -712,7 +913,121 @@ export default function AIBuilderPage() {
   );
 }
 
-// ─── Chat Bubble Component ───────────────────────────────────────────────────
+// ─── Activity Labels ──────────────────────────────────────────────────────────
+const ACTIVITY_LABELS: Record<string, string> = {
+  restaurant: "مطعم / كافيه", medical: "طبي / عيادة", retail: "متجر / تجزئة",
+  services: "خدمات", realestate: "عقارات", education: "تعليم / تدريب",
+  hotel: "فندق / ضيافة", automotive: "سيارات", beauty: "تجميل / صالون",
+  technology: "تقنية / برمجة", other: "أخرى",
+};
+
+// ─── Quick Reply Buttons Component ───────────────────────────────────────────
+function QuickReplyButtons({
+  question, onSelect, showCustomInput, customInputValue,
+  onCustomInputChange, onCustomInputSubmit, customInputRef,
+}: {
+  question: SmartQuestion;
+  onSelect: (value: string, label: string) => void;
+  showCustomInput: boolean;
+  customInputValue: string;
+  onCustomInputChange: (v: string) => void;
+  onCustomInputSubmit: () => void;
+  customInputRef: React.RefObject<HTMLInputElement>;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        {question.options.map(opt => (
+          <button
+            key={opt.value}
+            onClick={() => onSelect(opt.value, opt.label)}
+            className="text-sm bg-white/5 hover:bg-violet-500/15 border border-white/15 hover:border-violet-500/40 text-white/75 hover:text-white rounded-xl px-4 py-2 transition-all duration-200 font-medium"
+            style={{ fontFamily: "'Cairo', sans-serif" }}
+            data-testid={`btn-reply-${opt.value}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      {showCustomInput && (
+        <div className="flex gap-2 mt-1">
+          <input
+            ref={customInputRef}
+            type="text"
+            value={customInputValue}
+            onChange={e => onCustomInputChange(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") onCustomInputSubmit(); }}
+            placeholder={question.customPlaceholder || "اكتب إجابتك..."}
+            className="flex-1 bg-white/5 border border-white/15 focus:border-violet-500/50 text-white text-sm rounded-xl px-4 py-2.5 outline-none placeholder:text-white/25"
+            style={{ fontFamily: "'Cairo', sans-serif" }}
+            data-testid="input-custom-reply"
+          />
+          <button
+            onClick={onCustomInputSubmit}
+            disabled={!customInputValue.trim()}
+            className="w-10 h-10 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-30 flex items-center justify-center text-white transition-all"
+            data-testid="btn-submit-custom-reply"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Multi-Choice Buttons Component ──────────────────────────────────────────
+function MultiChoiceButtons({
+  question, selected, onToggle, onConfirm,
+}: {
+  question: SmartQuestion;
+  selected: string[];
+  onToggle: (value: string) => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      {question.hint && (
+        <p className="text-xs text-white/40" style={{ fontFamily: "'Cairo', sans-serif" }}>{question.hint}</p>
+      )}
+      <div className="flex flex-wrap gap-2">
+        {question.options.map(opt => {
+          const isSelected = selected.includes(opt.value);
+          return (
+            <button
+              key={opt.value}
+              onClick={() => onToggle(opt.value)}
+              className={`text-sm border rounded-xl px-4 py-2 transition-all duration-200 font-medium flex items-center gap-2 ${
+                isSelected
+                  ? "bg-violet-500/20 border-violet-500/50 text-violet-200"
+                  : "bg-white/5 border-white/15 text-white/70 hover:border-white/30 hover:bg-white/8"
+              }`}
+              style={{ fontFamily: "'Cairo', sans-serif" }}
+              data-testid={`btn-section-${opt.value}`}
+            >
+              {isSelected
+                ? <CheckSquare className="w-3.5 h-3.5 text-violet-400 flex-shrink-0" />
+                : <Square className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
+              }
+              {opt.label}
+            </button>
+          );
+        })}
+      </div>
+      <Button
+        onClick={onConfirm}
+        size="sm"
+        className="self-start bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white border-0 rounded-xl px-5 h-9 gap-2 text-sm"
+        data-testid="btn-confirm-sections"
+      >
+        <Check className="w-3.5 h-3.5" />
+        {selected.length > 0 ? `تأكيد ${selected.length} أقسام` : "تأكيد الاختيار"}
+      </Button>
+    </div>
+  );
+}
+
+// ─── Chat Bubble Component ────────────────────────────────────────────────────
 function ChatBubble({
   entry, isAr, onConfirm, onCancel, confirmBusy, activityLabels,
 }: {
@@ -743,14 +1058,25 @@ function ChatBubble({
 
   if (entry.type === "confirm-card" && entry.data) {
     const info = entry.data;
+    const DESIGN_STYLES_MAP: Record<string, string> = {
+      luxury: "فخم", "dark-modern": "حديث", corporate: "مؤسسي", minimal: "بسيط",
+    };
+    const SECTION_LABELS: Record<string, string> = {
+      gallery: "معرض الصور", pricing: "الأسعار", team: "الفريق",
+      testimonials: "آراء العملاء", faq: "الأسئلة الشائعة", map: "الخريطة",
+      contact: "تواصل", services: "الخدمات",
+    };
+    const GOAL_LABELS: Record<string, string> = {
+      leads: "📞 استقبال اتصالات", sales: "🛒 بيع منتجات",
+      bookings: "🗓️ حجز مواعيد", portfolio: "🖼️ عرض أعمال", branding: "ℹ️ تعريف",
+    };
     return (
       <div className="flex items-start gap-2.5">
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center flex-shrink-0 mt-0.5">
           <Bot className="w-4 h-4 text-white" />
         </div>
-        <div className="flex-1 max-w-[90%]">
+        <div className="flex-1 max-w-[92%]">
           <div className="bg-white/5 border border-white/10 rounded-2xl rounded-ss-sm overflow-hidden">
-            {/* Color bar */}
             <div className="h-1.5" style={{ background: `linear-gradient(90deg, ${info.primaryColor}, ${info.accentColor})` }} />
             <div className="p-4">
               <div className="flex items-start justify-between gap-2 mb-3">
@@ -795,10 +1121,30 @@ function ChatBubble({
                     <span className="flex items-center gap-1">
                       <span className="w-3 h-3 rounded-full flex-shrink-0 border border-white/20" style={{ background: info.primaryColor }} />
                       <span className="w-3 h-3 rounded-full flex-shrink-0 border border-white/20" style={{ background: info.accentColor }} />
-                      {DESIGN_STYLES.find(s => s.id === info.designStyle)?.labelAr || info.designStyle}
+                      {DESIGN_STYLES_MAP[info.designStyle] || info.designStyle}
                     </span>
                   </div>
                 </div>
+
+                {/* Goal badge */}
+                {info.siteGoal && (
+                  <div className="pt-1">
+                    <span className="text-xs bg-violet-500/15 border border-violet-500/25 text-violet-300 rounded-full px-2.5 py-1">
+                      {GOAL_LABELS[info.siteGoal] || info.siteGoal}
+                    </span>
+                  </div>
+                )}
+
+                {/* Sections */}
+                {info.requestedSections && info.requestedSections.length > 0 && (
+                  <div className="pt-1 flex flex-wrap gap-1">
+                    {info.requestedSections.map(s => (
+                      <span key={s} className="text-[10px] bg-white/8 border border-white/10 text-white/50 rounded-full px-2 py-0.5">
+                        {SECTION_LABELS[s] || s}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {onConfirm && (
@@ -811,8 +1157,8 @@ function ChatBubble({
                     data-testid="btn-confirm-build"
                   >
                     {confirmBusy
-                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />{isAr ? "جاري الإنشاء..." : "Building..."}</>
-                      : <><Check className="w-3.5 h-3.5" />{isAr ? "ابنِ الموقع" : "Build Website"}</>
+                      ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />جاري الإنشاء...</>
+                      : <><Check className="w-3.5 h-3.5" />ابنِ الموقع</>
                     }
                   </Button>
                   {onCancel && !confirmBusy && (
@@ -824,7 +1170,7 @@ function ChatBubble({
                       data-testid="btn-cancel-build"
                     >
                       <X className="w-3.5 h-3.5" />
-                      {isAr ? "تعديل" : "Edit"}
+                      تعديل
                     </Button>
                   )}
                 </div>
@@ -854,23 +1200,29 @@ function ChatBubble({
     );
   }
 
-  // Assistant text bubble
+  // Assistant text / quick-reply question bubble
   const isError = entry.type === "error";
+  const isQuestion = entry.type === "quick-reply" || entry.type === "multi-choice";
+
   return (
     <div className="flex items-start gap-2.5">
       <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${isError ? "bg-red-500/20 border border-red-500/30" : "bg-gradient-to-br from-violet-500 to-indigo-600"}`}>
-        {isError
-          ? <X className="w-3.5 h-3.5 text-red-400" />
-          : <Bot className="w-4 h-4 text-white" />
-        }
+        {isError ? <X className="w-3.5 h-3.5 text-red-400" /> : <Bot className="w-4 h-4 text-white" />}
       </div>
-      <div className={`rounded-2xl rounded-ss-sm px-4 py-2.5 max-w-[85%] ${isError ? "bg-red-500/10 border border-red-500/20" : "bg-white/5 border border-white/8"}`}>
+      <div className={`rounded-2xl rounded-ss-sm px-4 py-2.5 max-w-[85%] ${
+        isError ? "bg-red-500/10 border border-red-500/20"
+        : isQuestion ? "bg-indigo-500/10 border border-indigo-500/20"
+        : "bg-white/5 border border-white/8"
+      }`}>
         <p
-          className={`text-sm leading-relaxed whitespace-pre-wrap ${isError ? "text-red-300" : "text-white/85"}`}
+          className={`text-sm leading-relaxed whitespace-pre-wrap ${isError ? "text-red-300" : isQuestion ? "text-white/90 font-medium" : "text-white/85"}`}
           style={{ fontFamily: "'Cairo', sans-serif" }}
         >
           {entry.content}
         </p>
+        {isQuestion && entry.answered && (
+          <span className="text-[10px] text-white/30 mt-1 block">✓ تم الإجابة</span>
+        )}
       </div>
     </div>
   );

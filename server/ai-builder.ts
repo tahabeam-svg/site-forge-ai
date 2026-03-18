@@ -86,4 +86,134 @@ IMPORTANT: Never return colors with luminance > 0.5 (no white/light primaries).`
       res.status(500).json({ message: "Failed to analyze prompt", detail: err?.message });
     }
   });
+
+  // ─── Smart Clarification Questions ───────────────────────────────────────────
+  // Analyzes parsed info and generates targeted questions for missing details
+  app.post("/api/ai-builder/smart-questions", isAuthenticated, async (req: any, res: any) => {
+    try {
+      const { parsedInfo } = req.body;
+      if (!parsedInfo) return res.status(400).json({ message: "parsedInfo is required" });
+
+      const questions: SmartQuestion[] = [];
+
+      // Q1: Location (if missing)
+      if (!parsedInfo.location || parsedInfo.location.trim() === "") {
+        questions.push({
+          id: "location",
+          field: "location",
+          question: `أين يقع نشاطك التجاري "${parsedInfo.businessNameAr}"؟`,
+          type: "choice",
+          options: [
+            { label: "🏙️ الرياض", value: "الرياض" },
+            { label: "🌊 جدة", value: "جدة" },
+            { label: "⚡ الدمام", value: "الدمام" },
+            { label: "🕌 مكة المكرمة", value: "مكة المكرمة" },
+            { label: "🌟 المدينة المنورة", value: "المدينة المنورة" },
+            { label: "🗺️ مدينة أخرى", value: "__custom__" },
+          ],
+          allowCustom: true,
+          customPlaceholder: "اكتب اسم المدينة...",
+        });
+      }
+
+      // Q2: Website Goal (always ask — critical for content generation)
+      questions.push({
+        id: "goal",
+        field: "goal",
+        question: "ما الهدف الرئيسي من الموقع؟",
+        type: "choice",
+        options: [
+          { label: "📞 استقبال اتصالات واستفسارات", value: "leads" },
+          { label: "🛒 بيع منتجات أو خدمات", value: "sales" },
+          { label: "🗓️ حجز مواعيد أونلاين", value: "bookings" },
+          { label: "🖼️ عرض أعمالي ومشاريعي", value: "portfolio" },
+          { label: "ℹ️ تعريف بالنشاط فقط", value: "branding" },
+        ],
+        allowCustom: false,
+      });
+
+      // Q3: Sections (always ask — determines site structure)
+      questions.push({
+        id: "sections",
+        field: "sections",
+        question: "اختر الأقسام التي تريدها في موقعك:",
+        type: "multi-choice",
+        options: [
+          { label: "🖼️ معرض الصور", value: "gallery" },
+          { label: "💰 الأسعار والباقات", value: "pricing" },
+          { label: "👥 فريق العمل", value: "team" },
+          { label: "⭐ آراء العملاء", value: "testimonials" },
+          { label: "❓ الأسئلة الشائعة", value: "faq" },
+          { label: "📍 الموقع على الخريطة", value: "map" },
+          { label: "📱 تواصل معنا", value: "contact" },
+          { label: "🎯 خدماتنا", value: "services" },
+        ],
+        allowCustom: false,
+        minSelect: 1,
+        hint: "اختر ما تحتاج (يمكن تعديله لاحقاً)",
+      });
+
+      // Note: WhatsApp/phone is collected after site generation via the chat editor
+
+      res.json({ success: true, questions });
+    } catch (err: any) {
+      console.error("[AI Builder] smart-questions error:", err?.message || err);
+      res.status(500).json({ message: "Failed to generate questions", detail: err?.message });
+    }
+  });
+
+  // ─── Merge Answers into Info ──────────────────────────────────────────────────
+  // Merges user's question answers back into the extracted info
+  app.post("/api/ai-builder/merge-answers", isAuthenticated, async (req: any, res: any) => {
+    try {
+      const { parsedInfo, answers } = req.body;
+      if (!parsedInfo || !answers) return res.status(400).json({ message: "parsedInfo and answers required" });
+
+      const merged = { ...parsedInfo };
+
+      // Apply each answer
+      for (const [field, value] of Object.entries(answers)) {
+        if (value === "__skip__" || value === null || value === undefined) continue;
+
+        if (field === "location" && typeof value === "string") {
+          merged.location = value;
+        } else if (field === "whatsapp" && typeof value === "string") {
+          merged.whatsapp = value;
+          if (!merged.phone) merged.phone = value;
+        } else if (field === "goal" && typeof value === "string") {
+          // Enrich description and suggestions based on goal
+          merged.siteGoal = value;
+          const goalSuggestions: Record<string, string[]> = {
+            leads:     ["أضف نموذج تواصل في الصفحة الرئيسية", "اجعل رقم الهاتف بارزاً", "أضف قسم لماذا تختارنا"],
+            sales:     ["أضف قسم الأسعار والباقات", "أضف أزرار الشراء في كل قسم", "أضف شهادات العملاء"],
+            bookings:  ["أضف نظام حجز مواعيد", "اجعل الحجز بارزاً في الصفحة الرئيسية", "أضف التقويم والمواعيد المتاحة"],
+            portfolio: ["أضف معرض أعمالي بصور", "أضف قسم من أنا", "أضف شهادات العملاء"],
+            branding:  ["أضف قصة النشاط", "اجعل الهوية البصرية أقوى", "أضف قسم رسالتنا ورؤيتنا"],
+          };
+          merged.suggestions = goalSuggestions[value] || merged.suggestions;
+        } else if (field === "sections" && Array.isArray(value)) {
+          merged.requestedSections = value;
+        }
+      }
+
+      res.json({ success: true, data: merged });
+    } catch (err: any) {
+      console.error("[AI Builder] merge-answers error:", err?.message || err);
+      res.status(500).json({ message: "Failed to merge answers", detail: err?.message });
+    }
+  });
+}
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+interface SmartQuestion {
+  id: string;
+  field: string;
+  question: string;
+  type: "choice" | "multi-choice";
+  options: { label: string; value: string }[];
+  allowCustom: boolean;
+  customPlaceholder?: string;
+  customFirst?: boolean;
+  minSelect?: number;
+  hint?: string;
 }
