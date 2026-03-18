@@ -395,6 +395,39 @@ function buildImagePromptSection(description: string): string {
   return `Category detected: ${cat}\nSelected images for this request:\n${lines}`;
 }
 
+/**
+ * Extracts the actual business name from a user request string.
+ * e.g. "أريد تصميم موقع لوكالة دعاية اسمها بريميوم تارجت" → "بريميوم تارجت"
+ */
+function extractBusinessName(desc: string): string {
+  // Arabic: "اسمها X", "اسمه X", "اسمها: X", "بإسم X", "باسم X"
+  const arNameMatch = desc.match(/(?:اسم[هاهماته]*|بإسم|باسم)[:\s]+([^\s،,\.؟!]{2,}(?:\s+[^\s،,\.؟!]{2,})?)/i);
+  if (arNameMatch) return arNameMatch[1].trim();
+  // English: "named X", "called X", "name is X"
+  const enNameMatch = desc.match(/(?:named?|called?|name\s+is)\s+"?([A-Za-z][^"،,\.]{2,}(?:\s+[A-Za-z][^"،,\.]{2,})?)"?/i);
+  if (enNameMatch) return enNameMatch[1].trim();
+  // Arabic quoted name: "X" (Arabic letters inside quotes)
+  const quotedAr = desc.match(/[""]([^\s""][^\s"",\.]{1,}(?:\s+[^\s"",\.]{1,})?)[""]/);
+  if (quotedAr) return quotedAr[1].trim();
+  return "";
+}
+
+/**
+ * Extracts the business type from a user request string.
+ * e.g. "أريد تصميم موقع لوكالة دعاية اسمها..." → "وكالة دعاية"
+ */
+function extractBusinessType(desc: string): string {
+  const patterns = [
+    /(?:موقع|تصميم موقع|أنشئ موقع|صمم موقع|أريد موقع)\s+(?:ل|لـ)?([^،,\.؟!\d]{3,40}?)(?:\s+(?:في|اسم|بـ)|$)/i,
+    /(?:website for|site for|build.*for)\s+([A-Za-z\s]{3,40}?)(?:\s+(?:in|named|called)|$)/i,
+  ];
+  for (const p of patterns) {
+    const m = desc.match(p);
+    if (m) return m[1].trim();
+  }
+  return "";
+}
+
 export async function generateWebsite(description: string, language: string = "ar"): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
   const dirAttr = isArabic ? 'dir="rtl"' : 'dir="ltr"';
@@ -410,7 +443,14 @@ export async function generateWebsite(description: string, language: string = "a
     ? buildPromptByCategory(category, description, isArabic, dirAttr)
     : `You are a world-class creative director and front-end engineer building AWARD-WINNING websites — the quality of Awwwards, Dribbble top shots, and top SaaS landing pages. Your output for the Saudi/Arab market must be visually stunning, modern, and technically excellent.
 
-Generate a COMPLETE, premium single-page website based on: "${description}"
+Generate a COMPLETE, premium single-page website based on this user request: "${description}"
+
+⛔⛔⛔ ABSOLUTE RULE — READ BEFORE ANYTHING ELSE ⛔⛔⛔
+The text above is a USER REQUEST/INSTRUCTION — it is NOT the website title, NOT the hero heading, NOT any content to display.
+You MUST NEVER copy, echo, or repeat the user's request phrase anywhere in the website output.
+❌ FORBIDDEN: Using "أريد تصميم موقع..." or "I want a website for..." or any part of the request as website content.
+✅ CORRECT: Extract only the business NAME and TYPE from the request, then write fresh, professional website content.
+⛔⛔⛔ END OF ABSOLUTE RULE ⛔⛔⛔
 
 ═══════════════════════════════════════
 STEP 0 — MANDATORY: PARSE THE DESCRIPTION FIRST
@@ -752,13 +792,15 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
   try {
     return parseFullHtmlResponse(content);
   } catch {
+    const _fbName = extractBusinessName(description) || (isArabic ? "موقعنا الاحترافي" : "Our Business");
+    const _fbType = extractBusinessType(description) || (isArabic ? "خدماتنا الاحترافية" : "Professional Services");
     return {
       html: `<div ${dirAttr} style="font-family: ${fontFamily}; max-width: 1200px; margin: 0 auto; padding: 2rem;">
         <header style="text-align: center; padding: 5rem 2rem; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; border-radius: 1rem; margin-bottom: 2rem; position: relative; overflow: hidden;">
           <div style="position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=600&fit=crop') center/cover; opacity: 0.2;"></div>
           <div style="position: relative; z-index: 1;">
-            <h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 800;">${description}</h1>
-            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 2rem;">${isArabic ? "مرحباً بكم في موقعنا الاحترافي" : "Welcome to our professional website"}</p>
+            <h1 style="font-size: 3rem; margin-bottom: 1rem; font-weight: 800;">${_fbName}</h1>
+            <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto 2rem;">${isArabic ? `نقدم لكم ${_fbType} بأعلى معايير الجودة` : `Delivering ${_fbType} with the highest quality standards`}</p>
             <a href="#contact" style="display: inline-block; padding: 14px 26px; background: linear-gradient(135deg, #e2b04a, #d4a843); color: #1a1a2e; border-radius: 12px; font-weight: 600; text-decoration: none; font-size: 1rem; box-shadow: 0 6px 16px rgba(226,176,74,0.4), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2); transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 28px rgba(226,176,74,0.5), 0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 6px 16px rgba(226,176,74,0.4), 0 2px 4px rgba(0,0,0,0.1)'" onmousedown="this.style.transform='translateY(1px)'" onmouseup="this.style.transform='translateY(-2px)'">${isArabic ? "تواصل معنا" : "Contact Us"}</a>
           </div>
         </header>
@@ -801,8 +843,8 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
       css: `* { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 section { animation: fadeIn 0.6s ease-out; }`,
-      seoTitle: description,
-      seoDescription: `${description} - ${isArabic ? "موقع احترافي" : "Professional website"}`,
+      seoTitle: `${_fbName} - ${isArabic ? "موقع احترافي" : "Professional Website"}`,
+      seoDescription: isArabic ? `${_fbName} — نقدم ${_fbType} بأعلى معايير الجودة في المملكة العربية السعودية` : `${_fbName} — Professional ${_fbType} services`,
       sections: isArabic
         ? ["الرئيسية", "من نحن", "خدماتنا", "التذييل"]
         : ["Hero", "About", "Services", "Footer"],
