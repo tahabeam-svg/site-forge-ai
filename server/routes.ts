@@ -2102,6 +2102,40 @@ When asking for clarification:
     }
   });
 
+  // ─── Paymob Connection Test ────────────────────────────────────────────────
+  app.post("/api/admin/settings/paymob/test-connection", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const apiKey = (await storage.getSetting("paymob_api_key") || "").trim();
+      const integrationId = await storage.getSetting("paymob_integration_id");
+      const iframeId = await storage.getSetting("paymob_iframe_id");
+      if (!apiKey) return res.status(400).json({ ok: false, message: "API key not set" });
+
+      const authRes = await fetch("https://accept.paymob.com/api/auth/tokens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ api_key: apiKey }),
+      });
+      const body = await authRes.text();
+      if (!authRes.ok) {
+        return res.json({ ok: false, httpStatus: authRes.status, message: `Auth failed: ${body.slice(0, 300)}` });
+      }
+      let data: any = {};
+      try { data = JSON.parse(body); } catch {}
+      if (!data.token) {
+        return res.json({ ok: false, message: "Auth response missing token", raw: body.slice(0, 300) });
+      }
+      return res.json({
+        ok: true,
+        message: "Paymob connection successful",
+        integrationId: integrationId || "not set",
+        iframeId: iframeId || "not set",
+        tokenPrefix: (data.token as string).slice(0, 20) + "...",
+      });
+    } catch (err: any) {
+      return res.status(500).json({ ok: false, message: err.message || "Connection test failed" });
+    }
+  });
+
   // ─── SMTP Settings ────────────────────────────────────────────────────────
   app.get("/api/admin/settings/smtp", isAuthenticated, isAdmin, async (_req, res) => {
     try {

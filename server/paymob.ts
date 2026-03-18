@@ -16,15 +16,25 @@ export async function isPaymobConfigured(): Promise<boolean> {
 }
 
 async function getAuthToken(): Promise<string> {
-  const { apiKey } = await getPaymobConfig();
-  if (!apiKey) throw new Error("Paymob API key not configured");
+  const { apiKey: rawKey } = await getPaymobConfig();
+  if (!rawKey) throw new Error("Paymob API key not configured");
+  const apiKey = rawKey.trim(); // strip accidental whitespace
   const res = await fetch(`${PAYMOB_BASE}/auth/tokens`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ api_key: apiKey }),
   });
-  if (!res.ok) throw new Error("Paymob authentication failed");
+  if (!res.ok) {
+    let errBody = "";
+    try { errBody = await res.text(); } catch {}
+    console.error("[Paymob] Auth failed — HTTP", res.status, errBody);
+    throw new Error(`Paymob authentication failed (HTTP ${res.status}): ${errBody.slice(0, 200)}`);
+  }
   const data = await res.json();
+  if (!data.token) {
+    console.error("[Paymob] Auth response has no token:", JSON.stringify(data).slice(0, 300));
+    throw new Error("Paymob authentication failed: no token in response");
+  }
   return data.token;
 }
 

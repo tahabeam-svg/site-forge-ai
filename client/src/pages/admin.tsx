@@ -67,6 +67,7 @@ import {
   Coins,
   Mail,
   Send,
+  Wifi,
 } from "lucide-react";
 
 interface AdminStats { totalUsers: number; totalProjects: number; publishedProjects: number; }
@@ -225,6 +226,20 @@ export default function AdminPage() {
     mutationFn: async (enabled: boolean) => { await apiRequest("POST", "/api/admin/settings/paymob/test-mode", { enabled }); return enabled; },
     onSuccess: (enabled) => { setTestModeEnabled(enabled); queryClient.invalidateQueries({ queryKey: ["/api/payments/config"] }); toast({ title: lang === "ar" ? (enabled ? "تم تفعيل وضع الاختبار" : "تم إيقاف وضع الاختبار") : (enabled ? "Test mode enabled" : "Test mode disabled") }); },
     onError: () => { toast({ title: lang === "ar" ? "فشل تحديث وضع الاختبار" : "Failed to update test mode", variant: "destructive" }); },
+  });
+
+  const [paymobTestResult, setPaymobTestResult] = useState<{ ok: boolean; message: string; httpStatus?: number } | null>(null);
+  const testPaymobConnectionMutation = useMutation({
+    mutationFn: async () => { const res = await apiRequest("POST", "/api/admin/settings/paymob/test-connection", {}); return res as any; },
+    onSuccess: (data: any) => {
+      setPaymobTestResult(data);
+      toast({
+        title: data.ok ? (lang === "ar" ? "✅ اتصال ناجح بـ Paymob" : "✅ Paymob connected") : (lang === "ar" ? "❌ فشل الاتصال بـ Paymob" : "❌ Paymob connection failed"),
+        description: data.message,
+        variant: data.ok ? "default" : "destructive",
+      });
+    },
+    onError: (e: any) => { toast({ title: lang === "ar" ? "خطأ في الاختبار" : "Test error", description: e.message, variant: "destructive" }); },
   });
 
   const saveSmtpMutation = useMutation({
@@ -1041,6 +1056,16 @@ export default function AdminPage() {
                       {savePaymobMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Save className="w-4 h-4 me-1" />}
                       {lang === "ar" ? "حفظ الإعدادات" : "Save Settings"}
                     </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => { setPaymobTestResult(null); testPaymobConnectionMutation.mutate(); }}
+                      disabled={testPaymobConnectionMutation.isPending}
+                      className="border-zinc-600 text-zinc-300 hover:text-white hover:bg-zinc-800"
+                      data-testid="button-test-paymob"
+                    >
+                      {testPaymobConnectionMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin me-1" /> : <Wifi className="w-4 h-4 me-1" />}
+                      {lang === "ar" ? "اختبار الاتصال" : "Test Connection"}
+                    </Button>
                     <button
                       onClick={() => toggleTestModeMutation.mutate(!testModeEnabled)}
                       disabled={toggleTestModeMutation.isPending}
@@ -1051,6 +1076,13 @@ export default function AdminPage() {
                       {lang === "ar" ? (testModeEnabled ? "وضع الاختبار: مفعّل" : "وضع الاختبار: معطّل") : (testModeEnabled ? "Test Mode: ON" : "Test Mode: OFF")}
                     </button>
                   </div>
+                  {paymobTestResult && (
+                    <div className={`p-3 rounded-lg border text-sm ${paymobTestResult.ok ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300" : "bg-red-500/10 border-red-500/30 text-red-300"}`}>
+                      <p className="font-medium">{paymobTestResult.ok ? (lang === "ar" ? "✅ الاتصال يعمل بشكل صحيح" : "✅ Connection OK") : (lang === "ar" ? "❌ فشل الاتصال" : "❌ Connection Failed")}</p>
+                      <p className="text-xs mt-1 opacity-80">{paymobTestResult.message}</p>
+                      {paymobTestResult.httpStatus && <p className="text-xs mt-0.5 opacity-60">HTTP {paymobTestResult.httpStatus}</p>}
+                    </div>
+                  )}
                   <div className="p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50">
                     <h4 className="text-sm font-medium text-zinc-300 mb-2">{lang === "ar" ? "كيفية الحصول على البيانات:" : "How to get credentials:"}</h4>
                     <ol className="text-xs text-zinc-500 space-y-1 list-decimal list-inside">
