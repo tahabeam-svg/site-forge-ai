@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 
-const PAYMOB_BASE = "https://accept.paymob.com/api";
+const PAYMOB_BASE = "https://ksa.paymob.com/api";
 
 async function getPaymobConfig() {
   const apiKey = await storage.getSetting("paymob_api_key");
@@ -111,7 +111,7 @@ export async function getPaymentKey(
 export async function getIframeUrl(paymentToken: string): Promise<string> {
   const { iframeId } = await getPaymobConfig();
   if (!iframeId) throw new Error("Paymob iframe ID not configured");
-  return `https://accept.paymob.com/api/acceptance/iframes/${iframeId}?payment_token=${paymentToken}`;
+  return `${PAYMOB_BASE}/acceptance/iframes/${iframeId}?payment_token=${paymentToken}`;
 }
 
 export async function verifyHmac(
