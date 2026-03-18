@@ -427,9 +427,10 @@ export default function AIBuilderPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
     } catch (err: any) {
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
+      const msg = err?.message || "حدث خطأ غير متوقع. حاول مجدداً.";
       addEntry({
         role: "assistant",
-        content: "حدث خطأ: " + (err?.message || "Unknown error"),
+        content: msg,
         type: "error",
       });
       setStep("confirming");
@@ -494,9 +495,10 @@ export default function AIBuilderPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
     } catch (err: any) {
       setChatEntries(prev => prev.filter(e => e.type !== "progress"));
+      const editErrMsg = err?.message || "فشل التعديل. حاول مجدداً.";
       addEntry({
         role: "assistant",
-        content: "⚠️ " + (err?.message || "Edit failed"),
+        content: editErrMsg,
         type: "error",
       });
     } finally {
