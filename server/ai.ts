@@ -407,31 +407,44 @@ const UNSPLASH_SEARCH_TERMS: Record<string, string[]> = {
 };
 
 /**
- * Fetches a relevant hero image ID from Unsplash Search API.
+ * Fetches a relevant hero image URL from Unsplash Search API.
+ * Returns the full raw URL (e.g. https://images.unsplash.com/photo-xxx?ixid=...)
+ * so it can be used directly as a background-image src.
  * Returns null if key is missing or request fails.
  */
-async function fetchUnsplashHeroId(category: string): Promise<string | null> {
+async function fetchUnsplashHeroUrl(category: string): Promise<string | null> {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-  if (!accessKey) return null;
+  if (!accessKey) {
+    console.warn("[Unsplash] UNSPLASH_ACCESS_KEY is not set — skipping live search");
+    return null;
+  }
 
   const terms = UNSPLASH_SEARCH_TERMS[category] || UNSPLASH_SEARCH_TERMS["agency"];
   const query = terms[Math.floor(Math.random() * terms.length)];
 
   try {
-    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=15&orientation=landscape&content_filter=high`;
-    const resp = await fetch(url, {
+    const apiUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=15&orientation=landscape&content_filter=high`;
+    const resp = await fetch(apiUrl, {
       headers: { Authorization: `Client-ID ${accessKey}` },
     });
     if (!resp.ok) {
-      console.warn(`[Unsplash] Search failed: ${resp.status} for query "${query}"`);
+      console.warn(`[Unsplash] Search failed: HTTP ${resp.status} for query "${query}"`);
       return null;
     }
-    const data = await resp.json() as { results: Array<{ id: string }> };
-    if (!data.results?.length) return null;
-    // Pick randomly from top results for diversity
+    const data = await resp.json() as {
+      results: Array<{ id: string; urls: { raw: string; regular: string; full: string } }>;
+    };
+    if (!data.results?.length) {
+      console.warn(`[Unsplash] No results for query "${query}"`);
+      return null;
+    }
+    // Pick randomly from top 10 results for diversity
     const picked = data.results[Math.floor(Math.random() * Math.min(data.results.length, 10))];
-    console.log(`[Unsplash] ✓ Hero image fetched: ${picked.id} (query: "${query}")`);
-    return picked.id;
+    // Use urls.raw — strip existing query params and add our own for quality control
+    const baseUrl = picked.urls.raw.split("?")[0];
+    const heroUrl = `${baseUrl}?w=1920&h=1080&fit=crop&q=90&auto=format`;
+    console.log(`[Unsplash] ✓ Hero fetched — id:${picked.id} query:"${query}" url:${heroUrl}`);
+    return heroUrl;
   } catch (err) {
     console.warn(`[Unsplash] Search error:`, err);
     return null;
@@ -443,25 +456,30 @@ async function buildImagePromptSection(description: string): Promise<string> {
   const pool = IMAGE_BANK[cat] || DEFAULT_IMAGES;
   const bankImages = shuffleAndPick(pool, 10);
 
-  // Attempt live Unsplash Search for a more relevant hero image
-  const liveHeroId = await fetchUnsplashHeroId(cat);
+  // Attempt live Unsplash Search for the hero image — returns a full ready-to-use URL
+  const liveHeroUrl = await fetchUnsplashHeroUrl(cat);
 
-  let heroNote = "";
-  let imageList: string[];
+  // Build the bank image URLs (add photo- prefix and params)
+  const bankUrls = bankImages.map(id =>
+    `https://images.unsplash.com/${id}?w=1600&h=900&fit=crop&q=85&auto=format`
+  );
 
-  if (liveHeroId) {
-    heroNote = `\n  🎯 HERO IMAGE (live Unsplash search — MUST use for hero section background):\n     ${liveHeroId}`;
-    // Put live hero first, then bank images (excluding duplicates)
-    imageList = [liveHeroId, ...bankImages.filter(id => id !== liveHeroId).slice(0, 9)];
+  let lines: string;
+
+  if (liveHeroUrl) {
+    // Hero line: full URL from live Unsplash search
+    const heroLine = `  1. ${liveHeroUrl}  ← USE THIS FOR HERO BACKGROUND (live search result)`;
+    // Remaining bank images (up to 9 more)
+    const restLines = bankUrls.slice(0, 9).map((url, i) => `  ${i + 2}. ${url}`).join("\n");
+    lines = `${heroLine}\n${restLines}`;
+    console.log(`[Unsplash] Hero URL injected into prompt: ${liveHeroUrl}`);
   } else {
-    imageList = bankImages;
+    // Fallback: all from bank
+    lines = bankUrls.map((url, i) => `  ${i + 1}. ${url}`).join("\n");
+    console.log(`[Unsplash] Falling back to IMAGE_BANK for category: ${cat}`);
   }
 
-  const lines = imageList
-    .map((id, i) => `  ${i + 1}. ${id}${i === 0 && liveHeroId ? "  ← USE THIS FOR HERO BACKGROUND" : ""}`)
-    .join("\n");
-
-  return `Category detected: ${cat}${heroNote}\nSelected images for this request:\n${lines}`;
+  return `Category detected: ${cat}\nSelected images for this request (USE FULL URLs AS-IS in src/background-image):\n${lines}`;
 }
 
 /**
@@ -753,16 +771,15 @@ Service icon CSS:
 ═══════════════════════════════════════
 STOCK IMAGES — PRE-SELECTED FOR THIS REQUEST
 ═══════════════════════════════════════
-The following Unsplash images have been selected for THIS specific request. Use EXACTLY these images:
+The following Unsplash image URLs have been pre-fetched for THIS specific request.
 USE_IMAGES_PLACEHOLDER
 
-Image URL format:
-  • HERO background: https://images.unsplash.com/[PHOTO_ID]?w=1920&h=1080&fit=crop&q=90&auto=format
-  • About section:   https://images.unsplash.com/[PHOTO_ID]?w=900&h=700&fit=crop&q=85&auto=format
-  • Gallery cards:   https://images.unsplash.com/[PHOTO_ID]?w=700&h=500&fit=crop&q=80&auto=format
-
-⚠️ HERO IMAGE RULE: If item #1 is marked "← USE THIS FOR HERO BACKGROUND", you MUST use it as the hero section's background-image. It was specifically fetched by live search to match this business type.
-⚠️ Use at least 7 DIFFERENT images total. NEVER repeat the same photo ID twice on the page.
+⚠️ IMPORTANT — USE URLS EXACTLY AS PROVIDED:
+  • Each entry is a COMPLETE ready-to-use URL — copy it directly into src="" or background-image:url(...)
+  • DO NOT modify the URLs. DO NOT reconstruct them from IDs. Use as-is.
+  • Item #1 marked "← USE THIS FOR HERO BACKGROUND" = place directly as hero background-image CSS
+  • For gallery cards, adjust the w/h params: replace w=1920&h=1080 with w=700&h=500 on the same base URL
+  • Use at least 7 DIFFERENT images. NEVER reuse the same URL twice on the page.
 
 ═══════════════════════════════════════
 WHATSAPP FLOATING BUTTON — ABSOLUTELY MANDATORY ⚠️
