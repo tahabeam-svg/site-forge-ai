@@ -1,96 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-
-  <!-- Homepage -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://arabyweb.net/</loc>
     <lastmod>2026-03-18</lastmod>
-    <changefreq>weekly</changefreq>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/" />
-    <xhtml:link rel="alternate" hreflang="en" href="https://arabyweb.net/?lang=en" />
   </url>
-
-  <!-- Auth -->
-  <url>
-    <loc>https://arabyweb.net/auth</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Pricing -->
   <url>
     <loc>https://arabyweb.net/pricing</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
-
-  <!-- ============================== -->
-  <!-- SEO Landing Pages — HIGH PRIORITY -->
-  <!-- ============================== -->
-
-  <!-- AI Website Builder SEO Page -->
   <url>
-    <loc>https://arabyweb.net/ai-website-builder</loc>
+    <loc>https://arabyweb.net/faq</loc>
+    <lastmod>2026-03-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://arabyweb.net/templates</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.98</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/ai-website-builder" />
+    <priority>0.85</priority>
   </url>
-
-  <!-- Digital Marketing AI SEO Page -->
-  <url>
-    <loc>https://arabyweb.net/digital-marketing-ai</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.97</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/digital-marketing-ai" />
-  </url>
-
-  <!-- Website Saudi Arabia SEO Page -->
-  <url>
-    <loc>https://arabyweb.net/website-saudi-arabia</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.97</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/website-saudi-arabia" />
-  </url>
-
-  <!-- Free Website Landing Page -->
   <url>
     <loc>https://arabyweb.net/free-website</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/free-website" />
   </url>
-
-  <!-- Free Store Landing Page -->
   <url>
     <loc>https://arabyweb.net/free-store</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/free-store" />
   </url>
-
-  <!-- ============================== -->
-  <!-- Blog -->
-  <!-- ============================== -->
-
+  <url>
+    <loc>https://arabyweb.net/ai-website-builder</loc>
+    <lastmod>2026-03-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.98</priority>
+  </url>
+  <url>
+    <loc>https://arabyweb.net/digital-marketing-ai</loc>
+    <lastmod>2026-03-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.97</priority>
+  </url>
+  <url>
+    <loc>https://arabyweb.net/website-saudi-arabia</loc>
+    <lastmod>2026-03-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.97</priority>
+  </url>
   <url>
     <loc>https://arabyweb.net/blog</loc>
     <lastmod>2026-03-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.90</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="https://arabyweb.net/blog" />
   </url>
-
-  <!-- Blog Articles -->
   <url>
     <loc>https://arabyweb.net/blog/how-to-create-website-with-ai-free</loc>
     <lastmod>2026-03-10</lastmod>
@@ -145,41 +114,16 @@
     <changefreq>monthly</changefreq>
     <priority>0.78</priority>
   </url>
-
-  <!-- ============================== -->
-  <!-- Other Pages -->
-  <!-- ============================== -->
-
-  <!-- Templates -->
-  <url>
-    <loc>https://arabyweb.net/templates</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
-  <!-- FAQ -->
-  <url>
-    <loc>https://arabyweb.net/faq</loc>
-    <lastmod>2026-03-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.75</priority>
-  </url>
-
-  <!-- Terms -->
   <url>
     <loc>https://arabyweb.net/terms</loc>
     <lastmod>2026-03-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
-
-  <!-- Privacy -->
   <url>
     <loc>https://arabyweb.net/privacy</loc>
     <lastmod>2026-03-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
-
 </urlset>

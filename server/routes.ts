@@ -310,133 +310,51 @@ Disallow: /
   app.get("/sitemap.xml", (_req, res) => {
     const base = "https://arabyweb.net";
     const now = new Date().toISOString().split("T")[0];
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Home -->
-  <url>
-    <loc>${base}/</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/" />
-    <xhtml:link rel="alternate" hreflang="en" href="${base}/?lang=en" />
-  </url>
+    const pages = [
+      // Homepage
+      { loc: "/", lastmod: now, changefreq: "daily", priority: "1.0" },
+      // Core pages
+      { loc: "/auth", lastmod: now, changefreq: "monthly", priority: "0.8" },
+      { loc: "/pricing", lastmod: now, changefreq: "monthly", priority: "0.9" },
+      { loc: "/faq", lastmod: now, changefreq: "monthly", priority: "0.75" },
+      { loc: "/terms", lastmod: now, changefreq: "yearly", priority: "0.3" },
+      { loc: "/privacy", lastmod: now, changefreq: "yearly", priority: "0.3" },
+      // Free landing pages
+      { loc: "/free-website", lastmod: now, changefreq: "weekly", priority: "0.95" },
+      { loc: "/free-store", lastmod: now, changefreq: "weekly", priority: "0.95" },
+      { loc: "/templates", lastmod: now, changefreq: "weekly", priority: "0.85" },
+      // SEO landing pages — highest priority
+      { loc: "/ai-website-builder", lastmod: now, changefreq: "weekly", priority: "0.98" },
+      { loc: "/digital-marketing-ai", lastmod: now, changefreq: "weekly", priority: "0.97" },
+      { loc: "/website-saudi-arabia", lastmod: now, changefreq: "weekly", priority: "0.97" },
+      // Blog
+      { loc: "/blog", lastmod: now, changefreq: "weekly", priority: "0.90" },
+      { loc: "/blog/how-to-create-website-with-ai-free", lastmod: "2026-03-10", changefreq: "monthly", priority: "0.85" },
+      { loc: "/blog/free-digital-marketing-small-business", lastmod: "2026-03-08", changefreq: "monthly", priority: "0.85" },
+      { loc: "/blog/ai-website-builder-vs-wordpress", lastmod: "2026-03-05", changefreq: "monthly", priority: "0.82" },
+      { loc: "/blog/seo-guide-arabic-websites-2026", lastmod: "2026-03-01", changefreq: "monthly", priority: "0.85" },
+      { loc: "/blog/free-online-store-saudi-arabia", lastmod: "2026-02-25", changefreq: "monthly", priority: "0.82" },
+      { loc: "/blog/ai-content-marketing-instagram-tiktok", lastmod: "2026-02-20", changefreq: "monthly", priority: "0.80" },
+      { loc: "/blog/website-design-restaurants-shops-saudi", lastmod: "2026-02-15", changefreq: "monthly", priority: "0.80" },
+      { loc: "/blog/whatsapp-marketing-business-saudi", lastmod: "2026-02-10", changefreq: "monthly", priority: "0.78" },
+      { loc: "/blog/website-hosting-options-saudi-businesses", lastmod: "2026-02-05", changefreq: "monthly", priority: "0.78" },
+    ];
 
-  <!-- Templates -->
-  <url>
-    <loc>${base}/templates</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
+    const urlTags = pages.map(p => `  <url>
+    <loc>${base}${p.loc}</loc>
+    <lastmod>${p.lastmod}</lastmod>
+    <changefreq>${p.changefreq}</changefreq>
+    <priority>${p.priority}</priority>
+  </url>`).join("\n");
 
-  <!-- Pricing -->
-  <url>
-    <loc>${base}/pricing</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlTags}\n</urlset>`;
 
-  <!-- About -->
-  <url>
-    <loc>${base}/about</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- FAQ - high value SEO page -->
-  <url>
-    <loc>${base}/faq</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/faq" />
-    <xhtml:link rel="alternate" hreflang="en" href="${base}/faq?lang=en" />
-  </url>
-
-  <!-- Free landing pages (high traffic keywords) -->
-  <url>
-    <loc>${base}/free-website</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/free-website" />
-  </url>
-
-  <url>
-    <loc>${base}/free-store</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/free-store" />
-  </url>
-
-  <!-- SEO Landing Pages — High Priority -->
-  <url>
-    <loc>${base}/ai-website-builder</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.98</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/ai-website-builder" />
-  </url>
-
-  <url>
-    <loc>${base}/digital-marketing-ai</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.97</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/digital-marketing-ai" />
-  </url>
-
-  <url>
-    <loc>${base}/website-saudi-arabia</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.97</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/website-saudi-arabia" />
-  </url>
-
-  <!-- Blog -->
-  <url>
-    <loc>${base}/blog</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.90</priority>
-    <xhtml:link rel="alternate" hreflang="ar" href="${base}/blog" />
-  </url>
-
-  <url><loc>${base}/blog/how-to-create-website-with-ai-free</loc><lastmod>2026-03-10</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>${base}/blog/free-digital-marketing-small-business</loc><lastmod>2026-03-08</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>${base}/blog/ai-website-builder-vs-wordpress</loc><lastmod>2026-03-05</lastmod><changefreq>monthly</changefreq><priority>0.82</priority></url>
-  <url><loc>${base}/blog/seo-guide-arabic-websites-2026</loc><lastmod>2026-03-01</lastmod><changefreq>monthly</changefreq><priority>0.85</priority></url>
-  <url><loc>${base}/blog/free-online-store-saudi-arabia</loc><lastmod>2026-02-25</lastmod><changefreq>monthly</changefreq><priority>0.82</priority></url>
-  <url><loc>${base}/blog/ai-content-marketing-instagram-tiktok</loc><lastmod>2026-02-20</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
-  <url><loc>${base}/blog/website-design-restaurants-shops-saudi</loc><lastmod>2026-02-15</lastmod><changefreq>monthly</changefreq><priority>0.80</priority></url>
-  <url><loc>${base}/blog/whatsapp-marketing-business-saudi</loc><lastmod>2026-02-10</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
-  <url><loc>${base}/blog/website-hosting-options-saudi-businesses</loc><lastmod>2026-02-05</lastmod><changefreq>monthly</changefreq><priority>0.78</priority></url>
-
-  <!-- Legal -->
-  <url>
-    <loc>${base}/privacy</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>${base}/terms</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-</urlset>`;
-    res.type("application/xml").send(xml);
+    res.set({
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+      "X-Robots-Tag": "noindex",
+    }).send(xml);
   });
 
   // ── AI Agents: llms.txt ────────────────────────────────────────────────────
