@@ -247,7 +247,7 @@ Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <hea
 Generate a COMPLETE, premium single-page website based on: "${description}"`;
 }
 
-// ─── Large Image Bank for Random Selection ─────────────────────────────────
+// ─── Large Image Bank — 30+ Industries ─────────────────────────────────────
 const IMAGE_BANK: Record<string, string[]> = {
   restaurant: [
     "photo-1517248135467-4c7edcad34c4","photo-1414235077428-338989a2e8c0","photo-1565299624946-b28f40a0ae38",
@@ -347,6 +347,109 @@ const IMAGE_BANK: Record<string, string[]> = {
     "photo-1454165804606-c3d57bc86b40","photo-1444653614773-995cb1ef9efa","photo-1565514020179-026b92b84bb6",
     "photo-1520333789090-1afc82db536a",
   ],
+  // ── New categories ──────────────────────────────────────────────────────────
+  manufacturing: [
+    "photo-1504328345606-18bbc8c9d7d1","photo-1581091226825-a6a2a5aee158","photo-1565793298595-6a879b1d9492",
+    "photo-1504917595217-d4dc5ebe6122","photo-1519583272095-6433daf26b6e","photo-1552664688-cf412ec27db2",
+    "photo-1567306301408-9b74779a11af","photo-1530685932526-48ec92998eaa","photo-1562408590-e32931084e23",
+    "photo-1581092918056-0c4c3acd3789","photo-1565610222536-ef125c59da2e","photo-1541888946425-d81bb19240f5",
+  ],
+  construction: [
+    "photo-1504307651254-35680f356dfd","photo-1590579491624-f98f36d4c763","photo-1503387762-592deb58ef4e",
+    "photo-1541888946425-d81bb19240f5","photo-1581091226825-a6a2a5aee158","photo-1487958449943-2429e8be8625",
+    "photo-1558618666-fcd25c85cd64","photo-1485083269755-a7b559a4fe5e","photo-1497366811353-6870744d04b2",
+    "photo-1508450859948-4e04fabaa4ea","photo-1526304640581-d334cdbbf45e","photo-1600585154340-be6161a56a0c",
+  ],
+  cleaning: [
+    "photo-1563453392212-326f5e854473","photo-1558618666-fcd25c85cd64","photo-1527515637462-cff94eecc1ac",
+    "photo-1581578731548-c64695cc6952","photo-1628177142898-93e36e4e3a50","photo-1585771724684-38269d6639fd",
+    "photo-1556909114-f6e7ad7d3136","photo-1600566752355-35792bedcfea","photo-1583847268964-b28dc8f51f92",
+    "photo-1585771724684-38269d6639fd","photo-1527515545081-5db817172677",
+  ],
+  logistics: [
+    "photo-1586528116311-ad8dd3c8310d","photo-1578575437130-527eed3abbec","photo-1601584115197-04ecc0da31d7",
+    "photo-1494412574643-ff11b0a5c1c3","photo-1519003722824-194d4455a60c","photo-1553413077-190dd305871c",
+    "photo-1416879595882-3373a0480b5b","photo-1558618047-f4f3ed48a4f9","photo-1568605114967-8130f3a36994",
+    "photo-1587293852726-70cdb56c2866","photo-1473655521523-a9b65b3c8be6",
+  ],
+  furniture: [
+    "photo-1555041469-a586c61ea9bc","photo-1524758631624-e2822e304c36","photo-1493663284031-b7e3aefcae8e",
+    "photo-1556909114-f6e7ad7d3136","photo-1538688525198-9b88f6f53126","photo-1507089947368-19c1da9775ae",
+    "photo-1616486338812-3dadae4b4ace","photo-1586105251261-72a756497a11","photo-1565182999561-18d7dc61c393",
+    "photo-1540518614846-7eded433c457","photo-1503602642458-232111445657","photo-1567016376408-0226e4d0c1ea",
+  ],
+  food_production: [
+    "photo-1504674900247-0877df9cc836","photo-1556909172-54557c7e4fb7","photo-1490818387583-1baba5e638af",
+    "photo-1565299624946-b28f40a0ae38","photo-1606787366850-de6330128bfc","photo-1547592166-23ac45744acd",
+    "photo-1565958011703-44f9829ba187","photo-1482049016688-2d3e1b311543","photo-1576097449798-7c7f90e1248a",
+    "photo-1498654896293-37aacf113fd9","photo-1490645935967-10de6ba17061",
+  ],
+  agriculture: [
+    "photo-1500937386664-56d1dfef3854","photo-1416879595882-3373a0480b5b","photo-1464226184884-fa280b87c399",
+    "photo-1500595046743-cd271d694d30","photo-1536657464919-892534f60d6e","photo-1501004318641-b39e6451bec6",
+    "photo-1542601906990-b4d3fb778b09","photo-1523348837708-15d4a09cfac2","photo-1471193945509-9ad0617afabf",
+    "photo-1530836369250-ef72a3f5cda8","photo-1574323347407-f5e1ad6d020b",
+  ],
+  legal: [
+    "photo-1589829545856-d10d557cf95f","photo-1453945619913-79ec89a82c51","photo-1505664194779-8beaceb5bb4c",
+    "photo-1507679799987-c73779587ccf","photo-1521791055366-0d553381ad47","photo-1542744094-3a31f272c490",
+    "photo-1450101499163-c8848c66ca85","photo-1593115057322-e94b77572f20","photo-1575505586569-646b2ca898fc",
+    "photo-1568605114967-8130f3a36994","photo-1559136555-9303baea8ebd",
+  ],
+  hotel: [
+    "photo-1566073771259-6a8506099945","photo-1542314831-068cd1dbfeeb","photo-1455587734955-081b22074882",
+    "photo-1520250497591-112f2f40a3f4","photo-1496417263034-38ec4f0b665a","photo-1582719508461-905c673771fd",
+    "photo-1525610553991-2bede1a236e2","photo-1534595038511-9f219fe0d4f3","photo-1551882547-ff40c63fe5fa",
+    "photo-1621293954908-907159247fc8","photo-1605346576237-1a02428e9827",
+  ],
+  printing: [
+    "photo-1562408590-e32931084e23","photo-1588681664899-f142ff2dc9b1","photo-1586282391129-76a6df230234",
+    "photo-1467293622093-9f15c96be70f","photo-1588681664899-f142ff2dc9b1","photo-1561998338-13ad7883b20f",
+    "photo-1527153818091-1a9638521e2a","photo-1535585209827-a15fcdbc4c2d","photo-1558618047-3c8c76ca7d13",
+    "photo-1506905925346-21bda4d32df4","photo-1471897488648-5eae4ac6686b",
+  ],
+  security: [
+    "photo-1558618047-3c8c76ca7d13","photo-1557597774-9d273605dfa9","photo-1521791136064-7986c2920216",
+    "photo-1609902726285-00668009f004","photo-1563013544-824ae1b704d3","photo-1558494949-ef010cbdcc31",
+    "photo-1485827404703-89b55fcc595e","photo-1519003722824-194d4455a60c","photo-1526374965328-7f61d4dc18c5",
+    "photo-1550751827-4bd374173514","photo-1555949963-ff9fe0c870eb",
+  ],
+  decor: [
+    "photo-1616486338812-3dadae4b4ace","photo-1586105251261-72a756497a11","photo-1493663284031-b7e3aefcae8e",
+    "photo-1555041469-a586c61ea9bc","photo-1524758631624-e2822e304c36","photo-1507089947368-19c1da9775ae",
+    "photo-1540518614846-7eded433c457","photo-1565182999561-18d7dc61c393","photo-1567016376408-0226e4d0c1ea",
+    "photo-1600121848594-d8644e57abab","photo-1600585154526-990dced4db0d","photo-1560448204-603b3fc33ddc",
+  ],
+  travel: [
+    "photo-1488085061387-422e29b40080","photo-1476514525535-07fb3b4ae5f1","photo-1469854523086-cc02fe5d8800",
+    "photo-1500835556837-99ac94a94552","photo-1507525428034-b723cf961d3e","photo-1530521954074-e64f6810b32d",
+    "photo-1548574505-5e239809ee19","photo-1528360983277-13d401cdc186","photo-1436491865332-7a61a109cc05",
+    "photo-1467269204594-f00a6c4a7bf9","photo-1520466809213-7b9a56adcd45",
+  ],
+  supermarket: [
+    "photo-1534723452862-4c874018d66d","photo-1542838132-92c53300491e","photo-1604719312566-8912e9227c6a",
+    "photo-1578916171728-46686eac8d58","photo-1604719312566-8912e9227c6a","photo-1556742049-0cfed4f6a45d",
+    "photo-1606914501449-5a96b6ce24ca","photo-1488459716781-31db52582fe9","photo-1562967914-608f82629710",
+    "photo-1578916171728-46686eac8d58","photo-1526170375885-4d8ecf77b99f",
+  ],
+  tailoring: [
+    "photo-1558618047-f4f3ed48a4f9","photo-1558769132-cb1aea458c5e","photo-1515886657613-9f3515b0c78f",
+    "photo-1596483901962-7c43a2f42853","photo-1445205170230-053b83016050","photo-1483985988355-763728e1935b",
+    "photo-1558618666-fcd25c85cd64","photo-1469334031218-e382a71b716b","photo-1618354691373-d851c5c3a990",
+    "photo-1578681994506-b8f463906a58","photo-1467453678174-768ec283a940",
+  ],
+  plastic: [
+    "photo-1504328345606-18bbc8c9d7d1","photo-1581091226825-a6a2a5aee158","photo-1565793298595-6a879b1d9492",
+    "photo-1504917595217-d4dc5ebe6122","photo-1519583272095-6433daf26b6e","photo-1552664688-cf412ec27db2",
+    "photo-1562408590-e32931084e23","photo-1581092918056-0c4c3acd3789","photo-1565610222536-ef125c59da2e",
+    "photo-1530685932526-48ec92998eaa","photo-1567306301408-9b74779a11af","photo-1541888946425-d81bb19240f5",
+  ],
+  pharmacy: [
+    "photo-1584308666744-24d5c474f2ae","photo-1587854692152-cbe660dbde88","photo-1576671081837-49000212a370",
+    "photo-1471864190281-a93a3070b6de","photo-1576091160399-112ba8d25d1d","photo-1583947215259-38e31be8751f",
+    "photo-1585435557343-3b092031a831","photo-1576091160550-2173dba999ef","photo-1579684385127-1ef15d508118",
+    "photo-1434494878577-86c23bcb06b9","photo-1612349317150-e413f6a5b16d",
+  ],
 };
 
 const DEFAULT_IMAGES = [
@@ -358,24 +461,48 @@ const DEFAULT_IMAGES = [
 
 function detectImageCategory(description: string): string {
   const d = description.toLowerCase();
-  if (/مطعم|شاورما|كبسة|مندي|طعام|وجبة|مشوي|برگر|بيتزا|كنتاكي|مأكولات|food|restaurant|kebab|grill|burger|pizza/.test(d)) {
+  // ── Food & Beverage ─────────────────────────────────────────────────────────
+  if (/مطعم|شاورما|كبسة|مندي|طعام|وجبة|برگر|بيتزا|كنتاكي|مأكولات|food|restaurant|kebab|burger|pizza/.test(d)) {
     if (/مشوي|مشاوي|جريل|grill|bbq|شيش|منقل/.test(d)) return "grill";
-    if (/قهوة|كافيه|كافيه|cafe|coffee|كابتشينو|لاتيه/.test(d)) return "cafe";
+    if (/قهوة|كافيه|cafe|coffee|كابتشينو|لاتيه/.test(d)) return "cafe";
     return "restaurant";
   }
-  if (/وكالة|وكاله|دعاية|إعلان|تسويق|وكالة إبداعية|agency|marketing|creative|advertising/.test(d)) return "agency";
-  if (/تقنية|برمجة|تطبيق|موقع|ديجيتال|tech|software|app|startup|digital/.test(d)) return "tech";
-  if (/عقار|شقق|فلل|عقارات|real estate|property|apartment|villa/.test(d)) return "realestate";
-  if (/طب|عيادة|مستشفى|صيدلية|medical|clinic|hospital|pharmacy|health|dental|أسنان/.test(d)) return "medical";
-  if (/تجميل|صالون|سبا|مكياج|beauty|salon|spa|makeup|نقاء|بشرة/.test(d)) return "beauty";
+  if (/قهوة|كافيه|cafe|coffee|كابتشينو|لاتيه|espresso/.test(d)) return "cafe";
+  if (/مشوي|مشاوي|جريل|grill|bbq|شيش|منقل/.test(d)) return "grill";
+  if (/إنتاج غذائي|مصنع أغذية|food production|food factory|معلبات|تعبئة وتغليف أغذية/.test(d)) return "food_production";
+  if (/سوبرماركت|بقالة|متجر|محل|supermarket|grocery|mart|hypermarket|هايبر|ماركت/.test(d)) return "supermarket";
+  // ── Industrial & Manufacturing ───────────────────────────────────────────────
+  if (/بلاستيك|plastic|بولي|poly|مواد بلاستيكية|تصنيع بلاستيك/.test(d)) return "plastic";
+  if (/مصنع|تصنيع|صناعة|صناعية|manufacturing|factory|industrial|معمل/.test(d)) return "manufacturing";
+  if (/مقاولات|إنشاءات|بناء|تشييد|هندسة مدنية|construction|contracting|building/.test(d)) return "construction";
+  if (/أثاث|موبيليا|كنب|غرف نوم|مطابخ|furniture|sofa|bedroom|kitchen interior/.test(d)) return "furniture";
+  if (/ديكور|تصميم داخلي|interior design|decoration|decor/.test(d)) return "decor";
+  if (/خياطة|ملابس|أزياء|موضة|fashion|clothing|tailoring|boutique/.test(d)) return "tailoring";
+  if (/طباعة|مطبعة|دعائي|printing|press|signage/.test(d)) return "printing";
+  // ── Services ─────────────────────────────────────────────────────────────────
+  if (/نظافة|تنظيف|cleaning|مكافحة حشرات|pest control|laundry|غسيل/.test(d)) return "cleaning";
+  if (/أمن|حماية|مراقبة|security|guard|cctv|surveillance/.test(d)) return "security";
+  if (/شحن|لوجستيك|توصيل|نقل بضائع|logistics|shipping|freight|supply chain|warehouse/.test(d)) return "logistics";
+  if (/قانون|محامي|مستشار قانوني|law|legal|attorney|lawyer/.test(d)) return "legal";
+  if (/صيدلية|دواء|pharmacy|drugstore/.test(d)) return "pharmacy";
+  // ── Professional Services ────────────────────────────────────────────────────
+  if (/وكالة|وكاله|دعاية|إعلان|تسويق|agency|marketing|creative|advertising/.test(d)) return "agency";
+  if (/تقنية|برمجة|تطبيق|ديجيتال|tech|software|app|startup|digital/.test(d)) return "tech";
+  if (/مالية|استثمار|بنك|محاسبة|finance|investment|bank|accounting/.test(d)) return "finance";
+  if (/طب|عيادة|مستشفى|medical|clinic|hospital|health|dental|أسنان/.test(d)) return "medical";
+  if (/تجميل|صالون|سبا|مكياج|beauty|salon|spa|makeup/.test(d)) return "beauty";
   if (/تعليم|تدريب|معهد|مدرسة|أكاديمية|education|training|academy|school|course/.test(d)) return "education";
-  if (/سيارة|سيارات|نقل|شحن|مواصلات|car|automotive|transport|delivery/.test(d)) return "automotive";
-  if (/فعالية|حفل|زفاف|مؤتمر|مناسبة|event|wedding|conference|party/.test(d)) return "events";
-  if (/مصور|تصوير|photography|photo|studio/.test(d)) return "photography";
+  // ── Real World ──────────────────────────────────────────────────────────────
+  if (/عقار|شقق|فلل|عقارات|real estate|property|apartment|villa/.test(d)) return "realestate";
+  if (/سيارة|سيارات|نقل|شحن|مواصلات|car|automotive|transport/.test(d)) return "automotive";
+  if (/فندق|شاليه|استراحة|hotel|resort|chalet/.test(d)) return "hotel";
+  if (/سفر|سياحة|رحلة|travel|tourism|tour/.test(d)) return "travel";
   if (/جيم|رياضة|لياقة|gym|fitness|sport/.test(d)) return "gym";
   if (/فاخر|ساعة|عطر|مجوهر|luxury|perfume|jewelry|watch/.test(d)) return "luxury";
-  if (/مالية|استثمار|بنك|finance|investment|bank/.test(d)) return "finance";
-  return "agency"; // default for business/corporate
+  if (/مصور|تصوير|photography|photo|studio/.test(d)) return "photography";
+  if (/فعالية|حفل|مؤتمر|event|wedding|conference|party/.test(d)) return "events";
+  if (/زراعة|مزرعة|agriculture|farm|crops/.test(d)) return "agriculture";
+  return "agency";
 }
 
 function shuffleAndPick<T>(arr: T[], n: number): T[] {
@@ -387,99 +514,116 @@ function shuffleAndPick<T>(arr: T[], n: number): T[] {
   return copy.slice(0, Math.min(n, copy.length));
 }
 
-// ─── Unsplash Search API keywords per category ──────────────────────────────
+// ─── Unsplash Search Terms — 30+ categories ─────────────────────────────────
 const UNSPLASH_SEARCH_TERMS: Record<string, string[]> = {
-  restaurant:  ["restaurant interior elegant", "fine dining restaurant", "modern restaurant decor"],
-  grill:       ["bbq grill steakhouse", "grilled meat restaurant", "charcoal grill food"],
-  cafe:        ["coffee shop cafe interior", "modern coffee bar", "cozy cafe aesthetic"],
-  agency:      ["creative agency office", "advertising agency workspace", "modern marketing office"],
-  tech:        ["technology startup office modern", "software company workspace", "tech office interior"],
-  realestate:  ["luxury real estate villa", "modern apartment property", "architecture interior design"],
-  medical:     ["modern clinic interior", "hospital healthcare facility", "medical center professional"],
-  beauty:      ["luxury beauty salon interior", "spa wellness center", "modern hair salon"],
-  education:   ["modern school classroom", "university library", "education learning environment"],
-  automotive:  ["luxury car showroom", "automotive dealership", "car service center"],
-  events:      ["elegant event venue hall", "conference room luxury", "ballroom event space"],
-  photography: ["photography studio professional", "camera photo studio", "photographer workspace"],
-  gym:         ["modern gym fitness center", "fitness workout studio", "sports training facility"],
-  luxury:      ["luxury boutique store interior", "high-end retail shop", "luxury brand showroom"],
-  finance:     ["modern bank office interior", "finance corporate office", "professional business workspace"],
+  restaurant:      ["restaurant interior elegant dining","fine dining food plating","modern arabic restaurant"],
+  grill:           ["bbq grill steakhouse meat","charcoal grill restaurant","grilled meat skewers"],
+  cafe:            ["coffee shop cafe interior modern","cozy coffee bar aesthetic","specialty coffee cafe"],
+  agency:          ["creative agency office modern","marketing team workspace","advertising agency branding"],
+  tech:            ["technology startup office","software company modern workspace","tech team coding"],
+  realestate:      ["luxury villa modern architecture","real estate interior design","modern apartment property"],
+  medical:         ["modern clinic interior clean","hospital medical facility","doctor clinic professional"],
+  beauty:          ["luxury beauty salon interior","spa wellness relaxation","modern hair salon aesthetic"],
+  education:       ["modern classroom university","education learning library","academy training center"],
+  automotive:      ["luxury car showroom","car dealership interior","automotive service center"],
+  events:          ["elegant event hall ballroom","conference venue luxury","wedding venue decoration"],
+  photography:     ["photography studio professional","camera equipment studio","photo studio setup"],
+  gym:             ["modern gym fitness center","workout studio equipment","crossfit training facility"],
+  luxury:          ["luxury boutique store high-end","jewelry shop elegant interior","luxury brand retail"],
+  finance:         ["modern bank office finance","corporate financial workspace","accounting office professional"],
+  manufacturing:   ["factory production line industrial","manufacturing plant workers","industrial machinery modern"],
+  construction:    ["construction site building modern","architecture engineering blueprint","construction workers building"],
+  cleaning:        ["professional cleaning service","office cleaning crew","cleaning equipment supplies"],
+  logistics:       ["warehouse logistics shipping","cargo freight transport","supply chain distribution"],
+  furniture:       ["modern furniture showroom elegant","interior furniture design","luxury furniture store"],
+  food_production: ["food factory production line","food processing facility","packaged food manufacturing"],
+  agriculture:     ["farm agriculture green fields","farming crops harvest","modern agricultural field"],
+  legal:           ["law office professional","lawyer legal books","courthouse justice"],
+  hotel:           ["luxury hotel lobby interior","hotel room elegant suite","resort hotel beautiful"],
+  printing:        ["printing press machine","print shop production","graphic design printing"],
+  security:        ["security control room professional","surveillance cameras office","security guard professional"],
+  decor:           ["interior design modern decor","luxury home decoration","interior design showroom"],
+  travel:          ["travel agency tourism destination","airplane travel adventure","beach resort travel"],
+  supermarket:     ["supermarket grocery store aisle","hypermarket fresh produce","grocery store interior"],
+  tailoring:       ["fashion boutique elegant clothes","tailor shop fabric design","clothing boutique interior"],
+  plastic:         ["plastic factory manufacturing","plastic products industrial","polymer manufacturing plant"],
+  pharmacy:        ["pharmacy store interior clean","drugstore medicine shelves","modern pharmacy professional"],
 };
 
-/**
- * Fetches a relevant hero image URL from Unsplash Search API.
- * Returns the full raw URL (e.g. https://images.unsplash.com/photo-xxx?ixid=...)
- * so it can be used directly as a background-image src.
- * Returns null if key is missing or request fails.
- */
-async function fetchUnsplashHeroUrl(category: string): Promise<string | null> {
+/** Fetch multiple Unsplash images for a given query. Returns base URLs (without params). */
+async function fetchUnsplashImages(query: string, count: number = 6): Promise<string[]> {
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
-  if (!accessKey) {
-    console.warn("[Unsplash] UNSPLASH_ACCESS_KEY is not set — skipping live search");
-    return null;
-  }
-
-  const terms = UNSPLASH_SEARCH_TERMS[category] || UNSPLASH_SEARCH_TERMS["agency"];
-  const query = terms[Math.floor(Math.random() * terms.length)];
-
+  if (!accessKey) return [];
   try {
-    const apiUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=15&orientation=landscape&content_filter=high`;
-    const resp = await fetch(apiUrl, {
-      headers: { Authorization: `Client-ID ${accessKey}` },
-    });
-    if (!resp.ok) {
-      console.warn(`[Unsplash] Search failed: HTTP ${resp.status} for query "${query}"`);
-      return null;
-    }
-    const data = await resp.json() as {
-      results: Array<{ id: string; urls: { raw: string; regular: string; full: string } }>;
-    };
-    if (!data.results?.length) {
-      console.warn(`[Unsplash] No results for query "${query}"`);
-      return null;
-    }
-    // Pick randomly from top 10 results for diversity
-    const picked = data.results[Math.floor(Math.random() * Math.min(data.results.length, 10))];
-    // Use urls.raw — strip existing query params and add our own for quality control
-    const baseUrl = picked.urls.raw.split("?")[0];
-    const heroUrl = `${baseUrl}?w=1920&h=1080&fit=crop&q=90&auto=format`;
-    console.log(`[Unsplash] ✓ Hero fetched — id:${picked.id} query:"${query}" url:${heroUrl}`);
-    return heroUrl;
-  } catch (err) {
-    console.warn(`[Unsplash] Search error:`, err);
-    return null;
-  }
+    const apiUrl = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=20&orientation=landscape&content_filter=high`;
+    const resp = await fetch(apiUrl, { headers: { Authorization: `Client-ID ${accessKey}` } });
+    if (!resp.ok) { console.warn(`[Unsplash] HTTP ${resp.status} for "${query}"`); return []; }
+    const data = await resp.json() as { results: Array<{ id: string; urls: { raw: string } }> };
+    if (!data.results?.length) return [];
+    // Pick `count` random results from top 15
+    const pool = data.results.slice(0, Math.min(15, data.results.length));
+    const shuffled = shuffleAndPick(pool, count);
+    return shuffled.map(r => r.urls.raw.split("?")[0]);
+  } catch { return []; }
 }
 
 async function buildImagePromptSection(description: string): Promise<string> {
   const cat = detectImageCategory(description);
   const pool = IMAGE_BANK[cat] || DEFAULT_IMAGES;
   const bankImages = shuffleAndPick(pool, 10);
-
-  // Attempt live Unsplash Search for the hero image — returns a full ready-to-use URL
-  const liveHeroUrl = await fetchUnsplashHeroUrl(cat);
-
-  // Build the bank image URLs (add photo- prefix and params)
   const bankUrls = bankImages.map(id =>
     `https://images.unsplash.com/${id}?w=1600&h=900&fit=crop&q=85&auto=format`
   );
 
+  // ── Live Unsplash fetch: hero + gallery images ─────────────────────────────
+  const terms = UNSPLASH_SEARCH_TERMS[cat] || UNSPLASH_SEARCH_TERMS["agency"];
+  const heroQuery  = terms[0];                                   // most specific query for hero
+  const galleryQuery = terms[Math.floor(Math.random() * terms.length)]; // diverse for gallery
+
+  const [heroUrls, galleryUrls] = await Promise.all([
+    fetchUnsplashImages(heroQuery, 2),
+    fetchUnsplashImages(galleryQuery, 6),
+  ]);
+
+  const liveHeroBase = heroUrls[0] || null;
+  const liveGalleryBases = galleryUrls.length >= 4 ? galleryUrls : [];
+
   let lines: string;
 
-  if (liveHeroUrl) {
-    // Hero line: full URL from live Unsplash search
-    const heroLine = `  1. ${liveHeroUrl}  ← USE THIS FOR HERO BACKGROUND (live search result)`;
-    // Remaining bank images (up to 9 more)
-    const restLines = bankUrls.slice(0, 9).map((url, i) => `  ${i + 2}. ${url}`).join("\n");
-    lines = `${heroLine}\n${restLines}`;
-    console.log(`[Unsplash] Hero URL injected into prompt: ${liveHeroUrl}`);
+  if (liveHeroBase) {
+    const heroUrl = `${liveHeroBase}?w=1920&h=1080&fit=crop&q=90&auto=format`;
+    const heroLine = `  1. ${heroUrl}  ← USE THIS AS HERO BACKGROUND (category:${cat})`;
+
+    let galleryLines: string;
+    if (liveGalleryBases.length >= 4) {
+      // Real gallery images from Unsplash — all specific to this category
+      galleryLines = liveGalleryBases.map((base, i) =>
+        `  ${i + 2}. ${base}?w=700&h=500&fit=crop&q=85&auto=format  ← GALLERY image ${i + 1}`
+      ).join("\n");
+    } else {
+      // Fallback to bank for gallery
+      galleryLines = bankUrls.slice(0, 8).map((url, i) =>
+        `  ${i + 2}. ${url}`
+      ).join("\n");
+    }
+    lines = `${heroLine}\n${galleryLines}`;
+    console.log(`[Unsplash] ✓ cat:${cat} hero+gallery fetched. hero:${liveHeroBase.slice(-20)} gallery:${liveGalleryBases.length} imgs`);
   } else {
-    // Fallback: all from bank
     lines = bankUrls.map((url, i) => `  ${i + 1}. ${url}`).join("\n");
-    console.log(`[Unsplash] Falling back to IMAGE_BANK for category: ${cat}`);
+    console.log(`[Unsplash] Fallback IMAGE_BANK for cat:${cat}`);
   }
 
-  return `Category detected: ${cat}\nSelected images for this request (USE FULL URLs AS-IS in src/background-image):\n${lines}`;
+  return `Business category detected: "${cat}"
+⚠️ ALL images below are PRE-SELECTED for "${cat}" — they are 100% relevant to this business type.
+USE THESE EXACT FULL URLs (copy as-is into src="" or background-image:url(...)):
+${lines}
+
+CRITICAL IMAGE RULES:
+• Image #1 (marked HERO) → use ONLY as hero section background-image CSS
+• Images #2-7 (marked GALLERY) → use ONLY in gallery/portfolio section
+• For gallery: use each image ONCE — NEVER repeat the same URL
+• DO NOT use any other images, stock photos, or placeholder gradients instead of real images
+• The images are already cropped and sized correctly — use them directly`;
 }
 
 /**
@@ -653,7 +797,7 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
   - VARY the percentage stats — not all businesses have "98%". Use realistic numbers: 91%, 96%, 4.8/5, etc.
   - At least 2 stats must be specific to the EXACT product/service mentioned (e.g. if "مطعم مندي" → "مندي" related stat, not generic food stat).
 
-▸ ABOUT: 2-column. Image with double-layer gradient border effect using ::before/::after pseudo-elements. Floating experience badge (gradient bg, bottom corner). Checklist items with colored check icons. The ABOUT text MUST reference the actual business name and city extracted from the description.
+▸ ABOUT: 2-column layout. LEFT column: Use image #2 from the pre-selected list above — wrap it with a double-layer gradient border (::before/::after pseudo-elements). Add a floating experience badge (gradient bg, bottom corner). RIGHT column: checklist of key strengths with colored check icons + 2-paragraph brand story mentioning the actual business name and city. CRITICAL: Use the image URL from the pre-selected list — NEVER a placeholder or random gradient.
 ⛔ STANDALONE IMAGE SECTION BAN — CRITICAL:
   • NEVER add a <section> or <div> between the Stats and the Services/About sections that contains ONLY a background image or <img> with no text, heading, or meaningful content.
   • Every section in the page MUST contain at least: a heading + body text + (optionally) an image. A section with ONLY an image and nothing else is FORBIDDEN.
@@ -663,13 +807,13 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
 ▸ SERVICES: 3-column grid. Cards use CSS GRADIENT BORDER trick: background:linear-gradient(white,white) padding-box, linear-gradient(135deg,PRIMARY,ACCENT) border-box; border:1.5px solid transparent. On hover: translateY(-12px), stronger shadow, full gradient border revealed. Icon box rotates on hover, fills with gradient.
 SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشاوي", services should be "مشاوي لحم", "دجاج مشوي", "أرز سعودي", "مقبلات", "عصائر طازجة", "توصيل منزلي". NEVER use generic "خدمة احترافية" or "Service 1".
 
-▸ GALLERY (id="gallery"): 3-column masonry-style grid. Hover: image scale(1.06) + dark gradient overlay + eye icon (fa-eye) appears. LIGHTBOX — clicking any gallery image opens a fullscreen overlay:
+▸ GALLERY (id="gallery"): 3-column masonry-style grid. Use images #2 through #7 from the pre-selected image list above (the ones marked "GALLERY image N"). Hover: image scale(1.06) + dark gradient overlay + eye icon (fa-eye) appears. LIGHTBOX — clicking any gallery image opens a fullscreen overlay:
   - Overlay: position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.92); display:flex; align-items:center; justify-content:center
   - Shows enlarged image + left/right navigation arrows + X close button
   - Close on X click or overlay click outside image
   - Full lightbox JavaScript: openLightbox(imgSrc, index), closeLightbox(), prevImage(), nextImage()
   - Store all gallery image srcs in a JavaScript array for navigation
-  Use 6 REAL Unsplash images relevant to the specific business type.
+  CRITICAL: Use ONLY the pre-selected URLs from the STOCK IMAGES section above. NEVER invent or hardcode other Unsplash IDs. Each gallery card uses a DIFFERENT image from that list.
 
 ▸ CTA BAND: Full-width gradient background. Large bold headline personalized for THIS business (e.g. for a restaurant: "هل أنت جائع؟ اطلب أشهى المشاوي الآن"). Decorative radial glow orb in corner.
 
@@ -971,7 +1115,8 @@ STRUCTURE:
 □ NO bare image section exists anywhere — every section between hero and footer has both an image AND text content
 □ <section id="about"> with 2-column, image with gradient border, checklist items, brand story text
 □ <section id="services"> with 6+ specific service cards using Font Awesome icons (NOT generic names)
-□ <section id="gallery"> with 6 Unsplash images + lightbox onclick
+□ <section id="gallery"> with 6 images from the PRE-SELECTED list (GALLERY images #2–#7) + lightbox onclick — NEVER random or invented URLs
+□ ABOUT section LEFT image uses one of the pre-selected URLs — NOT a broken placeholder
 □ FAQ section with 5 accordion items using toggleFaq() — questions specific to this business
 □ <section id="testimonials"> with 3 glassmorphism cards + specific testimonial text
 □ <section id="contact"> with contact info (phone/WhatsApp/email/address/hours) + form with validateForm()
