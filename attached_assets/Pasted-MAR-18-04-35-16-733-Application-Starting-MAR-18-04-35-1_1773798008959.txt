@@ -1,0 +1,200 @@
+MAR 18,04:35:16.733
+=== Application Starting ===
+MAR 18,04:35:16.734
+Node version: v22.18.0
+MAR 18,04:35:16.734
+DATABASE_URL: SET
+MAR 18,04:35:16.734
+SESSION_SECRET: SET
+MAR 18,04:35:16.734
+PORT: not set, will default to 5000
+MAR 18,04:35:16.734
+NODE_ENV: production
+MAR 18,04:35:16.734
+===========================
+MAR 18,04:35:17.064
+Starting server...
+MAR 18,04:35:17.064
+NODE_ENV: production
+MAR 18,04:35:17.064
+PORT: 5000
+MAR 18,04:35:17.064
+DATABASE_URL: SET
+MAR 18,04:35:17.064
+SESSION_SECRET: SET
+MAR 18,04:35:17.695
+Migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:18.254
+Migration warning (anti-fraud): Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:18.809
+Pricing migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:19.363
+Session table warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:19.954
+Platform tables migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:20.508
+Credit purchases migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:21.091
+Invoice columns migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:21.679
+Credits correction migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:22.264
+Projects migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:22.856
+Index migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:23.408
+AI learning tables migration warning: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:24.542
+Seed error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:25.128
+[Paymob] Could not load plan prices from DB on startup: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async M_.getSetting (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:117915)
+at async ASe (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2871:489)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2991:3459
+MAR 18,04:35:25.715
+Session table init failed: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:25.716
+⚠️ Using MemoryStore for sessions (sessions will reset on restart)
+MAR 18,04:35:25.717
+Google OAuth callback URL: https://arabyweb.net/api/auth/google/callback
+MAR 18,04:35:25.726
+Routes registered
+MAR 18,04:35:25.727
+(node:1289803) TimeoutOverflowWarning: 2592000000 does not fit into a 32-bit signed integer.
+Timeout duration was set to 1.
+(Use `node --trace-warnings ...` to show where the warning was created)
+MAR 18,04:35:26.309
+Static files configured
+MAR 18,04:35:26.329
+1:35:26 AM [express] serving on port 5000
+MAR 18,04:35:26.343
+1:35:26 AM [express] GET /api/auth/user 401 in 9ms :: {"message":"Unauthorized"}
+MAR 18,04:35:27.365
+1:35:27 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:35:28.729
+1:35:28 AM [express] GET /api/auth/google 302 in 3ms
+MAR 18,04:35:29.823
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:35:29.823
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:29.825
+1:35:29 AM [express] GET /api/auth/google/callback 302 in 744ms
+MAR 18,04:35:30.209
+1:35:30 AM [express] GET /api/auth/user 401 in 2ms :: {"message":"Unauthorized"}
+MAR 18,04:35:37.104
+1:35:37 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:35:38.316
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:35:38.316
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:35:38.318
+1:35:38 AM [express] GET /api/auth/google/callback 302 in 708ms
+MAR 18,04:35:38.720
+1:35:38 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:36:22.998
+1:36:22 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:36:24.654
+1:36:24 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:36:26.958
+1:36:26 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:36:28.180
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:36:28.180
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:36:28.182
+1:36:28 AM [express] GET /api/auth/google/callback 302 in 751ms
+MAR 18,04:36:28.700
+1:36:28 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:36:50.715
+1:36:50 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:36:52.772
+1:36:52 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:36:53.840
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:36:53.840
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:36:53.841
+1:36:53 AM [express] GET /api/auth/google/callback 302 in 714ms
+MAR 18,04:36:54.191
+1:36:54 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:36:56.305
+1:36:56 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:36:57.287
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:36:57.287
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:36:57.288
+1:36:57 AM [express] GET /api/auth/google/callback 302 in 666ms
+MAR 18,04:36:57.623
+1:36:57 AM [express] GET /api/auth/user 401 in 2ms :: {"message":"Unauthorized"}
+MAR 18,04:37:21.481
+1:37:21 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:37:24.417
+1:37:24 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:37:25.505
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:37:25.505
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:37:25.506
+1:37:25 AM [express] GET /api/auth/google/callback 302 in 734ms
+MAR 18,04:37:25.861
+1:37:25 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:37:43.435
+1:37:43 AM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+MAR 18,04:38:28.588
+1:38:28 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:38:31.318
+1:38:31 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:38:32.615
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:38:32.615
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:38:32.616
+1:38:32 AM [express] GET /api/auth/google/callback 302 in 743ms
+MAR 18,04:38:33.111
+1:38:33 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+MAR 18,04:38:35.734
+1:38:35 AM [express] GET /api/auth/google 302 in 1ms
+MAR 18,04:38:36.747
+Google OAuth error: error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+at /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1760:13356
+at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+at async /home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:1766:38052
+at async H_._verify (/home/u414735893/domains/arabyweb.net/nodejs/dist/index.cjs:2474:2672)
+MAR 18,04:38:36.747
+Google OAuth callback error: Your project has exceeded the data transfer quota. Upgrade your plan to increase limits.
+MAR 18,04:38:36.748
+1:38:36 AM [express] GET /api/auth/google/callback 302 in 644ms
+MAR 18,04:38:37.098
+1:38:37 AM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
