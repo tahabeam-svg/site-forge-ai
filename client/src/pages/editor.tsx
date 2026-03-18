@@ -359,6 +359,32 @@ export default function EditorPage() {
     if (chatFileInputRef.current) chatFileInputRef.current.value = "";
   };
 
+  // Handle paste events — supports pasting images directly from clipboard (e.g. screenshots)
+  const handleChatPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (!file) continue;
+        // Rename to something meaningful
+        const namedFile = new File([file], `pasted-image-${Date.now()}.png`, { type: file.type });
+        setChatImageFile(namedFile);
+        const reader = new FileReader();
+        reader.onload = () => setChatImagePreview(reader.result as string);
+        reader.readAsDataURL(namedFile);
+        toast({
+          title: lang === "ar" ? "تم لصق الصورة" : "Image pasted",
+          description: lang === "ar" ? "يمكنك الآن إضافة تعليمات للصورة أو إرسالها مباشرةً" : "Add instructions or send directly",
+        });
+        return;
+      }
+    }
+    // Plain text paste — let default textarea behavior handle it
+  };
+
   const handleSend = () => {
     const trimmed = editCommand.trim();
     if (chatImageFile) {
@@ -857,12 +883,15 @@ export default function EditorPage() {
                   <Textarea
                     value={editCommand}
                     onChange={(e) => setEditCommand(e.target.value)}
+                    onPaste={handleChatPaste}
                     placeholder={
                       limitReached
                         ? (lang === "ar" ? "🔒 يجب الاشتراك للمتابعة..." : "🔒 Upgrade to continue...")
                         : chatImageFile
-                          ? (lang === "ar" ? "أضف تعليمات للصورة..." : "Add instructions for the image...")
-                          : t("editCommandPlaceholder", lang)
+                          ? (lang === "ar" ? "أضف تعليمات للصورة... (Ctrl+V للصق صورة أخرى)" : "Add instructions for the image... (Ctrl+V to paste another image)")
+                          : lang === "ar"
+                            ? t("editCommandPlaceholder", lang) + " — يمكنك لصق الصور مباشرةً"
+                            : t("editCommandPlaceholder", lang) + " — paste images directly"
                     }
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !e.shiftKey) {

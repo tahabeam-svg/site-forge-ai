@@ -332,9 +332,7 @@ export default function AdminPage() {
               <LayoutTemplate className="w-4 h-4" />
             </button>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-white" />
-              </div>
+              <img src="/logo.png" alt="ArabyWeb" className="w-8 h-8 object-contain rounded-lg" />
               <div>
                 <h1 className="text-sm font-bold text-white" data-testid="text-admin-title">
                   {lang === "ar" ? "لوحة إدارة عربي ويب" : "ArabyWeb Admin"}
@@ -1415,7 +1413,7 @@ function ChatbotAdminSection({ lang, toast }: { lang: string; toast: any }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Bot className="w-6 h-6 text-emerald-400" />
+            <img src="/logo.png" alt="ArabyWeb AI" className="w-6 h-6 object-contain" />
             {isRTL ? "لوحة إدارة الشاتبوت الذكي" : "AI Chatbot Dashboard"}
           </h2>
           <p className="text-zinc-400 text-sm mt-1">{isRTL ? "مراقبة وتحسين أداء الشاتبوت" : "Monitor and improve chatbot performance"}</p>
