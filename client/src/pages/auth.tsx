@@ -307,7 +307,7 @@ export default function AuthPage() {
               <>
                 ابنِ موقعك
                 <br />
-                <span className="bg-gradient-to-l from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-l from-green-200 to-green-400 bg-clip-text text-transparent">
                   بسرعة البرق
                 </span>
               </>
@@ -315,7 +315,7 @@ export default function AuthPage() {
               <>
                 Build Websites
                 <br />
-                <span className="bg-gradient-to-r from-emerald-200 to-cyan-200 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-green-200 to-green-400 bg-clip-text text-transparent">
                   Lightning Fast
                 </span>
               </>

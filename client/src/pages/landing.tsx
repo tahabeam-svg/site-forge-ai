@@ -128,7 +128,7 @@ export default function LandingPage() {
     { icon: Sparkles, title: t("aiGeneration", lang), desc: t("aiGenerationDesc", lang), gradient: "from-violet-500 to-purple-600" },
     { icon: Palette, title: t("visualEditor", lang), desc: t("visualEditorDesc", lang), gradient: "from-pink-500 to-rose-600" },
     { icon: Rocket, title: t("instantPublish", lang), desc: t("instantPublishDesc", lang), gradient: "from-orange-500 to-amber-600" },
-    { icon: Globe2, title: t("multiLanguage", lang), desc: t("multiLanguageDesc", lang), gradient: "from-emerald-500 to-teal-600" },
+    { icon: Globe2, title: t("multiLanguage", lang), desc: t("multiLanguageDesc", lang), gradient: "from-green-500 to-green-600" },
     { icon: Smartphone, title: t("responsiveDesign", lang), desc: t("responsiveDesignDesc", lang), gradient: "from-blue-500 to-cyan-600" },
     { icon: Search, title: t("seoOptimized", lang), desc: t("seoOptimizedDesc", lang), gradient: "from-indigo-500 to-blue-600" },
     { icon: ShoppingBag, title: t("ecommerceFeature", lang), desc: t("ecommerceFeatureDesc", lang), gradient: "from-amber-500 to-yellow-600" },
@@ -169,7 +169,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 h-16">
             <button onClick={() => { navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5 cursor-pointer" data-testid="link-brand-home">
-              <BrandName lang={lang} className="text-lg" logoSize={36} />
+              <BrandName lang={lang} className="text-lg" logoSize={42} />
             </button>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
@@ -186,11 +186,11 @@ export default function LandingPage() {
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
               {isAuthenticated ? (
-                <Button onClick={() => navigate("/dashboard")} className="hidden sm:flex bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-dashboard">
+                <Button onClick={() => navigate("/dashboard")} className="hidden sm:flex bg-gradient-to-r from-green-500 to-green-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-dashboard">
                   {t("dashboard", lang)}
                 </Button>
               ) : (
-                <Button onClick={() => navigate("/auth")} className="hidden sm:flex bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-login">
+                <Button onClick={() => navigate("/auth")} className="hidden sm:flex bg-gradient-to-r from-green-500 to-green-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-login">
                   {t("login", lang)}
                 </Button>
               )}
@@ -204,11 +204,11 @@ export default function LandingPage() {
             <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-sm text-muted-foreground hover:text-foreground py-1.5">{t("pricing", lang)}</a>
             <div className="pt-2 border-t">
               {isAuthenticated ? (
-                <Button onClick={() => { setMobileMenuOpen(false); navigate("/dashboard"); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600" data-testid="button-dashboard-mobile">
+                <Button onClick={() => { setMobileMenuOpen(false); navigate("/dashboard"); }} className="w-full bg-gradient-to-r from-green-500 to-green-600" data-testid="button-dashboard-mobile">
                   {t("dashboard", lang)}
                 </Button>
               ) : (
-                <Button onClick={() => { setMobileMenuOpen(false); navigate("/auth"); }} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600" data-testid="button-login-mobile">
+                <Button onClick={() => { setMobileMenuOpen(false); navigate("/auth"); }} className="w-full bg-gradient-to-r from-green-500 to-green-600" data-testid="button-login-mobile">
                   {t("login", lang)}
                 </Button>
               )}
@@ -257,7 +257,7 @@ export default function LandingPage() {
                 <span className="block mb-1">أنشئ وسوّق</span>
                 <span className="block mb-1">
                   <span className="relative inline-block">
-                    <span className="relative bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
+                    <span className="relative bg-gradient-to-r from-green-400 via-green-300 to-green-600 bg-clip-text text-transparent"
                       style={{ paddingBottom: "0.15em" }}>
                       <AnimatePresence mode="wait">
                         <motion.span key={typeIndex}
@@ -276,7 +276,7 @@ export default function LandingPage() {
               <>
                 <span className="block mb-1">Build & Market</span>
                 <span className="block">
-                  <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent"
+                  <span className="bg-gradient-to-r from-green-400 via-green-300 to-green-600 bg-clip-text text-transparent"
                     style={{ paddingBottom: "0.1em" }}>
                     <AnimatePresence mode="wait">
                       <motion.span key={typeIndex}
@@ -323,7 +323,7 @@ export default function LandingPage() {
             <button
               onClick={handleCTA}
               className="relative group text-base font-bold text-white px-8 sm:px-10 py-4 rounded-2xl cursor-pointer border-0 outline-none
-                bg-gradient-to-b from-emerald-400 via-emerald-500 to-teal-600
+                bg-gradient-to-b from-green-400 via-green-500 to-green-700
                 shadow-[0_5px_0_0_#0d7351,0_8px_30px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.35)]
                 hover:shadow-[0_3px_0_0_#0d7351,0_5px_20px_rgba(16,185,129,0.55),inset_0_1px_1px_rgba(255,255,255,0.35)]
                 hover:translate-y-[2px]
@@ -372,7 +372,7 @@ export default function LandingPage() {
           <motion.div custom={6} initial="hidden" animate="visible" variants={fadeUp}
             className="relative mx-auto max-w-4xl">
             {/* Glow behind browser */}
-            <div className="absolute -inset-4 bg-gradient-to-b from-emerald-500/20 via-teal-500/10 to-transparent rounded-3xl blur-2xl pointer-events-none" />
+            <div className="absolute -inset-4 bg-gradient-to-b from-green-500/20 via-green-500/10 to-transparent rounded-3xl blur-2xl pointer-events-none" />
 
             {/* Browser chrome */}
             <div className="relative rounded-t-2xl border border-white/[0.12] overflow-hidden shadow-[0_0_80px_rgba(16,185,129,0.15)]">
@@ -475,7 +475,7 @@ export default function LandingPage() {
               className="absolute -end-4 top-12 bg-zinc-900/95 border border-white/[0.12] rounded-xl shadow-2xl px-3 py-2.5 flex items-center gap-2.5 text-xs z-20 backdrop-blur-sm"
               animate={{ y: [0, -7, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-sm shrink-0">👨‍🍳</div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center text-sm shrink-0">👨‍🍳</div>
               <div>
                 <p className="text-white/90 font-semibold">{lang === "ar" ? "أحمد — الرياض" : "Ahmed — Riyadh"}</p>
                 <p className="text-white/45">{lang === "ar" ? "نشر موقعه قبل 3 دقائق ✨" : "Published 3 min ago ✨"}</p>
@@ -535,7 +535,7 @@ export default function LandingPage() {
       {/* Color transition to light page */}
       <div className="h-20 bg-gradient-to-b from-zinc-900 to-background" />
 
-      <section id="marketing" className="py-14 sm:py-20 bg-gradient-to-br from-emerald-50/50 via-teal-50/30 to-cyan-50/50 dark:from-emerald-950/20 dark:via-teal-950/10 dark:to-cyan-950/20">
+      <section id="marketing" className="py-14 sm:py-20 bg-gradient-to-br from-green-50/50 via-green-50/30 to-green-50/20 dark:from-green-950/20 dark:via-green-950/10 dark:to-green-950/10">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-12">
             <motion.div custom={0} variants={fadeUp}>
@@ -559,7 +559,7 @@ export default function LandingPage() {
               { icon: Megaphone, title: lang === "ar" ? "منشورات ذكية" : "Smart Posts", desc: lang === "ar" ? "محتوى مخصص لكل منصة" : "Content tailored per platform", gradient: "from-pink-500 to-rose-600" },
               { icon: Hash, title: lang === "ar" ? "هاشتاقات" : "Hashtags", desc: lang === "ar" ? "هاشتاقات رائجة تلقائياً" : "Trending hashtags auto-generated", gradient: "from-blue-500 to-indigo-600" },
               { icon: Calendar, title: lang === "ar" ? "تقويم محتوى" : "Content Calendar", desc: lang === "ar" ? "خطة نشر شهرية" : "Monthly publishing plan", gradient: "from-amber-500 to-orange-600" },
-              { icon: Target, title: lang === "ar" ? "حملات" : "Campaigns", desc: lang === "ar" ? "حملات تسويقية متكاملة" : "Complete marketing campaigns", gradient: "from-emerald-500 to-teal-600" },
+              { icon: Target, title: lang === "ar" ? "حملات" : "Campaigns", desc: lang === "ar" ? "حملات تسويقية متكاملة" : "Complete marketing campaigns", gradient: "from-green-500 to-green-600" },
             ].map((item, i) => (
               <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn}>
                 <Card className="p-5 text-center h-full hover:shadow-lg hover:-translate-y-1 transition-all" data-testid={`card-marketing-feature-${i}`}>
@@ -643,7 +643,7 @@ export default function LandingPage() {
                   <motion.div key={i} custom={i} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={scaleIn} className="flex">
                     <Card className={`p-6 flex flex-col w-full relative overflow-visible transition-all duration-200 hover:shadow-xl ${plan.popular ? "border-2 border-emerald-500 shadow-lg shadow-emerald-500/10 sm:-mt-4" : "hover:-translate-y-1"}`} data-testid={`card-plan-${i}`}>
                       {plan.popular && (
-                        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md whitespace-nowrap text-xs">
+                        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md whitespace-nowrap text-xs">
                           <Star className="w-3 h-3 me-1" />
                           {lang === "ar" ? "الأكثر شعبية" : "Most Popular"}
                         </Badge>
@@ -695,7 +695,7 @@ export default function LandingPage() {
                       <Button
                         variant={plan.popular ? "default" : "outline"}
                         size="lg"
-                        className={`w-full font-semibold ${plan.popular ? "bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-md" : ""}`}
+                        className={`w-full font-semibold ${plan.popular ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-emerald-600 hover:to-teal-700 shadow-md" : ""}`}
                         onClick={() => handlePlanCTA(plan.id)}
                         data-testid={`button-plan-${i}`}
                       >
@@ -788,7 +788,7 @@ export default function LandingPage() {
                 icon: Store,
                 title: lang === "ar" ? "متاجر إلكترونية ضخمة" : "Large E-commerce Stores",
                 desc: lang === "ar" ? "بناء متاجر إلكترونية متكاملة بكل الميزات والمتطلبات" : "Build full-featured e-commerce stores with all requirements",
-                gradient: "from-emerald-500 to-teal-600",
+                gradient: "from-green-500 to-green-600",
               },
               {
                 icon: Database,
@@ -833,7 +833,7 @@ export default function LandingPage() {
                   {lang === "ar" ? "رقم واتساب متاح للمشتركين بالباقات المدفوعة فقط" : "WhatsApp number available to paid plan subscribers only"}
                 </div>
                 <Button
-                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-emerald-600 hover:to-teal-700 text-white"
                   onClick={() => navigate(isAuthenticated ? "/billing" : "/auth")}
                   data-testid="button-upgrade-support"
                 >
@@ -846,7 +846,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-14 sm:py-20 bg-gradient-to-br from-emerald-500 to-teal-600">
+      <section className="py-14 sm:py-20 bg-gradient-to-br from-green-500 to-green-600">
         <div className="max-w-4xl mx-auto px-5 text-center text-white">
           <motion.h2
             initial="hidden"
@@ -894,7 +894,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <div className="flex items-center gap-2.5 mb-3">
-                <BrandName lang={lang} className="text-xl" logoSize={38} />
+                <BrandName lang={lang} className="text-xl" logoSize={44} />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {lang === "ar"

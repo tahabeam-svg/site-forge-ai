@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="flex items-center gap-2.5 w-full"
                 data-testid="link-brand-sidebar"
               >
-                <BrandName lang={lang} className="text-sm leading-tight" logoSize={30} />
+                <BrandName lang={lang} className="text-sm leading-tight" logoSize={36} />
                 <div className="text-start min-w-0">
                   <div className="text-[10px] text-muted-foreground leading-tight">{lang === "ar" ? "منشئ المواقع" : "Website Builder"}</div>
                 </div>
@@ -209,7 +209,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
               {/* User info + logout */}
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shrink-0 overflow-hidden">
                   {user?.profileImageUrl
                     ? <img src={user.profileImageUrl} alt="" className="w-full h-full object-cover" />
                     : <User className="w-3.5 h-3.5 text-white" />
