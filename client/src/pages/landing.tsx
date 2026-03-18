@@ -169,10 +169,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-2 h-16">
             <button onClick={() => { navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex items-center gap-2.5 cursor-pointer" data-testid="link-brand-home">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-                <Globe2 className="w-5 h-5 text-white" />
-              </div>
-              <BrandName lang={lang} className="text-lg" />
+              <BrandName lang={lang} className="text-lg" logoSize={36} />
             </button>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors" data-testid="link-features">{t("features", lang)}</a>
@@ -897,10 +894,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-sm">
-                  <Globe2 className="w-5 h-5 text-white" />
-                </div>
-                <BrandName lang={lang} className="text-xl" />
+                <BrandName lang={lang} className="text-xl" logoSize={38} />
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-5">
                 {lang === "ar"

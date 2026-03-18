@@ -35,6 +35,7 @@ import {
   AlertTriangle,
   Undo2,
 } from "lucide-react";
+import { ArabyLogoThinking } from "@/components/araby-logo";
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
 type MobileView = "chat" | "preview";
@@ -717,12 +718,9 @@ export default function EditorPage() {
 
                   {/* AI thinking indicator */}
                   {(editMutation.isPending || isRegenerating) && (
-                    <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-violet-100 dark:bg-violet-950/50 text-violet-700 dark:text-violet-300 flex items-center justify-center shrink-0">
-                        <Bot className="w-4 h-4" />
-                      </div>
+                    <div className="flex gap-2 items-start">
+                      <ArabyLogoThinking size={36} />
                       <div className="text-[0.9rem] bg-muted rounded-xl px-4 py-2.5 flex items-center gap-2 min-w-0">
-                        <Loader2 className="w-4 h-4 animate-spin shrink-0 text-violet-500" />
                         <span className="truncate text-muted-foreground text-sm">
                           {isRegenerating
                             ? (lang === "ar" ? "جاري إنشاء تصميم جديد كلياً..." : "Building a brand new design...")

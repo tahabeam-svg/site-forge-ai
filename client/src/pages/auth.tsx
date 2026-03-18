@@ -366,10 +366,7 @@ export default function AuthPage() {
         <div className={`w-full max-w-[400px] transition-all duration-500 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
           <div className="text-center lg:hidden mb-8">
             <button type="button" onClick={() => setLocation("/")} className="inline-flex flex-col items-center cursor-pointer" data-testid="link-brand-auth-mobile">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl mb-4 shadow-lg shadow-emerald-500/30">
-                <Globe className="w-8 h-8 text-white" />
-              </div>
-              <BrandName lang={lang} className="text-3xl" />
+              <BrandName lang={lang} className="text-3xl" logoSize={56} />
             </button>
             <p className="text-muted-foreground mt-1 text-sm">
               {isAr ? "ابنِ موقعك الاحترافي بسرعة البرق" : "Build your website lightning fast"}
