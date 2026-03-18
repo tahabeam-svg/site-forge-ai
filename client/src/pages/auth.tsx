@@ -611,11 +611,7 @@ export default function AuthPage() {
               variant="outline"
               className="w-full h-[52px] rounded-xl gap-3 text-base font-semibold border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900 hover:border-gray-300 transition-all duration-200"
               style={{ fontFamily: "'Cairo', sans-serif" }}
-              onClick={() => {
-                // In dev environment (non-production), go directly to production for Google OAuth
-                const isProd = window.location.hostname === "arabyweb.net" || window.location.hostname === "www.arabyweb.net";
-                window.location.href = isProd ? "/api/auth/google" : "https://arabyweb.net/api/auth/google";
-              }}
+              onClick={() => { window.location.href = "/api/auth/google"; }}
               data-testid="button-google-login"
             >
               <SiGoogle className="w-5 h-5" style={{ color: "#4285F4" }} />
