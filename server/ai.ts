@@ -552,38 +552,38 @@ function shuffleAndPick<T>(arr: T[], n: number): T[] {
 
 // ─── Unsplash Search Terms — 30+ categories ─────────────────────────────────
 const UNSPLASH_SEARCH_TERMS: Record<string, string[]> = {
-  restaurant:      ["restaurant interior elegant dining","fine dining food plating","modern arabic restaurant"],
-  grill:           ["bbq grill steakhouse meat","charcoal grill restaurant","grilled meat skewers"],
-  cafe:            ["coffee shop cafe interior modern","cozy coffee bar aesthetic","specialty coffee cafe"],
-  agency:          ["creative agency office modern","marketing team workspace","advertising agency branding"],
-  tech:            ["technology startup office","software company modern workspace","tech team coding"],
-  realestate:      ["luxury villa modern architecture","real estate interior design","modern apartment property"],
-  medical:         ["modern clinic interior clean","hospital medical facility","doctor clinic professional"],
-  beauty:          ["luxury beauty salon interior","spa wellness relaxation","modern hair salon aesthetic"],
-  education:       ["modern classroom university","education learning library","academy training center"],
-  automotive:      ["luxury car showroom","car dealership interior","automotive service center"],
-  events:          ["elegant event hall ballroom","conference venue luxury","wedding venue decoration"],
-  photography:     ["photography studio professional","camera equipment studio","photo studio setup"],
-  gym:             ["modern gym fitness center","workout studio equipment","crossfit training facility"],
-  luxury:          ["luxury boutique store high-end","jewelry shop elegant interior","luxury brand retail"],
-  finance:         ["modern bank office finance","corporate financial workspace","accounting office professional"],
-  manufacturing:   ["factory production line industrial","manufacturing plant workers","industrial machinery modern"],
-  construction:    ["construction site building modern","architecture engineering blueprint","construction workers building"],
-  cleaning:        ["professional cleaning service","office cleaning crew","cleaning equipment supplies"],
-  logistics:       ["warehouse logistics shipping","cargo freight transport","supply chain distribution"],
-  furniture:       ["modern furniture showroom elegant","interior furniture design","luxury furniture store"],
-  food_production: ["food factory production line","food processing facility","packaged food manufacturing"],
-  agriculture:     ["farm agriculture green fields","farming crops harvest","modern agricultural field"],
-  legal:           ["law office professional","lawyer legal books","courthouse justice"],
-  hotel:           ["luxury hotel lobby interior","hotel room elegant suite","resort hotel beautiful"],
-  printing:        ["printing press machine","print shop production","graphic design printing"],
-  security:        ["security control room professional","surveillance cameras office","security guard professional"],
-  decor:           ["interior design modern decor","luxury home decoration","interior design showroom"],
-  travel:          ["travel agency tourism destination","airplane travel adventure","beach resort travel"],
-  supermarket:     ["supermarket grocery store aisle","hypermarket fresh produce","grocery store interior"],
-  tailoring:       ["fashion boutique elegant clothes","tailor shop fabric design","clothing boutique interior"],
-  plastic:         ["plastic factory manufacturing","plastic products industrial","polymer manufacturing plant"],
-  pharmacy:        ["pharmacy store interior clean","drugstore medicine shelves","modern pharmacy professional"],
+  restaurant:      ["restaurant interior elegant dining","fine dining food plating arabic","modern restaurant table setup","restaurant kitchen professional","food dish presentation elegant","arabic cuisine traditional"],
+  grill:           ["bbq grill steakhouse interior","charcoal grill grilled meat","steakhouse dining elegant","barbecue restaurant setup","open grill kitchen fire","grilled skewers food presentation"],
+  cafe:            ["coffee shop cafe interior modern","specialty coffee latte art","cozy coffee bar aesthetic","barista making coffee","cafe seating area comfortable","coffee beans roasting"],
+  agency:          ["creative agency office modern","marketing team workspace","advertising agency branding","design studio creative workspace","digital agency team","marketing campaign visuals"],
+  tech:            ["technology startup office modern","software company workspace","tech team coding screens","data center servers","tech startup minimal office","coding workspace monitors"],
+  realestate:      ["luxury villa exterior architecture","modern apartment interior design","real estate property aerial","luxury home living room","villa garden outdoor","penthouse city view"],
+  medical:         ["modern clinic reception area interior","hospital hallway modern","medical equipment technology","clinic waiting room design","healthcare facility clean","operating room modern hospital"],
+  beauty:          ["luxury beauty salon interior","spa treatment room relaxation","modern hair salon aesthetic","nail salon clean interior","beauty parlor elegant","cosmetics studio lighting"],
+  education:       ["modern classroom university interior","library books study academic","academy training center","lecture hall modern","school campus architecture","students learning environment"],
+  automotive:      ["luxury car showroom interior","car dealership modern","sports car garage","automotive service bay","car workshop professional","vehicle maintenance center"],
+  events:          ["elegant event hall ballroom","conference venue luxury interior","wedding venue decoration flowers","banquet hall setup","event stage lighting","gala dinner table setting"],
+  photography:     ["photography studio professional setup","camera equipment studio lighting","photo studio backdrop","portrait studio professional","creative studio workspace","studio gear equipment"],
+  gym:             ["modern gym fitness center interior","workout equipment weights","crossfit training facility","gym floor machines","yoga studio peaceful","swimming pool fitness"],
+  luxury:          ["luxury boutique store high-end interior","jewelry showcase elegant","luxury brand retail interior","high-end watch display","designer store interior","luxury shopping experience"],
+  finance:         ["modern bank office interior","corporate financial workspace","accounting office professional","business meeting boardroom","financial district building","trading floor modern"],
+  manufacturing:   ["factory production line industrial","manufacturing plant interior","industrial machinery modern","assembly line workers","production facility clean","industrial warehouse interior"],
+  construction:    ["construction site building modern","architecture blueprint engineering","building under construction","crane construction tower","modern building facade","construction workers site"],
+  cleaning:        ["professional cleaning service equipment","office cleaning sparkle","cleaning supplies organized","janitorial service professional","clean modern office after cleaning","pressure washing exterior"],
+  logistics:       ["warehouse logistics interior organized","cargo freight transport","delivery truck fleet","supply chain distribution center","logistics hub aerial","shipping containers port"],
+  furniture:       ["modern furniture showroom elegant interior","luxury sofa living room","interior furniture design","bedroom furniture modern","dining room furniture elegant","office furniture workspace"],
+  food_production: ["food factory production line clean","food processing facility modern","packaged food products","food manufacturing hygiene","kitchen industrial scale","food quality control lab"],
+  agriculture:     ["farm agriculture green fields aerial","farming crops harvest","modern agricultural field","greenhouse plants growing","irrigation system farm","organic farm produce"],
+  legal:           ["law office professional interior","legal books library","courthouse architecture","lawyer desk professional","legal firm meeting room","justice scales office"],
+  hotel:           ["luxury hotel lobby interior","hotel room elegant suite","resort pool area","hotel restaurant fine dining","hotel spa wellness","hotel exterior architecture"],
+  printing:        ["printing press machine professional","print shop production floor","graphic design printing","digital printing modern","offset printing process","design studio workspace"],
+  security:        ["security control room monitors","surveillance cameras professional","security operations center","cybersecurity office modern","data center security","security gate entrance"],
+  decor:           ["interior design modern decor living room","luxury home decoration","interior design showroom","home decor elegant","architecture interior beautiful","design studio samples"],
+  travel:          ["travel destination scenic landscape","airplane travel airport","beach resort aerial","mountain travel adventure","travel agency modern office","tropical destination paradise"],
+  supermarket:     ["supermarket grocery store aisle organized","fresh produce market colorful","grocery store interior clean","hypermarket shopping","market stalls fresh food","organic grocery store"],
+  tailoring:       ["fashion boutique elegant clothes display","tailor shop fabric rolls","clothing boutique interior","sewing workshop professional","fashion design studio","textile fabric elegant"],
+  plastic:         ["plastic factory manufacturing clean","plastic products industrial","polymer manufacturing plant","industrial plastic molding","plastic packaging production","factory quality control"],
+  pharmacy:        ["pharmacy store interior organized","medicine shelves clean modern","drugstore professional","pharmacy counter service","medical supplies display","health products store"],
 };
 
 /** Fetch multiple Unsplash images for a given query. Returns base URLs (without params). */
@@ -628,23 +628,33 @@ async function buildImagePromptSection(description: string): Promise<string> {
 
   // ── Live Unsplash fetch: hero + gallery images ─────────────────────────────
   const terms = UNSPLASH_SEARCH_TERMS[cat] || UNSPLASH_SEARCH_TERMS["agency"];
-  const heroQuery  = terms[0];                                   // most specific query for hero
-  const galleryQuery = terms[Math.floor(Math.random() * terms.length)]; // diverse for gallery
+  const heroQuery = terms[0]; // most specific query for hero
 
-  const [heroUrls, galleryUrls] = await Promise.all([
+  // Use UP TO 3 different gallery queries to ensure diverse images
+  // Each query fetches 2 images → total 6 gallery images from 3 distinct search contexts
+  const galleryQueries = shuffleAndPick(
+    terms.length > 1 ? terms.slice(1) : terms, // skip hero query if possible
+    Math.min(3, terms.length)
+  );
+
+  const [heroUrls, ...galleryBatches] = await Promise.all([
     fetchUnsplashImages(heroQuery, 2),
-    fetchUnsplashImages(galleryQuery, 6),
+    ...galleryQueries.map(q => fetchUnsplashImages(q, 3)),
   ]);
+
+  // Combine gallery results, deduplicate, take first 6
+  const combinedGallery = Array.from(new Set(galleryBatches.flat()));
 
   // ── Pexels fallback if Unsplash returned nothing ────────────────────────────
   let liveHeroBase = heroUrls[0] || null;
-  let liveGalleryBases = galleryUrls.length >= 4 ? galleryUrls : [];
+  let liveGalleryBases = combinedGallery.length >= 4 ? combinedGallery : [];
   let imageSource = "Unsplash";
 
   if (!liveHeroBase) {
+    const fallbackGalleryQuery = galleryQueries[0] || terms[0];
     const [pexHero, pexGallery] = await Promise.all([
       fetchPexelsImages(heroQuery, 2),
-      fetchPexelsImages(galleryQuery, 6),
+      fetchPexelsImages(fallbackGalleryQuery, 6),
     ]);
     if (pexHero[0]) {
       liveHeroBase = pexHero[0];
@@ -1007,16 +1017,78 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
   • Specifically forbidden pattern: <section style="background-image:url(...)"><img src="..."/></section> with nothing else inside.
   • If you want to show a full-bleed image, it MUST have a dark overlay + heading + subtext on top of it (minimum).
 
-▸ SERVICES: 3-column grid. Cards use CSS GRADIENT BORDER trick: background:linear-gradient(white,white) padding-box, linear-gradient(135deg,PRIMARY,ACCENT) border-box; border:1.5px solid transparent. On hover: translateY(-12px), stronger shadow, full gradient border revealed. Icon box rotates on hover, fills with gradient.
-SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشاوي", services should be "مشاوي لحم", "دجاج مشوي", "أرز سعودي", "مقبلات", "عصائر طازجة", "توصيل منزلي". NEVER use generic "خدمة احترافية" or "Service 1".
+▸ SERVICES: 3-column responsive grid of cards. 
 
-▸ GALLERY (id="gallery"): 3-column masonry-style grid. Use images #2 through #7 from the pre-selected image list above (the ones marked "GALLERY image N"). Hover: image scale(1.06) + dark gradient overlay + eye icon (fa-eye) appears. LIGHTBOX — clicking any gallery image opens a fullscreen overlay:
-  - Overlay: position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.92); display:flex; align-items:center; justify-content:center
-  - Shows enlarged image + left/right navigation arrows + X close button
-  - Close on X click or overlay click outside image
-  - Full lightbox JavaScript: openLightbox(imgSrc, index), closeLightbox(), prevImage(), nextImage()
-  - Store all gallery image srcs in a JavaScript array for navigation
-  CRITICAL: Use ONLY the pre-selected URLs from the STOCK IMAGES section above. NEVER invent or hardcode other Unsplash IDs. Each gallery card uses a DIFFERENT image from that list.
+  REQUIRED CSS (ensures 3-column grid on desktop, NOT a vertical list):
+  .aw-services-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  .aw-service-card {
+    background: linear-gradient(white,white) padding-box,
+                linear-gradient(135deg, PRIMARY, ACCENT) border-box;
+    border: 1.5px solid transparent;
+    border-radius: 16px;
+    padding: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .aw-service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+  }
+  @media(max-width: 768px) { .aw-services-grid { grid-template-columns: 1fr; } }
+  @media(max-width: 1024px) { .aw-services-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  Each card: gradient icon box (48×48px), service title, 2-line description. Icon box with small rotation on hover.
+  Show 6 services (or 3 if the business is simple) — ALWAYS use specific service names for THIS business.
+  SERVICES MUST BE 100% SPECIFIC: if "مطعم مشاوي" → "مشاوي لحم", "دجاج مشوي", "أرز سعودي", etc. NEVER "خدمة احترافية" or "Service 1".
+
+▸ GALLERY (id="gallery"): Responsive image grid with hover lightbox effects.
+
+  REQUIRED CSS (copy exactly — this ensures a proper 3-column grid, NOT a single column):
+  .aw-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .aw-gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    aspect-ratio: 4/3;
+    cursor: pointer;
+  }
+  .aw-gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .aw-gallery-item:hover img { transform: scale(1.08); }
+  .aw-gallery-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+    opacity: 0; transition: opacity 0.3s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .aw-gallery-item:hover .aw-gallery-overlay { opacity: 1; }
+  @media(max-width: 768px) { .aw-gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media(max-width: 480px) { .aw-gallery-grid { grid-template-columns: 1fr; } }
+
+  HTML structure:
+  <div class="aw-gallery-grid">
+    <div class="aw-gallery-item aw-reveal" onclick="openLightbox('IMAGE_URL', 0)">
+      <img src="IMAGE_URL" alt="Gallery image" loading="lazy">
+      <div class="aw-gallery-overlay"><i class="fa-solid fa-expand" style="color:white;font-size:2rem;"></i></div>
+    </div>
+    <!-- Repeat for each of the 6 gallery images -->
+  </div>
+
+  Use images #2 through #7 from the pre-selected image list (marked "GALLERY image N").
+  LIGHTBOX: Full-screen overlay with prev/next navigation, ESC closes.
+  CRITICAL: Use ONLY the pre-selected URLs. Each gallery item uses a DIFFERENT image from that list.
 
 ▸ CTA BAND: Full-width gradient background. Large bold headline personalized for THIS business (e.g. for a restaurant: "هل أنت جائع؟ اطلب أشهى المشاوي الآن"). Decorative radial glow orb in corner.
 
