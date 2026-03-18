@@ -654,6 +654,11 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
   - At least 2 stats must be specific to the EXACT product/service mentioned (e.g. if "مطعم مندي" → "مندي" related stat, not generic food stat).
 
 ▸ ABOUT: 2-column. Image with double-layer gradient border effect using ::before/::after pseudo-elements. Floating experience badge (gradient bg, bottom corner). Checklist items with colored check icons. The ABOUT text MUST reference the actual business name and city extracted from the description.
+⛔ STANDALONE IMAGE SECTION BAN — CRITICAL:
+  • NEVER add a <section> or <div> between the Stats and the Services/About sections that contains ONLY a background image or <img> with no text, heading, or meaningful content.
+  • Every section in the page MUST contain at least: a heading + body text + (optionally) an image. A section with ONLY an image and nothing else is FORBIDDEN.
+  • Specifically forbidden pattern: <section style="background-image:url(...)"><img src="..."/></section> with nothing else inside.
+  • If you want to show a full-bleed image, it MUST have a dark overlay + heading + subtext on top of it (minimum).
 
 ▸ SERVICES: 3-column grid. Cards use CSS GRADIENT BORDER trick: background:linear-gradient(white,white) padding-box, linear-gradient(135deg,PRIMARY,ACCENT) border-box; border:1.5px solid transparent. On hover: translateY(-12px), stronger shadow, full gradient border revealed. Icon box rotates on hover, fills with gradient.
 SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشاوي", services should be "مشاوي لحم", "دجاج مشوي", "أرز سعودي", "مقبلات", "عصائر طازجة", "توصيل منزلي". NEVER use generic "خدمة احترافية" or "Service 1".
@@ -767,7 +772,13 @@ NAVIGATION — SINGLE-PAGE ANCHORS ONLY
 ═══════════════════════════════════════
 - ALL nav links MUST use anchor href: #about, #services, #gallery, #testimonials, #contact
 - NEVER use /path links in navigation
-- Nav links: ${isArabic ? "من نحن (#about), خدماتنا (#services), أعمالنا (#gallery), آراء العملاء (#testimonials)" : "About (#about), Services (#services), Gallery (#gallery), Testimonials (#testimonials)"} + CTA button → #contact
+- Nav links (inside .aw-nav-links): ${isArabic ? "من نحن (#about), خدماتنا (#services), أعمالنا (#gallery), آراء العملاء (#testimonials)" : "About (#about), Services (#services), Gallery (#gallery), Testimonials (#testimonials)"}
+- After .aw-nav-links, add ONE CTA button linking to #contact (${isArabic ? 'text: "تواصل معنا"' : 'text: "Contact Us"'})
+⛔⛔⛔ CRITICAL NAV DUPLICATION BAN:
+  • The .aw-nav-links div MUST contain EXACTLY 4 links: ${isArabic ? "من نحن, خدماتنا, أعمالنا, آراء العملاء" : "About, Services, Gallery, Testimonials"}
+  • "${isArabic ? "تواصل معنا" : "Contact"}" must appear ONLY as the CTA button — NEVER as a 5th nav link inside .aw-nav-links
+  • The #aw-mobile-menu div for mobile must also have exactly those 4 links + the contact button
+  • If you add a 5th link "تواصل معنا" inside .aw-nav-links, you have made a critical error. Remove it.
 - NEVER use "نشر", "معاينة", "تعديل", "publish", "preview", "edit" as nav text
 
 ═══════════════════════════════════════
@@ -953,9 +964,11 @@ Use your knowledge of this specific business type to write expert-level, realist
 Before ending the HTML, confirm ALL of these exist in your output:
 
 STRUCTURE:
-□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links + .aw-hamburger button + #aw-mobile-menu div
+□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links (EXACTLY 4 links: من نحن, خدماتنا, أعمالنا, آراء العملاء) + ONE CTA contact button + .aw-hamburger button + #aw-mobile-menu div
+  ↳ VERIFY: "تواصل معنا" / "Contact" appears ONLY as the CTA button — NOT as a 5th item inside .aw-nav-links
 □ <section id="hero"> with background-image, dark overlay, animated orbs, large hero text, 2 CTA buttons
 □ Stats bar/section with 4 animated counters using data-target + data-suffix attributes
+□ NO bare image section exists anywhere — every section between hero and footer has both an image AND text content
 □ <section id="about"> with 2-column, image with gradient border, checklist items, brand story text
 □ <section id="services"> with 6+ specific service cards using Font Awesome icons (NOT generic names)
 □ <section id="gallery"> with 6 Unsplash images + lightbox onclick
@@ -1049,6 +1062,28 @@ CSS:
     return result;
   }
 
+  /**
+   * Post-processing: remove duplicate contact link from inside .aw-nav-links.
+   * The AI sometimes adds "تواصل معنا" / "Contact" as both a regular nav link AND a CTA button.
+   * This function removes the nav-link occurrence, keeping only the CTA button.
+   */
+  function removeNavContactDuplicate(html: string): string {
+    // Strategy: inside the .aw-nav-links block, remove any <a> tag that points to #contact
+    // We match the nav-links div and strip out contact anchor links from it
+    return html.replace(
+      /(<div[^>]*class="[^"]*aw-nav-links[^"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
+      (_match, open, content, close) => {
+        // Remove <a> or <li><a> tags that href="#contact" inside the nav-links block
+        const cleaned = content.replace(
+          /<li[^>]*>\s*<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, ""
+        ).replace(
+          /<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>/gi, ""
+        );
+        return open + cleaned + close;
+      }
+    );
+  }
+
   function sanitizeCss(css: string): string {
     if (!css.includes("scroll-behavior")) {
       return "html { scroll-behavior: smooth; }\n" + css;
@@ -1066,7 +1101,7 @@ CSS:
 
     if (!fullHtml || fullHtml.length < 500) throw new Error("Empty HTML response");
 
-    const sanitized = sanitizeNavLinks(fullHtml);
+    const sanitized = removeNavContactDuplicate(sanitizeNavLinks(fullHtml));
     const titleMatch = sanitized.match(/<title>([^<]*)<\/title>/i);
     const descMatch = sanitized.match(/<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)/i)
                    || sanitized.match(/<meta[^>]*content=["']([^"']*)[^>]*name=["']description["']/i);
