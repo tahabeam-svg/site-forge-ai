@@ -46,9 +46,9 @@ function checkAiRateLimit(userId: number): boolean {
 // Clean up stale entries every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [uid, rec] of _aiRateLimiter) {
+  Array.from(_aiRateLimiter).forEach(([uid, rec]) => {
     if (now > rec.resetAt) _aiRateLimiter.delete(uid);
-  }
+  });
 }, 5 * 60 * 1000);
 
 function encryptToken(text: string): string {
@@ -650,7 +650,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
         // Fire-and-forget: notify user if credits hit 0
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, userId)).then(([u]) => {
-          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, true).catch(() => {});
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         }).catch(() => {});
       }
 
@@ -809,7 +809,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
         // Fire-and-forget: notify user if credits hit 0
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
-          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, true).catch(() => {});
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         }).catch(() => {});
       }
 
@@ -1562,7 +1562,7 @@ When asking for clarification:
       if (!isUserAdmin) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
-          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, true).catch(() => {});
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         });
       }
 

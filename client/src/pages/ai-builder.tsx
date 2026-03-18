@@ -572,7 +572,7 @@ export default function AIBuilderPage() {
                   isAr={isAr}
                   onConfirm={entry.type === "confirm-card" ? handleConfirm : undefined}
                   onCancel={entry.type === "confirm-card" ? handleCancel : undefined}
-                  confirmBusy={step === "creating"}
+                  confirmBusy={isBusy}
                   activityLabels={ACTIVITY_LABELS}
                 />
               ))}

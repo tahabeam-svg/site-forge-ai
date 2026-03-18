@@ -502,7 +502,7 @@ export default function EditorPage() {
               <p className="text-xs text-muted-foreground truncate">{project.description || ""}</p>
               {(project as any).designStyle && (project as any).designStyle !== "dark-modern" && (
                 <Badge variant="outline" className="text-[9px] px-1 h-3.5 shrink-0 font-normal border-violet-300 text-violet-500 dark:border-violet-700 dark:text-violet-400" data-testid="badge-design-style">
-                  {{luxury:"✨",corporate:"🏢",modern:"⚡",minimal:"◻️",creative:"🎨"}[(project as any).designStyle] || "🎨"} {(project as any).designStyle}
+                  {({luxury:"✨",corporate:"🏢",modern:"⚡",minimal:"◻️",creative:"🎨"} as Record<string,string>)[(project as any).designStyle] || "🎨"} {(project as any).designStyle}
                 </Badge>
               )}
             </div>
