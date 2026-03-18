@@ -941,45 +941,55 @@ Based on the business type you detected, SELECT the relevant BONUS sections from
   E. WORKING CONTACT FORM: JavaScript validation — check empty fields, show red border + error message. On submit: hide form, show success animation + "شكراً! سنتواصل معك قريباً" message.
 
 ═══════════════════════════════════════
-VISUAL DESIGN STANDARD 2025 — MANDATORY
+VISUAL DESIGN STANDARD 2025 — PREMIUM QUALITY
 ═══════════════════════════════════════
-The website MUST look like it was designed in 2025 by a top-tier agency. Think Notion, Linear, Vercel, Stripe landing pages — but adapted for the Arab market.
+The website MUST look like it was designed in 2025 by a top-tier agency. Think Notion, Linear, Vercel, Stripe landing pages — but adapted for the Arab market. Each website should feel UNIQUE — not copy-pasted from a template.
 
-▸ NAVBAR (GLASSMORPHISM): position:fixed; background:rgba(5,8,22,0.72); backdrop-filter:blur(24px); border-bottom:1px solid rgba(255,255,255,0.08). ALWAYS visible and glassy — even at top of page. On scroll: background:rgba(5,8,22,0.97).
-  LOGO RULE — MANDATORY:
+▸ NAVBAR: position:fixed; glassmorphism effect — backdrop-filter:blur(20-28px); semi-transparent background derived from brand primary color (NOT always rgba(5,8,22,0.72)). Border-bottom: subtle separator. On scroll: increase opacity of background.
+  Adapt navbar style to brand identity: a luxury brand can have black+gold nav, a fresh startup can have light frosted nav, a medical site can have white+brand-color nav.
+  LOGO RULE — REQUIRED:
   • Generate a small inline SVG logo as the brand mark in the navbar. Add id="aw-ai-logo" to the SVG element. The SVG should be 36×36px, use the brand's primary/accent colors, and include the first letter(s) or a simple icon that represents the business (e.g., a fork for restaurants, a star for luxury, a house for real estate). The business name in text follows the SVG logo.
   • Example structure: <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;"><svg id="aw-ai-logo" width="36" height="36" viewBox="0 0 36 36">...</svg><span style="font-weight:800;font-size:1.1rem;background:linear-gradient(90deg,#fff,ACCENT);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">BUSINESS_NAME</span></a>
   • The SVG MUST be meaningful and unique — NO generic circles. Create something that fits the business type.
   • CRITICAL: The business name text MUST appear ONLY ONCE in the entire website — in the navbar only. NEVER repeat it in the footer or any other section. Footer uses only the SVG logo (id="aw-ai-logo-footer" — a smaller copy of the same SVG, 28×28px) followed by a tagline, NOT the business name text.
 
-▸ HERO (FULL VIEWPORT): MANDATORY IMPLEMENTATION:
-  HTML structure:
-  <section id="hero" style="min-height:100vh;position:relative;background-image:url('USE_IMAGE_1_URL_FROM_LIST_ABOVE');background-size:cover;background-position:center;display:flex;align-items:center;">
-    <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,8,22,0.88) 0%,rgba(15,5,40,0.72) 100%);z-index:1;"></div>
-    <!-- Orbs: 2-3 large blurred blobs for depth — BEHIND content (z-index:1), opacity:0.12-0.18, filter:blur(80px), animated with @keyframes orbFloat — they enhance the photo, NOT replace it -->
-    <div style="position:relative;z-index:2;..."> <!-- ALL text content here --> </div>
-  </section>
-  ORBS RULE: Orbs are decorative overlays on top of the photo. They must NEVER be used as a replacement for the photo. The photo (background-image) MUST be set.
-  Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
+▸ HERO (FULL VIEWPORT):
+  Requirements (functional, not stylistic):
+  • id="hero", min-height:100vh, background-image uses Image #1 from the stock list, photo MUST be visible (not hidden by overlay)
+  • Dark overlay on top of photo for text readability — derive overlay colors from brand palette, not hardcoded dark navy
+  • Position overlay: position:absolute;inset:0;z-index:1 — text content z-index:2
+  • Optional: 2-3 decorative orbs (blur, low opacity) behind text for depth — NEVER as replacement for the photo
+  
+  Creative freedom — choose the best layout for this specific business:
+  • Centered layout (hero content centered): works for clinics, agencies
+  • Left-aligned layout (content left, image right): works for tech, SaaS
+  • Split layout (50% text, 50% full-height image): works for restaurants, real estate
+  • Text heavy with subtle texture: works for education, legal
+  
+  Hero text: font-size clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em. Subtitle: lower opacity.
+  Two CTA buttons: one solid gradient (primary action), one ghost/outline (secondary action).
+  CTA text MUST match business type — NOT just "اكتشف أكثر":
+  • Clinic: "احجز موعدك الآن" + "تعرف علينا"
+  • Restaurant: "اطلب الآن" + "شاهد القائمة"
+  • Agency: "احصل على عرض مجاني" + "أعمالنا"
+  • Tech/SaaS: "ابدأ مجاناً" + "شاهد كيف يعمل"
 
-▸ CTA BUTTONS — MANDATORY PREMIUM DESIGN SYSTEM (NEVER VIOLATE):
-  ✅ Primary button: Use a SINGLE-HUE gradient (2 shades of same color family), e.g.:
-    - Violet: linear-gradient(135deg, #7c3aed, #4f46e5)
-    - Gold/Amber: linear-gradient(135deg, #d4a843, #b8860b)
-    - Red/Orange: linear-gradient(135deg, #dc2626, #ea580c)
-    - Teal/Green: linear-gradient(135deg, #0d9488, #059669)
-    - Navy/Blue: linear-gradient(135deg, #1e3a5f, #1d4ed8)
-  ❌ ABSOLUTELY FORBIDDEN button gradients — NEVER mix unrelated hues:
-    - blue → yellow/gold, green → red, orange → blue, purple → yellow, cyan → orange
-    - ANY gradient spanning more than 90° of the color wheel
-    - Childish rainbow gradients, garish neon, or low-contrast color combos
-  ✅ PRIMARY BUTTON BASE STYLE (MANDATORY):
+▸ CTA BUTTONS — PREMIUM DESIGN STANDARDS:
+  ✅ Primary button: Use the brand's primary/accent colors in gradient. Keep colors harmonious:
+    - Same-hue gradients: linear-gradient(135deg, DARKER_SHADE, LIGHTER_SHADE)
+    - Brand-primary to brand-accent: acceptable if they share visual harmony
+    - Examples: navy→blue, teal→cyan, maroon→amber, dark-green→emerald, purple→violet
+  ❌ AVOID (not forbidden, just bad taste):
+    - Rainbow multi-stop gradients on a single button
+    - Neon combinations with no contrast (yellow on white, cyan on light-bg)
+    - Colors that clash with the background section
+  ✅ Button base style (quality minimum):
     border-radius:12px; padding:14px 26px; font-weight:600; letter-spacing:0.02em;
-    box-shadow:0 6px 16px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.15);
+    box-shadow:0 6px 16px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.15);
     transition:transform 0.2s ease, box-shadow 0.2s ease; cursor:pointer;
-  ✅ HOVER STATE (MANDATORY): transform:translateY(-2px); box-shadow:0 12px 28px rgba(PRIMARY,0.45), 0 4px 8px rgba(0,0,0,0.15);
-  ✅ ACTIVE STATE (MANDATORY): add onmousedown="this.style.transform='translateY(1px)'" onmouseup="this.style.transform='translateY(-2px)'"
-  ✅ Secondary/outline button: transparent background, 2px solid border matching primary color, same border-radius:12px
+  ✅ Hover: transform:translateY(-2px); stronger shadow
+  ✅ Active: onmousedown="this.style.transform='translateY(1px)'"
+  ✅ Secondary/outline: transparent bg, 2px solid border, same border-radius
 
 ▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing.
   ⚠️ STATS MUST BE 100% ORIGINAL — invented fresh from THIS description. NEVER copy template numbers like "200+ مشروع" or "98% رضا العملاء" that you've seen in training data.
@@ -1027,12 +1037,13 @@ SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشا
   • Working hours (fa-clock): السبت–الخميس: 9ص – 10م (adapt to business type)
   RIGHT COLUMN — white card (gradient border) with clean contact form: Full name, Phone, Message, Submit button (primary gradient color).
 
-▸ FOOTER: NEVER omit the footer. It is required on every website. Structure:
-  • Background: very dark (#050814 to #0a0a1a gradient) with subtle radial glow orb (primary color, 600px, opacity 0.08)
-  • 3-column grid: [Brand+tagline+social] [Quick links] [Contact info]
+▸ FOOTER: Required on every website. Creative freedom on layout and color. Structure minimum:
+  • Background: dark, derived from brand palette (NOT always hardcoded #050814 — use darkened primary or charcoal)
+  • 2-3 column grid: [Brand+tagline+social] [Quick links] [Contact info or newsletter]
   • Brand: SVG logo (id="aw-ai-logo-footer", 28×28px) + tagline text (NOT the business name again)
-  • Social links: Instagram, Twitter/X, Snapchat — circle hover effect with primary color fill
+  • Social links: relevant to this business type (Instagram, Twitter/X, Snapchat, LinkedIn, YouTube)
   • Bottom bar: thin border, "جميع الحقوق محفوظة © ${new Date().getFullYear()} | Powered by ArabyWeb.net"
+  • Optional extras: newsletter signup input, payment icons (MADA, Apple Pay), back-to-top button
 
 ▸ ANIMATIONS: Use cubic-bezier(.22,1,.36,1) for all transitions. @keyframes fadeUp, orbFloat, pulse, scrollBounce. IntersectionObserver for scroll reveals.
 
@@ -1109,13 +1120,25 @@ NAVIGATION — SINGLE-PAGE ANCHORS ONLY
 ═══════════════════════════════════════
 - ALL nav links MUST use anchor href: #about, #services, #gallery, #testimonials, #contact
 - NEVER use /path links in navigation
-- Nav links (inside .aw-nav-links): ${isArabic ? "من نحن (#about), خدماتنا (#services), أعمالنا (#gallery), آراء العملاء (#testimonials)" : "About (#about), Services (#services), Gallery (#gallery), Testimonials (#testimonials)"}
-- After .aw-nav-links, add ONE CTA button linking to #contact (${isArabic ? 'text: "تواصل معنا"' : 'text: "Contact Us"'})
-⛔⛔⛔ CRITICAL NAV DUPLICATION BAN:
-  • The .aw-nav-links div MUST contain EXACTLY 4 links: ${isArabic ? "من نحن, خدماتنا, أعمالنا, آراء العملاء" : "About, Services, Gallery, Testimonials"}
-  • "${isArabic ? "تواصل معنا" : "Contact"}" must appear ONLY as the CTA button — NEVER as a 5th nav link inside .aw-nav-links
-  • The #aw-mobile-menu div for mobile must also have exactly those 4 links + the contact button
-  • If you add a 5th link "تواصل معنا" inside .aw-nav-links, you have made a critical error. Remove it.
+- Nav links (inside .aw-nav-links): Choose 4-6 CONTEXTUALLY RELEVANT links for this specific business. Examples:
+  • Medical: من نحن | خدماتنا | فريقنا | احجز موعد | آراء العملاء
+  • Restaurant: من نحن | القائمة | أعمالنا | آراء العملاء
+  • Agency: من نحن | خدماتنا | أعمالنا | عملاؤنا | آراء العملاء
+  • Education: من نحن | كورساتنا | المدربون | آراء العملاء
+  • Default: ${isArabic ? "من نحن (#about), خدماتنا (#services), أعمالنا (#gallery), آراء العملاء (#testimonials)" : "About (#about), Services (#services), Gallery (#gallery), Testimonials (#testimonials)"}
+- After .aw-nav-links div, add ONE standalone CTA button. Use a BUSINESS-SPECIFIC action text, NOT just "تواصل معنا":
+  • Clinic → "احجز موعدك"  |  Restaurant → "اطلب الآن"  |  Agency → "احصل على عرض"
+  • Education → "سجّل الآن"  |  Real Estate → "استفسر الآن"  |  Beauty → "احجزي الآن"
+  • Default → ${isArabic ? '"تواصل معنا"' : '"Contact Us"'}
+
+⛔ CRITICAL — NO-DUPLICATE RULE (READ CAREFULLY):
+  The nav structure has TWO distinct zones:
+  ZONE A: <div class="aw-nav-links"> → contains page-section links ONLY (from نحن, خدمات, gallery, testimonials, etc.)
+  ZONE B: AFTER the closing </div> of Zone A → ONE standalone <a> or <button> acting as CTA (احجز / اطلب / تواصل)
+
+  ⚠️ The CTA text (احجز موعدك / اطلب الآن / تواصل معنا / etc.) must NEVER appear INSIDE Zone A (.aw-nav-links).
+  ⚠️ If you add the CTA text as a link inside .aw-nav-links, you are duplicating it — this is a CRITICAL ERROR.
+  ⚠️ Check your output: count how many times the CTA text appears in <nav>. It must be EXACTLY ONCE.
 - NEVER use "نشر", "معاينة", "تعديل", "publish", "preview", "edit" as nav text
 
 ═══════════════════════════════════════
@@ -1154,7 +1177,7 @@ Include ONE <script> tag at end of body with ALL of these features:
    Observer threshold:0.15 — adds "aw-visible" when element enters viewport.
 
 2. NAVBAR SCROLL EFFECT:
-   scroll > 60px → nav gets class "scrolled" → background:rgba(5,8,22,0.97); box-shadow:0 4px 30px rgba(0,0,0,0.3)
+   scroll > 60px → nav gets class "scrolled" → increase navbar background opacity (brand-appropriate dark, match the nav's initial color scheme), box-shadow:0 4px 30px rgba(0,0,0,0.3)
 
 3. COUNTER ANIMATION (for stats section):
    On IntersectionObserver trigger, animate from 0 to data-target over 1800ms using requestAnimationFrame.
@@ -1316,10 +1339,12 @@ GYM / FITNESS (pick ONE variety):
   B: Pitch black + neon green (#0a0a0a primary, #22c55e accent) — CrossFit/performance
   C: Dark stone + electric orange (#1c1917 primary, #f97316 accent) — lifestyle fitness
 
-⚠️ SECTION CONTRAST RULE:
-• Hero, stats bar, testimonials, footer → DARK backgrounds (primary color or near-black derived from it)
-• About, services, FAQ → white (#ffffff) or very light (#f8fafc) backgrounds for contrast
-• Alternate: never use 2 dark sections back-to-back without a light section between them
+⚠️ SECTION CONTRAST RULE (for readability and visual rhythm):
+• Alternate between dark and light sections to create visual breathing room
+• Typical pattern: dark hero → light about/services → dark testimonials/CTA → light FAQ → dark footer
+• You can break this pattern INTENTIONALLY for brand reasons (e.g., a luxury brand is all-dark, a medical brand is mostly white)
+• NEVER have more than 3 consecutive same-background sections without a tonal change
+• Section backgrounds should feel like they BELONG to the brand palette — not random
 
 ${MOBILE_RESPONSIVE_MANDATORY}
 
@@ -1333,7 +1358,12 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
 • Include Font Awesome 6 CDN <link> in <head>
 • <title> = ${isArabic ? "Arabic" : "English"} SEO title (50-60 chars)
 • <meta name="description"> = ${isArabic ? "Arabic" : "English"} meta description (150-160 chars)
-• Include ALL 8+ sections: navbar, hero, stats, about, services, gallery, testimonials, contact, footer
+• Include ALL required sections: navbar, hero, stats/highlights, about, services, gallery, testimonials, contact, footer — plus any industry-specific bonus sections
+• Section ORDER: adapt to what makes sense for this business type. Suggestions:
+  - Clinic: navbar → hero → about/team → services → gallery → testimonials → FAQ → contact → footer
+  - Restaurant: navbar → hero → about → menu → gallery → testimonials → contact → footer
+  - Agency: navbar → hero → stats → services/portfolio → about → process → testimonials → contact → footer
+  - Default order: navbar → hero → stats → about → services → gallery → testimonials → contact → footer
 • All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
 • Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.
 
@@ -1510,25 +1540,49 @@ Usage rules (MANDATORY):
   }
 
   /**
-   * Post-processing: remove duplicate contact link from inside .aw-nav-links.
-   * The AI sometimes adds "تواصل معنا" / "Contact" as both a regular nav link AND a CTA button.
-   * This function removes the nav-link occurrence, keeping only the CTA button.
+   * Post-processing: remove ALL duplicate CTA/contact links from inside the main nav link list.
+   * The AI sometimes adds "تواصل معنا" / "احجز موعدك" / "Contact" as BOTH a regular nav link AND a CTA button.
+   * Strategy: keep only the LAST occurrence of any #contact-pointing link in <nav> (the standalone CTA),
+   * and remove earlier duplicates that landed inside the nav links list.
    */
   function removeNavContactDuplicate(html: string): string {
-    // Strategy: inside the .aw-nav-links block, remove any <a> tag that points to #contact
-    // We match the nav-links div and strip out contact anchor links from it
-    return html.replace(
+    // Pass 1: Remove #contact links from inside .aw-nav-links div
+    let result = html.replace(
       /(<div[^>]*class="[^"]*aw-nav-links[^"]*"[^>]*>)([\s\S]*?)(<\/div>)/gi,
       (_match, open, content, close) => {
-        // Remove <a> or <li><a> tags that href="#contact" inside the nav-links block
-        const cleaned = content.replace(
-          /<li[^>]*>\s*<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, ""
-        ).replace(
-          /<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>/gi, ""
-        );
+        const cleaned = content
+          .replace(/<li[^>]*>\s*<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, "")
+          .replace(/<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>/gi, "");
         return open + cleaned + close;
       }
     );
+
+    // Pass 2: Find <nav> block and detect if #contact CTA appears more than once → keep only last
+    result = result.replace(
+      /(<nav[^>]*>)([\s\S]*?)(<\/nav>)/gi,
+      (_match, navOpen, navContent, navClose) => {
+        // Count how many times #contact appears in the nav
+        const contactMatches = (navContent.match(/href=["']#contact["']/gi) || []).length;
+        if (contactMatches <= 1) return navOpen + navContent + navClose;
+
+        // More than one: remove all but the last #contact link
+        let removeCount = contactMatches - 1;
+        const cleaned = navContent.replace(
+          /<(?:li[^>]*>\s*)?<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>(?:\s*<\/li>)?/gi,
+          (match) => {
+            if (removeCount > 0) { removeCount--; return ""; }
+            return match;
+          }
+        );
+        return navOpen + cleaned + navClose;
+      }
+    );
+
+    // Pass 3: Remove #contact links from inside #aw-mobile-menu ONLY if they duplicate
+    // the contact CTA — keep one instance so mobile users can reach contact section
+    // (Do nothing here — the mobile menu is allowed to have the contact link once)
+
+    return result;
   }
 
   function sanitizeCss(css: string): string {
