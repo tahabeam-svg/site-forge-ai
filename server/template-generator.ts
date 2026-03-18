@@ -64,49 +64,97 @@ export function generateFullTemplate(p: TemplateParams): string {
     ? `background:linear-gradient(135deg,${p.accentDark}ee 0%,${p.accentDark}88 50%,transparent 100%);`
     : `background:${p.gradient};opacity:0.88;`;
 
+  const brandName = p.heroTitle.split(" ")[0];
+
   return `<!DOCTYPE html><html lang="ar" dir="rtl"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Cairo','Tajawal',sans-serif;color:#1e293b;background:#fff;direction:rtl;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Cairo','Tajawal',sans-serif;color:#1e293b;background:#fff;direction:rtl;overflow-x:hidden;}
 a{text-decoration:none;color:inherit;}
+img{max-width:100%;height:auto;display:block;}
+
+/* Buttons */
 .btn-primary{display:inline-block;padding:0.9rem 2.5rem;background:${p.accent};color:#fff;border-radius:2rem;font-weight:700;font-family:'Cairo',sans-serif;font-size:1.05rem;border:none;cursor:pointer;transition:all 0.3s;box-shadow:0 4px 15px ${p.accent}40;}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px ${p.accent}60;}
 .btn-outline{display:inline-block;padding:0.9rem 2.5rem;background:transparent;color:#fff;border:2px solid #fff;border-radius:2rem;font-weight:700;font-family:'Cairo',sans-serif;font-size:1.05rem;cursor:pointer;transition:all 0.3s;}
 .btn-outline:hover{background:rgba(255,255,255,0.15);}
+
+/* Layout */
 .section{padding:5rem 2rem;}
 .container{max-width:1200px;margin:0 auto;}
+
+/* Nav */
+.tg-nav{position:fixed;top:0;right:0;left:0;z-index:1000;background:rgba(255,255,255,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid #e2e8f0;}
+.tg-nav-inner{max-width:1200px;margin:0 auto;padding:0.9rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.tg-brand{font-family:'Cairo',sans-serif;font-weight:800;font-size:1.4rem;color:${p.accent};}
+.tg-nav-links{display:flex;gap:2rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;align-items:center;}
+.tg-nav-links a{color:#475569;transition:color 0.2s;}
+.tg-nav-links a:hover{color:${p.accent};}
+.tg-nav-cta{padding:0.6rem 1.5rem;font-size:0.9rem;}
+
+/* Burger button */
+#aw-menu-btn{display:none;background:none;border:none;cursor:pointer;padding:8px;color:#475569;line-height:1;border-radius:8px;}
+#aw-menu-btn:hover{background:#f1f5f9;}
+
+/* Mobile menu */
+#aw-mobile-menu{display:none;flex-direction:column;padding:1rem 1.5rem;gap:0.25rem;border-top:1px solid #e2e8f0;background:#fff;}
+.mob-nav-link{display:block;padding:0.85rem 0.5rem;font-family:'Tajawal',sans-serif;font-size:1rem;font-weight:500;color:#475569;border-bottom:1px solid #f1f5f9;transition:color 0.2s,padding-right 0.2s;}
+.mob-nav-link:hover{color:${p.accent};padding-right:1rem;}
+.mob-nav-cta{display:block;margin-top:0.75rem;padding:0.9rem 1.5rem;background:${p.accent};color:#fff;border-radius:1rem;font-family:'Cairo',sans-serif;font-weight:700;font-size:0.95rem;text-align:center;}
+
+/* Responsive */
 @media(max-width:768px){
-  .grid-3{grid-template-columns:1fr !important;}
-  .grid-2{grid-template-columns:1fr !important;}
-  .hero-title{font-size:2rem !important;}
-  .hero-sub{font-size:1rem !important;}
-  .section{padding:3rem 1rem;}
+  .tg-nav-links{display:none!important;}
+  #aw-menu-btn{display:flex!important;align-items:center;justify-content:center;}
+  .grid-3{grid-template-columns:1fr!important;}
+  .grid-2{grid-template-columns:1fr!important;}
+  .hero-title{font-size:clamp(1.75rem,8vw,2.5rem)!important;}
+  .hero-sub{font-size:1rem!important;}
+  .section{padding:3rem 1rem!important;}
+  .hero-actions{flex-direction:column;gap:0.75rem;align-items:center;}
+  .contact-grid-inner{grid-template-columns:1fr!important;}
+}
+@media(max-width:480px){
+  .hero-title{font-size:clamp(1.5rem,7vw,2rem)!important;}
+  .tg-nav-inner{padding:0.75rem 1rem;}
+  .tg-brand{font-size:1.2rem;}
 }
 </style></head><body>
 
-<nav style="position:fixed;top:0;right:0;left:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-bottom:1px solid #e2e8f0;padding:1rem 2rem;">
-<div class="container" style="display:flex;align-items:center;justify-content:space-between;">
-<div style="font-family:'Cairo',sans-serif;font-weight:800;font-size:1.4rem;color:${p.accent};">${p.heroTitle.split(" ")[0]}</div>
-<div style="display:flex;gap:2rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;">
-<a href="#services" style="color:#475569;">خدماتنا</a>
-<a href="#gallery" style="color:#475569;">معرض الأعمال</a>
-<a href="#testimonials" style="color:#475569;">آراء العملاء</a>
-<a href="#contact" style="color:#475569;">تواصل معنا</a>
-</div>
-<a href="#contact" class="btn-primary" style="padding:0.6rem 1.5rem;font-size:0.9rem;">${p.ctaText}</a>
-</div></nav>
+<nav class="tg-nav">
+  <div class="tg-nav-inner">
+    <div class="tg-brand">${brandName}</div>
+    <div class="tg-nav-links">
+      <a href="#services">خدماتنا</a>
+      <a href="#gallery">معرض الأعمال</a>
+      <a href="#testimonials">آراء العملاء</a>
+      <a href="#contact">تواصل معنا</a>
+      <a href="#contact" class="btn-primary tg-nav-cta">${p.ctaText}</a>
+    </div>
+    <button id="aw-menu-btn" aria-label="القائمة" onclick="(function(){var m=document.getElementById('aw-mobile-menu');var o=m.style.display==='flex';m.style.display=o?'none':'flex';})()" >
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+  <div id="aw-mobile-menu">
+    <a href="#services" class="mob-nav-link" onclick="document.getElementById('aw-mobile-menu').style.display='none'">خدماتنا</a>
+    <a href="#gallery" class="mob-nav-link" onclick="document.getElementById('aw-mobile-menu').style.display='none'">معرض الأعمال</a>
+    <a href="#testimonials" class="mob-nav-link" onclick="document.getElementById('aw-mobile-menu').style.display='none'">آراء العملاء</a>
+    <a href="#contact" class="mob-nav-link" onclick="document.getElementById('aw-mobile-menu').style.display='none'">تواصل معنا</a>
+    <a href="#contact" class="mob-nav-cta" onclick="document.getElementById('aw-mobile-menu').style.display='none'">${p.ctaText}</a>
+  </div>
+</nav>
 
-<header style="position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:${heroAlign};overflow:hidden;margin-top:-80px;padding-top:80px;">
+<header style="position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:${heroAlign};overflow:hidden;margin-top:0;padding-top:70px;">
 <div style="position:absolute;inset:0;"><img src="${heroImg}" alt="" style="width:100%;height:100%;object-fit:cover;"/></div>
 <div style="position:absolute;inset:0;${heroOverlay}"></div>
 <div class="container" style="position:relative;z-index:2;padding:2rem;">
-<h1 class="hero-title" style="font-family:'Cairo',sans-serif;font-size:3.5rem;font-weight:900;color:#fff;margin-bottom:1.25rem;line-height:1.3;text-shadow:0 2px 20px rgba(0,0,0,0.3);">${p.heroTitle}</h1>
+<h1 class="hero-title" style="font-family:'Cairo',sans-serif;font-size:clamp(2rem,6vw,3.5rem);font-weight:900;color:#fff;margin-bottom:1.25rem;line-height:1.3;text-shadow:0 2px 20px rgba(0,0,0,0.3);">${p.heroTitle}</h1>
 <p class="hero-sub" style="font-family:'Tajawal',sans-serif;font-size:1.3rem;color:rgba(255,255,255,0.92);max-width:700px;${heroAlign === "center" ? "margin:0 auto" : "margin-right:0"};margin-bottom:2.5rem;line-height:1.8;">${p.heroSubtitle}</p>
-<div style="display:flex;gap:1rem;${heroAlign === "center" ? "justify-content:center" : ""};">
-<a class="btn-primary">${p.ctaText}</a>
-<a class="btn-outline">اكتشف المزيد</a>
+<div class="hero-actions" style="display:flex;gap:1rem;${heroAlign === "center" ? "justify-content:center" : ""};">
+<a href="#contact" class="btn-primary">${p.ctaText}</a>
+<a href="#services" class="btn-outline">اكتشف المزيد</a>
 </div>
 </div>
 </header>
@@ -115,7 +163,7 @@ a{text-decoration:none;color:inherit;}
 <div class="container">
 <div style="text-align:center;margin-bottom:3.5rem;">
 <span style="font-family:'Tajawal',sans-serif;color:${p.accent};font-weight:700;font-size:0.95rem;letter-spacing:0.05em;">ما نقدمه</span>
-<h2 style="font-family:'Cairo',sans-serif;font-size:2.2rem;font-weight:800;color:#0f172a;margin-top:0.5rem;">خدماتنا المميزة</h2>
+<h2 style="font-family:'Cairo',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;color:#0f172a;margin-top:0.5rem;">خدماتنا المميزة</h2>
 <div style="width:60px;height:4px;background:${p.accent};border-radius:2px;margin:1rem auto 0;"></div>
 </div>
 <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;">
@@ -128,7 +176,7 @@ ${servicesHtml}
 <div class="container">
 <div style="text-align:center;margin-bottom:3.5rem;">
 <span style="font-family:'Tajawal',sans-serif;color:${p.accent};font-weight:700;font-size:0.95rem;">أعمالنا</span>
-<h2 style="font-family:'Cairo',sans-serif;font-size:2.2rem;font-weight:800;color:#0f172a;margin-top:0.5rem;">معرض الأعمال</h2>
+<h2 style="font-family:'Cairo',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;color:#0f172a;margin-top:0.5rem;">معرض الأعمال</h2>
 <div style="width:60px;height:4px;background:${p.accent};border-radius:2px;margin:1rem auto 0;"></div>
 </div>
 <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;">
@@ -139,9 +187,9 @@ ${galleryHtml}
 
 <section class="section" style="background:${p.gradient};text-align:center;">
 <div class="container">
-<h2 style="font-family:'Cairo',sans-serif;font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:1rem;">هل أنت مستعد للبدء؟</h2>
+<h2 style="font-family:'Cairo',sans-serif;font-size:clamp(1.6rem,4vw,2.5rem);font-weight:800;color:#fff;margin-bottom:1rem;">هل أنت مستعد للبدء؟</h2>
 <p style="font-family:'Tajawal',sans-serif;color:rgba(255,255,255,0.9);font-size:1.15rem;max-width:600px;margin:0 auto 2rem;line-height:1.8;">انضم إلى آلاف العملاء السعداء وابدأ رحلتك معنا اليوم</p>
-<a class="btn-primary" style="background:#fff;color:${p.accent};box-shadow:0 4px 15px rgba(0,0,0,0.2);">${p.ctaText}</a>
+<a href="#contact" class="btn-primary" style="background:#fff;color:${p.accent};box-shadow:0 4px 15px rgba(0,0,0,0.2);">${p.ctaText}</a>
 </div>
 </section>
 
@@ -149,7 +197,7 @@ ${galleryHtml}
 <div class="container">
 <div style="text-align:center;margin-bottom:3.5rem;">
 <span style="font-family:'Tajawal',sans-serif;color:${p.accent};font-weight:700;font-size:0.95rem;">ماذا يقولون عنا</span>
-<h2 style="font-family:'Cairo',sans-serif;font-size:2.2rem;font-weight:800;color:#0f172a;margin-top:0.5rem;">آراء عملائنا</h2>
+<h2 style="font-family:'Cairo',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;color:#0f172a;margin-top:0.5rem;">آراء عملائنا</h2>
 <div style="width:60px;height:4px;background:${p.accent};border-radius:2px;margin:1rem auto 0;"></div>
 </div>
 <div class="grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;">
@@ -162,15 +210,15 @@ ${testimonialsHtml}
 <div class="container">
 <div style="text-align:center;margin-bottom:3.5rem;">
 <span style="font-family:'Tajawal',sans-serif;color:${p.accent};font-weight:700;font-size:0.95rem;">تواصل معنا</span>
-<h2 style="font-family:'Cairo',sans-serif;font-size:2.2rem;font-weight:800;color:#0f172a;margin-top:0.5rem;">نسعد بتواصلك</h2>
+<h2 style="font-family:'Cairo',sans-serif;font-size:clamp(1.6rem,4vw,2.2rem);font-weight:800;color:#0f172a;margin-top:0.5rem;">نسعد بتواصلك</h2>
 <div style="width:60px;height:4px;background:${p.accent};border-radius:2px;margin:1rem auto 0;"></div>
 </div>
-<div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
+<div class="contact-grid-inner" style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;">
 <div>
 <form style="display:flex;flex-direction:column;gap:1rem;">
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-<input type="text" placeholder="الاسم الكامل" style="padding:0.9rem 1.2rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;outline:none;transition:border 0.3s;" onfocus="this.style.borderColor='${p.accent}'" onblur="this.style.borderColor='#e2e8f0'"/>
-<input type="email" placeholder="البريد الإلكتروني" style="padding:0.9rem 1.2rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;outline:none;transition:border 0.3s;" onfocus="this.style.borderColor='${p.accent}'" onblur="this.style.borderColor='#e2e8f0'"/>
+<input type="text" placeholder="الاسم الكامل" style="padding:0.9rem 1.2rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;outline:none;transition:border 0.3s;width:100%;" onfocus="this.style.borderColor='${p.accent}'" onblur="this.style.borderColor='#e2e8f0'"/>
+<input type="email" placeholder="البريد الإلكتروني" style="padding:0.9rem 1.2rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;outline:none;transition:border 0.3s;width:100%;" onfocus="this.style.borderColor='${p.accent}'" onblur="this.style.borderColor='#e2e8f0'"/>
 </div>
 <input type="tel" placeholder="رقم الجوال" style="padding:0.9rem 1.2rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;outline:none;transition:border 0.3s;" onfocus="this.style.borderColor='${p.accent}'" onblur="this.style.borderColor='#e2e8f0'"/>
 <textarea placeholder="رسالتك" rows="5" style="padding:0.9rem 1.2rem;border:1.5px solid #e2e8f0;border-radius:0.75rem;font-family:'Tajawal',sans-serif;font-size:0.95rem;outline:none;resize:vertical;transition:border 0.3s;" onfocus="this.style.borderColor='${p.accent}'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
@@ -178,12 +226,9 @@ ${testimonialsHtml}
 </form>
 </div>
 <div style="display:flex;flex-direction:column;gap:1.5rem;">
-<div style="display:flex;align-items:center;gap:1rem;"><div style="width:48px;height:48px;border-radius:0.75rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;">${lucideIcons.phone}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#0f172a;">الهاتف</div><div style="font-family:'Tajawal',sans-serif;color:#64748b;direction:ltr;">+966 55 123 4567</div></div></div>
-<div style="display:flex;align-items:center;gap:1rem;"><div style="width:48px;height:48px;border-radius:0.75rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;">${lucideIcons.mail}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#0f172a;">البريد الإلكتروني</div><div style="font-family:'Tajawal',sans-serif;color:#64748b;">info@example.com</div></div></div>
-<div style="display:flex;align-items:center;gap:1rem;"><div style="width:48px;height:48px;border-radius:0.75rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;">${lucideIcons.mapPin}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#0f172a;">العنوان</div><div style="font-family:'Tajawal',sans-serif;color:#64748b;">الرياض، المملكة العربية السعودية</div></div></div>
-<div style="border-radius:1rem;overflow:hidden;height:200px;margin-top:0.5rem;">
-<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d463878.0306695579!2d46.54262085!3d24.725195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3e2f03890d489399%3A0xba974d1c98e79fd5!2sRiyadh!5e0!3m2!1sen!2ssa!4v1" width="100%" height="200" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
-</div>
+<div style="display:flex;align-items:center;gap:1rem;"><div style="width:48px;height:48px;border-radius:0.75rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${lucideIcons.phone}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#0f172a;">الهاتف</div><div style="font-family:'Tajawal',sans-serif;color:#64748b;direction:ltr;">+966 55 123 4567</div></div></div>
+<div style="display:flex;align-items:center;gap:1rem;"><div style="width:48px;height:48px;border-radius:0.75rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${lucideIcons.mail}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#0f172a;">البريد الإلكتروني</div><div style="font-family:'Tajawal',sans-serif;color:#64748b;">info@example.com</div></div></div>
+<div style="display:flex;align-items:center;gap:1rem;"><div style="width:48px;height:48px;border-radius:0.75rem;background:${p.accent}15;color:${p.accent};display:flex;align-items:center;justify-content:center;flex-shrink:0;">${lucideIcons.mapPin}</div><div><div style="font-family:'Cairo',sans-serif;font-weight:700;color:#0f172a;">العنوان</div><div style="font-family:'Tajawal',sans-serif;color:#64748b;">الرياض، المملكة العربية السعودية</div></div></div>
 </div>
 </div>
 </div>
@@ -191,9 +236,9 @@ ${testimonialsHtml}
 
 <footer style="background:#0f172a;color:#94a3b8;padding:3rem 2rem;text-align:center;">
 <div class="container">
-<div style="font-family:'Cairo',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;margin-bottom:1rem;">${p.heroTitle.split(" ")[0]}</div>
+<div style="font-family:'Cairo',sans-serif;font-weight:800;font-size:1.5rem;color:#fff;margin-bottom:1rem;">${brandName}</div>
 <p style="font-family:'Tajawal',sans-serif;max-width:500px;margin:0 auto 1.5rem;line-height:1.8;">${p.heroSubtitle.substring(0, 80)}...</p>
-<div style="display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.5rem;font-family:'Tajawal',sans-serif;font-size:0.9rem;">
+<div style="display:flex;justify-content:center;gap:1.5rem;margin-bottom:1.5rem;font-family:'Tajawal',sans-serif;font-size:0.9rem;flex-wrap:wrap;">
 <a href="#services" style="color:#94a3b8;">خدماتنا</a>
 <a href="#gallery" style="color:#94a3b8;">أعمالنا</a>
 <a href="#testimonials" style="color:#94a3b8;">آراء العملاء</a>
