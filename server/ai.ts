@@ -247,6 +247,154 @@ Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <hea
 Generate a COMPLETE, premium single-page website based on: "${description}"`;
 }
 
+// ─── Large Image Bank for Random Selection ─────────────────────────────────
+const IMAGE_BANK: Record<string, string[]> = {
+  restaurant: [
+    "photo-1517248135467-4c7edcad34c4","photo-1414235077428-338989a2e8c0","photo-1565299624946-b28f40a0ae38",
+    "photo-1476224203421-9ac39bcb3327","photo-1504674900247-0877df9cc836","photo-1555396273-367ea4eb4db5",
+    "photo-1551218808-94e220e084d2","photo-1490818387583-1baba5e638af","photo-1544025162-d76694265947",
+    "photo-1567620905732-2d1ec7ab7445","photo-1540189549336-e6e99c3679fe","photo-1565958011703-44f9829ba187",
+    "photo-1559339352-11d035aa65de","photo-1484723091739-30a097e8f929","photo-1482049016688-2d3e1b311543",
+    "photo-1473093295043-cdd812d0e601","photo-1498837167922-ddd27525d352","photo-1607877361964-d8d7aa0c5d1e",
+  ],
+  cafe: [
+    "photo-1495474472287-4d71bcdd2085","photo-1501339847302-ac426a4a7cbb","photo-1511920170033-f8396924c348",
+    "photo-1442512595331-e89e73853f31","photo-1509042239860-f550ce710b93","photo-1572119865084-43c285814d63",
+    "photo-1453614512568-c4024d13c247","photo-1461023058943-07fcbe16d735","photo-1447933601403-0c6688de566e",
+    "photo-1521302080334-4bebac2763a6","photo-1534040385115-33dcb3acba5b",
+  ],
+  grill: [
+    "photo-1529193591184-b1d58069ecdd","photo-1544025162-d76694265947","photo-1432139555190-58524dae6a55",
+    "photo-1558030137-a56c1b3b9498","photo-1555939594-58d7cb561ad1","photo-1599487488170-d11ec9c172f0",
+    "photo-1513185041617-8ab03f83d6c5","photo-1601050690597-df0568f70950","photo-1544551763-46a013bb70d5",
+    "photo-1569070577-2b7b5dbfcbc4",
+  ],
+  agency: [
+    "photo-1497366216548-37526070297c","photo-1486406146926-c627a92ad1ab","photo-1542744173-8e7e53415bb0",
+    "photo-1553877522-43269d4ea984","photo-1522071820081-009f0129c71c","photo-1524758631624-e2822e304c36",
+    "photo-1497366754035-f200581393ab","photo-1552664730-d307ca884978","photo-1531482615713-2afd69097998",
+    "photo-1557804506-669a67965ba0","photo-1560250097-0dc05c0f61e6","photo-1521737711867-e3b97375f902",
+    "photo-1573497019940-1c28c88b4f3e","photo-1568992688065-536aad8a12f6","photo-1507003211169-0a1dd7228f2d",
+    "photo-1519389950473-47ba0277781c","photo-1522202176988-66273c2fd55f","photo-1423666639041-f56000c27a9a",
+  ],
+  luxury: [
+    "photo-1541643600914-78b084683601","photo-1523293182086-7651a899d37f","photo-1588776814546-1ffbb7c4f58a",
+    "photo-1615634260167-c8cdede054de","photo-1600210492486-724fe5c67fb0","photo-1571019613454-1cb2f99b2d8b",
+    "photo-1585771724684-38269d6639fd","photo-1617038220319-276d3cfab638","photo-1523779105320-d1cd346ff52b",
+    "photo-1619559378823-8e05a2c3de1e","photo-1553361371-9b22f78e8b1d","photo-1581235720704-06d3acfcb36f",
+  ],
+  tech: [
+    "photo-1518770660439-4636190af475","photo-1552664730-d307ca884978","photo-1451187580459-43490279c0fa",
+    "photo-1461749280684-dccba630e2f6","photo-1504639725590-34d0984388bd","photo-1498050108023-c5249f4df085",
+    "photo-1555099962-4199c345e5dd","photo-1551650975-87deedd944c3","photo-1535378917042-10a22c95931a",
+    "photo-1542831371-29b0f74f9713","photo-1519389950473-47ba0277781c","photo-1504384308090-c894fdcc538d",
+    "photo-1526374965328-7f61d4dc18c5","photo-1487017159836-4e23ece2e4cf","photo-1517694712202-14dd9538aa97",
+  ],
+  realestate: [
+    "photo-1560518883-ce09059eeffa","photo-1582407947304-fd86f028f716","photo-1512917774080-9991f1c4c750",
+    "photo-1570129477492-45c003edd2be","photo-1600596542815-ffad4c1539a9","photo-1613490493576-7fde63acd811",
+    "photo-1560448204-e02f11c3d0e2","photo-1600585154340-be6161a56a0c","photo-1605276374104-dee2a0ed3cd6",
+    "photo-1600566753190-17f0baa2a6c3","photo-1583608205776-bfd35f0d9f83","photo-1516455590571-18256e5bb9ff",
+    "photo-1558618666-fcd25c85cd64","photo-1570129477492-45c003edd2be","photo-1600047509807-ba8f99d2cdde",
+  ],
+  medical: [
+    "photo-1576091160399-112ba8d25d1d","photo-1579684385127-1ef15d508118","photo-1631217868264-e5b90bb7e133",
+    "photo-1559757148-5c350d0d3c56","photo-1519494026892-80bbd2d6fd0d","photo-1576091160550-2173dba999ef",
+    "photo-1530026405186-ed1f139313f8","photo-1551601651-2a8555f1a136","photo-1588776814546-1ffbb172d4a8",
+    "photo-1581595220892-b0739db3ba8c","photo-1559757125-2fa8c7c8c78a","photo-1434030216411-0b793f4b4173",
+    "photo-1504813184591-01572f98c85f","photo-1612349317150-e413f6a5b16d",
+  ],
+  beauty: [
+    "photo-1560066984-138dadb4c035","photo-1522337360788-8b13dee7a37e","photo-1487412947147-5cebf100ffc2",
+    "photo-1519014816548-bf5fe059798b","photo-1519415510236-718bdfcd89c8","photo-1502781252888-9143ba7f074e",
+    "photo-1516975080664-ed2fc6a32937","photo-1562322140-8baeececf3df","photo-1596755389378-c31d21fd1273",
+    "photo-1487412947147-5cebf100ffc2","photo-1571875257727-256c39da42af","photo-1492106087820-71f1a00d2b11",
+    "photo-1512290923902-8a9f81dc236c","photo-1522338242992-e1a54906a8da",
+  ],
+  education: [
+    "photo-1523050854058-8df90110c9f1","photo-1509062522246-3755977927d7","photo-1427504494785-3a9ca7044f45",
+    "photo-1456513080510-7bf3a84b82f8","photo-1524178232363-1fb2b075b655","photo-1503676260728-1c00da094a0b",
+    "photo-1488190211105-8b0e65b80b4e","photo-1580582932707-520aed937b7b","photo-1546410531-bb4caa6b424d",
+    "photo-1564981797816-1043664bf78d","photo-1434030216411-0b793f4b4173",
+  ],
+  automotive: [
+    "photo-1492144534655-ae79c964c9d7","photo-1469854523086-cc02fe5d8800","photo-1511919884226-fd3cad34687c",
+    "photo-1503376780353-7e6692767b70","photo-1549317661-bd32c8ce0db2","photo-1580273916550-e323be2ae537",
+    "photo-1559416523-140ddc3d238c","photo-1541899481282-d53bffe3c35d","photo-1568605117036-5fe5e7bab0b7",
+    "photo-1525609004556-c46c7d6cf023","photo-1544636331-e26879cd4d9b",
+  ],
+  events: [
+    "photo-1540575467063-178a50c2df87","photo-1505236858219-8359eb29e329","photo-1519741497674-611481863552",
+    "photo-1492684223066-81342ee5ff30","photo-1514525253161-7a46d19cd819","photo-1429962714451-bb934ecdc4ec",
+    "photo-1501281668745-f7f57925c3b4","photo-1523580494863-6f3031224c42","photo-1511578314322-379afb476865",
+    "photo-1516450360452-9312f5e86fc7","photo-1496337589254-7e19d01cec44",
+  ],
+  photography: [
+    "photo-1452587925148-ce544e77e70d","photo-1516035069371-29a1b244cc32","photo-1506905925346-21bda4d32df4",
+    "photo-1500622944204-b135684e99fd","photo-1501854140801-50d01698950b","photo-1529778873920-4da4926a72c2",
+    "photo-1504700610630-ac6aba3536d3","photo-1543466835-00a7907e9de1","photo-1491553895911-0055eca6402d",
+    "photo-1576671081837-49000212a370","photo-1558403194-611308249627",
+  ],
+  gym: [
+    "photo-1534438327276-14e5300c3a48","photo-1571019614242-c5c5dee9f50b","photo-1517836357463-d25dfeac3438",
+    "photo-1547592180-85f173990554","photo-1581009146145-b5ef050c2e1e","photo-1590239926044-4131f5d0654b",
+    "photo-1570829460005-c840387bb1ca","photo-1546483875-ad9014c88eba","photo-1526506118085-60122a929d55",
+    "photo-1581009137042-c552e485697a","photo-1549060279-7e168fcee0c2",
+  ],
+  finance: [
+    "photo-1554224155-6726b3ff858f","photo-1560472355-536de3962603","photo-1611974789855-9c2a0a7236a3",
+    "photo-1579621970563-ebec7560ff3e","photo-1486406146926-c627a92ad1ab","photo-1507003211169-0a1dd7228f2d",
+    "photo-1454165804606-c3d57bc86b40","photo-1444653614773-995cb1ef9efa","photo-1565514020179-026b92b84bb6",
+    "photo-1520333789090-1afc82db536a",
+  ],
+};
+
+const DEFAULT_IMAGES = [
+  "photo-1497366216548-37526070297c","photo-1552664730-d307ca884978","photo-1542744173-8e7e53415bb0",
+  "photo-1557804506-669a67965ba0","photo-1519389950473-47ba0277781c","photo-1507003211169-0a1dd7228f2d",
+  "photo-1560250097-0dc05c0f61e6","photo-1573497019940-1c28c88b4f3e","photo-1521737711867-e3b97375f902",
+  "photo-1504384308090-c894fdcc538d","photo-1423666639041-f56000c27a9a","photo-1455661f47f62baef40b3c9ac76a93f",
+];
+
+function detectImageCategory(description: string): string {
+  const d = description.toLowerCase();
+  if (/مطعم|شاورما|كبسة|مندي|طعام|وجبة|مشوي|برگر|بيتزا|كنتاكي|مأكولات|food|restaurant|kebab|grill|burger|pizza/.test(d)) {
+    if (/مشوي|مشاوي|جريل|grill|bbq|شيش|منقل/.test(d)) return "grill";
+    if (/قهوة|كافيه|كافيه|cafe|coffee|كابتشينو|لاتيه/.test(d)) return "cafe";
+    return "restaurant";
+  }
+  if (/وكالة|وكاله|دعاية|إعلان|تسويق|وكالة إبداعية|agency|marketing|creative|advertising/.test(d)) return "agency";
+  if (/تقنية|برمجة|تطبيق|موقع|ديجيتال|tech|software|app|startup|digital/.test(d)) return "tech";
+  if (/عقار|شقق|فلل|عقارات|real estate|property|apartment|villa/.test(d)) return "realestate";
+  if (/طب|عيادة|مستشفى|صيدلية|medical|clinic|hospital|pharmacy|health|dental|أسنان/.test(d)) return "medical";
+  if (/تجميل|صالون|سبا|مكياج|beauty|salon|spa|makeup|نقاء|بشرة/.test(d)) return "beauty";
+  if (/تعليم|تدريب|معهد|مدرسة|أكاديمية|education|training|academy|school|course/.test(d)) return "education";
+  if (/سيارة|سيارات|نقل|شحن|مواصلات|car|automotive|transport|delivery/.test(d)) return "automotive";
+  if (/فعالية|حفل|زفاف|مؤتمر|مناسبة|event|wedding|conference|party/.test(d)) return "events";
+  if (/مصور|تصوير|photography|photo|studio/.test(d)) return "photography";
+  if (/جيم|رياضة|لياقة|gym|fitness|sport/.test(d)) return "gym";
+  if (/فاخر|ساعة|عطر|مجوهر|luxury|perfume|jewelry|watch/.test(d)) return "luxury";
+  if (/مالية|استثمار|بنك|finance|investment|bank/.test(d)) return "finance";
+  return "agency"; // default for business/corporate
+}
+
+function shuffleAndPick<T>(arr: T[], n: number): T[] {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, Math.min(n, copy.length));
+}
+
+function buildImagePromptSection(description: string): string {
+  const cat = detectImageCategory(description);
+  const pool = IMAGE_BANK[cat] || DEFAULT_IMAGES;
+  const picked = shuffleAndPick(pool, 10);
+  const lines = picked.map((id, i) => `  ${i + 1}. ${id}`).join("\n");
+  return `Category detected: ${cat}\nSelected images for this request:\n${lines}`;
+}
+
 export async function generateWebsite(description: string, language: string = "ar"): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
   const dirAttr = isArabic ? 'dir="rtl"' : 'dir="ltr"';
@@ -315,14 +463,14 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
   ✅ ACTIVE STATE (MANDATORY): add onmousedown="this.style.transform='translateY(1px)'" onmouseup="this.style.transform='translateY(-2px)'"
   ✅ Secondary/outline button: transparent background, 2px solid border matching primary color, same border-radius:12px
 
-▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing. STATS MUST BE RELEVANT TO THE SPECIFIC BUSINESS — Examples:
-  * Restaurant/Cafe: "15+ سنة خبرة", "500+ وجبة يومياً", "98% رضا العملاء", "50+ طبق متنوع"
-  * Medical/Clinic: "20+ طبيب متخصص", "10,000+ مريض تعالج", "15+ سنة خبرة", "98% نسبة الشفاء"
-  * Agency/Marketing: "200+ مشروع منجز", "50+ عميل نشط", "8+ سنوات خبرة", "15+ خبير متخصص"
-  * Real Estate: "500+ عقار مباع", "15+ سنة في السوق", "300+ عميل راضٍ", "50+ مشروع سكني"
-  * Beauty/Salon: "10,000+ جلسة", "5+ فروع", "98% رضا العميلات", "100+ منتج فاخر"
-  * Tech/Startup: "50+ تطبيق طورناه", "1M+ مستخدم", "99.9% وقت تشغيل", "10+ شراكة تقنية"
-  * Education: "5,000+ طالب", "50+ معلم متخصص", "95% معدل نجاح", "10+ سنوات تميز"
+▸ STATS BAR: Dark gradient background. 4 animated counters. Numbers use gradient text (background-clip:text). Labels uppercase letter-spacing.
+  ⚠️ STATS MUST BE 100% ORIGINAL — invented fresh from THIS description. NEVER copy template numbers like "200+ مشروع" or "98% رضا العملاء" that you've seen in training data.
+  Rules for original stats:
+  - Infer the business AGE from description clues (if "founded 2015" → 10+ سنة). If unknown, use a plausible range (3–8 years for a startup, 10–25 for established).
+  - Infer SCALE from description (small shop ≠ international chain). A small cafe won't have "500+ وجبة يومياً".
+  - Use DIFFERENT STAT TYPES based on what makes THIS business unique: could be # clients, # products, # cities served, # certifications, delivery speed, response time, etc.
+  - VARY the percentage stats — not all businesses have "98%". Use realistic numbers: 91%, 96%, 4.8/5, etc.
+  - At least 2 stats must be specific to the EXACT product/service mentioned (e.g. if "مطعم مندي" → "مندي" related stat, not generic food stat).
 
 ▸ ABOUT: 2-column. Image with double-layer gradient border effect using ::before/::after pseudo-elements. Floating experience badge (gradient bg, bottom corner). Checklist items with colored check icons. The ABOUT text MUST reference the actual business name and city extracted from the description.
 
@@ -334,8 +482,12 @@ SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشا
 ▸ CTA BAND: Full-width gradient background. Large bold headline personalized for THIS business (e.g. for a restaurant: "هل أنت جائع؟ اطلب أشهى المشاوي الآن"). Decorative radial glow orb in corner.
 
 ▸ TESTIMONIALS: Dark section, glassmorphism cards (rgba background + backdrop-filter). Bottom gradient border appears on hover (scaleX animation). Quote icon with low opacity. Write 3 REALISTIC testimonials with:
-  * Real Arab names (e.g. محمد العتيبي، نورة القحطاني، فيصل الدوسري)
-  * Specific details matching the business (not generic praise)
+  ⚠️ NAMES MUST BE VARIED — NEVER use the same 3 names repeatedly. Pick 3 different names from this diverse bank:
+  Male names: عبدالرحمن الغامدي، تركي المالكي، سلطان الزهراني، حمد العنزي، خالد الدوسري، ماجد الحربي، فيصل السلمي، عمر الرشيدي، ياسر البقمي، سعود الشهري، نواف الصبيحي، عادل القرني
+  Female names: ريم السهلي، لجين الحمدان، مها الصالح، دانة العمري، أريج الخالدي، سارة الجهني، شيخة المطيري، رنا الثمالي، فاطمة الشريف، نوف العسيري
+  - Vary between male/female — minimum 1 female per page
+  - Each testimonial MUST mention a SPECIFIC detail about the business (not generic praise): what exact service they used, a specific result or outcome, timeframe
+  - Do NOT use: "خدمة ممتازة"، "جودة رائعة"، "أوصي بهم" as standalone sentences — add specific details after
   * 5-star ratings using fa-star icons
 
 ▸ CONTACT: 2-column. Contact info with icon boxes. WhatsApp button. Right side: white card with gradient border, clean form inputs with focus ring.
@@ -464,23 +616,14 @@ Service icon CSS:
 .service-card:hover .service-icon-wrap i{color:#fff;}
 
 ═══════════════════════════════════════
-STOCK IMAGES — HIGH QUALITY UNSPLASH
+STOCK IMAGES — PRE-SELECTED FOR THIS REQUEST
 ═══════════════════════════════════════
-Choose images that PRECISELY match the business topic. Use ?w=1600&h=900&fit=crop&q=85 for hero, ?w=800&h=600&fit=crop&q=80 for about, ?w=600&h=400&fit=crop&q=75 for gallery.
-- Restaurant/Cafe/Food: photo-1517248135467-4c7edcad34c4, photo-1414235077428-338989a2e8c0, photo-1565299624946-b28f40a0ae38, photo-1476224203421-9ac39bcb3327, photo-1504674900247-0877df9cc836, photo-1555396273-367ea4eb4db5, photo-1551218808-94e220e084d2, photo-1490818387583-1baba5e638af, photo-1544025162-d76694265947, photo-1567620905732-2d1ec7ab7445
-- Coffee/Cafe only: photo-1495474472287-4d71bcdd2085, photo-1501339847302-ac426a4a7cbb, photo-1511920170033-f8396924c348, photo-1442512595331-e89e73853f31
-- Grills/BBQ/Meat: photo-1529193591184-b1d58069ecdd, photo-1544025162-d76694265947, photo-1432139555190-58524dae6a55, photo-1558030137-a56c1b3b9498
-- Business/Corporate/Agency: photo-1497366216548-37526070297c, photo-1486406146926-c627a92ad1ab, photo-1542744173-8e7e53415bb0, photo-1553877522-43269d4ea984, photo-1522071820081-009f0129c71c, photo-1524758631624-e2822e304c36
-- Luxury/Perfume/Fragrance: photo-1541643600914-78b084683601, photo-1523293182086-7651a899d37f, photo-1588776814546-1ffbb7c4f58a, photo-1615634260167-c8cdede054de
-- Technology/Startup/Software: photo-1518770660439-4636190af475, photo-1552664730-d307ca884978, photo-1451187580459-43490279c0fa, photo-1461749280684-dccba630e2f6, photo-1504639725590-34d0984388bd
-- Real Estate/Property: photo-1560518883-ce09059eeffa, photo-1582407947304-fd86f028f716, photo-1512917774080-9991f1c4c750, photo-1570129477492-45c003edd2be, photo-1600596542815-ffad4c1539a9
-- Medical/Clinic/Health: photo-1576091160399-112ba8d25d1d, photo-1579684385127-1ef15d508118, photo-1631217868264-e5b90bb7e133, photo-1559757148-5c350d0d3c56, photo-1638202993928-7d4f3a8e4b6b
-- Beauty/Salon/Spa: photo-1560066984-138dadb4c035, photo-1522337360788-8b13dee7a37e, photo-1487412947147-5cebf100d293, photo-1519014816548-bf5fe059798b
-- Fashion/Retail/Store: photo-1558618666-fcd25c85f82e, photo-1445205170230-053b83016050, photo-1490481651871-ab68de25d43d, photo-1483985988355-763728e1935b
-- Education/Training/Academy: photo-1523050854058-8df90110c9f1, photo-1509062522246-3755977927d7, photo-1427504494785-3a9ca7044f45, photo-1456513080510-7bf3a84b82f8
-- Automotive/Car/Transport: photo-1492144534655-ae79c964c9d7, photo-1469854523086-cc02fe5d8800, photo-1511919884226-fd3cad34687c
-- Events/Wedding: photo-1540575467063-178a50c2df87, photo-1505236858219-8359eb29e329, photo-1519741497674-611481863552
-- Use at least 6 relevant Unsplash images throughout the page. MATCH images to the EXACT business type in the description.
+The following Unsplash images have been selected for THIS specific request. Use EXACTLY these images (rotate through them for hero, about, gallery):
+USE_IMAGES_PLACEHOLDER
+Format: https://images.unsplash.com/[PHOTO_ID]?w=1600&h=900&fit=crop&q=85 for hero
+        https://images.unsplash.com/[PHOTO_ID]?w=800&h=600&fit=crop&q=80 for about
+        https://images.unsplash.com/[PHOTO_ID]?w=600&h=400&fit=crop&q=75 for gallery (need 6)
+⚠️ Use at least 7 different images from the list above. NEVER reuse the same photo ID twice on the page.
 
 ═══════════════════════════════════════
 WHATSAPP BUTTON — REQUIRED FOR ARAB MARKET
@@ -526,14 +669,19 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
 • All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
 • Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.`;
 
-  const prompt = basePrompt;
+  // Inject randomized images and add variation token to prevent identical output
+  const imageSection = buildImagePromptSection(description);
+  const variationToken = `\n[Variation seed: ${Date.now()}-${Math.random().toString(36).slice(2,7)}]`;
+  const prompt = basePrompt
+    .replace("USE_IMAGES_PLACEHOLDER", imageSection)
+    + variationToken;
   const model = getModel();
-  console.log("Using AI model:", model, "| Category:", category);
+  console.log("Using AI model:", model, "| Category:", category, "| Images injected for:", detectImageCategory(description));
   const response = await openai.chat.completions.create({
     model,
     messages: [{ role: "user", content: prompt }],
     max_completion_tokens: 16384,
-    temperature: 0.7,
+    temperature: 0.85,
   });
 
   const content = response.choices[0]?.message?.content || "";
