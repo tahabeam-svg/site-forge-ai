@@ -37,7 +37,7 @@ type WebsiteCategory = "romantic" | "portfolio" | "event" | "business";
 function detectWebsiteCategory(description: string): WebsiteCategory {
   const d = description.toLowerCase();
   const romantic = ["حبيبت","حبيبي","حبيبه","عشيقت","زوجت","زوجي","girlfriend","boyfriend","lover","sweetheart","my love","بحبك","احبك","أحبك","ذكرى زواج","عيد زواج","عيد حب","valentine","anniversary","قلبي","رفيقت","رفيقي","لحبيبي","لحبيبتي","لزوجتي","لزوجي","أميرت","أميرتي","لحبيب","صديقتي","girlfriend website","love website","موقع هدية","هدية رقمية","gift for my","surprise for my"];
-  const portfolio = ["بورتفوليو","portfolio","أعمالي","موهبتي","مصور","مصمم","فنان","معلم","مدرس","طبيب","مهندس","محامي","شخصي","personal","resume","cv","سيرة ذاتية","شاعر","كاتب","موسيقي","فريلانسر","freelancer","مستقل","مطور","developer","ux designer","ui designer","مترجم","translator","مدرب","coach","influencer","مؤثر","youtuber","content creator","صانع محتوى"];
+  const portfolio = ["بورتفوليو","portfolio","موهبتي","مصور","مصمم","فنان","شخصي","personal","resume","cv","سيرة ذاتية","شاعر","موسيقي","فريلانسر","freelancer","مستقل","مطور","developer","ux designer","ui designer","influencer","مؤثر","youtuber","content creator","صانع محتوى"];
   const event = ["حفل","مناسبة","زفاف","خطوبة","عقد قران","حفلة","wedding","party","event","exhibition","معرض","مهرجان","festival","سوق","قرن","ختان","تخرج","graduation","عيد ميلاد موقع","birthday website","ملتقى","مؤتمر","conference","summit","قمة","ندوة","seminar","workshop","ورشة عمل","launch event","حفل إطلاق"];
   if (romantic.some(k => d.includes(k))) return "romantic";
   if (portfolio.some(k => d.includes(k))) return "portfolio";
@@ -153,84 +153,120 @@ Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <hea
   }
 
   if (category === "portfolio") {
-    return `You are a world-class creative director building a stunning personal portfolio website for the Arab market. Style: modern 2025, minimal yet jaw-dropping — like top Dribbble portfolios, Awwwards winners. Build something this person will be PROUD to share.
+    return `You are a world-class creative director building a STUNNING personal portfolio website — Awwwards-worthy, Dribbble top-shot quality. The result must feel like a premium 2025 personal brand, not a template.
 
 Request: "${description}"
 
+⛔ ABSOLUTE RULE: NEVER copy the user's request phrase as website content. Extract name + field from it, then write fresh professional content.
+
 STEP 0 — MANDATORY: EXTRACT FIRST
-- Person's name → use as brand name everywhere
-- Their field/specialty (photographer, designer, developer, teacher, doctor, engineer, etc.)
-- Their city if mentioned
-- Specific skills/tools if mentioned
+- Person's name → brand identity
+- Field/specialty (photographer, designer, developer, content creator, etc.)
+- City if mentioned (default: الرياض)
+- Specific skills/tools/achievements if mentioned
+
+═══════════════════════════════════
+STOCK IMAGES — PRE-SELECTED FOR THIS REQUEST
+═══════════════════════════════════
+USE_IMAGES_PLACEHOLDER
+
+⚠️ MANDATORY IMAGE RULES:
+• Image #1 (marked "HERO") → place as hero section CSS background-image. The hero MUST have a real photo, NOT a CSS gradient as background.
+• Images #2-#7 (marked "GALLERY") → use in the portfolio/works section — each used ONCE
+• NEVER use placeholder gradients or blob shapes instead of real images
 
 ═══ SECTIONS (in order) ═══
 
-1. NAVBAR: Fixed, glassmorphism (background:rgba(5,8,22,0.8);backdrop-filter:blur(24px)). Brand = small inline SVG (id="aw-ai-logo", 32×32px, initials or field icon) + person's name in gradient text. Links: عن نفسي (#about), مهاراتي (#skills), أعمالي (#portfolio), تواصل معي (#contact). Mobile hamburger required. FOOTER: uses SVG only (id="aw-ai-logo-footer") + tagline, NEVER repeat the name in text form again.
+1. NAVBAR: Fixed, glassmorphism (background:rgba(5,8,22,0.82);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.07)). Brand = inline SVG (id="aw-ai-logo", 32×32px, initials or field icon) + person's name in gradient text (font-weight:800). Links: عن نفسي (#about), مهاراتي (#skills), أعمالي (#portfolio), تواصل معي (#contact). One CTA button: "تواصل الآن" → #contact. Mobile hamburger required.
 
-2. HERO: Full viewport. Background: stunning CSS mesh gradient (use 3 large animated orb blobs, filter:blur(80px), @keyframes orbFloat). Large animated name in gradient text (clamp(3rem,8vw,6rem), font-weight:900). Below: title/role badge with glass effect. Short powerful tagline. Two CTAs: gradient solid + glass outline. Include animated typing effect for the role using CSS.
+2. HERO: min-height:100vh; position:relative. 
+   ⚠️ MANDATORY HERO BACKGROUND: Set background-image to Image #1 URL from the list above. Add a dark overlay: background:linear-gradient(135deg,rgba(5,8,22,0.88) 0%,rgba(15,5,40,0.75) 100%). 
+   Add 2 subtle orb blobs (position:absolute, z-index:1, filter:blur(80px), opacity:0.15) as atmospheric depth ONLY — they must NOT hide the photo.
+   Content (z-index:2, position:relative): animated name text (clamp(3rem,8vw,5.5rem), font-weight:900, gradient text). Role/title badge (glass effect, border-radius:100px). Short 1-line tagline (rgba(255,255,255,0.7)). Two CTA buttons: gradient solid "شاهد أعمالي" + ghost outline "تواصل معي".
+   WhatsApp floating button (position:fixed;bottom:1.75rem;${isArabic ? "left" : "right"}:1.75rem;z-index:9999;background:#25D366;color:#fff;width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 25px rgba(37,211,102,0.55)).
 
-3. ABOUT (id="about"): 2-column layout. LEFT: Professional Unsplash portrait with double gradient border (::before/::after pseudo-elements), floating "available for work" badge. RIGHT: personal bio (2-3 paragraphs, personal tone), checklist of key facts about them, social links (LinkedIn, GitHub/Behance/Instagram based on their field).
+3. ABOUT (id="about"): Light section (#f8fafc bg). 2-column layout. LEFT: Use Image #2 from the pre-selected list — style it with double gradient border (::before/::after pseudo-elements), floating "متاح للعمل" badge (gradient bg, bottom corner). RIGHT: personal bio (2 paragraphs, warm personal tone), 4 key stats (years experience, projects done, clients, rating), social links with colored icons (LinkedIn, GitHub/Behance/Instagram based on field).
 
-4. SKILLS (id="skills"): Clean section on light gray background. Title "مهاراتي ودرجة إتقاني". Grid of skill cards (3-4 per row on desktop). Each skill card: icon + skill name + animated progress bar (0→percentage on scroll). Group skills by category if multiple fields. Animate bars with IntersectionObserver.
+4. SKILLS (id="skills"): Dark section. Title "مهاراتي ودرجة إتقاني". Grid of skill cards (3-4 per row). Each card: icon + skill name + animated progress bar (CSS width 0→percentage triggered by IntersectionObserver). Use specific skills matching their field (e.g. designer: Figma 95%, Adobe XD 90%, Photoshop 88%, After Effects 80%).
 
-5. PORTFOLIO (id="portfolio"): Dark section. Title "أحدث أعمالي". 3-column grid. Each card: Unsplash image relevant to their field, overlay on hover (translateY(-8px), gradient overlay, title appears), title badge, category tag, "مشاهدة المشروع" button. Generate 6 realistic projects matching their specialty (e.g. for designer: "تصميم هوية بصرية", "واجهة تطبيق موبايل", etc.)
+5. PORTFOLIO (id="portfolio"): Dark-navy section. Title "أحدث أعمالي". 3-column grid. Use Images #3–#7 from the pre-selected list (one per card). Each card: image (object-fit:cover, height:240px), gradient overlay on hover with translateY(-8px) + scale(1.02), card title, category tag (badge), "مشاهدة التفاصيل" button. Generate 5-6 realistic project titles matching their specialty. Each card hover reveals: project title, 1-line result metric ("زيادة المبيعات 120%"), view button.
 
-6. SERVICES/WHAT I OFFER (id="services"): Light section. "ماذا أقدم؟" — 3 service cards with gradient borders, icons, titles, descriptions. Real services based on their specialty.
+6. SERVICES (id="services"): Light section. "ماذا أقدم؟" — 3-column grid with gradient border cards. Each: relevant Font Awesome icon (gradient icon box), title, description (2 lines). Services must be SPECIFIC to their field.
 
-7. CONTACT (id="contact"): Dark section with gradient. Large CTA headline. Two-column: left side = contact info (WhatsApp link, email, city). Right side: minimal clean contact form (name, email, message, send button). Also link to their social platforms.
+7. CONTACT (id="contact"): Dark gradient section. Two-column. LEFT: contact info boxes (WhatsApp, Email, City, Social links). RIGHT: clean contact form (name, phone, message, send button with gradient). Form validation with success message.
 
-8. FOOTER: Dark minimal. Name + tagline. Social icons with circle hover effect. Copyright.
+8. FOOTER: Dark (#050814). SVG logo (id="aw-ai-logo-footer", 28×28px) + tagline. Social icons. Copyright © ${new Date().getFullYear()} [Person Name]. "Powered by ArabyWeb.net".
 
-═══ DESIGN STYLE ═══
-- Color: Based on field — Designer: pink/purple (#be185d + #7c3aed) | Developer: violet/cyan (#6366f1 + #06b6d4) | Photographer: near-black/gold (#0a0a0a + #d4a843) | Teacher/Doctor: teal/blue (#0d9488 + #2563eb)
-- All transitions: cubic-bezier(.22,1,.36,1)
-- IntersectionObserver scroll reveals (aw-reveal → aw-visible)
-- Navbar scroll effect
-- Counter animation for any numbers
-- Include Font Awesome 6 CDN
+═══ DESIGN SYSTEM — 2025 PREMIUM ═══
+- Color: Field-based palette —
+  Designer/Creative: electric violet (#7c3aed) + pink (#ec4899)
+  Developer/Tech: violet (#6366f1) + cyan (#06b6d4)  
+  Photographer/Art: charcoal (#0a0a0a) + warm gold (#d4a843)
+  Business/Other: deep navy (#1e3a5f) + teal (#0d9488)
+- Typography: headings font-weight:900, letter-spacing:-0.03em, clamp sizing
+- Glassmorphism: backdrop-filter:blur(16px); background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1)
+- Gradient text: -webkit-background-clip:text; -webkit-text-fill-color:transparent
+- All transitions: cubic-bezier(.22,1,.36,1) 0.3s
+- Scroll reveals: .aw-reveal{opacity:0;transform:translateY(30px)} → .aw-visible{opacity:1;transform:none} via IntersectionObserver
+- Navbar scroll: adds class "scrolled" → background darkens
+- Skill bars: animate on IntersectionObserver trigger
 
 Language: ${lang}
 Font: ${font}
 Mobile hamburger: ${mobileMenu}
 ${MOBILE_RESPONSIVE_MANDATORY}
 
-Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <head>, Google Fonts @import, Font Awesome 6 CDN link, all animations including skill progress bars and scroll reveals, responsive breakpoints, and all JS in a <script> at end of <body>. Output ONLY pure HTML. No JSON. No markdown code blocks.`;
+Output ONLY a complete <!DOCTYPE html> document. No markdown. No explanations. Start with <!DOCTYPE html> immediately.`;
   }
 
   if (category === "event") {
-    return `You are a world-class event website designer specializing in Saudi/Arab events. Build a premium, visually stunning event website.
+    return `You are a world-class event website designer specializing in Saudi/Arab events. Build a PREMIUM, visually stunning, production-ready event website.
 
 Request: "${description}"
+
+⛔ ABSOLUTE RULE: Extract event name/type/date from the request — NEVER display the raw request text as content.
 
 STEP 0 — MANDATORY: EXTRACT FIRST
 - Event name/title → use prominently throughout
 - Event type (wedding, conference, graduation, exhibition, festival, product launch, birthday, etc.)
-- Date if mentioned → display in a countdown timer
+- Date if mentioned → display in countdown timer
 - Location/venue if mentioned → city + venue name
 - Organizer name if mentioned
 
+═══════════════════════════════════
+STOCK IMAGES — PRE-SELECTED FOR THIS REQUEST
+═══════════════════════════════════
+USE_IMAGES_PLACEHOLDER
+
+⚠️ MANDATORY IMAGE RULES:
+• Image #1 (marked "HERO") → hero section CSS background-image ONLY — MUST be a real photo, NOT a CSS gradient alone
+• Images #2-#7 (marked "GALLERY") → use in the gallery section — one per card, never repeat
+
 ═══ SECTIONS (in order) ═══
 
-1. NAVBAR: Fixed glassmorphism (rgba dark + blur). Links: عن الفعالية (#about), البرنامج (#schedule), الصور (#gallery), التسجيل (#register). Mobile hamburger required. Brand = small inline SVG (id="aw-ai-logo", 32×32px, icon matching event type) + event name in gradient text. FOOTER: SVG logo only (id="aw-ai-logo-footer") + tagline, NEVER repeat event name as text again.
+1. NAVBAR: Fixed glassmorphism (rgba(5,8,22,0.82) + blur(24px)). Brand = SVG icon (id="aw-ai-logo", 32×32) + event name gradient text. Links: عن الفعالية (#about), البرنامج (#schedule), الصور (#gallery), التسجيل (#register). Mobile hamburger required. FOOTER: SVG only (id="aw-ai-logo-footer") — NEVER repeat event name as text.
 
-2. HERO: Full viewport. Background: high-quality event/venue Unsplash image with dark overlay gradient. 3 animated orb blobs for depth. Event name in massive gradient text (clamp(2.5rem,7vw,6rem), font-weight:900). Date and location badge prominently displayed. If date is future: add a live countdown timer (Days, Hours, Minutes, Seconds) with JS setInterval. CTA buttons: "سجّل الآن" (gradient) + "عرّف نفسك" (outline glass).
+2. HERO: min-height:100vh; position:relative; background-image:url("IMAGE_#1_URL") center/cover no-repeat.
+   Add dark overlay (position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,8,22,0.85) 0%,rgba(15,5,40,0.7) 100%);z-index:1).
+   Content (z-index:2): Event name in massive gradient text (clamp(2.5rem,7vw,6rem), font-weight:900). Date and location badge (glass pill). If date is future: LIVE COUNTDOWN TIMER in 4 boxes (أيام / ساعات / دقائق / ثواني) using JS setInterval. CTA: "سجّل الآن" (gradient) + "عرف أكثر" (glass outline).
 
-3. ABOUT EVENT (id="about"): 2-column. LEFT: Beautiful event imagery with gradient border overlay. RIGHT: Event description, key highlights as checklist with colored icons, expected attendees count, key sponsor/organizer name. Style: alternating section (light background).
+3. ABOUT EVENT (id="about"): Light section (#f8fafc). 2-column. LEFT: Use Image #2 with gradient border overlay. RIGHT: Event description, key highlights checklist, expected attendees count, organizer name. 
 
-4. SCHEDULE/PROGRAM (id="schedule"): Dark gradient section. Title "برنامج الفعالية". Vertical timeline with time + activity + icon for each item. Generate a realistic schedule based on event type (e.g. for conference: Registration 8:00, Opening 9:00, Keynote 10:00, etc.). Each item has a numbered circle and connecting line.
+4. SCHEDULE (id="schedule"): Dark section. Title "برنامج الفعالية". Vertical timeline with numbered circles + connecting line. Generate a REALISTIC schedule for this specific event type (conference=Registration→Opening→Keynote→Break→Sessions→Networking; wedding=Reception→Ceremony→Dinner→Dance; etc.).
 
-5. GALLERY (id="gallery"): Light section. Title "لحظات مميزة". 3-column masonry-style photo grid. Use 6 relevant Unsplash images matching the event type (conference=people in suits, wedding=flowers/venue, exhibition=booth setups, etc.).
+5. GALLERY (id="gallery"): Light section. "معرض الصور" — 3-column masonry grid. Use Images #2–#7 from the pre-selected list. Hover: scale(1.05) + dark overlay + eye icon. Lightbox on click (fullscreen overlay, prev/next buttons, ESC to close).
 
-6. SPEAKERS/GUESTS (if applicable): Dark section. Card grid with Unsplash portrait photos, names, roles/titles. Generate 3-4 realistic speakers matching the event context.
+6. SPEAKERS/GUESTS (if conference/summit/graduation): Dark section. 3-4 speaker cards with professional appearance, names, titles/roles.
 
-7. REGISTER/CONTACT (id="register"): Full-width gradient section. Large CTA headline "احجز مقعدك الآن". Registration form: Name, Phone, Email, How did you hear about us, Submit button. Also WhatsApp link and email prominently displayed.
+7. REGISTER (id="register"): Gradient section. Large CTA "احجز مقعدك الآن". Registration form: Name, Phone, Email, Submit. Show WhatsApp link prominently.
 
-8. FOOTER: Dark, event branding with logo and social links.
+8. FOOTER: Dark (#050814). SVG logo + tagline + social icons. Copyright © ${new Date().getFullYear()} [Event Name]. "Powered by ArabyWeb.net".
 
 ═══ DESIGN NOTES ═══
-- Color: Wedding=rose/gold, Conference=navy/gold, Festival=electric purple/amber, Exhibition=teal/green, Graduation=navy/gold
-- Add confetti or particle animation effect in hero for celebrations
-- Countdown timer if it's a future event (use JS setInterval updating every 1 second)
+- Color: Wedding=rose+gold (#be185d+#d4a843), Conference=navy+gold (#1e3a5f+#d4a843), Festival=violet+amber (#7c3aed+#f59e0b), Exhibition=teal+green (#0d9488+#059669), Graduation=navy+gold
+- All sections alternate dark/light backgrounds for rhythm
+- Add confetti particles CSS animation for celebrations (weddings, graduations)
+- Countdown timer: JS setInterval every 1000ms, updates seconds/minutes/hours/days
 - Include Font Awesome 6 CDN
 
 Language: ${lang}
@@ -238,7 +274,7 @@ Font: ${font}
 Mobile hamburger: ${mobileMenu}
 ${MOBILE_RESPONSIVE_MANDATORY}
 
-Output a COMPLETE <!DOCTYPE html> document with all CSS in a <style> tag in <head>, Google Fonts @import, Font Awesome 6 CDN link, countdown timer JS, all animations, responsive breakpoints, and all JS in a <script> at end of <body>. Output ONLY pure HTML. No JSON. No markdown code blocks.`;
+Output ONLY a complete <!DOCTYPE html> document. No markdown. No explanations. Start with <!DOCTYPE html>.`;
   }
 
   // Default: business
@@ -767,7 +803,15 @@ The website MUST look like it was designed in 2025 by a top-tier agency. Think N
   • The SVG MUST be meaningful and unique — NO generic circles. Create something that fits the business type.
   • CRITICAL: The business name text MUST appear ONLY ONCE in the entire website — in the navbar only. NEVER repeat it in the footer or any other section. Footer uses only the SVG logo (id="aw-ai-logo-footer" — a smaller copy of the same SVG, 28×28px) followed by a tagline, NOT the business name text.
 
-▸ HERO (FULL VIEWPORT + ANIMATED ORBS): min-height:100vh. Dark gradient overlay on background image. Add 2–3 large blurred orb blobs (CSS radial-gradient circles, 400–700px, filter:blur(80px), position:absolute, animated with @keyframes orbFloat). Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
+▸ HERO (FULL VIEWPORT): MANDATORY IMPLEMENTATION:
+  HTML structure:
+  <section id="hero" style="min-height:100vh;position:relative;background-image:url('USE_IMAGE_1_URL_FROM_LIST_ABOVE');background-size:cover;background-position:center;display:flex;align-items:center;">
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(5,8,22,0.88) 0%,rgba(15,5,40,0.72) 100%);z-index:1;"></div>
+    <!-- Orbs: 2-3 large blurred blobs for depth — BEHIND content (z-index:1), opacity:0.12-0.18, filter:blur(80px), animated with @keyframes orbFloat — they enhance the photo, NOT replace it -->
+    <div style="position:relative;z-index:2;..."> <!-- ALL text content here --> </div>
+  </section>
+  ORBS RULE: Orbs are decorative overlays on top of the photo. They must NEVER be used as a replacement for the photo. The photo (background-image) MUST be set.
+  Hero text: clamp(2.8rem,6.5vw,5.5rem), font-weight:900, letter-spacing:-0.025em, color:#fff. Subtitle: rgba(255,255,255,0.68). Two CTA buttons: solid gradient + ghost outline with backdrop-filter.
 
 ▸ CTA BUTTONS — MANDATORY PREMIUM DESIGN SYSTEM (NEVER VIOLATE):
   ✅ Primary button: Use a SINGLE-HUE gradient (2 shades of same color family), e.g.:
@@ -839,7 +883,7 @@ SERVICES MUST BE 100% SPECIFIC TO THE BUSINESS — if user says "مطعم مشا
   • 3-column grid: [Brand+tagline+social] [Quick links] [Contact info]
   • Brand: SVG logo (id="aw-ai-logo-footer", 28×28px) + tagline text (NOT the business name again)
   • Social links: Instagram, Twitter/X, Snapchat — circle hover effect with primary color fill
-  • Bottom bar: thin border, copyright text + "Powered by ArabyWeb.net"
+  • Bottom bar: thin border, "جميع الحقوق محفوظة © ${new Date().getFullYear()} | Powered by ArabyWeb.net"
 
 ▸ ANIMATIONS: Use cubic-bezier(.22,1,.36,1) for all transitions. @keyframes fadeUp, orbFloat, pulse, scrollBounce. IntersectionObserver for scroll reveals.
 
