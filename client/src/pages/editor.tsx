@@ -198,6 +198,20 @@ export default function EditorPage() {
         websiteLanguage: projLang,
         websiteLanguages: [projLang],
       });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        if (res.status === 409) {
+          throw new Error(lang === "ar"
+            ? (body.messageAr || "موقعك قيد التوليد حالياً، انتظر لحظة ثم أعد المحاولة.")
+            : (body.messageEn || "Your website is being generated right now. Please wait a moment and try again."));
+        }
+        if (res.status === 402) {
+          throw new Error(lang === "ar"
+            ? (body.messageAr || "نفد رصيد الذكاء لديك. يرجى ترقية خطتك.")
+            : (body.messageEn || "Your AI credits are depleted. Please upgrade your plan."));
+        }
+        throw new Error(body.messageAr || body.message || "Error");
+      }
       return res.json();
     },
     onSuccess: () => {

@@ -585,7 +585,15 @@ Sitemap: https://arabyweb.net/sitemap.xml
       if (!project) return res.status(404).json({ message: "Project not found" });
       const userId = req.user.id;
       if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
-      if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
+      // If stuck in "generating" for > 5 minutes, auto-reset and allow re-generation
+      if (project.status === "generating") {
+        const stuckMs = Date.now() - new Date(project.updatedAt ?? project.createdAt).getTime();
+        if (stuckMs < 5 * 60 * 1000) {
+          return res.status(409).json({ message: "Already generating", messageAr: "موقعك قيد التوليد حالياً، يرجى الانتظار لحظة ثم المحاولة مجدداً.", messageEn: "Your website is being generated right now. Please wait a moment and try again." });
+        }
+        // Stuck > 5 min — reset status
+        await storage.updateProject(project.id, { status: "error" });
+      }
       if (!checkAiRateLimit(userId)) {
         return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
       }
@@ -597,9 +605,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
       await storage.addChatMessage({ projectId: project.id, role: "user", content: description });
 
-      // ─── Credit check for paid users before generation ───────────────────────
+      // ─── Credit check for ALL users before generation ────────────────────────
       const { isFreePlan, isUserAdmin, credits: userCreditsGen } = await getUserPlanInfo(userId);
-      if (!isFreePlan && !isUserAdmin && userCreditsGen <= 0) {
+      if (!isUserAdmin && userCreditsGen <= 0) {
         await storage.updateProject(project.id, { status: "error" });
         return res.status(402).json({
           message: "insufficient_credits",
@@ -638,7 +646,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
         htmlHistory: [] as any,
       });
 
-      if (!isFreePlan && !isUserAdmin) {
+      if (!isUserAdmin) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
         // Fire-and-forget: notify user if credits hit 0
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, userId)).then(([u]) => {
@@ -661,7 +669,15 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
       if (project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
-      if (project.status === "generating") return res.status(409).json({ message: "Already generating" });
+      // If stuck in "generating" for > 5 minutes, auto-reset and allow re-generation
+      if (project.status === "generating") {
+        const stuckMs = Date.now() - new Date(project.updatedAt ?? project.createdAt).getTime();
+        if (stuckMs < 5 * 60 * 1000) {
+          return res.status(409).json({ message: "Already generating", messageAr: "موقعك قيد التوليد حالياً، يرجى الانتظار لحظة ثم المحاولة مجدداً.", messageEn: "Your website is being generated right now. Please wait a moment and try again." });
+        }
+        // Stuck > 5 min — reset status and proceed
+        await storage.updateProject(project.id, { status: "error" });
+      }
       if (!checkAiRateLimit(req.user.id)) {
         return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
       }
@@ -677,9 +693,9 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const activityType: string = req.body.activityType || "other";
       const designStyle: string = req.body.designStyle || "dark-modern";
 
-      // ─── Credit check for paid users before generation ───────────────────────
+      // ─── Credit check for ALL users before generation ────────────────────────
       const { isFreePlan: isFreePlan2, isUserAdmin: isUserAdmin2, credits: userCreditsInst } = await getUserPlanInfo(req.user.id);
-      if (!isFreePlan2 && !isUserAdmin2 && userCreditsInst <= 0) {
+      if (!isUserAdmin2 && userCreditsInst <= 0) {
         return res.status(402).json({
           message: "insufficient_credits",
           messageAr: "نفد رصيد الذكاء لديك. يرجى شراء جلسات إضافية أو ترقية خطتك.",
@@ -789,8 +805,12 @@ Sitemap: https://arabyweb.net/sitemap.xml
         websiteLanguages,
       });
 
-      if (!isFreePlan2 && !isUserAdmin2) {
+      if (!isUserAdmin2) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        // Fire-and-forget: notify user if credits hit 0
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, true).catch(() => {});
+        }).catch(() => {});
       }
 
       // ─── Learning System: Auto-save to component library (async, non-blocking) ──

@@ -90,24 +90,8 @@ export default function ChatWidget() {
   const inputRef = useRef<HTMLInputElement>(null);
   const history = useRef<Array<{ role: "user" | "assistant"; content: string }>>([]);
 
-  // Proactive auto-open for new visitors
-  useEffect(() => {
-    const alreadySeen = sessionStorage.getItem(STORAGE_KEY);
-    if (alreadySeen) return;
-
-    const msgs = uiLang === "en" ? PROACTIVE_MSGS_EN : PROACTIVE_MSGS_AR;
-    const msg = msgs[Math.floor(Math.random() * msgs.length)];
-
-    // Show bubble after 4s
-    const bubbleTimer = setTimeout(() => {
-      setProactiveBubble(msg);
-      setUnreadCount(1);
-    }, 4000);
-
-    return () => {
-      clearTimeout(bubbleTimer);
-    };
-  }, [uiLang]);
+  // Proactive auto-open disabled — balloon no longer pops up automatically
+  // (kept as no-op to preserve variable declarations below)
 
   // Initialize chat when opened
   useEffect(() => {
