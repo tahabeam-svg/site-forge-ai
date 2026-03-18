@@ -30,6 +30,7 @@ import IncidentResponsePage from "@/pages/incident-response";
 import FreeWebsitePage from "@/pages/free-website";
 import FreeStorePage from "@/pages/free-store";
 import AIBuilderPage from "@/pages/ai-builder";
+import TemplatesPage from "@/pages/templates";
 
 import { useEffect } from "react";
 
@@ -90,6 +91,7 @@ function Router() {
       <Route path="/free-website" component={FreeWebsitePage} />
       <Route path="/free-store" component={FreeStorePage} />
       <Route path="/ai-builder">{() => <ProtectedRoute component={AIBuilderPage} />}</Route>
+      <Route path="/templates">{() => <ProtectedRoute component={TemplatesPage} />}</Route>
       <Route component={NotFound} />
     </Switch>
   );
