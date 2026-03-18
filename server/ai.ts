@@ -792,12 +792,29 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
   console.log("Using AI model:", model, "| Category:", category, "| Images injected for:", detectImageCategory(description));
   const response = await openai.chat.completions.create({
     model,
-    messages: [{ role: "user", content: prompt }],
+    messages: [
+      {
+        role: "system",
+        content: "You are a professional web developer. Your ONLY output must be raw HTML code starting with <!DOCTYPE html> and ending with </html>. NEVER output markdown, planning text, explanations, or any text outside the HTML document. Do not write any introductory sentences. Begin your response immediately with <!DOCTYPE html>.",
+      },
+      { role: "user", content: prompt },
+    ],
     max_completion_tokens: 16384,
     temperature: 0.85,
   });
 
-  const content = response.choices[0]?.message?.content || "";
+  // Some models (e.g. reasoning models) may prepend thinking text before HTML.
+  // Extract only the HTML portion from the response.
+  const rawContent = response.choices[0]?.message?.content || "";
+  const htmlStartIndex = rawContent.indexOf("<!DOCTYPE");
+  const htmlAltIndex = rawContent.indexOf("<html");
+  const htmlBegin = htmlStartIndex !== -1 ? htmlStartIndex
+                  : htmlAltIndex !== -1 ? htmlAltIndex
+                  : -1;
+  const content = htmlBegin !== -1 ? rawContent.slice(htmlBegin) : rawContent;
+  if (htmlBegin > 0) {
+    console.log(`[AI] Trimmed ${htmlBegin} chars of non-HTML prefix from response`);
+  }
 
   // Sanitize nav links: replace path-based hrefs with anchor hrefs
   function sanitizeNavLinks(html: string): string {
