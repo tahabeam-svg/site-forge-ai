@@ -1,0 +1,246 @@
+Upgrade my platform ArabyWeb by adding a full AI-powered website creation system.
+
+IMPORTANT RULE
+
+Do NOT modify or rebuild existing systems such as:
+
+Messaging system
+Subscription system
+Payment system
+User accounts
+
+These systems are already implemented and must remain unchanged.
+
+The AI features must be added as a new module connected to the current platform.
+
+---
+
+SYSTEMS TO BUILD
+
+1. AI DESIGN SYSTEM
+
+Create a design system that ensures every generated website looks professional.
+
+The system must include:
+
+Color palette generator
+Typography scale
+Spacing system
+Component library
+
+Color palette structure:
+
+primary
+secondary
+accent
+background
+surface
+
+Typography scale:
+
+Hero title
+Section title
+Body text
+Small text
+
+Spacing system:
+
+8px
+16px
+24px
+32px
+64px
+96px
+
+Component library:
+
+Hero sections
+Service cards
+Feature grids
+Gallery layouts
+Testimonials
+Pricing tables
+Contact sections
+Call to action blocks
+
+Design styles supported:
+
+Luxury
+Corporate
+Modern
+Minimal
+Creative
+
+The AI must choose a design style automatically based on the business type.
+
+---
+
+2. AI WEBSITE GENERATOR
+
+Create a one-prompt AI website generator.
+
+User example prompt:
+
+"I want a luxury perfume store website in Riyadh called Layali Perfume with WhatsApp contact."
+
+The AI must automatically generate:
+
+Hero section
+About section
+Services
+Gallery
+Testimonials
+FAQ
+Contact form
+Footer
+
+Content must be generated automatically.
+
+The layout must adapt to business types.
+
+Examples:
+
+Restaurant → menu section
+Real estate → property listings
+Perfume store → product gallery
+Law firm → legal services
+Construction company → project portfolio
+
+The generated website must be stored as structured JSON.
+
+Example structure:
+
+{
+hero: {},
+about: {},
+services: [],
+gallery: [],
+testimonials: [],
+faq: [],
+contact: {}
+}
+
+The frontend renders the website dynamically.
+
+---
+
+3. AI CONVERSATIONAL EDITOR
+
+Replace traditional editing panels with an AI chat editor.
+
+Users should edit the website through conversation.
+
+Examples:
+
+Change colors to black and gold
+Add WhatsApp button
+Upload logo
+Replace hero image
+Add pricing section
+Modify text
+Add services
+Add gallery images
+
+The AI must interpret the command and update the website structure.
+
+LIVE PREVIEW
+
+The preview must update instantly after every change.
+
+No page refresh required.
+
+UNDO FEATURE
+
+Users can type:
+
+undo last change
+
+The system restores the previous version.
+
+---
+
+4. AUTOMATIC IMAGE SYSTEM
+
+Create an automatic image selection system.
+
+The AI must automatically fetch or generate images relevant to the business.
+
+Examples:
+
+Perfume store → luxury perfume bottles
+Restaurant → restaurant interior
+Construction → building site
+Law firm → office environment
+
+The system should support:
+
+AI image generation
+Stock image APIs
+Image optimization
+
+When users upload images in chat:
+
+The AI must automatically place them in the correct section.
+
+Logo → header
+Product images → gallery
+Hero image → hero section
+
+---
+
+PERFORMANCE
+
+The website generation must take less than 10 seconds.
+
+Images must be optimized and lazy loaded.
+
+---
+
+RESPONSIVE DESIGN
+
+All generated websites must work perfectly on:
+
+Desktop
+Tablet
+Mobile
+
+---
+
+ARABIC FIRST
+
+The platform must fully support Arabic RTL layout.
+
+Use Arabic fonts:
+
+Cairo
+Tajawal
+
+Generate Arabic content by default.
+
+---
+
+TECH STACK
+
+Frontend:
+Next.js
+Tailwind CSS
+
+Backend:
+Node.js
+
+Database:
+PostgreSQL
+
+AI:
+OpenAI API
+
+---
+
+FINAL GOAL
+
+Transform ArabyWeb into a modern AI website builder where users can:
+
+generate a website with one prompt
+edit the website through chat
+upload images through conversation
+receive professional agency-quality designs automatically.
