@@ -387,12 +387,81 @@ function shuffleAndPick<T>(arr: T[], n: number): T[] {
   return copy.slice(0, Math.min(n, copy.length));
 }
 
-function buildImagePromptSection(description: string): string {
+// ─── Unsplash Search API keywords per category ──────────────────────────────
+const UNSPLASH_SEARCH_TERMS: Record<string, string[]> = {
+  restaurant:  ["restaurant interior elegant", "fine dining restaurant", "modern restaurant decor"],
+  grill:       ["bbq grill steakhouse", "grilled meat restaurant", "charcoal grill food"],
+  cafe:        ["coffee shop cafe interior", "modern coffee bar", "cozy cafe aesthetic"],
+  agency:      ["creative agency office", "advertising agency workspace", "modern marketing office"],
+  tech:        ["technology startup office modern", "software company workspace", "tech office interior"],
+  realestate:  ["luxury real estate villa", "modern apartment property", "architecture interior design"],
+  medical:     ["modern clinic interior", "hospital healthcare facility", "medical center professional"],
+  beauty:      ["luxury beauty salon interior", "spa wellness center", "modern hair salon"],
+  education:   ["modern school classroom", "university library", "education learning environment"],
+  automotive:  ["luxury car showroom", "automotive dealership", "car service center"],
+  events:      ["elegant event venue hall", "conference room luxury", "ballroom event space"],
+  photography: ["photography studio professional", "camera photo studio", "photographer workspace"],
+  gym:         ["modern gym fitness center", "fitness workout studio", "sports training facility"],
+  luxury:      ["luxury boutique store interior", "high-end retail shop", "luxury brand showroom"],
+  finance:     ["modern bank office interior", "finance corporate office", "professional business workspace"],
+};
+
+/**
+ * Fetches a relevant hero image ID from Unsplash Search API.
+ * Returns null if key is missing or request fails.
+ */
+async function fetchUnsplashHeroId(category: string): Promise<string | null> {
+  const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+  if (!accessKey) return null;
+
+  const terms = UNSPLASH_SEARCH_TERMS[category] || UNSPLASH_SEARCH_TERMS["agency"];
+  const query = terms[Math.floor(Math.random() * terms.length)];
+
+  try {
+    const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=15&orientation=landscape&content_filter=high`;
+    const resp = await fetch(url, {
+      headers: { Authorization: `Client-ID ${accessKey}` },
+    });
+    if (!resp.ok) {
+      console.warn(`[Unsplash] Search failed: ${resp.status} for query "${query}"`);
+      return null;
+    }
+    const data = await resp.json() as { results: Array<{ id: string }> };
+    if (!data.results?.length) return null;
+    // Pick randomly from top results for diversity
+    const picked = data.results[Math.floor(Math.random() * Math.min(data.results.length, 10))];
+    console.log(`[Unsplash] ✓ Hero image fetched: ${picked.id} (query: "${query}")`);
+    return picked.id;
+  } catch (err) {
+    console.warn(`[Unsplash] Search error:`, err);
+    return null;
+  }
+}
+
+async function buildImagePromptSection(description: string): Promise<string> {
   const cat = detectImageCategory(description);
   const pool = IMAGE_BANK[cat] || DEFAULT_IMAGES;
-  const picked = shuffleAndPick(pool, 10);
-  const lines = picked.map((id, i) => `  ${i + 1}. ${id}`).join("\n");
-  return `Category detected: ${cat}\nSelected images for this request:\n${lines}`;
+  const bankImages = shuffleAndPick(pool, 10);
+
+  // Attempt live Unsplash Search for a more relevant hero image
+  const liveHeroId = await fetchUnsplashHeroId(cat);
+
+  let heroNote = "";
+  let imageList: string[];
+
+  if (liveHeroId) {
+    heroNote = `\n  🎯 HERO IMAGE (live Unsplash search — MUST use for hero section background):\n     ${liveHeroId}`;
+    // Put live hero first, then bank images (excluding duplicates)
+    imageList = [liveHeroId, ...bankImages.filter(id => id !== liveHeroId).slice(0, 9)];
+  } else {
+    imageList = bankImages;
+  }
+
+  const lines = imageList
+    .map((id, i) => `  ${i + 1}. ${id}${i === 0 && liveHeroId ? "  ← USE THIS FOR HERO BACKGROUND" : ""}`)
+    .join("\n");
+
+  return `Category detected: ${cat}${heroNote}\nSelected images for this request:\n${lines}`;
 }
 
 /**
@@ -658,12 +727,16 @@ Service icon CSS:
 ═══════════════════════════════════════
 STOCK IMAGES — PRE-SELECTED FOR THIS REQUEST
 ═══════════════════════════════════════
-The following Unsplash images have been selected for THIS specific request. Use EXACTLY these images (rotate through them for hero, about, gallery):
+The following Unsplash images have been selected for THIS specific request. Use EXACTLY these images:
 USE_IMAGES_PLACEHOLDER
-Format: https://images.unsplash.com/[PHOTO_ID]?w=1600&h=900&fit=crop&q=85 for hero
-        https://images.unsplash.com/[PHOTO_ID]?w=800&h=600&fit=crop&q=80 for about
-        https://images.unsplash.com/[PHOTO_ID]?w=600&h=400&fit=crop&q=75 for gallery (need 6)
-⚠️ Use at least 7 different images from the list above. NEVER reuse the same photo ID twice on the page.
+
+Image URL format:
+  • HERO background: https://images.unsplash.com/[PHOTO_ID]?w=1920&h=1080&fit=crop&q=90&auto=format
+  • About section:   https://images.unsplash.com/[PHOTO_ID]?w=900&h=700&fit=crop&q=85&auto=format
+  • Gallery cards:   https://images.unsplash.com/[PHOTO_ID]?w=700&h=500&fit=crop&q=80&auto=format
+
+⚠️ HERO IMAGE RULE: If item #1 is marked "← USE THIS FOR HERO BACKGROUND", you MUST use it as the hero section's background-image. It was specifically fetched by live search to match this business type.
+⚠️ Use at least 7 DIFFERENT images total. NEVER repeat the same photo ID twice on the page.
 
 ═══════════════════════════════════════
 WHATSAPP BUTTON — REQUIRED FOR ARAB MARKET
@@ -709,8 +782,8 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
 • All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
 • Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.`;
 
-  // Inject randomized images and add variation token to prevent identical output
-  const imageSection = buildImagePromptSection(description);
+  // Inject randomized images — tries Unsplash Search API first, falls back to IMAGE_BANK
+  const imageSection = await buildImagePromptSection(description);
   const variationToken = `\n[Variation seed: ${Date.now()}-${Math.random().toString(36).slice(2,7)}]`;
   const prompt = basePrompt
     .replace("USE_IMAGES_PLACEHOLDER", imageSection)
