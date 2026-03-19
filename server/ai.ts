@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { runQualityCheck, validateAndCorrectColors, validatePageStructure } from "./design-system.js";
 import { generateContentSpec, buildWebsiteHTML, type WebsiteImages } from "./website-builder.js";
+import { learnFromSpec, logGenerationInsight } from "./learning-engine.js";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -1556,14 +1557,17 @@ CSS:
     const locationQueryNew = extractLocationQuery(description, businessNameNew);
 
     console.log(`[Builder] Two-stage pipeline | cat:${category} | imgCat:${imgCatNew}`);
+    const t0 = Date.now();
 
     // Parallel: fetch images + generate content spec simultaneously
+    // Pass industry so the learning engine can inject proven patterns from past generations
     const [images, spec] = await Promise.all([
       buildImageData(description),
       generateContentSpec(description, {
         primaryColor: options.primaryColor,
         accentColor: options.accentColor,
         designStyle: options.designStyle,
+        industry: imgCatNew,
       }),
     ]);
 
@@ -1589,8 +1593,27 @@ CSS:
 
     // Build guaranteed premium HTML from spec + verified images
     const html = buildWebsiteHTML(spec, images, { isArabic });
+    const generationMs = Date.now() - t0;
 
-    console.log(`[Builder] ✅ HTML built: ${html.length} chars | ${spec.businessName}`);
+    console.log(`[Builder] ✅ HTML built: ${html.length} chars | ${spec.businessName} | ${generationMs}ms`);
+
+    // ── Fire-and-forget: learn from this generation (non-blocking) ───────────
+    setImmediate(async () => {
+      try {
+        const insightId = await logGenerationInsight({
+          industry: imgCatNew,
+          language: isArabic ? "ar" : "en",
+          prompt: description,
+          spec,
+          primaryColor: options.primaryColor,
+          accentColor: options.accentColor,
+          generationMs,
+        });
+        await learnFromSpec(imgCatNew, spec, description, insightId ?? undefined);
+      } catch (e: any) {
+        console.warn("[Learning] Post-generation learn error:", e?.message);
+      }
+    });
 
     return {
       html,

@@ -12,6 +12,7 @@
  */
 
 import OpenAI from "openai";
+import { getIndustryInsights, buildInsightsPromptSection } from "./learning-engine.js";
 
 function getOpenAI() {
   const apiKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
@@ -66,11 +67,26 @@ export async function generateContentSpec(
     accentColor?: string;
     designStyle?: string;
     whatsapp?: string;
+    industry?: string;
   } = {}
 ): Promise<WebsiteContentSpec> {
   const openai = getOpenAI();
   const isArabic = /[\u0600-\u06FF]/.test(description);
   const lang = isArabic ? "Arabic" : "English";
+
+  // ── Fetch past learnings for this industry to inject as examples ───────────
+  let insightsSection = "";
+  if (options.industry) {
+    try {
+      const insights = await getIndustryInsights(options.industry, isArabic ? "ar" : "en", 6);
+      insightsSection = buildInsightsPromptSection(insights);
+      if (insights.totalPatterns > 0) {
+        console.log(`[Learning] 💡 Injecting ${insights.totalPatterns} patterns for industry: ${options.industry}`);
+      }
+    } catch (e) {
+      // Non-fatal — generate without learnings
+    }
+  }
 
   const systemPrompt = `You are a professional Arabic website copywriter and business consultant. You generate website content in ${lang} as a structured JSON object. Output ONLY valid JSON — no explanations, no markdown, no code blocks.`;
 
@@ -80,6 +96,7 @@ export async function generateContentSpec(
 
 ${options.primaryColor ? `Brand colors: Primary ${options.primaryColor}, Accent ${options.accentColor}` : ""}
 ${options.whatsapp ? `WhatsApp: ${options.whatsapp}` : ""}
+${insightsSection}
 
 Return a JSON object matching this EXACT structure. All text fields must be in ${lang === "Arabic" ? "Arabic" : "English"}:
 

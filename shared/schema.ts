@@ -209,6 +209,49 @@ export const generationLogs = pgTable("generation_logs", {
 export type AiGeneratedBlock = typeof aiGeneratedBlocks.$inferSelect;
 export type GenerationLog = typeof generationLogs.$inferSelect;
 
+// ─── Self-Improving Learning System ─────────────────────────────────────────
+
+/**
+ * Stores extracted patterns from successful website generations, per industry.
+ * The system learns from every generation and injects past successes into future prompts.
+ */
+export const industryPatterns = pgTable("industry_patterns", {
+  id: serial("id").primaryKey(),
+  industry: text("industry").notNull(),
+  patternType: text("pattern_type").notNull(), // tagline | service_title | cta_text | about_opening | faq_question | stat_label
+  content: text("content").notNull(),          // the actual text that worked well
+  language: text("language").default("ar"),    // ar | en
+  usageCount: integer("usage_count").default(1).notNull(),
+  qualityScore: integer("quality_score").default(50).notNull(), // 0-100; boosted by publish/export, reduced by regen
+  sourcePrompt: text("source_prompt"),         // snippet of original user prompt
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+/**
+ * Extended generation log — links generation to the spec produced, for learning purposes.
+ */
+export const generationInsights = pgTable("generation_insights", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id"),
+  projectId: integer("project_id"),
+  industry: text("industry"),
+  language: text("language").default("ar"),
+  prompt: text("prompt"),
+  specJson: jsonb("spec_json"),                // full WebsiteContentSpec that was generated
+  primaryColor: varchar("primary_color", { length: 10 }),
+  accentColor: varchar("accent_color", { length: 10 }),
+  generationMs: integer("generation_ms"),
+  qualityScore: integer("quality_score").default(50), // 50=neutral, 100=exported, 0=immediately_regenerated
+  regeneratedAfterMs: integer("regenerated_after_ms"), // null = not regenerated
+  exportedAt: timestamp("exported_at"),
+  publishedAt: timestamp("published_at"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export type IndustryPattern = typeof industryPatterns.$inferSelect;
+export type GenerationInsight = typeof generationInsights.$inferSelect;
+
 export const creditPurchases = pgTable("credit_purchases", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull(),

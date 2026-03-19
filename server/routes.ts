@@ -7,6 +7,7 @@ import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSoci
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
+import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration } from "./learning-engine";
 import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData } from "./email";
@@ -243,6 +244,9 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  // ── Self-improving learning system: ensure DB tables on startup ─────────────
+  ensureLearningTables().catch(e => console.error("[Learning] Startup table init failed:", e?.message));
+
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", version: BUILD_VERSION, timestamp: new Date().toISOString() });
   });
@@ -1151,15 +1155,72 @@ Sitemap: https://arabyweb.net/sitemap.xml
     }
   });
 
+  // ── Learning System: Admin Stats ────────────────────────────────────────────
   app.get("/api/admin/learning-stats", isAuthenticated, isAdmin, async (req: any, res) => {
     try {
-      const [genStats, topBlocks] = await Promise.all([
+      const [rawStats, genStats, topBlocks] = await Promise.all([
+        getLearningStats(),
         storage.getGenerationStats(),
         storage.getTopBlocks(20),
       ]);
-      res.json({ generationStats: genStats, topBlocks });
+
+      // Shape into UI-friendly format
+      const learningStats = {
+        totalPatterns: rawStats.totalPatterns,
+        totalInsights: rawStats.totalInsights,
+        industriesCount: rawStats.topIndustries.length,
+        avgQualityScore: rawStats.topIndustries.length
+          ? rawStats.topIndustries.reduce((s, i) => s + i.avgQuality, 0) / rawStats.topIndustries.length
+          : 0,
+        byIndustry: rawStats.topIndustries.map(i => ({
+          industry: i.industry,
+          count: i.count,
+          avgScore: i.avgQuality,
+        })),
+        recentHighQuality: rawStats.recentHighQuality,
+        qualityDistribution: rawStats.qualityDistribution,
+      };
+
+      res.json({ learningStats, generationStats: genStats, topBlocks });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch learning stats" });
+    }
+  });
+
+  // ── Learning System: Patterns by Industry ────────────────────────────────────
+  app.get("/api/admin/learning-patterns/:industry", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { industry } = req.params;
+      const patterns = await getPatternsByIndustry(industry, 100);
+      res.json({ industry, patterns, count: patterns.length });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch patterns" });
+    }
+  });
+
+  // ── Quality Signal: user exported their site ─────────────────────────────────
+  app.post("/api/projects/:id/signal-export", isAuthenticated, async (req: any, res) => {
+    try {
+      const projectId = parseInt(req.params.id);
+      const project = await storage.getProject(projectId);
+      if (!project || project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+      // Find the most recent insight for this project
+      const { db: database } = await import("./db");
+      const { generationInsights } = await import("@shared/schema");
+      const { desc: descOrder, eq: eqOp } = await import("drizzle-orm");
+      const [insight] = await database
+        .select({ id: generationInsights.id })
+        .from(generationInsights)
+        .where(eqOp(generationInsights.projectId, projectId))
+        .orderBy(descOrder(generationInsights.createdAt))
+        .limit(1);
+      if (insight?.id) {
+        await signalSatisfied(insight.id, "export");
+        console.log(`[Learning] Export signal → insightId:${insight.id}`);
+      }
+      res.json({ ok: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e?.message });
     }
   });
 

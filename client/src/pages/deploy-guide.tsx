@@ -122,6 +122,12 @@ export default function DeployGuidePage() {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+
+      // Fire quality signal (non-blocking): user exported → positive learning signal
+      fetch(`/api/projects/${projectId}/signal-export`, {
+        method: "POST",
+        credentials: "include",
+      }).catch(() => {});
     } catch (err: any) {
       alert(isRTL ? `خطأ في التحميل: ${err.message}` : `Download error: ${err.message}`);
     } finally {

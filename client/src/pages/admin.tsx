@@ -83,7 +83,7 @@ interface SuspiciousIp { ip: string; account_count: number; accounts: FraudAccou
 interface FraudData { suspiciousIps: SuspiciousIp[]; recentFreeUsers: (FraudAccount & { registration_ip: string | null; project_count: number })[]; }
 interface UserFeedbackItem { id: number; userId: string | null; userName: string | null; userEmail: string | null; type: string; message: string; page: string | null; status: string; adminNote: string | null; createdAt: string; }
 
-type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "smtp" | "chatbot" | "fraud" | "feedback";
+type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "smtp" | "chatbot" | "fraud" | "feedback" | "learning";
 
 export default function AdminPage() {
   const { language, logout, user } = useAuth();
@@ -153,6 +153,12 @@ export default function AdminPage() {
     refetchInterval: 60000,
   });
   const newFeedbackCount = feedbackCountData?.count ?? 0;
+
+  const { data: learningStats, isLoading: learningLoading, refetch: refetchLearning } = useQuery<any>({
+    queryKey: ["/api/admin/learning-stats"],
+    enabled: activeSection === "learning" && !statsError,
+    staleTime: 60000,
+  });
 
   useEffect(() => {
     if (pricingData) {
@@ -320,6 +326,7 @@ export default function AdminPage() {
     { key: "chatbot", icon: Bot, label: "Chatbot AI", labelAr: "الشاتبوت الذكي" },
     { key: "fraud", icon: AlertTriangle, label: "Anti-Fraud", labelAr: "مكافحة الاحتيال" },
     { key: "feedback", icon: MessageSquarePlus, label: "Feedback", labelAr: "بلاغات المستخدمين" },
+    { key: "learning", icon: Brain, label: "AI Learning", labelAr: "التعلم الذكي" },
   ];
 
   const statusLabel = (s: string) => lang === "ar" ? ({ draft: "مسودة", generating: "قيد الإنشاء", generated: "مُنشأ", published: "منشور", error: "خطأ" }[s] || s) : s;
@@ -1222,6 +1229,16 @@ export default function AdminPage() {
               />
             )}
 
+            {/* ─── AI Learning Section ──────────────────────────────────────── */}
+            {activeSection === "learning" && (
+              <LearningAdminSection
+                data={learningStats}
+                loading={learningLoading}
+                lang={lang}
+                onRefresh={() => refetchLearning()}
+              />
+            )}
+
             {/* ─── Anti-Fraud Section ───────────────────────────────────────── */}
             {activeSection === "fraud" && (
               <div className="space-y-6">
@@ -1919,6 +1936,154 @@ function FeedbackAdminSection({ items, loading, lang, onRefresh }: {
           </ScrollArea>
         )}
       </Card>
+    </div>
+  );
+}
+
+// ─── AI Learning Dashboard Section ────────────────────────────────────────────
+function LearningAdminSection({ data, loading, lang, onRefresh }: {
+  data: any;
+  loading: boolean;
+  lang: string;
+  onRefresh: () => void;
+}) {
+  const isRTL = lang === "ar";
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+  const { data: patterns, isLoading: patternsLoading } = useQuery<any>({
+    queryKey: ["/api/admin/learning-patterns", selectedIndustry],
+    enabled: !!selectedIndustry,
+    staleTime: 30000,
+  });
+
+  const ls = data?.learningStats;
+
+  const patternTypeColor: Record<string, string> = {
+    tagline: "text-violet-400 bg-violet-500/10",
+    service: "text-blue-400 bg-blue-500/10",
+    cta: "text-emerald-400 bg-emerald-500/10",
+    faq: "text-amber-400 bg-amber-500/10",
+    feature: "text-cyan-400 bg-cyan-500/10",
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-violet-600/20 flex items-center justify-center">
+            <Brain className="w-5 h-5 text-violet-400" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-white">{isRTL ? "نظام التعلم الذكي" : "AI Self-Learning System"}</h2>
+            <p className="text-xs text-zinc-500">{isRTL ? "الأنماط المستخلصة من كل موقع يُنشأ" : "Patterns extracted from every generated website"}</p>
+          </div>
+        </div>
+        <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2"
+          onClick={onRefresh} disabled={loading} data-testid="button-refresh-learning">
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          {isRTL ? "تحديث" : "Refresh"}
+        </Button>
+      </div>
+
+      {/* Stats Cards */}
+      {loading ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[0,1,2,3].map(i => <div key={i} className="h-24 bg-zinc-900 border border-zinc-800 rounded-xl animate-pulse" />)}
+        </div>
+      ) : ls ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card className="bg-zinc-900 border-zinc-800 p-4">
+            <p className="text-xs text-zinc-500 mb-1">{isRTL ? "إجمالي الأنماط" : "Total Patterns"}</p>
+            <p className="text-3xl font-bold text-violet-400" data-testid="text-total-patterns">{ls.totalPatterns ?? "—"}</p>
+          </Card>
+          <Card className="bg-zinc-900 border-zinc-800 p-4">
+            <p className="text-xs text-zinc-500 mb-1">{isRTL ? "إجمالي الجلسات" : "Total Insights"}</p>
+            <p className="text-3xl font-bold text-blue-400" data-testid="text-total-insights">{ls.totalInsights ?? "—"}</p>
+          </Card>
+          <Card className="bg-zinc-900 border-zinc-800 p-4">
+            <p className="text-xs text-zinc-500 mb-1">{isRTL ? "الصناعات المُغطاة" : "Industries"}</p>
+            <p className="text-3xl font-bold text-emerald-400" data-testid="text-industries-count">{ls.industriesCount ?? "—"}</p>
+          </Card>
+          <Card className="bg-zinc-900 border-zinc-800 p-4">
+            <p className="text-xs text-zinc-500 mb-1">{isRTL ? "متوسط التقييم" : "Avg Quality Score"}</p>
+            <p className="text-3xl font-bold text-amber-400" data-testid="text-avg-quality">{ls.avgQualityScore != null ? Number(ls.avgQualityScore).toFixed(1) : "—"}</p>
+          </Card>
+        </div>
+      ) : (
+        <div className="text-center py-12 text-zinc-500">
+          <Brain className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p>{isRTL ? "لا توجد بيانات تعلم بعد — ابدأ بإنشاء بعض المواقع" : "No learning data yet — start generating websites"}</p>
+        </div>
+      )}
+
+      {/* Industry breakdown */}
+      {ls?.byIndustry && Array.isArray(ls.byIndustry) && ls.byIndustry.length > 0 && (
+        <Card className="bg-zinc-900 border-zinc-800">
+          <div className="p-4 border-b border-zinc-800">
+            <h3 className="font-semibold text-white flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-amber-400" />
+              {isRTL ? "الأنماط حسب الصناعة" : "Patterns by Industry"}
+            </h3>
+          </div>
+          <div className="divide-y divide-zinc-800">
+            {ls.byIndustry.map((row: any) => (
+              <div key={row.industry}
+                className={`flex items-center justify-between p-4 cursor-pointer hover:bg-zinc-800/50 transition-colors ${selectedIndustry === row.industry ? "bg-zinc-800/70" : ""}`}
+                onClick={() => setSelectedIndustry(selectedIndustry === row.industry ? null : row.industry)}
+                data-testid={`row-industry-${row.industry}`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-violet-600/20 flex items-center justify-center">
+                    <Brain className="w-4 h-4 text-violet-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">{row.industry}</p>
+                    <p className="text-xs text-zinc-500">{isRTL ? `متوسط التقييم: ${Number(row.avgScore ?? 0).toFixed(1)}` : `Avg score: ${Number(row.avgScore ?? 0).toFixed(1)}`}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-bold text-violet-400">{row.count}</span>
+                  <span className="text-xs text-zinc-600">{isRTL ? "نمط" : "patterns"}</span>
+                  <ChevronRight className={`w-4 h-4 text-zinc-600 transition-transform ${selectedIndustry === row.industry ? "rotate-90" : ""}`} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Patterns detail panel */}
+      {selectedIndustry && (
+        <Card className="bg-zinc-900 border-zinc-800">
+          <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+            <h3 className="font-semibold text-white">
+              {isRTL ? `أنماط صناعة: ${selectedIndustry}` : `Patterns — ${selectedIndustry}`}
+            </h3>
+            <Button size="sm" variant="ghost" className="text-zinc-400" onClick={() => setSelectedIndustry(null)}>✕</Button>
+          </div>
+          {patternsLoading ? (
+            <div className="p-6 text-center text-zinc-500 animate-pulse">
+              {isRTL ? "تحميل الأنماط..." : "Loading patterns..."}
+            </div>
+          ) : patterns?.patterns?.length ? (
+            <div className="divide-y divide-zinc-800 max-h-96 overflow-y-auto">
+              {patterns.patterns.map((p: any) => (
+                <div key={p.id} className="flex items-start gap-3 p-3" data-testid={`pattern-${p.id}`}>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${patternTypeColor[p.patternType] ?? "text-zinc-400 bg-zinc-800"}`}>
+                    {p.patternType}
+                  </span>
+                  <p className="text-sm text-zinc-300 flex-1" dir="auto">{p.content}</p>
+                  <span className="text-xs text-zinc-600 shrink-0">⭐ {p.qualityScore}</span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center text-zinc-500 text-sm">
+              {isRTL ? "لا توجد أنماط بعد لهذه الصناعة" : "No patterns yet for this industry"}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }
