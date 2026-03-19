@@ -22,6 +22,27 @@ function getOpenAI() {
 
 // ─── Content Spec Types ──────────────────────────────────────────────────────
 
+export interface WebsiteContentSpecEn {
+  tagline: string;
+  subtitle: string;
+  ctaText: string;
+  ctaSecondary: string;
+  navCtaText: string;
+  navLinks: Array<{ text: string }>;
+  aboutTitle: string;
+  aboutParagraph1: string;
+  aboutParagraph2: string;
+  aboutFeatures: string[];
+  services: Array<{ title: string; description: string }>;
+  stats: Array<{ label: string }>;
+  testimonials: Array<{ name: string; text: string }>;
+  ctaBandTitle: string;
+  ctaBandSub: string;
+  workingHours: string;
+  faqItems: Array<{ question: string; answer: string }>;
+  footerTagline: string;
+}
+
 export interface WebsiteContentSpec {
   businessName: string;
   tagline: string;
@@ -50,6 +71,7 @@ export interface WebsiteContentSpec {
   seoDescription: string;
   primaryColor: string;
   accentColor: string;
+  en?: WebsiteContentSpecEn;
 }
 
 export interface WebsiteImages {
@@ -88,9 +110,9 @@ export async function generateContentSpec(
     }
   }
 
-  const systemPrompt = `You are a professional Arabic website copywriter and business consultant. You generate website content in ${lang} as a structured JSON object. Output ONLY valid JSON — no explanations, no markdown, no code blocks.`;
+  const systemPrompt = `You are a professional Arabic website copywriter and business consultant. You generate bilingual (Arabic + English) website content as a structured JSON object. Output ONLY valid JSON — no explanations, no markdown, no code blocks.`;
 
-  const userPrompt = `Generate professional website content for this business:
+  const userPrompt = `Generate professional bilingual website content for this business:
 
 "${description}"
 
@@ -98,7 +120,7 @@ ${options.primaryColor ? `Brand colors: Primary ${options.primaryColor}, Accent 
 ${options.whatsapp ? `WhatsApp: ${options.whatsapp}` : ""}
 ${insightsSection}
 
-Return a JSON object matching this EXACT structure. All text fields must be in ${lang === "Arabic" ? "Arabic" : "English"}:
+Return a JSON object matching this EXACT structure. Primary text fields must be in ${lang === "Arabic" ? "Arabic" : "English"}. Also include an "en" object with English translations of all text fields:
 
 {
   "businessName": "Specific business name (invent a creative Arabic name if not given)",
@@ -154,7 +176,54 @@ Return a JSON object matching this EXACT structure. All text fields must be in $
   "seoTitle": "${lang === "Arabic" ? "Arabic" : "English"} SEO title 50-60 chars",
   "seoDescription": "${lang === "Arabic" ? "Arabic" : "English"} meta description 150-160 chars",
   "primaryColor": "${options.primaryColor || "#0f4c81"}",
-  "accentColor": "${options.accentColor || "#06b6d4"}"
+  "accentColor": "${options.accentColor || "#06b6d4"}",
+  "en": {
+    "tagline": "English translation of the tagline",
+    "subtitle": "English translation of the subtitle",
+    "ctaText": "English CTA button text",
+    "ctaSecondary": "English secondary CTA",
+    "navCtaText": "English nav CTA",
+    "navLinks": [
+      { "text": "About" },
+      { "text": "Services" },
+      { "text": "Gallery" },
+      { "text": "Testimonials" }
+    ],
+    "aboutTitle": "English about section title",
+    "aboutParagraph1": "English translation of first about paragraph",
+    "aboutParagraph2": "English translation of second about paragraph",
+    "aboutFeatures": ["English feature 1", "English feature 2", "English feature 3", "English feature 4"],
+    "services": [
+      { "title": "English service title", "description": "English service description" },
+      { "title": "...", "description": "..." },
+      { "title": "...", "description": "..." },
+      { "title": "...", "description": "..." },
+      { "title": "...", "description": "..." },
+      { "title": "...", "description": "..." }
+    ],
+    "stats": [
+      { "label": "Years Experience" },
+      { "label": "Happy Clients" },
+      { "label": "Client Satisfaction" },
+      { "label": "Continuous Service" }
+    ],
+    "testimonials": [
+      { "name": "Abdullah Al-Ghamdi", "text": "English translation of testimonial 1" },
+      { "name": "Reem Al-Sahli", "text": "English translation of testimonial 2" },
+      { "name": "Khalid Al-Dossari", "text": "English translation of testimonial 3" }
+    ],
+    "ctaBandTitle": "English CTA band headline",
+    "ctaBandSub": "English CTA band subtitle",
+    "workingHours": "Sat–Thu: 9AM – 10PM",
+    "faqItems": [
+      { "question": "English FAQ question 1", "answer": "English FAQ answer 1" },
+      { "question": "...", "answer": "..." },
+      { "question": "...", "answer": "..." },
+      { "question": "...", "answer": "..." },
+      { "question": "...", "answer": "..." }
+    ],
+    "footerTagline": "English footer tagline"
+  }
 }
 
 IMPORTANT RULES:
@@ -162,7 +231,9 @@ IMPORTANT RULES:
 - Stats MUST be realistic and business-appropriate (small cafe won't have 50,000 clients)
 - Testimonials MUST mention specific details about the business
 - Choose Font Awesome 6 icons relevant to each service (fa-solid fa-...)
-- Phone format: +966 5X XXX XXXX (Saudi format)`;
+- Phone format: +966 5X XXX XXXX (Saudi format)
+- The "en" object MUST contain accurate English translations of all text fields
+- Keep the same number of items in arrays (6 services, 4 stats, 3 testimonials, 5 faqItems)`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -171,7 +242,7 @@ IMPORTANT RULES:
       { role: "user", content: userPrompt },
     ],
     temperature: 0.7,
-    max_completion_tokens: 3000,
+    max_completion_tokens: 5000,
   });
 
   const raw = response.choices[0]?.message?.content || "{}";
@@ -235,20 +306,35 @@ export function buildWebsiteHTML(
   const testimonials = (spec.testimonials || []).slice(0, 3);
   const faqItems = (spec.faqItems || []).slice(0, 5);
 
-  const servicesHTML = services.map((s, i) => `
+  // ─── Bilingual helpers ────────────────────────────────────────────────────
+  const enSpec = spec.en;
+  const hasBi = !!enSpec;
+  function esc(s: string): string { return (s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function da(ar: string, en: string | undefined): string {
+    if (!hasBi || !en) return "";
+    return ` data-ar="${esc(ar)}" data-en="${esc(en)}"`;
+  }
+
+  const servicesHTML = services.map((s, i) => {
+    const enS = enSpec?.services?.[i];
+    return `
         <div class="service-card aw-reveal" style="animation-delay:${i * 0.1}s">
           <div class="service-icon">
             <i class="${s.icon || 'fa-solid fa-star'}"></i>
           </div>
-          <h3 class="service-title">${s.title}</h3>
-          <p class="service-desc">${s.description}</p>
-        </div>`).join("");
+          <h3 class="service-title"${da(s.title, enS?.title)}>${s.title}</h3>
+          <p class="service-desc"${da(s.description, enS?.description)}>${s.description}</p>
+        </div>`;
+  }).join("");
 
-  const statsHTML = stats.map(s => `
+  const statsHTML = stats.map((s, i) => {
+    const enS = enSpec?.stats?.[i];
+    return `
         <div class="stat-item aw-reveal">
           <div class="stat-number"><span class="aw-counter" data-target="${s.number}" data-suffix="${s.suffix || ''}">${s.number}</span>${s.suffix || ''}</div>
-          <div class="stat-label">${s.label}</div>
-        </div>`).join("");
+          <div class="stat-label"${da(s.label, enS?.label)}>${s.label}</div>
+        </div>`;
+  }).join("");
 
   const galleryHTML = galleryImgs.map((url, i) => `
         <div class="gallery-item aw-reveal" onclick="openLightbox('${url}', ${i})">
@@ -258,42 +344,57 @@ export function buildWebsiteHTML(
           </div>
         </div>`).join("");
 
-  const testimonialsHTML = testimonials.map((t, i) => `
+  const testimonialsHTML = testimonials.map((t, i) => {
+    const enT = enSpec?.testimonials?.[i];
+    return `
         <div class="testimonial-card aw-reveal" style="animation-delay:${i * 0.15}s">
           <div class="testimonial-stars">
             ${'<i class="fa-solid fa-star"></i>'.repeat(t.rating || 5)}
           </div>
-          <p class="testimonial-text">"${t.text}"</p>
+          <p class="testimonial-text"${da(`"${t.text}"`, enT?.text ? `"${enT.text}"` : undefined)}>"${t.text}"</p>
           <div class="testimonial-author">
             <div class="author-avatar">${(t.name || '?')[0]}</div>
-            <span class="author-name">${t.name}</span>
+            <span class="author-name"${da(t.name, enT?.name)}>${t.name}</span>
           </div>
-        </div>`).join("");
+        </div>`;
+  }).join("");
 
-  const faqHTML = faqItems.map((item, i) => `
+  const faqHTML = faqItems.map((item, i) => {
+    const enItem = enSpec?.faqItems?.[i];
+    return `
         <div class="faq-item aw-reveal">
           <div class="faq-q" onclick="toggleFaq(this)">
-            <span>${item.question}</span>
+            <span${da(item.question, enItem?.question)}>${item.question}</span>
             <span class="faq-icon">+</span>
           </div>
           <div class="faq-answer">
-            <p>${item.answer}</p>
+            <p${da(item.answer, enItem?.answer)}>${item.answer}</p>
           </div>
-        </div>`).join("");
+        </div>`;
+  }).join("");
 
-  const navLinksHTML = (spec.navLinks || []).map(l => `
-            <a href="${l.href}" class="nav-link" onclick="closeMenu()">${l.text}</a>`).join("");
+  const navLinksHTML = (spec.navLinks || []).map((l, i) => {
+    const enL = enSpec?.navLinks?.[i];
+    return `
+            <a href="${l.href}" class="nav-link"${da(l.text, enL?.text)} onclick="closeMenu()">${l.text}</a>`;
+  }).join("");
 
-  const mobileNavLinksHTML = (spec.navLinks || []).map(l => `
-          <a href="${l.href}" class="mobile-nav-link" onclick="closeMenu()">${l.text}</a>`).join("");
+  const mobileNavLinksHTML = (spec.navLinks || []).map((l, i) => {
+    const enL = enSpec?.navLinks?.[i];
+    return `
+          <a href="${l.href}" class="mobile-nav-link"${da(l.text, enL?.text)} onclick="closeMenu()">${l.text}</a>`;
+  }).join("");
 
-  const featuresHTML = (spec.aboutFeatures || []).map(f => `
+  const featuresHTML = (spec.aboutFeatures || []).map((f, i) => {
+    const enF = enSpec?.aboutFeatures?.[i];
+    return `
               <div class="feature-item">
                 <div class="feature-check">
                   <i class="fa-solid fa-check"></i>
                 </div>
-                <span>${f}</span>
-              </div>`).join("");
+                <span${da(f, enF)}>${f}</span>
+              </div>`;
+  }).join("");
 
   return `<!DOCTYPE html>
 <html dir="${dir}" lang="${lang}">
@@ -307,9 +408,11 @@ export function buildWebsiteHTML(
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="${fontImport}" rel="stylesheet">
+  ${hasBi && isArabic ? `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">` : ""}
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     @import url('${fontImport}');
+    ${hasBi && isArabic ? `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;600;700;800;900&display=swap');` : ""}
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; overflow-x: hidden; }
@@ -468,6 +571,23 @@ export function buildWebsiteHTML(
       box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.4);
     }
     .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(var(--primary-rgb), 0.5); }
+
+    #aw-lang-btn {
+      background: rgba(255,255,255,0.12);
+      border: 1.5px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 0.3rem 0.85rem;
+      border-radius: 2rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    #aw-lang-btn:hover { background: rgba(255,255,255,0.22); border-color: rgba(255,255,255,0.55); }
+    .navbar.scrolled #aw-lang-btn { background: rgba(var(--primary-rgb),0.12); border-color: rgba(var(--primary-rgb),0.3); color: var(--primary); }
 
     .hamburger {
       display: none;
@@ -1133,7 +1253,9 @@ export function buildWebsiteHTML(
       ${navLinksHTML}
     </div>
 
-    <a href="#contact" class="nav-cta">${spec.navCtaText || 'تواصل معنا'}</a>
+    <a href="#contact" class="nav-cta"${da(spec.navCtaText || 'تواصل معنا', enSpec?.navCtaText)}>${spec.navCtaText || 'تواصل معنا'}</a>
+
+    ${hasBi ? `<button id="aw-lang-btn" onclick="awToggleLang()" title="Switch Language">EN</button>` : ""}
 
     <button class="hamburger" onclick="toggleMenu()" aria-label="القائمة">
       <i class="fa-solid fa-bars"></i>
@@ -1141,7 +1263,8 @@ export function buildWebsiteHTML(
 
     <div class="mobile-menu" id="mobile-menu">
       ${mobileNavLinksHTML}
-      <a href="#contact" class="nav-cta" style="width:fit-content" onclick="closeMenu()">${spec.navCtaText || 'تواصل معنا'}</a>
+      <a href="#contact" class="nav-cta" style="width:fit-content"${da(spec.navCtaText || 'تواصل معنا', enSpec?.navCtaText)} onclick="closeMenu()">${spec.navCtaText || 'تواصل معنا'}</a>
+      ${hasBi ? `<button onclick="awToggleLang()" style="background:rgba(var(--primary-rgb),0.1);border:1.5px solid rgba(var(--primary-rgb),0.3);color:var(--primary);padding:0.35rem 1rem;border-radius:2rem;font-size:0.85rem;font-weight:700;cursor:pointer;width:fit-content;font-family:inherit" title="Switch Language">EN</button>` : ""}
     </div>
   </nav>
 
@@ -1153,17 +1276,17 @@ export function buildWebsiteHTML(
         <i class="fa-solid fa-shield-halved"></i>
         ${spec.businessName}
       </div>
-      <h1 class="hero-title aw-reveal">
+      <h1 class="hero-title aw-reveal"${da(spec.tagline, enSpec?.tagline)}>
         ${spec.tagline}
       </h1>
-      <p class="hero-subtitle aw-reveal">${spec.subtitle}</p>
+      <p class="hero-subtitle aw-reveal"${da(spec.subtitle, enSpec?.subtitle)}>${spec.subtitle}</p>
       <div class="hero-buttons aw-reveal">
         <a href="#contact" class="btn-primary">
           <i class="fa-solid fa-calendar-check"></i>
-          ${spec.ctaText}
+          <span${da(spec.ctaText, enSpec?.ctaText)}>${spec.ctaText}</span>
         </a>
         <a href="#about" class="btn-outline">
-          ${spec.ctaSecondary}
+          <span${da(spec.ctaSecondary, enSpec?.ctaSecondary)}>${spec.ctaSecondary}</span>
           <i class="fa-solid fa-arrow-${isArabic ? 'left' : 'right'}"></i>
         </a>
       </div>
@@ -1192,15 +1315,15 @@ export function buildWebsiteHTML(
       </div>
       <div class="about-content aw-reveal">
         <div class="section-label">${isArabic ? 'من نحن' : 'About Us'}</div>
-        <h2 class="section-title" style="text-align:${isArabic ? 'right' : 'left'};margin-bottom:1.5rem">${spec.aboutTitle}</h2>
+        <h2 class="section-title" style="text-align:${isArabic ? 'right' : 'left'};margin-bottom:1.5rem"${da(spec.aboutTitle, enSpec?.aboutTitle)}>${spec.aboutTitle}</h2>
         <div class="section-divider right"></div>
-        <p class="about-text" style="margin-top:1.5rem">${spec.aboutParagraph1}</p>
-        <p class="about-text">${spec.aboutParagraph2}</p>
+        <p class="about-text" style="margin-top:1.5rem"${da(spec.aboutParagraph1, enSpec?.aboutParagraph1)}>${spec.aboutParagraph1}</p>
+        <p class="about-text"${da(spec.aboutParagraph2, enSpec?.aboutParagraph2)}>${spec.aboutParagraph2}</p>
         <div class="features-grid">
           ${featuresHTML}
         </div>
         <div style="margin-top:2rem">
-          <a href="#contact" class="btn-primary">${spec.ctaText}</a>
+          <a href="#contact" class="btn-primary"><span${da(spec.ctaText, enSpec?.ctaText)}>${spec.ctaText}</span></a>
         </div>
       </div>
     </div>
@@ -1232,8 +1355,8 @@ export function buildWebsiteHTML(
 
   <!-- CTA BAND -->
   <section class="cta-band">
-    <div class="cta-band-title aw-reveal">${spec.ctaBandTitle}</div>
-    <p class="cta-band-sub aw-reveal">${spec.ctaBandSub}</p>
+    <div class="cta-band-title aw-reveal"${da(spec.ctaBandTitle, enSpec?.ctaBandTitle)}>${spec.ctaBandTitle}</div>
+    <p class="cta-band-sub aw-reveal"${da(spec.ctaBandSub, enSpec?.ctaBandSub)}>${spec.ctaBandSub}</p>
     <div class="aw-reveal">
       <a href="https://wa.me/${whatsappNum}" target="_blank" class="btn-primary" style="margin:0 auto;display:inline-flex">
         <i class="fa-brands fa-whatsapp"></i>
@@ -1300,7 +1423,7 @@ export function buildWebsiteHTML(
           <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
           <div class="contact-info-text">
             <h4>${isArabic ? 'ساعات العمل' : 'Working Hours'}</h4>
-            <p>${spec.workingHours}</p>
+            <p${da(spec.workingHours, enSpec?.workingHours)}>${spec.workingHours}</p>
           </div>
         </div>
         <a href="https://wa.me/${whatsappNum}" target="_blank" class="whatsapp-btn">
@@ -1353,7 +1476,7 @@ export function buildWebsiteHTML(
           </defs>
           <text x="19" y="26" text-anchor="middle" font-family="${headFont}" font-size="18" font-weight="800" fill="white">${(spec.businessName || 'A')[0]}</text>
         </svg>
-        <p class="footer-tagline">${spec.footerTagline}</p>
+        <p class="footer-tagline"${da(spec.footerTagline, enSpec?.footerTagline)}>${spec.footerTagline}</p>
         <div class="footer-social">
           <a href="#" class="social-link"><i class="fa-brands fa-instagram"></i></a>
           <a href="#" class="social-link"><i class="fa-brands fa-x-twitter"></i></a>
@@ -1364,7 +1487,7 @@ export function buildWebsiteHTML(
       <div>
         <h4 class="footer-heading">${isArabic ? 'روابط سريعة' : 'Quick Links'}</h4>
         <div class="footer-links">
-          ${(spec.navLinks || []).map(l => `<a href="${l.href}" class="footer-link">${l.text}</a>`).join('')}
+          ${(spec.navLinks || []).map((l, i) => { const enL = enSpec?.navLinks?.[i]; return `<a href="${l.href}" class="footer-link"${da(l.text, enL?.text)}>${l.text}</a>`; }).join('')}
         </div>
       </div>
       <div>
@@ -1505,6 +1628,37 @@ export function buildWebsiteHTML(
         }
       });
     });
+
+    ${hasBi ? `// ── Bilingual Language Toggle ─────────────────────────────────────────────
+    (function() {
+      var AW_LANG_ORDER = ['${isArabic ? "ar" : "en"}', '${isArabic ? "en" : "ar"}'];
+      var awLangIdx = 0;
+      var FONTS = {
+        ar: { body: "${bodyFont}", head: "'Cairo', sans-serif" },
+        en: { body: "'Inter', sans-serif", head: "'Montserrat', sans-serif" }
+      };
+      function awApplyLang(lang) {
+        var isAr = lang === 'ar';
+        document.documentElement.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+        document.documentElement.setAttribute('lang', lang);
+        var btn = document.getElementById('aw-lang-btn');
+        var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
+        if (btn) btn.textContent = nextCode.toUpperCase();
+        document.querySelectorAll('[data-ar]').forEach(function(el) {
+          var val = el.getAttribute('data-' + lang) || el.getAttribute('data-ar');
+          if (val !== null) el.textContent = val;
+        });
+        document.body.style.fontFamily = FONTS[lang].body;
+        document.querySelectorAll('h1,h2,h3,h4,.hero-title,.section-title,.cta-band-title,.aw-brand').forEach(function(el) {
+          el.style.fontFamily = FONTS[lang].head;
+        });
+      }
+      window.awToggleLang = function() {
+        awLangIdx = (awLangIdx + 1) % AW_LANG_ORDER.length;
+        awApplyLang(AW_LANG_ORDER[awLangIdx]);
+      };
+      window.awCycleLang = window.awToggleLang;
+    })();` : ""}
   </script>
 </body>
 </html>`;

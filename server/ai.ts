@@ -2475,6 +2475,8 @@ PRESERVE CRITICAL ELEMENTS (NEVER REMOVE OR MODIFY):
 - NEVER remove or change the element with id="aw-lang-btn" (language toggle button). It must stay in the navbar exactly as-is.
 - NEVER remove or change the element with id="aw-menu-btn" (hamburger button). It must stay in the navbar exactly as-is.
 - NEVER remove or change the element with id="aw-mobile-menu" (mobile nav overlay). It must stay exactly as-is.
+- NEVER remove or modify data-ar and data-en attributes from any HTML element. These power the bilingual language toggle system.
+- NEVER remove or modify the awToggleLang/awCycleLang JavaScript functions or the language toggle script block.
 - If these elements don't exist in the current HTML, you may add them — but if they DO exist, preserve them completely.
 
 MOBILE HAMBURGER MENU RULES:
