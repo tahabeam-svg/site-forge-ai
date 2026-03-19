@@ -10,7 +10,7 @@ import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./indu
 import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration } from "./learning-engine";
 import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
-import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData, sendSupportTicketToTeam, sendSupportTicketConfirmation } from "./email";
+import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData, sendSupportTicketToTeam, sendSupportTicketConfirmation, sendFeedbackNotificationToTeam } from "./email";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
@@ -240,6 +240,30 @@ ${rawHtml}
 </html>`;
 }
 
+// ── User Feedback: DB migration ────────────────────────────────────────────────
+
+async function ensureUserFeedbackTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS user_feedback (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR,
+        user_name TEXT,
+        user_email TEXT,
+        type TEXT NOT NULL DEFAULT 'bug',
+        message TEXT NOT NULL,
+        page TEXT,
+        status TEXT NOT NULL DEFAULT 'new',
+        admin_note TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    console.log("Migration: user_feedback table ensured");
+  } catch (e: any) {
+    console.error("[Feedback] Table init failed:", e?.message);
+  }
+}
+
 // ── Support Tickets: DB migration ─────────────────────────────────────────────
 
 async function ensureSupportTicketsTable() {
@@ -272,6 +296,7 @@ export async function registerRoutes(
   // ── Self-improving learning system: ensure DB tables on startup ─────────────
   ensureLearningTables().catch(e => console.error("[Learning] Startup table init failed:", e?.message));
   ensureSupportTicketsTable().catch(e => console.error("[Support] Startup init failed:", e?.message));
+  ensureUserFeedbackTable().catch(e => console.error("[Feedback] Startup init failed:", e?.message));
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", version: BUILD_VERSION, timestamp: new Date().toISOString() });
@@ -2921,14 +2946,24 @@ For Netlify/Vercel:
       const user = await storage.getUser(userId);
       const { type, message, page } = req.body;
       if (!message?.trim()) return res.status(400).json({ message: "Message required" });
+      const userName = user?.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : null;
       const fb = await storage.createFeedback({
         userId,
-        userName: user?.firstName || user?.email || null,
+        userName: userName || user?.email || null,
         userEmail: user?.email || null,
         type: type || "bug",
         message: message.trim(),
         page: page || null,
       });
+      // Send email notification to support team (non-blocking)
+      sendFeedbackNotificationToTeam({
+        id: fb.id,
+        userName: fb.userName,
+        userEmail: fb.userEmail,
+        type: fb.type,
+        message: fb.message,
+        page: fb.page,
+      }).catch(e => console.error("[Feedback] Email notification failed:", e?.message));
       res.json(fb);
     } catch (e) {
       console.error("Feedback error:", e);

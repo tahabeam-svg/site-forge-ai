@@ -881,3 +881,47 @@ export async function sendTestEmail(to: string, isAr = true): Promise<boolean> {
   );
   return sendMail(to, subject, html, "noreply");
 }
+
+// ─── User Feedback: Notify admin team ─────────────────────────────────────────
+
+const feedbackTypeLabels: Record<string, string> = {
+  bug: "🐛 مشكلة تقنية",
+  suggestion: "💡 اقتراح",
+  question: "❓ سؤال",
+  praise: "👍 إطراء",
+};
+
+const feedbackTypeColors: Record<string, string> = {
+  bug: "#ef4444",
+  suggestion: "#f59e0b",
+  question: "#3b82f6",
+  praise: "#10b981",
+};
+
+export async function sendFeedbackNotificationToTeam(opts: {
+  id: number;
+  userName: string | null;
+  userEmail: string | null;
+  type: string;
+  message: string;
+  page: string | null;
+}): Promise<boolean> {
+  const { id, userName, userEmail, type, message, page } = opts;
+  const typeLabel = feedbackTypeLabels[type] || type;
+  const typeColor = feedbackTypeColors[type] || "#64748b";
+  const subject = `[بلاغ #${id}] ${typeLabel} — ${userName || userEmail || "مستخدم غير معروف"}`;
+  const html = wrap(
+    `${h1(`📨 بلاغ جديد من المستخدمين #${id}`)}
+     <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f8fafc;border-radius:10px;overflow:hidden;">
+       ${statRow("النوع", typeLabel)}
+       ${statRow("المستخدم", userName || "—")}
+       ${statRow("البريد الإلكتروني", userEmail || "—")}
+       ${page ? statRow("الصفحة", page) : ""}
+     </table>
+     ${infoBox(`<strong>رسالة المستخدم:</strong><br/><br/>${message.replace(/\n/g, "<br/>")}`, typeColor)}
+     ${btn("https://arabyweb.net/admin", "فتح لوحة الإدارة — بلاغات المستخدمين")}
+     ${p("هذا البلاغ محفوظ في قاعدة البيانات ضمن تبويب (بلاغات المستخدمين) في لوحة التحكم.", true)}`,
+    true
+  );
+  return sendMail("support@arabyweb.net", subject, html, "support");
+}
