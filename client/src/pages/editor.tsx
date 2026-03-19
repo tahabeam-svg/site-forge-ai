@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { t } from "@/lib/i18n";
 import { useLocation, useParams } from "wouter";
@@ -53,6 +53,130 @@ function isRegenCommand(cmd: string, lang: string): boolean {
   return keywords.some(k => lower.includes(k.toLowerCase()));
 }
 
+type LoadingStepItem = { icon: string; ar: string; en: string };
+
+function getSmartLoadingSteps(cmd: string | null, isRegen: boolean): LoadingStepItem[] {
+  if (isRegen) return [
+    { icon: "🎨", ar: "جاري تصميم موقع جديد كلياً...", en: "Designing a brand new website..." },
+    { icon: "🏗️", ar: "جاري بناء الهيكل والأقسام...", en: "Building sections and layout..." },
+    { icon: "🖼️", ar: "جاري اختيار الصور والألوان...", en: "Selecting images and colors..." },
+    { icon: "✨", ar: "جاري الضبط والإتمام النهائي...", en: "Final polish and checks..." },
+  ];
+  const lower = (cmd || "").toLowerCase();
+  if (/لون|color|colour|أزرق|أحمر|أخضر|ذهبي|بنفسجي|blue|red|green|gold|purple|pink|orange|برتقال/.test(lower)) return [
+    { icon: "🎨", ar: "جاري تحليل الألوان الحالية...", en: "Analyzing current color palette..." },
+    { icon: "🔄", ar: "جاري تطبيق اللون الجديد على جميع العناصر...", en: "Applying new color across elements..." },
+    { icon: "✨", ar: "جاري ضبط التباين والتناسق البصري...", en: "Perfecting contrast and visual harmony..." },
+  ];
+  if (/خط|font|typography|كتابة|حجم النص|حجم الخط/.test(lower)) return [
+    { icon: "🔤", ar: "جاري اختيار الخط الأنسب...", en: "Selecting the ideal typeface..." },
+    { icon: "📝", ar: "جاري تطبيق الخط على كامل التصميم...", en: "Applying font across the design..." },
+    { icon: "✨", ar: "جاري ضبط الأحجام والتباعد...", en: "Tuning sizes and letter spacing..." },
+  ];
+  if (/أضف|add|إضافة|section|قسم|فقرة|ضيف|إضف/.test(lower)) return [
+    { icon: "🏗️", ar: "جاري تصميم القسم الجديد...", en: "Designing the new section..." },
+    { icon: "🔧", ar: "جاري دمجه مع التصميم الحالي...", en: "Integrating with existing design..." },
+    { icon: "🎨", ar: "جاري مطابقة الألوان والأنماط...", en: "Matching colors and styles..." },
+    { icon: "✨", ar: "جاري التحقق من الاتساق العام...", en: "Checking overall consistency..." },
+  ];
+  if (/صورة|image|photo|img|صور|background|خلفية|بنر/.test(lower)) return [
+    { icon: "🖼️", ar: "جاري اختيار الصورة المثالية...", en: "Finding the perfect image..." },
+    { icon: "📐", ar: "جاري تضمينها في التصميم...", en: "Embedding image in the design..." },
+    { icon: "✨", ar: "جاري ضبط الأبعاد والجودة...", en: "Adjusting dimensions and quality..." },
+  ];
+  if (/نص|text|عنوان|title|heading|محتوى|content|كلمة|اكتب|غيّر الكلام|وصف/.test(lower)) return [
+    { icon: "✍️", ar: "جاري تحليل المحتوى الحالي...", en: "Analyzing current content..." },
+    { icon: "📝", ar: "جاري صياغة النص الجديد...", en: "Crafting the new text..." },
+    { icon: "✨", ar: "جاري ضبط التنسيق والمسافات...", en: "Polishing formatting and spacing..." },
+  ];
+  if (/واتساب|whatsapp|تواصل|contact|هاتف|phone|رقم/.test(lower)) return [
+    { icon: "📱", ar: "جاري تحديث معلومات التواصل...", en: "Updating contact details..." },
+    { icon: "🔗", ar: "جاري ضبط الروابط والأزرار...", en: "Configuring links and buttons..." },
+    { icon: "✨", ar: "جاري التحقق من صحة جميع الروابط...", en: "Verifying all links work..." },
+  ];
+  if (/احذف|delete|remove|إزالة|حذف|أزل/.test(lower)) return [
+    { icon: "🗑️", ar: "جاري تحديد العنصر المطلوب...", en: "Locating the target element..." },
+    { icon: "🔧", ar: "جاري ضبط التخطيط بعد الإزالة...", en: "Adjusting layout after removal..." },
+    { icon: "✨", ar: "جاري التحقق من سلامة التصميم...", en: "Ensuring design integrity..." },
+  ];
+  if (/تحريك|animation|حركة|animate|motion/.test(lower)) return [
+    { icon: "🎬", ar: "جاري إضافة الحركة المطلوبة...", en: "Adding requested animation..." },
+    { icon: "⚙️", ar: "جاري ضبط السرعة والتوقيت...", en: "Tuning speed and timing..." },
+    { icon: "✨", ar: "جاري التأكد من الأداء السلس...", en: "Ensuring smooth performance..." },
+  ];
+  return [
+    { icon: "🤖", ar: "جاري فهم طلبك بدقة...", en: "Understanding your request..." },
+    { icon: "⚡", ar: "جاري تطبيق التعديلات على التصميم...", en: "Applying changes to the design..." },
+    { icon: "🔍", ar: "جاري مراجعة كل التفاصيل...", en: "Reviewing every detail..." },
+    { icon: "✨", ar: "جاري إتمام التعديل...", en: "Wrapping up the edit..." },
+  ];
+}
+
+function renderAIMessage(content: string) {
+  const lines = content.split("\n");
+  const elements: ReactNode[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (/^[-•*]\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[-•*]\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^[-•*]\s/, ""));
+        i++;
+      }
+      elements.push(
+        <ul key={`ul-${i}`} className="list-none space-y-1 my-1">
+          {items.map((item, idx) => (
+            <li key={idx} className="flex gap-2 items-start">
+              <span className="text-violet-400 mt-0.5 shrink-0">▸</span>
+              <span>{renderInline(item)}</span>
+            </li>
+          ))}
+        </ul>
+      );
+      continue;
+    }
+    if (/^\d+\.\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\.\s/, ""));
+        i++;
+      }
+      elements.push(
+        <ol key={`ol-${i}`} className="list-none space-y-1 my-1">
+          {items.map((item, idx) => (
+            <li key={idx} className="flex gap-2 items-start">
+              <span className="text-violet-400 font-bold shrink-0">{idx + 1}.</span>
+              <span>{renderInline(item)}</span>
+            </li>
+          ))}
+        </ol>
+      );
+      continue;
+    }
+    elements.push(<p key={`p-${i}`} className="leading-relaxed">{renderInline(line)}</p>);
+    i++;
+  }
+  return elements;
+}
+
+function renderInline(text: string): ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\([^)]+\)|✅|❌|⚠️|🎉|🔥|💡)/);
+  return parts.map((part, idx) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={idx} className="text-foreground font-semibold">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("`") && part.endsWith("`"))
+      return <code key={idx} className="bg-muted-foreground/10 rounded px-1 py-0.5 text-xs font-mono text-foreground">{part.slice(1, -1)}</code>;
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch)
+      return <a key={idx} href={linkMatch[2]} className="text-violet-500 underline font-medium">{linkMatch[1]}</a>;
+    if (["✅","❌","⚠️","🎉","🔥","💡"].includes(part))
+      return <span key={idx} className="text-base">{part}</span>;
+    return <span key={idx}>{part}</span>;
+  });
+}
+
 export default function EditorPage() {
   const { language } = useAuth();
   const { toast } = useToast();
@@ -69,6 +193,8 @@ export default function EditorPage() {
   const [chatImageFile, setChatImageFile] = useState<File | null>(null);
   const [limitReached, setLimitReached] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
+  const [loadingSteps, setLoadingSteps] = useState<LoadingStepItem[]>([]);
+  const [newMsgId, setNewMsgId] = useState<number | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -217,6 +343,10 @@ export default function EditorPage() {
       }
       return res.json();
     },
+    onMutate: () => {
+      setLoadingSteps(getSmartLoadingSteps(null, true));
+      setLoadingStep(0);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "messages"] });
@@ -255,11 +385,13 @@ export default function EditorPage() {
       const cmd = typeof input === "object" && input !== null ? (input as any).cmd : (input || editCommand);
       if (cmd) setPendingUserMsg(cmd);
       setEditCommand("");
+      setLoadingSteps(getSmartLoadingSteps(cmd || null, false));
+      setLoadingStep(0);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       setPendingUserMsg(null);
+      await queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/projects", projectId, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/me"] });
       queryClient.invalidateQueries({ queryKey: ["/api/subscription"] });
     },
@@ -277,9 +409,10 @@ export default function EditorPage() {
   useEffect(() => {
     const isPending = editMutation.isPending || regenerateMutation.isPending;
     if (!isPending) { setLoadingStep(0); return; }
-    const id = setInterval(() => setLoadingStep(s => (s + 1) % 3), 2800);
+    const steps = loadingSteps.length || 3;
+    const id = setInterval(() => setLoadingStep(s => (s + 1) % steps), 3000);
     return () => clearInterval(id);
-  }, [editMutation.isPending, regenerateMutation.isPending]);
+  }, [editMutation.isPending, regenerateMutation.isPending, loadingSteps.length]);
 
   const publishMutation = useMutation({
     mutationFn: async () => {
@@ -688,49 +821,59 @@ export default function EditorPage() {
 
                   {/* Welcome message if no messages */}
                   {messages.length === 0 && !pendingUserMsg && (
-                    <div className="flex gap-2">
-                      <div className="w-8 h-8 rounded-full bg-green-50 dark:bg-green-950/40 flex items-center justify-center shrink-0 overflow-hidden">
-                        <img src="/logo.png" alt="ArabyWeb AI" className="w-6 h-6 object-contain" />
+                    <div className="flex gap-2.5 items-start">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-950/60 dark:to-purple-950/60 flex items-center justify-center shrink-0 overflow-hidden border border-violet-200/50 dark:border-violet-800/50">
+                        <img src="/logo.png" alt="ArabyWeb AI" className="w-5 h-5 object-contain" />
                       </div>
-                      <div className="text-[0.9rem] leading-relaxed rounded-xl px-4 py-3 bg-muted text-muted-foreground max-w-[88%]">
-                        {lang === "ar"
-                          ? <span>✅ تم إنشاء موقعك! يمكنك الآن طلب أي تعديل — جرّب مثلاً: <strong className="text-foreground">"غيّر اللون الرئيسي إلى الأزرق الداكن"</strong> أو <strong className="text-foreground">"أضف قسم الخدمات"</strong></span>
-                          : <span>✅ Your site is ready! Ask me anything — try: <strong className="text-foreground">"Change the primary color to dark blue"</strong> or <strong className="text-foreground">"Add a services section"</strong></span>
-                        }
+                      <div className="rounded-2xl rounded-ts-sm px-4 py-3.5 bg-muted max-w-[90%] space-y-3">
+                        <p className="text-sm text-foreground font-medium leading-relaxed">
+                          {lang === "ar" ? "🎉 موقعك جاهز! كيف يمكنني مساعدتك؟" : "🎉 Your site is ready! How can I help?"}
+                        </p>
+                        <p className="text-[0.82rem] text-muted-foreground leading-relaxed">
+                          {lang === "ar"
+                            ? "يمكنني تعديل أي شيء — الألوان، النصوص، الصور، الأقسام..."
+                            : "I can edit anything — colors, text, images, sections..."}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {(lang === "ar"
+                            ? ["🎨 غيّر اللون", "📝 عدّل النص", "🖼️ أضف صورة", "➕ أضف قسم"]
+                            : ["🎨 Change color", "📝 Edit text", "🖼️ Add image", "➕ Add section"]
+                          ).map(s => (
+                            <button
+                              key={s}
+                              onClick={() => setEditCommand(s.slice(2).trim())}
+                              className="text-[0.75rem] px-2.5 py-1 rounded-full bg-background border border-border hover:border-violet-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors text-muted-foreground cursor-pointer"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
 
                   {/* Chat messages */}
-                  {messages.map((msg) => (
-                    <div key={msg.id} className="flex gap-2" data-testid={`chat-message-${msg.id}`}>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${
+                  {messages.map((msg, mi) => {
+                    const isLatestAssistant = msg.role === "assistant" && mi === messages.length - 1;
+                    return (
+                    <div key={msg.id} className={`flex gap-2.5 items-end ${msg.role === "user" ? "flex-row-reverse" : ""}`} data-testid={`chat-message-${msg.id}`}>
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${
                         msg.role === "user"
-                          ? "bg-green-100 dark:bg-green-950/50 text-green-700 dark:text-green-300"
-                          : "bg-green-50 dark:bg-green-950/40"
+                          ? "bg-gradient-to-br from-emerald-400 to-teal-500 text-white"
+                          : "bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-950/60 dark:to-purple-950/60 border border-violet-200/50 dark:border-violet-800/50"
                       }`}>
                         {msg.role === "user"
-                          ? <User className="w-4 h-4" />
-                          : <img src="/logo.png" alt="ArabyWeb AI" className="w-6 h-6 object-contain" />
+                          ? <User className="w-3.5 h-3.5" />
+                          : <img src="/logo.png" alt="ArabyWeb AI" className="w-5 h-5 object-contain" />
                         }
                       </div>
-                      <div className={`text-[0.9rem] leading-relaxed rounded-xl px-4 py-2.5 max-w-[88%] ${
+                      <div className={`text-sm leading-relaxed max-w-[82%] ${
                         msg.role === "user"
-                          ? "bg-emerald-50 dark:bg-emerald-950/30 text-foreground"
-                          : "bg-muted text-muted-foreground"
+                          ? "rounded-2xl rounded-ee-sm px-4 py-2.5 bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-500/20"
+                          : `rounded-2xl rounded-ts-sm px-4 py-3 bg-muted text-foreground/90 space-y-1.5 ${isLatestAssistant ? "animate-in fade-in-0 slide-in-from-bottom-1 duration-300" : ""}`
                       }`}>
                         {msg.role === "assistant"
-                          ? msg.content.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|\n)/).map((part, pi) => {
-                              if (part.startsWith("**") && part.endsWith("**")) {
-                                return <strong key={pi} className="text-foreground font-semibold">{part.slice(2, -2)}</strong>;
-                              }
-                              const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-                              if (linkMatch) {
-                                return <a key={pi} href={linkMatch[2]} className="text-violet-600 dark:text-violet-400 underline font-medium">{linkMatch[1]}</a>;
-                              }
-                              if (part === "\n") return <br key={pi} />;
-                              return <span key={pi}>{part}</span>;
-                            })
+                          ? renderAIMessage(msg.content)
                           : (
                             <>
                               {msg.content.match(/data:image\/[^;]+;base64,/i) && (
@@ -741,41 +884,58 @@ export default function EditorPage() {
                                   data-testid={`img-chat-uploaded-${msg.id}`}
                                 />
                               )}
-                              {msg.content}
+                              {msg.content.replace(/\s*-\s*أضف\/استخدم الصورة المرفقة|\s*-\s*Add\/use the attached image/g, "")}
                             </>
                           )
                         }
                       </div>
                     </div>
-                  ))}
+                  );})}
 
                   {/* Optimistic pending message */}
                   {pendingUserMsg && (
-                    <div className="flex gap-2" data-testid="chat-message-pending">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700">
-                        <User className="w-4 h-4" />
+                    <div className="flex gap-2.5 items-end flex-row-reverse" data-testid="chat-message-pending">
+                      <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-gradient-to-br from-emerald-400 to-teal-500 text-white opacity-60">
+                        <User className="w-3.5 h-3.5" />
                       </div>
-                      <div className="text-[0.9rem] leading-relaxed rounded-xl px-4 py-2.5 max-w-[88%] bg-emerald-50 dark:bg-emerald-950/30 text-foreground">
+                      <div className="text-sm leading-relaxed rounded-2xl rounded-ee-sm px-4 py-2.5 max-w-[82%] bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm shadow-emerald-500/20 opacity-70">
                         {pendingUserMsg}
                       </div>
                     </div>
                   )}
 
                   {/* AI thinking indicator */}
-                  {(editMutation.isPending || isRegenerating) && (
-                    <div className="flex gap-2 items-start">
-                      <ArabyLogoThinking size={36} />
-                      <div className="text-[0.9rem] bg-muted rounded-xl px-4 py-2.5 flex items-center gap-2 min-w-0">
-                        <span className="truncate text-muted-foreground text-sm">
-                          {isRegenerating
-                            ? (lang === "ar" ? "جاري إنشاء تصميم جديد كلياً..." : "Building a brand new design...")
-                            : (lang === "ar"
-                                ? (["جاري تحليل طلبك...", "جاري تطبيق التعديلات...", "اللمسات الأخيرة..."][loadingStep])
-                                : (["Analyzing your request...", "Applying changes...", "Final touches..."][loadingStep]))}
-                        </span>
+                  {(editMutation.isPending || isRegenerating) && (() => {
+                    const steps = loadingSteps.length > 0 ? loadingSteps : getSmartLoadingSteps(null, isRegenerating);
+                    const idx = Math.min(loadingStep, steps.length - 1);
+                    const current = steps[idx];
+                    return (
+                      <div className="flex gap-2.5 items-start">
+                        <ArabyLogoThinking size={34} />
+                        <div className="bg-muted rounded-2xl rounded-ts-sm px-4 py-3 space-y-2 min-w-0 max-w-[85%]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base leading-none">{current?.icon}</span>
+                            <span className="text-sm text-foreground/80 leading-snug">{lang === "ar" ? current?.ar : current?.en}</span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="flex gap-1">
+                              {steps.map((_, si) => (
+                                <div
+                                  key={si}
+                                  className={`h-1 rounded-full transition-all duration-500 ${si === idx ? "w-5 bg-violet-500" : si < idx ? "w-2 bg-violet-300 dark:bg-violet-700" : "w-2 bg-muted-foreground/20"}`}
+                                />
+                              ))}
+                            </div>
+                            <div className="flex gap-1 items-center">
+                              {[0,1,2].map(d => (
+                                <span key={d} className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: `${d * 160}ms`, animationDuration: "1.1s" }} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   <div ref={chatEndRef} />
                 </div>
