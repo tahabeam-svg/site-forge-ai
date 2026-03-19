@@ -33,7 +33,6 @@ import {
   BrainCircuit,
   User,
   LayoutGrid,
-  Wand2,
 } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
 import { useQuery } from "@tanstack/react-query";
@@ -62,7 +61,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: lang === "ar" ? "الرئيسية" : "Home", url: "/dashboard", icon: LayoutDashboard, group: "main" },
     { title: lang === "ar" ? "التحليلات" : "Analytics", url: "/analytics", icon: BarChart3, group: "main" },
     { title: lang === "ar" ? "القوالب" : "Templates", url: "/templates", icon: LayoutGrid, group: "main" },
-    { title: lang === "ar" ? "بناء بالذكاء الاصطناعي" : "AI Builder", url: "/ai-builder", icon: Wand2, group: "tools" },
     { title: lang === "ar" ? "التسويق بالذكاء الاصطناعي" : "AI Marketing", url: "/marketing", icon: Sparkles, group: "tools" },
     { title: lang === "ar" ? "نشر GitHub" : "GitHub Deploy", url: "/github-deploy", icon: Github, group: "tools" },
     { title: lang === "ar" ? "انشر موقعك" : "Deploy Site", url: "/deploy-guide", icon: Upload, group: "tools" },
