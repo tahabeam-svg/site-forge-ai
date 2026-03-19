@@ -6,9 +6,9 @@ import { allCategories, gradients, accents, commonTestimonials } from "./seed-da
 
 export async function seedDatabase() {
   try {
-    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 5`);
+    await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS credits INTEGER DEFAULT 50`);
     await db.execute(sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan VARCHAR DEFAULT 'free'`);
-    await db.execute(sql`UPDATE users SET credits = 5 WHERE credits IS NULL`);
+    await db.execute(sql`UPDATE users SET credits = 50 WHERE credits IS NULL`);
     await db.execute(sql`UPDATE users SET plan = 'free' WHERE plan IS NULL`);
     console.log("Migration: credits & plan columns ensured");
   } catch (e: any) {
@@ -214,6 +214,21 @@ export async function seedDatabase() {
     console.log("Migration: credits correction applied (ADD→SET bug fix)");
   } catch (e: any) {
     console.error("Credits correction migration warning:", e.message);
+  }
+
+  // Credits ×10 migration (v2): multiply all existing credits by 10 to new scale
+  // Uses a platform_setting flag to prevent re-running on subsequent restarts
+  try {
+    const [flagRow] = await db.select().from(platformSettings).where(eq(platformSettings.key, "credits_v2_migrated")).limit(1);
+    if (!flagRow) {
+      await db.execute(sql`UPDATE users SET credits = credits * 10`);
+      await db.execute(sql`INSERT INTO platform_settings (key, value, description) VALUES ('credits_v2_migrated', 'true', 'Credits ×10 migration applied') ON CONFLICT (key) DO UPDATE SET value = 'true'`);
+      console.log("Migration: credits ×10 applied successfully");
+    } else {
+      console.log("Migration: credits ×10 already applied, skipping");
+    }
+  } catch (e: any) {
+    console.error("Credits ×10 migration warning:", e.message);
   }
 
   // Projects table column migrations

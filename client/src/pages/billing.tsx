@@ -48,7 +48,7 @@ export default function BillingPage() {
   const [isCompany, setIsCompany] = useState(false);
   const [taxNumber, setTaxNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [creditAmount, setCreditAmount] = useState(50);
+  const [creditAmount, setCreditAmount] = useState(500);
 
   const VAT_RATE = 0.15;
 
@@ -138,8 +138,8 @@ export default function BillingPage() {
   const adjustCredits = (delta: number) => {
     setCreditAmount(prev => {
       const next = prev + delta;
-      if (next < 50) return 50;
-      if (next % 5 !== 0) return Math.round(next / 5) * 5;
+      if (next < 500) return 500;
+      if (next % 50 !== 0) return Math.round(next / 50) * 50;
       return next;
     });
   };
@@ -147,7 +147,7 @@ export default function BillingPage() {
   const handleCreditInput = (val: string) => {
     const n = parseInt(val);
     if (isNaN(n)) return;
-    setCreditAmount(Math.max(50, Math.round(n / 5) * 5));
+    setCreditAmount(Math.max(500, Math.round(n / 50) * 50));
   };
 
   const handleUpgrade = (plan: string) => {
@@ -196,7 +196,7 @@ export default function BillingPage() {
       priceNum: 0,
       yearlyTotal: 0,
       icon: Zap,
-      credits: 5,
+      credits: 50,
       features: lang === "ar"
         ? ["موقع واحد", "2 تعديل ذكاء مجاني/موقع", "لا وصول لأداة التسويق", "دعم المجتمع", "يتضمن شعار عربي ويب"]
         : ["1 website", "2 free AI edits/site", "No AI marketing access", "Community support", "ArabyWeb badge on site"],
@@ -210,10 +210,10 @@ export default function BillingPage() {
       priceNum: isYearly ? proYearlyPerMonth : proMonthly,
       yearlyTotal: proYearly,
       icon: Crown,
-      credits: 50,
+      credits: 500,
       features: lang === "ar"
-        ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + إكس/تويتر", "50 جلسة ذكاء/شهر", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
-        : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — Instagram + X/Twitter", "50 AI sessions/month", "Analytics dashboard", "No ArabyWeb badge"],
+        ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + إكس/تويتر", "500 جلسة ذكاء/شهر", "لوحة تحليلات متقدمة", "بدون شعار عربي ويب"]
+        : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — Instagram + X/Twitter", "500 AI sessions/month", "Analytics dashboard", "No ArabyWeb badge"],
     },
     {
       id: "business",
@@ -224,10 +224,10 @@ export default function BillingPage() {
       priceNum: isYearly ? businessYearlyPerMonth : businessMonthly,
       yearlyTotal: businessYearly,
       icon: Building2,
-      credits: 200,
+      credits: 2000,
       features: lang === "ar"
-        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + إكس/تويتر + فيسبوك", "200 جلسة ذكاء/شهر", "دعم أولوية 24/7", "تعديلات غير محدودة بالذكاء الاصطناعي", "بدون شعار عربي ويب"]
-        : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — Instagram + X/Twitter + Facebook", "200 AI sessions/month", "Priority 24/7 support", "Unlimited AI edits & customization", "No ArabyWeb badge"],
+        ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — إنستغرام + إكس/تويتر + فيسبوك", "2000 جلسة ذكاء/شهر", "🔥 مولد الترند السعودي (حصري)", "دعم أولوية 24/7", "تعديلات غير محدودة بالذكاء الاصطناعي", "بدون شعار عربي ويب"]
+        : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — Instagram + X/Twitter + Facebook", "2000 AI sessions/month", "🔥 Saudi Trend Generator (exclusive)", "Priority 24/7 support", "Unlimited AI edits & customization", "No ArabyWeb badge"],
     },
   ];
 
@@ -273,8 +273,8 @@ export default function BillingPage() {
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {lang === "ar"
-                    ? `${subscription?.credits ?? 5} جلسة ذكاء متاحة`
-                    : `${subscription?.credits ?? 5} AI sessions available`}
+                    ? `${subscription?.credits ?? 50} جلسة ذكاء متاحة`
+                    : `${subscription?.credits ?? 50} AI sessions available`}
                 </p>
               </div>
             </div>
@@ -291,25 +291,25 @@ export default function BillingPage() {
           </h3>
           <p className="text-xs text-muted-foreground mb-3">
             {lang === "ar"
-              ? "كل تفاعل مع الذكاء الاصطناعي يستهلك جلسات ذكاء — توليد الصور يستهلك جلستَين لاستخدامه نموذج أقوى."
-              : "Each AI interaction consumes AI sessions — image generation costs 2 sessions as it uses a more powerful model."}
+              ? "كل تفاعل مع الذكاء الاصطناعي يستهلك جلسات ذكاء — توليد الصور يستهلك 20 جلسة لاستخدامه نموذج أقوى."
+              : "Each AI interaction consumes AI sessions — image generation costs 20 sessions as it uses a more powerful model."}
           </p>
           <div className="grid sm:grid-cols-4 gap-3 text-xs text-muted-foreground">
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "إنشاء موقع" : "Generate website"}</p>
-              <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
+              <p>{lang === "ar" ? "10 جلسات ذكاء" : "10 AI sessions"}</p>
             </div>
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "تعديل بالذكاء الاصطناعي" : "AI editing"}</p>
-              <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
+              <p>{lang === "ar" ? "10 جلسات ذكاء" : "10 AI sessions"}</p>
             </div>
             <div>
               <p className="font-medium text-foreground">{lang === "ar" ? "محتوى تسويقي" : "Marketing content"}</p>
-              <p>{lang === "ar" ? "1 جلسة ذكاء" : "1 AI session"}</p>
+              <p>{lang === "ar" ? "10 جلسات ذكاء" : "10 AI sessions"}</p>
             </div>
             <div className="relative">
               <p className="font-medium text-foreground">{lang === "ar" ? "توليد صورة بوست" : "Post image (DALL-E)"}</p>
-              <p className="text-violet-600 dark:text-violet-400 font-semibold">{lang === "ar" ? "2 جلسة ذكاء" : "2 AI sessions"}</p>
+              <p className="text-violet-600 dark:text-violet-400 font-semibold">{lang === "ar" ? "20 جلسة ذكاء" : "20 AI sessions"}</p>
             </div>
           </div>
         </div>
@@ -325,7 +325,7 @@ export default function BillingPage() {
                 {lang === "ar" ? "شراء جلسات ذكاء إضافية" : "Buy Extra AI Sessions"}
               </h3>
               <p className="text-xs text-muted-foreground">
-                {lang === "ar" ? "1 جلسة = 1 ريال سعودي • الحد الأدنى 50 جلسة" : "1 session = 1 SAR • Minimum 50 sessions"}
+                {lang === "ar" ? "10 جلسات = 1 ريال سعودي • الحد الأدنى 500 جلسة" : "10 sessions = 1 SAR • Minimum 500 sessions"}
               </p>
             </div>
           </div>
@@ -360,8 +360,8 @@ export default function BillingPage() {
 
           <div className="flex items-center gap-3 mb-4">
             <button
-              onClick={() => adjustCredits(-5)}
-              disabled={creditAmount <= 50}
+              onClick={() => adjustCredits(-50)}
+              disabled={creditAmount <= 500}
               className="w-9 h-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors disabled:opacity-40"
               data-testid="button-credits-minus"
             >
@@ -371,8 +371,8 @@ export default function BillingPage() {
               <Input
                 type="number"
                 value={creditAmount}
-                min={50}
-                step={5}
+                min={500}
+                step={50}
                 onChange={(e) => handleCreditInput(e.target.value)}
                 className="text-center text-xl font-bold h-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 data-testid="input-credit-amount"
@@ -382,7 +382,7 @@ export default function BillingPage() {
               </p>
             </div>
             <button
-              onClick={() => adjustCredits(5)}
+              onClick={() => adjustCredits(50)}
               className="w-9 h-9 rounded-lg border flex items-center justify-center hover:bg-muted transition-colors"
               data-testid="button-credits-plus"
             >
@@ -391,7 +391,7 @@ export default function BillingPage() {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            {[50, 100, 200, 500].map(preset => (
+            {[500, 1000, 2000, 5000].map(preset => (
               <button
                 key={preset}
                 onClick={() => setCreditAmount(preset)}
@@ -412,16 +412,16 @@ export default function BillingPage() {
           <div className="space-y-1.5 text-sm mb-4">
             <div className="flex justify-between">
               <span className="text-muted-foreground">{lang === "ar" ? `${creditAmount} جلسة ذكاء` : `${creditAmount} AI sessions`}</span>
-              <span className="font-medium">{creditAmount} ر.س</span>
+              <span className="font-medium">{(creditAmount / 10).toFixed(0)} ر.س</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">{lang === "ar" ? "ضريبة القيمة المضافة (15%)" : "VAT (15%)"}</span>
-              <span className="font-medium">{(creditAmount * 0.15).toFixed(2)} ر.س</span>
+              <span className="font-medium">{(creditAmount / 10 * 0.15).toFixed(2)} ر.س</span>
             </div>
             <Separator className="my-1" />
             <div className="flex justify-between font-bold text-base">
               <span>{lang === "ar" ? "الإجمالي" : "Total"}</span>
-              <span className="text-violet-600">{(creditAmount * 1.15).toFixed(2)} ر.س</span>
+              <span className="text-violet-600">{(creditAmount / 10 * 1.15).toFixed(2)} ر.س</span>
             </div>
           </div>
 
@@ -443,8 +443,8 @@ export default function BillingPage() {
               <ShoppingCart className="w-4 h-4 me-2" />
             )}
             {lang === "ar"
-              ? `شراء ${creditAmount} جلسة ذكاء مقابل ${(creditAmount * 1.15).toFixed(2)} ر.س`
-              : `Buy ${creditAmount} AI sessions for SAR ${(creditAmount * 1.15).toFixed(2)}`}
+              ? `شراء ${creditAmount} جلسة ذكاء مقابل ${(creditAmount / 10 * 1.15).toFixed(2)} ر.س`
+              : `Buy ${creditAmount} AI sessions for SAR ${(creditAmount / 10 * 1.15).toFixed(2)}`}
             <ExternalLink className="w-3.5 h-3.5 ms-2 opacity-70" />
           </Button>
         </Card>

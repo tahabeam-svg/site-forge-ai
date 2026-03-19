@@ -190,7 +190,7 @@ export async function sendWelcomeEmail(to: string, name: string, isAr = true) {
          ${p("يسعدنا انضمامك لعائلة ArabyWeb. أنت الآن قادر على بناء مواقع إلكترونية احترافية بالذكاء الاصطناعي في ثوانٍ معدودة.")}
          ${infoBox(`<strong>ماذا يمكنك فعله الآن؟</strong><br>
            ✅ إنشاء موقعك الأول مجاناً<br>
-           ✅ استخدام 5 جلسات ذكاء اصطناعي مجانية<br>
+           ✅ استخدام 50 جلسة ذكاء اصطناعي مجانية<br>
            ✅ اختيار من عشرات القوالب الجاهزة`)}
          ${btn("https://arabyweb.net/dashboard", "ابدأ الآن →")}
          ${p("إذا احتجت أي مساعدة، فريق الدعم لديك دائماً.", true)}`
@@ -198,7 +198,7 @@ export async function sendWelcomeEmail(to: string, name: string, isAr = true) {
          ${p("We're thrilled to have you join ArabyWeb. You can now build professional websites with AI in seconds.")}
          ${infoBox(`<strong>What you can do now:</strong><br>
            ✅ Create your first website for free<br>
-           ✅ Use 5 free AI sessions<br>
+           ✅ Use 50 free AI sessions<br>
            ✅ Choose from dozens of ready templates`, "#10b981", false)}
          ${btn("https://arabyweb.net/dashboard", "Get Started →")}
          ${p("If you need any help, our support team is always here for you.", true)}`,
@@ -240,12 +240,12 @@ export async function sendGoogleWelcomeEmail(to: string, name: string, isAr = tr
          ${p("لقد أنشأت حسابك بنجاح عبر حساب Google الخاص بك. أنت الآن جاهز لبناء مواقع ذكية واحترافية.")}
          ${infoBox("🔒 حسابك مرتبط بـ Google — لا تحتاج لكلمة مرور منفصلة للدخول.")}
          ${btn("https://arabyweb.net/dashboard", "اذهب للوحة التحكم")}
-         ${p("رصيدك المجاني: 5 جلسات ذكاء اصطناعي", true)}`
+         ${p("رصيدك المجاني: 50 جلسة ذكاء اصطناعي", true)}`
       : `${h1(`Hello ${firstName}!`)}
          ${p("You successfully created your account using Google. You're now ready to build smart, professional websites.")}
          ${infoBox("🔒 Your account is linked to Google — no separate password needed to sign in.", "#10b981", false)}
          ${btn("https://arabyweb.net/dashboard", "Go to Dashboard")}
-         ${p("Your free balance: 5 AI sessions", true)}`,
+         ${p("Your free balance: 50 AI sessions", true)}`,
     isAr
   );
   return sendMail(to, subject, html, "noreply");
@@ -468,7 +468,7 @@ export async function sendPaymentFailedEmail(to: string, amountSar: number, isAr
 export async function sendSubscriptionStartedEmail(to: string, plan: string, endDate: Date, isAr = true) {
   const subject = isAr ? `🎉 بدء اشتراكك في خطة ${planName(plan, true)} — ArabyWeb` : `🎉 Your ${planName(plan, false)} subscription is active — ArabyWeb`;
   const endStr = endDate.toLocaleDateString(isAr ? "ar-SA" : "en-US", { year: "numeric", month: "long", day: "numeric" });
-  const credits = plan === "business" ? 200 : 50;
+  const credits = plan === "business" ? 2000 : 500;
   const html = wrap(
     isAr
       ? `${h1(`🎉 اشتراكك فعّال!`)}

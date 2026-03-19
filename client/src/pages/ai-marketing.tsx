@@ -31,6 +31,12 @@ import {
   ImageIcon,
   Download,
   RefreshCw,
+  Film,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  Music,
+  Clapperboard,
 } from "lucide-react";
 import { SiTiktok } from "react-icons/si";
 
@@ -41,6 +47,26 @@ interface SocialContent {
   callToAction: string;
   bestTimeToPost: string;
   contentType: string;
+}
+
+interface VideoScriptScene {
+  number: number;
+  duration: string;
+  voiceover: string;
+  visuals: string;
+  transition?: string;
+}
+
+interface VideoScript {
+  title: string;
+  hook: string;
+  totalDuration: string;
+  platform: string;
+  scenes: VideoScriptScene[];
+  caption: string;
+  hashtags: string[];
+  musicSuggestion: string;
+  callToAction: string;
 }
 
 // Platforms included in paid plans
@@ -84,6 +110,10 @@ export default function AIMarketingPage() {
   const [result, setResult] = useState<SocialContent | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [postImageUrl, setPostImageUrl] = useState<string | null>(null);
+  const [mode, setMode] = useState<"post" | "script">("post");
+  const [scriptResult, setScriptResult] = useState<VideoScript | null>(null);
+  const [variants, setVariants] = useState<SocialContent[]>([]);
+  const [variantIndex, setVariantIndex] = useState(0);
 
   const { data: subscription } = useQuery<{ plan: string; credits: number; isAdmin?: boolean }>({
     queryKey: ["/api/subscription"],
@@ -98,7 +128,7 @@ export default function AIMarketingPage() {
   const planName = subscription?.plan || "free";
   const needsUpgrade = isFreePlan && !isAdmin;
   const credits = creditsData?.credits ?? subscription?.credits ?? 0;
-  const isLowCredits = !isAdmin && credits <= 5 && credits > 0;
+  const isLowCredits = !isAdmin && credits <= 50 && credits > 0;
   const noCredits = !isAdmin && credits <= 0 && !isFreePlan;
 
   // Compute allowed platforms for this user's plan
@@ -126,7 +156,7 @@ export default function AIMarketingPage() {
       qc.invalidateQueries({ queryKey: ["/api/me"] });
       toast({
         title: lang === "ar" ? "تم إنشاء المحتوى!" : "Content generated!",
-        description: lang === "ar" ? "تم خصم جلسة ذكاء واحدة من رصيدك." : "1 AI session deducted from your balance.",
+        description: lang === "ar" ? "تم خصم 10 جلسات ذكاء من رصيدك." : "10 AI sessions deducted from your balance.",
       });
     },
     onError: (err: any) => {
@@ -171,7 +201,7 @@ export default function AIMarketingPage() {
       qc.invalidateQueries({ queryKey: ["/api/credits"] });
       qc.invalidateQueries({ queryKey: ["/api/subscription"] });
       qc.invalidateQueries({ queryKey: ["/api/me"] });
-      toast({ title: lang === "ar" ? "تم توليد الصورة!" : "Image generated!", description: lang === "ar" ? "تم خصم جلستَي ذكاء (توليد الصور = 2 جلسات)." : "2 AI sessions deducted (image generation = 2 sessions)." });
+      toast({ title: lang === "ar" ? "تم توليد الصورة!" : "Image generated!", description: lang === "ar" ? "تم خصم 20 جلسة ذكاء (توليد الصور = 20 جلسة)." : "20 AI sessions deducted (image generation = 20 sessions)." });
     },
     onError: (err: any) => {
       toast({
@@ -179,6 +209,69 @@ export default function AIMarketingPage() {
         description: lang === "ar" ? (err.messageAr || "حاول مجدداً") : (err.messageEn || "Please try again"),
         variant: "destructive",
       });
+    },
+  });
+
+  const scriptMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/marketing/generate-script", {
+        topic,
+        platform: selectedPlatform,
+        language: lang,
+        tone: selectedTone,
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw err;
+      }
+      return res.json();
+    },
+    onSuccess: (data: VideoScript) => {
+      setScriptResult(data);
+      setResult(null);
+      setVariants([]);
+      qc.invalidateQueries({ queryKey: ["/api/credits"] });
+      qc.invalidateQueries({ queryKey: ["/api/subscription"] });
+      qc.invalidateQueries({ queryKey: ["/api/me"] });
+      toast({
+        title: lang === "ar" ? "تم إنشاء سكريبت الفيديو!" : "Video script generated!",
+        description: lang === "ar" ? "تم خصم 10 جلسات ذكاء من رصيدك." : "10 AI sessions deducted from your balance.",
+      });
+    },
+    onError: (err: any) => {
+      if (err?.message === "upgrade_required") {
+        toast({ title: lang === "ar" ? "يلزم الترقية" : "Upgrade Required", description: lang === "ar" ? err.messageAr : err.messageEn, variant: "destructive" });
+      } else if (err?.message === "insufficient_credits") {
+        toast({ title: lang === "ar" ? "رصيدك منتهٍ" : "Credits Depleted", description: lang === "ar" ? err.messageAr : err.messageEn, variant: "destructive" });
+        setTimeout(() => setLocation("/billing"), 1500);
+      } else {
+        toast({ title: lang === "ar" ? "فشل إنشاء السكريبت" : "Failed to generate script", variant: "destructive" });
+      }
+    },
+  });
+
+  const variantsMutation = useMutation({
+    mutationFn: async () => {
+      const makeCall = () => apiRequest("POST", "/api/marketing/generate", {
+        topic, platform: selectedPlatform, language: lang, tone: selectedTone,
+      }).then(r => { if (!r.ok) throw r; return r.json(); });
+      return Promise.all([makeCall(), makeCall(), makeCall()]);
+    },
+    onSuccess: (data: SocialContent[]) => {
+      setVariants(data);
+      setVariantIndex(0);
+      setResult(null);
+      setScriptResult(null);
+      qc.invalidateQueries({ queryKey: ["/api/credits"] });
+      qc.invalidateQueries({ queryKey: ["/api/subscription"] });
+      qc.invalidateQueries({ queryKey: ["/api/me"] });
+      toast({
+        title: lang === "ar" ? "تم إنشاء 3 بدائل!" : "3 variants generated!",
+        description: lang === "ar" ? "تم خصم 30 جلسة ذكاء من رصيدك." : "30 AI sessions deducted from your balance.",
+      });
+    },
+    onError: (err: any) => {
+      toast({ title: lang === "ar" ? "فشل إنشاء البدائل" : "Failed to generate variants", variant: "destructive" });
     },
   });
 
@@ -401,29 +494,80 @@ export default function AIMarketingPage() {
                 />
               </div>
 
-              <Button
-                onClick={() => generateMutation.mutate()}
-                disabled={!topic.trim() || generateMutation.isPending || noCredits}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
-                data-testid="button-generate-content"
-              >
-                {generateMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 me-2 animate-spin" />
-                    {lang === "ar" ? "جاري الإنشاء..." : "Generating..."}
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 me-2" />
-                    {lang === "ar" ? "إنشاء المحتوى" : "Generate Content"}
-                    {!isAdmin && (
-                      <span className="ms-2 text-xs opacity-75 flex items-center gap-0.5">
-                        (<BrainCircuit className="w-3 h-3" /> 1)
-                      </span>
+              {/* Mode toggle */}
+              <div className="flex rounded-lg overflow-hidden border border-border">
+                <button
+                  onClick={() => { setMode("post"); setScriptResult(null); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-all ${mode === "post" ? "bg-emerald-600 text-white" : "bg-muted hover:bg-muted/80 text-muted-foreground"}`}
+                  data-testid="button-mode-post"
+                >
+                  <Megaphone className="w-3.5 h-3.5" />
+                  {lang === "ar" ? "منشور سوشيال" : "Social Post"}
+                </button>
+                <button
+                  onClick={() => { setMode("script"); setResult(null); setVariants([]); }}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-sm font-medium transition-all ${mode === "script" ? "bg-violet-600 text-white" : "bg-muted hover:bg-muted/80 text-muted-foreground"}`}
+                  data-testid="button-mode-script"
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  {lang === "ar" ? "سكريبت فيديو" : "Video Script"}
+                </button>
+              </div>
+
+              {mode === "post" ? (
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => { generateMutation.mutate(); setVariants([]); }}
+                    disabled={!topic.trim() || generateMutation.isPending || variantsMutation.isPending || noCredits}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white"
+                    data-testid="button-generate-content"
+                  >
+                    {generateMutation.isPending ? (
+                      <><Loader2 className="w-4 h-4 me-2 animate-spin" />{lang === "ar" ? "جاري الإنشاء..." : "Generating..."}</>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 me-2" />
+                        {lang === "ar" ? "إنشاء المحتوى" : "Generate Content"}
+                        {!isAdmin && <span className="ms-2 text-xs opacity-75 flex items-center gap-0.5">(<BrainCircuit className="w-3 h-3" /> 10)</span>}
+                      </>
                     )}
-                  </>
-                )}
-              </Button>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => { variantsMutation.mutate(); setResult(null); }}
+                    disabled={!topic.trim() || generateMutation.isPending || variantsMutation.isPending || noCredits}
+                    className="w-full border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                    data-testid="button-generate-variants"
+                  >
+                    {variantsMutation.isPending ? (
+                      <><Loader2 className="w-4 h-4 me-2 animate-spin" />{lang === "ar" ? "جاري توليد البدائل..." : "Generating variants..."}</>
+                    ) : (
+                      <>
+                        <Layers className="w-4 h-4 me-2" />
+                        {lang === "ar" ? "توليد 3 بدائل" : "Generate 3 Variants"}
+                        {!isAdmin && <span className="ms-2 text-xs opacity-75 flex items-center gap-0.5">(<BrainCircuit className="w-3 h-3" /> 30)</span>}
+                      </>
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => scriptMutation.mutate()}
+                  disabled={!topic.trim() || scriptMutation.isPending || noCredits}
+                  className="w-full bg-gradient-to-r from-violet-500 to-purple-600 text-white"
+                  data-testid="button-generate-script"
+                >
+                  {scriptMutation.isPending ? (
+                    <><Loader2 className="w-4 h-4 me-2 animate-spin" />{lang === "ar" ? "جاري كتابة السكريبت..." : "Writing script..."}</>
+                  ) : (
+                    <>
+                      <Clapperboard className="w-4 h-4 me-2" />
+                      {lang === "ar" ? "كتابة سكريبت الفيديو" : "Write Video Script"}
+                      {!isAdmin && <span className="ms-2 text-xs opacity-75 flex items-center gap-0.5">(<BrainCircuit className="w-3 h-3" /> 10)</span>}
+                    </>
+                  )}
+                </Button>
+              )}
             </Card>
 
             {!needsUpgrade && (
@@ -466,14 +610,130 @@ export default function AIMarketingPage() {
                 )}
                 <p className="text-xs text-muted-foreground mt-2">
                   {lang === "ar"
-                    ? "• توليد محتوى نصي = جلسة ذكاء واحدة · توليد صورة البوست = جلستَان"
-                    : "• Text content = 1 AI session · Post image generation = 2 AI sessions"}
+                    ? "• توليد منشور = 10 جلسات · 3 بدائل = 30 جلسة · سكريبت فيديو = 10 جلسات · صورة DALL-E = 20 جلسة"
+                    : "• Post = 10 sessions · 3 variants = 30 sessions · Video script = 10 sessions · DALL-E image = 20 sessions"}
                 </p>
               </Card>
             )}
           </div>
 
           <div>
+            {/* ─── Video Script Result ─── */}
+            {scriptResult && (
+              <Card className="p-5 space-y-4 border-violet-200 dark:border-violet-800">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Clapperboard className="w-4 h-4 text-violet-600" />
+                    {lang === "ar" ? "سكريبت الفيديو" : "Video Script"}
+                  </h3>
+                  <Badge className="bg-violet-600 text-white">{scriptResult.totalDuration}</Badge>
+                </div>
+                <div className="bg-violet-50 dark:bg-violet-950/30 rounded-lg p-3">
+                  <p className="font-semibold text-violet-800 dark:text-violet-200">{scriptResult.title}</p>
+                  <p className="text-sm text-violet-600 dark:text-violet-400 mt-1">🎣 {lang === "ar" ? "الخطاف:" : "Hook:"} {scriptResult.hook}</p>
+                </div>
+                <div className="space-y-3">
+                  {scriptResult.scenes?.map((scene, i) => (
+                    <div key={i} className="border border-border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {lang === "ar" ? `مشهد ${scene.number}` : `Scene ${scene.number}`}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="w-3 h-3" /> {scene.duration}
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">{lang === "ar" ? "🎙 الصوت:" : "🎙 Voiceover:"}</p>
+                        <p className="text-sm">{scene.voiceover}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">{lang === "ar" ? "🎬 المرئيات:" : "🎬 Visuals:"}</p>
+                        <p className="text-sm text-muted-foreground">{scene.visuals}</p>
+                      </div>
+                      {scene.transition && (
+                        <p className="text-xs text-violet-500">↪ {scene.transition}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {scriptResult.musicSuggestion && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Music className="w-4 h-4 text-violet-500" />
+                    <span className="text-muted-foreground">{lang === "ar" ? "الموسيقى:" : "Music:"}</span>
+                    <span>{scriptResult.musicSuggestion}</span>
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {scriptResult.hashtags?.map((tag, i) => (
+                    <Badge key={i} variant="secondary" className="text-xs">
+                      {tag.startsWith("#") ? tag : `#${tag}`}
+                    </Badge>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyToClipboard(
+                    `${scriptResult.title}\n\n${scriptResult.hook}\n\n${scriptResult.scenes?.map(s => `[مشهد ${s.number} - ${s.duration}]\nصوت: ${s.voiceover}\nمرئيات: ${s.visuals}`).join("\n\n")}\n\n${scriptResult.hashtags?.join(" ")}`,
+                    "script"
+                  )}
+                  data-testid="button-copy-script"
+                >
+                  {copied === "script" ? <Check className="w-3.5 h-3.5 me-1" /> : <Copy className="w-3.5 h-3.5 me-1" />}
+                  {lang === "ar" ? "نسخ السكريبت" : "Copy Script"}
+                </Button>
+              </Card>
+            )}
+
+            {/* ─── 3 Variants Navigator ─── */}
+            {variants.length > 0 && (
+              <Card className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-emerald-600" />
+                    {lang === "ar" ? `البديل ${variantIndex + 1} من ${variants.length}` : `Variant ${variantIndex + 1} of ${variants.length}`}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => setVariantIndex(i => Math.max(0, i - 1))} disabled={variantIndex === 0} data-testid="button-prev-variant">
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    {variants.map((_, i) => (
+                      <button key={i} onClick={() => setVariantIndex(i)}
+                        className={`w-6 h-6 rounded-full text-xs font-medium transition-all ${i === variantIndex ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                        data-testid={`button-variant-${i}`}
+                      >{i + 1}</button>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={() => setVariantIndex(i => Math.min(variants.length - 1, i + 1))} disabled={variantIndex === variants.length - 1} data-testid="button-next-variant">
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                {(() => {
+                  const v = variants[variantIndex];
+                  return (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <label className="text-sm font-medium">{lang === "ar" ? "نص المنشور" : "Post Text"}</label>
+                          <Button variant="ghost" size="sm" onClick={() => copyToClipboard(v.post, `v-post-${variantIndex}`)} data-testid={`button-copy-variant-post-${variantIndex}`}>
+                            {copied === `v-post-${variantIndex}` ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                          </Button>
+                        </div>
+                        <p className="text-sm bg-muted p-3 rounded-lg whitespace-pre-wrap">{v.post}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {v.hashtags?.map((tag, i) => (
+                          <Badge key={i} variant="secondary" className="text-xs">{tag.startsWith("#") ? tag : `#${tag}`}</Badge>
+                        ))}
+                      </div>
+                      <p className="text-sm bg-emerald-50 dark:bg-emerald-950 p-3 rounded-lg text-emerald-700 dark:text-emerald-300">{v.callToAction}</p>
+                    </div>
+                  );
+                })()}
+              </Card>
+            )}
+
             {result && (
               <Card className="p-5 space-y-4">
                 <div className="flex items-center justify-between">
@@ -593,7 +853,7 @@ export default function AIMarketingPage() {
                     {lang === "ar" ? "توليد صورة البوست" : "Post Image Generator"}
                   </h3>
                   <Badge variant="outline" className="text-violet-600 border-violet-300 text-xs">
-                    DALL-E 3 · {lang === "ar" ? "2 جلسات" : "2 sessions"}
+                    DALL-E 3 · {lang === "ar" ? "20 جلسة" : "20 sessions"}
                   </Badge>
                 </div>
 

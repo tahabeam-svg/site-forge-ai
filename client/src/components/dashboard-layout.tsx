@@ -34,6 +34,7 @@ import {
   User,
   LayoutGrid,
   HeadphonesIcon,
+  TrendingUp,
 } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
 import { useQuery } from "@tanstack/react-query";
@@ -58,7 +59,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const credits = me?.credits ?? user?.credits ?? 0;
   const plan = me?.plan ?? user?.plan ?? "free";
-  const maxCredits = plan === "pro" ? 50 : plan === "business" ? 200 : 5;
+  const maxCredits = plan === "pro" ? 500 : plan === "business" ? 2000 : 50;
   const creditsPercent = Math.min((credits / maxCredits) * 100, 100);
 
   const menuItems = [
@@ -66,6 +67,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: lang === "ar" ? "التحليلات" : "Analytics", url: "/analytics", icon: BarChart3, group: "main" },
     { title: lang === "ar" ? "القوالب" : "Templates", url: "/templates", icon: LayoutGrid, group: "main" },
     { title: lang === "ar" ? "التسويق بالذكاء الاصطناعي" : "AI Marketing", url: "/marketing", icon: Sparkles, group: "tools" },
+    { title: lang === "ar" ? "مولّد الترند 🔥" : "Trend Generator 🔥", url: "/trend-generator", icon: TrendingUp, group: "tools" },
     { title: lang === "ar" ? "نشر GitHub" : "GitHub Deploy", url: "/github-deploy", icon: Github, group: "tools" },
     { title: lang === "ar" ? "انشر موقعك" : "Deploy Site", url: "/deploy-guide", icon: Upload, group: "tools" },
     { title: t("billing", lang), url: "/billing", icon: CreditCard, group: "account" },
@@ -177,10 +179,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <SidebarFooter className="p-3 border-t border-sidebar-border space-y-3">
               {/* Credits bar */}
-              <div className={`rounded-xl p-3 space-y-2 ${credits <= 0 ? "bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800" : credits <= 2 ? "bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800" : "bg-sidebar-accent/60"}`}>
+              <div className={`rounded-xl p-3 space-y-2 ${credits <= 0 ? "bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800" : credits <= 20 ? "bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800" : "bg-sidebar-accent/60"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <BrainCircuit className={`w-3.5 h-3.5 ${credits <= 0 ? "text-red-500" : credits <= 2 ? "text-amber-500" : "text-emerald-500"}`} />
+                    <BrainCircuit className={`w-3.5 h-3.5 ${credits <= 0 ? "text-red-500" : credits <= 20 ? "text-amber-500" : "text-emerald-500"}`} />
                     <span className="text-[11px] font-semibold">{lang === "ar" ? "رصيد الذكاء" : "AI Credits"}</span>
                   </div>
                   <Badge className={`text-[9px] h-4 px-1.5 text-white ${planColor}`}>
@@ -190,10 +192,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </div>
                 <Progress
                   value={creditsPercent}
-                  className={`h-1.5 ${credits <= 0 ? "[&>div]:bg-red-500" : credits <= 2 ? "[&>div]:bg-amber-500" : ""}`}
+                  className={`h-1.5 ${credits <= 0 ? "[&>div]:bg-red-500" : credits <= 20 ? "[&>div]:bg-amber-500" : ""}`}
                 />
                 <div className="flex justify-between items-center">
-                  <span className={`text-[10px] font-medium ${credits <= 0 ? "text-red-600 dark:text-red-400" : credits <= 2 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
+                  <span className={`text-[10px] font-medium ${credits <= 0 ? "text-red-600 dark:text-red-400" : credits <= 20 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"}`}>
                     {credits <= 0
                       ? (lang === "ar" ? "نفد رصيد الذكاء!" : "AI Credits Empty!")
                       : `${credits.toLocaleString()} ${lang === "ar" ? "جلسة متبقية" : "sessions left"}`}

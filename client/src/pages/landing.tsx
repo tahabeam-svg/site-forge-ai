@@ -570,6 +570,38 @@ export default function LandingPage() {
             ))}
           </div>
 
+          {/* ── Trend Generator Announcement ── */}
+          <motion.div custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp}
+            className="mb-12 max-w-4xl mx-auto"
+          >
+            <Card className="p-6 sm:p-8 border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/30 dark:via-orange-950/20 dark:to-yellow-950/10 overflow-hidden relative">
+              <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-br from-amber-300/20 to-orange-300/20 rounded-full -translate-y-8 translate-x-8" />
+              <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <Badge className="bg-amber-500 text-white text-xs">
+                      {lang === "ar" ? "جديد · حصري Business" : "New · Business Exclusive"}
+                    </Badge>
+                    <Badge variant="outline" className="text-amber-700 border-amber-300 dark:text-amber-300 dark:border-amber-700 text-xs">
+                      {lang === "ar" ? "2 جلسة ذكاء فقط" : "Only 2 AI sessions"}
+                    </Badge>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-amber-900 dark:text-amber-100" data-testid="text-trend-announcement">
+                    {lang === "ar" ? "مولّد الترند السعودي 🔥" : "Saudi Trend Generator 🔥"}
+                  </h3>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 mt-1 max-w-xl">
+                    {lang === "ar"
+                      ? "أدخل مجالك واحصل فوراً على 3 أفكار ترند جاهزة مع خطاف جذاب، كابشن، هاشتاقات، وأفضل وقت نشر — مصمَّمة للسوق السعودي والخليجي."
+                      : "Enter your niche and instantly get 3 ready-to-publish trend ideas with viral hook, caption, hashtags, and best posting time — designed for the Saudi & Gulf market."}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
           {/* ── Unified Pricing ── */}
           <div id="pricing" className="pt-6">
             <div className="text-center mb-10">

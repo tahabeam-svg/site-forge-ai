@@ -2194,10 +2194,22 @@ STRICT RULES:
   const imageUrl = response.data?.[0]?.url;
   if (!imageUrl) throw new Error("No image generated");
 
-  return {
-    url: imageUrl,
-    revisedPrompt: response.data?.[0]?.revised_prompt,
-  };
+  // Fetch image server-side and convert to base64 to prevent URL expiry (OpenAI URLs expire in 1hr)
+  try {
+    const imgResponse = await fetch(imageUrl);
+    const arrayBuffer = await imgResponse.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    return {
+      url: `data:image/png;base64,${base64}`,
+      revisedPrompt: response.data?.[0]?.revised_prompt,
+    };
+  } catch {
+    // Fallback to URL if fetch fails
+    return {
+      url: imageUrl,
+      revisedPrompt: response.data?.[0]?.revised_prompt,
+    };
+  }
 }
 
 // ─── Smart command pre-processor ────────────────────────────────────────────
@@ -2914,4 +2926,181 @@ VALIDATION RULES — verify before returning:
       text: "#1a1a2a",
     },
   };
+}
+
+// ─── Video Script Generator ──────────────────────────────────────────────────
+
+export interface VideoScriptScene {
+  number: number;
+  duration: string;
+  voiceover: string;
+  visuals: string;
+  transition?: string;
+}
+
+export interface VideoScript {
+  title: string;
+  hook: string;
+  totalDuration: string;
+  platform: string;
+  scenes: VideoScriptScene[];
+  caption: string;
+  hashtags: string[];
+  musicSuggestion: string;
+  callToAction: string;
+}
+
+export async function generateVideoScript(
+  topic: string,
+  platform: string,
+  language: string = "ar",
+  tone: string = "casual"
+): Promise<VideoScript> {
+  const isArabic = language === "ar";
+
+  const platformSpec: Record<string, { duration: string; style: string }> = {
+    tiktok: { duration: "30-60 ثانية", style: "سريع، متحرك، hook قوي أول 3 ثوانٍ، Gen-Z" },
+    instagram: { duration: "30-90 ثانية", style: "جمالي، lifestyle، قصة مثيرة، CTA واضح" },
+    youtube: { duration: "2-5 دقائق", style: "تعليمي أو ترفيهي، خطوات مرتبة، قيمة عالية" },
+    twitter: { duration: "30-60 ثانية", style: "مباشر، جريء، آراء قوية" },
+    facebook: { duration: "1-2 دقيقة", style: "قصة شخصية، محلية، تثير تعليقات" },
+  };
+
+  const spec = platformSpec[platform] || platformSpec.tiktok;
+
+  const prompt = `أنت منتج محتوى محترف متخصص في السوق السعودي والخليجي. اكتب سكريبت فيديو احترافي يُستخدم مباشرة في الإنتاج.
+
+الموضوع: "${topic}"
+المنصة: ${platform} — ${spec.style}
+المدة المقترحة: ${spec.duration}
+اللغة: ${isArabic ? "العربية (لهجة خليجية/سعودية إذا كان كاجوال)" : "الإنجليزية"}
+التون: ${tone}
+
+السوق السعودي: الجمهور يفضل الأصالة، المحتوى المحلي، المرجعيات السعودية (الرياض، جدة، الخليج). يتفاعل مع الـ hooks القوية والمحتوى التعليمي العملي.
+
+أرجع JSON بالشكل التالي بالضبط:
+{
+  "title": "عنوان الفيديو — جذاب وSEO-friendly (أقل من 60 حرفاً)",
+  "hook": "الجملة الأولى التي تُقال في أول 3 ثوانٍ — يجب أن تثير فضول المشاهد فوراً",
+  "totalDuration": "المدة الإجمالية المقترحة",
+  "platform": "${platform}",
+  "scenes": [
+    {
+      "number": 1,
+      "duration": "3-5 ثوانٍ",
+      "voiceover": "النص الكامل للصوت في هذا المشهد",
+      "visuals": "وصف دقيق لما يظهر في الشاشة — الكاميرا، الإضاءة، العناصر",
+      "transition": "نوع الانتقال للمشهد التالي (مثل: قطع مباشر / fade / zoom)"
+    }
+  ],
+  "caption": "كابشن كامل للنشر مع الفيديو",
+  "hashtags": ["hashtag1", "hashtag2"],
+  "musicSuggestion": "نوع الموسيقى أو الصوت المقترح (مثال: بيت عربي سريع / نغمة هادئة / trending sound)",
+  "callToAction": "الـ CTA في نهاية الفيديو"
+}
+
+مهم: السكريبت يجب أن يكون جاهزاً للتصوير مباشرة — تفاصيل كافية للمخرج والممثل. أرجع JSON فقط بدون أي نص إضافي.`;
+
+  const response = await openai.chat.completions.create({
+    model: getModel(),
+    messages: [{ role: "user", content: prompt }],
+    max_completion_tokens: 3000,
+    temperature: 0.85,
+  });
+
+  const content = response.choices[0]?.message?.content || "";
+  try {
+    const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return {
+      title: topic,
+      hook: isArabic ? `لن تصدق هذا عن ${topic}...` : `You won't believe this about ${topic}...`,
+      totalDuration: "60 ثانية",
+      platform,
+      scenes: [
+        { number: 1, duration: "5 ثوانٍ", voiceover: content.slice(0, 200), visuals: "مشهد مفتوح مع الكاميرا", transition: "قطع مباشر" }
+      ],
+      caption: topic,
+      hashtags: ["#السعودية", "#محتوى"],
+      musicSuggestion: "موسيقى خلفية هادئة",
+      callToAction: "تابعونا للمزيد",
+    };
+  }
+}
+
+// ─── Trend Generator ─────────────────────────────────────────────────────────
+
+export interface TrendIdea {
+  trendTitle: string;
+  viralHook: string;
+  caption: string;
+  hashtags: string[];
+  contentType: string;
+  bestPlatform: string;
+  bestTime: string;
+  engagementTip: string;
+  whyItWorks: string;
+}
+
+export async function generateTrendContent(
+  niche: string,
+  language: string = "ar"
+): Promise<TrendIdea[]> {
+  const isArabic = language === "ar";
+
+  const prompt = `أنت خبير متخصص في الترندات الرقمية للسوق السعودي والعربي. مهمتك توليد أفكار محتوى فيروسية مبنية على الترندات الحالية.
+
+المجال/النيش: "${niche}"
+اللغة: ${isArabic ? "العربية السعودية" : "English"}
+
+افهم السياق السعودي:
+- الترندات الرائجة: #السعودية #رؤية2030 #الرياض #جدة #خبر_وين + مناسبات رمضان والأعياد والفعاليات
+- المحتوى الأكثر نشراً: قبل/بعد، كشف المستور، "لن تصدق"، مقارنات، رد على سؤال، وراء الكواليس
+- المنصات الأكثر تأثيراً في KSA: تيك توك، سناب شات، إنستغرام، تويتر
+- الوقت الذهبي: 7-11 مساءً بتوقيت الرياض، بعد صلاة المغرب والعشاء
+
+أنشئ 3 أفكار ترند مختلفة ومتنوعة (أسلوب مختلف لكل فكرة).
+
+أرجع JSON array بالشكل التالي بالضبط:
+[
+  {
+    "trendTitle": "اسم الترند أو الفكرة (جذاب وقصير)",
+    "viralHook": "الـ hook الجملة الأولى — يجب أن تشعل الفضول فوراً (أقل من 15 كلمة)",
+    "caption": "كابشن كامل جاهز للنشر مع إيموجي",
+    "hashtags": ["#هاشتاق1", "#هاشتاق2", "#هاشتاق3", "EnglishHashtag"],
+    "contentType": "نوع المحتوى (فيديو رياكشن / صورة مقارنة / ريلز / استطلاع / قصة)",
+    "bestPlatform": "أفضل منصة لهذا الترند",
+    "bestTime": "أفضل وقت للنشر للوصول الأقصى",
+    "engagementTip": "نصيحة واحدة لزيادة التفاعل",
+    "whyItWorks": "لماذا هذا المحتوى سيتصدر الترند في السعودية"
+  }
+]
+
+المحتوى يجب أن يكون متوافقاً ثقافياً وملائماً للسوق السعودي. أرجع JSON array فقط بدون أي نص إضافي.`;
+
+  const response = await openai.chat.completions.create({
+    model: getModel(),
+    messages: [{ role: "user", content: prompt }],
+    max_completion_tokens: 3000,
+    temperature: 0.9,
+  });
+
+  const content = response.choices[0]?.message?.content || "";
+  try {
+    const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return [{
+      trendTitle: isArabic ? `ترند ${niche}` : `${niche} Trend`,
+      viralHook: isArabic ? `لن تصدق ما يحدث في ${niche}...` : `You won't believe what's happening in ${niche}...`,
+      caption: content.slice(0, 500),
+      hashtags: ["#السعودية", `#${niche}`, "#ترند"],
+      contentType: isArabic ? "ريلز" : "Reel",
+      bestPlatform: "TikTok",
+      bestTime: isArabic ? "9 مساءً بتوقيت الرياض" : "9 PM Riyadh time",
+      engagementTip: isArabic ? "اسأل سؤالاً في التعليقات" : "Ask a question in comments",
+      whyItWorks: isArabic ? "يتناسب مع اهتمامات الجمهور السعودي" : "Resonates with Saudi audience",
+    }];
+  }
 }

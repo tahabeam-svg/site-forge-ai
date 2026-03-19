@@ -192,14 +192,14 @@ CONSULTATION TRIGGER:
 - 100% visual editor — zero coding required
 - Arabic RTL + English support, custom domains, SEO, e-commerce, contact forms
 - Plans:
-  * Free: 1 website, 2 free AI edits per site, 5 credits/month — free forever, no credit card needed
-  * Pro: ${pricing.proPrice} SAR/month — 10 websites, 5 free AI edits per site, 50 credits/month, 24/7 support, analytics
-  * Business: ${pricing.businessPrice} SAR/month — 30 websites, 10 free AI edits per site, 200 credits/month, priority support, premium templates
+  * Free: 1 website, 2 free AI edits per site, 50 credits/month — free forever, no credit card needed
+  * Pro: ${pricing.proPrice} SAR/month — 10 websites, 5 free AI edits per site, 500 credits/month, 24/7 support, analytics
+  * Business: ${pricing.businessPrice} SAR/month — 30 websites, 10 free AI edits per site, 2000 credits/month, Trend Generator, priority support, premium templates
 
 【2. Credits System】
-- Credits are used for: AI website generation (1 credit), AI edits beyond the free limit (1 credit each), AI marketing posts (1 credit each)
-- Buy extra credits anytime: 1 credit = 1 SAR (minimum 50 credits, multiples of 5)
-- Example: 50 credits = 50 SAR + 15% VAT = 57.5 SAR total
+- Credits are used for: AI website generation (10 credits), AI edits beyond the free limit (10 credits each), AI marketing posts (10 credits each), DALL-E image generation (20 credits), Trend Generator (2 credits per generation — Business only)
+- Buy extra credits anytime: 10 credits = 1 SAR (minimum 500 credits, multiples of 50)
+- Example: 500 credits = 50 SAR + 15% VAT = 57.5 SAR total
 - Buy credits from: Dashboard → Billing → "Buy Extra Credits" section
 - Credits never expire — they stay in your account until used
 
@@ -291,15 +291,15 @@ ${dialectInstruction}
 - محرر بصري 100% — لا تحتاج أي برمجة أو كود برمجي
 - دعم العربية (RTL) والإنجليزية، نطاقات مخصصة، SEO، متجر إلكتروني، نماذج تواصل
 - الباقات:
-  * مجانية: موقع واحد، 2 تعديل AI مجاني لكل موقع، 5 جلسة ذكاء/شهر — مجاناً للأبد بدون بطاقة بنكية
-  * Pro: ${pricing.proPrice} ريال/شهر — 10 مواقع، 5 تعديلات AI مجانية/موقع، 50 جلسة ذكاء/شهر، دعم 24/7، لوحة تحليلات
-  * Business: ${pricing.businessPrice} ريال/شهر — 30 موقع، 10 تعديلات AI مجانية/موقع، 200 جلسة ذكاء/شهر، دعم أولوية، قوالب مميزة
+  * مجانية: موقع واحد، 2 تعديل AI مجاني لكل موقع، 50 جلسة ذكاء/شهر — مجاناً للأبد بدون بطاقة بنكية
+  * Pro: ${pricing.proPrice} ريال/شهر — 10 مواقع، 5 تعديلات AI مجانية/موقع، 500 جلسة ذكاء/شهر، دعم 24/7، لوحة تحليلات
+  * Business: ${pricing.businessPrice} ريال/شهر — 30 موقع، 10 تعديلات AI مجانية/موقع، 2000 جلسة ذكاء/شهر، مولد الترند السعودي، دعم أولوية، قوالب مميزة
 
 【٢. نظام جلسات الذكاء】
-- جلسات الذكاء تُستخدم لـ: إنشاء الموقع بالذكاء الاصطناعي (جلسة ذكاء واحدة)، التعديلات بعد الحد المجاني (جلسة ذكاء لكل تعديل)، منشورات التسويق (جلسة ذكاء لكل منشور)
-- شراء جلسات ذكاء إضافية في أي وقت: 1 جلسة ذكاء = 1 ريال سعودي
-- الحد الأدنى للشراء: 50 جلسة ذكاء بمضاعفات 5 (50، 55، 60...)
-- مثال: 100 جلسة ذكاء = 100 ريال + ضريبة 15% = 115 ريال إجمالاً
+- جلسات الذكاء تُستخدم لـ: إنشاء الموقع بالذكاء الاصطناعي (10 جلسات)، التعديلات بعد الحد المجاني (10 جلسات لكل تعديل)، منشورات التسويق (10 جلسات)، توليد صور DALL-E (20 جلسة)، مولد الترند (2 جلسة/توليد — حصري Business)
+- شراء جلسات ذكاء إضافية في أي وقت: 10 جلسات ذكاء = 1 ريال سعودي
+- الحد الأدنى للشراء: 500 جلسة ذكاء بمضاعفات 50 (500، 550، 600...)
+- مثال: 500 جلسة ذكاء = 50 ريال + ضريبة 15% = 57.5 ريال إجمالاً
 - طريقة الشراء: لوحة التحكم ← الفوترة ← قسم "شراء نقاط إضافية"
 - جلسات الذكاء لا تنتهي صلاحيتها — يبقى في حسابك حتى الاستخدام
 - حدود التعديل المجاني لكل باقة:

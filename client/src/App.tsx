@@ -41,6 +41,7 @@ const BlogPostPage         = lazy(() => import("@/pages/blog-post"));
 const SeoAiWebsiteBuilderPage     = lazy(() => import("@/pages/seo-ai-website-builder"));
 const SeoDigitalMarketingPage     = lazy(() => import("@/pages/seo-digital-marketing"));
 const SeoWebsiteSaudiArabiaPage   = lazy(() => import("@/pages/seo-website-saudi-arabia"));
+const TrendGeneratorPage   = lazy(() => import("@/pages/trend-generator"));
 const ChatWidget           = lazy(() => import("@/components/chat-widget"));
 
 // ── Loading fallback ─────────────────────────────────────────────────────────
@@ -93,6 +94,7 @@ function Router() {
         <Route path="/secure-admin">{() => <ProtectedRoute component={AdminPage} />}</Route>
         <Route path="/marketing">{() => <ProtectedRoute component={AIMarketingPage} />}</Route>
         <Route path="/ai-marketing">{() => <ProtectedRoute component={AIMarketingPage} />}</Route>
+        <Route path="/trend-generator">{() => <ProtectedRoute component={TrendGeneratorPage} />}</Route>
         <Route path="/domains">{() => <ProtectedRoute component={DomainsPage} />}</Route>
         <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
         <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { registerAiBuilderRoutes } from "./ai-builder";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage, GenerateWebsiteOptions } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage, generateVideoScript, generateTrendContent, GenerateWebsiteOptions } from "./ai";
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
@@ -681,7 +681,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
       });
 
       if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
         // Fire-and-forget: notify user if credits hit 0
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, userId)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
@@ -869,7 +869,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
       });
 
       if (!isUserAdmin2) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
         // Fire-and-forget: notify user if credits hit 0
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
@@ -1054,8 +1054,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
             remaining: 0,
           });
         }
-        // Has credits — deduct 1 credit for this extra edit
-        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
+        // Has credits — deduct 10 credits for this extra edit
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
       }
 
       await storage.addChatMessage({ projectId: project.id, role: "user", content: command });
@@ -1796,7 +1796,7 @@ When asking for clarification:
       const content = await generateSocialContent(topic, platform, language || "ar", tone || "professional");
 
       if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 1, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         });
@@ -1832,7 +1832,7 @@ When asking for clarification:
       const result = await generateSocialPostImage(topic, platform, language || "ar", postContent);
 
       if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 2, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        await db.update(users).set({ credits: sql`GREATEST(credits - 20, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
       }
 
       res.json(result);
@@ -1843,6 +1843,78 @@ When asking for clarification:
         return res.status(400).json({ message: "content_policy", messageAr: "لا يمكن توليد هذه الصورة. حاول بموضوع مختلف.", messageEn: "Cannot generate this image. Try a different topic." });
       }
       res.status(500).json({ message: "Failed to generate image" });
+    }
+  });
+
+  // ── Generate video script ──────────────────────────────────────────────────
+  app.post("/api/marketing/generate-script", isAuthenticated, async (req: any, res) => {
+    try {
+      if (!checkAiRateLimit(req.user.id)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به. انتظر دقيقة.", messageEn: "Too many requests. Please wait a moment." });
+      }
+
+      const { isFreePlan, isUserAdmin, credits } = await getUserPlanInfo(req.user.id);
+
+      if (isFreePlan && !isUserAdmin) {
+        return res.status(402).json({ message: "upgrade_required", messageAr: "سكريبت الفيديو متاح للخطط المدفوعة فقط.", messageEn: "Video scripts are available on paid plans only." });
+      }
+
+      if (!isUserAdmin && credits <= 0) {
+        return res.status(402).json({ message: "insufficient_credits", messageAr: "انتهى رصيد جلسات الذكاء.", messageEn: "Your AI credits are depleted." });
+      }
+
+      const { topic, platform, language, tone } = req.body;
+      if (!topic || !platform) return res.status(400).json({ message: "topic and platform are required" });
+
+      const script = await generateVideoScript(topic, platform, language || "ar", tone || "casual");
+
+      if (!isUserAdmin) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
+        });
+      }
+
+      res.json(script);
+    } catch (err) {
+      console.error("Video script generation error:", err);
+      res.status(500).json({ message: "Failed to generate video script" });
+    }
+  });
+
+  // ── Trend Generator (Business plan only) ──────────────────────────────────
+  app.post("/api/marketing/trend", isAuthenticated, async (req: any, res) => {
+    try {
+      if (!checkAiRateLimit(req.user.id)) {
+        return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به. انتظر دقيقة.", messageEn: "Too many requests. Please wait a moment." });
+      }
+
+      const { isFreePlan, isUserAdmin, planName, credits } = await getUserPlanInfo(req.user.id);
+
+      if (!isUserAdmin && planName !== "business") {
+        return res.status(402).json({ message: "business_only", messageAr: "مولد الترند حصري لخطة الأعمال.", messageEn: "Trend Generator is exclusive to the Business plan." });
+      }
+
+      if (!isUserAdmin && credits <= 0) {
+        return res.status(402).json({ message: "insufficient_credits", messageAr: "انتهى رصيد جلسات الذكاء.", messageEn: "Your AI credits are depleted." });
+      }
+
+      const { niche, language } = req.body;
+      if (!niche) return res.status(400).json({ message: "niche is required" });
+
+      const trends = await generateTrendContent(niche, language || "ar");
+
+      if (!isUserAdmin) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 2, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+          if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
+        });
+      }
+
+      res.json({ trends });
+    } catch (err) {
+      console.error("Trend generation error:", err);
+      res.status(500).json({ message: "Failed to generate trends" });
     }
   });
 
@@ -1873,7 +1945,7 @@ When asking for clarification:
       res.json({
         plan: user?.plan || "free",
         status: sub?.status || "active",
-        credits: user?.credits ?? 5,
+        credits: user?.credits ?? 50,
         endDate: sub?.endDate || null,
       });
     } catch (err) {
@@ -1909,7 +1981,7 @@ When asking for clarification:
       if (user?.isAdmin) {
         return res.json({ credits: 999999, plan: "business", isAdmin: true });
       }
-      res.json({ credits: user?.credits ?? 5, plan: user?.plan || "free" });
+      res.json({ credits: user?.credits ?? 50, plan: user?.plan || "free" });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch credits" });
     }
@@ -2001,7 +2073,7 @@ When asking for clarification:
 
   // ─── Buy Credits (top-up) ────────────────────────────────────────────────
   const buyCreditSchema = z.object({
-    credits: z.number().int().min(50).refine((n) => n % 5 === 0, { message: "Credits must be a multiple of 5" }),
+    credits: z.number().int().min(500).refine((n) => n % 50 === 0, { message: "Credits must be a multiple of 50" }),
     invoiceInfo: z.object({
       isCompany: z.boolean().optional().default(false),
       companyName: z.string().optional(),
@@ -2016,10 +2088,10 @@ When asking for clarification:
       if (!configured && !testMode) return res.status(400).json({ message: "Payment gateway not configured" });
 
       const parsed = buyCreditSchema.safeParse(req.body);
-      if (!parsed.success) return res.status(400).json({ message: "كمية جلسات الذكاء يجب أن تكون 50 على الأقل ومضاعفاً للرقم 5" });
+      if (!parsed.success) return res.status(400).json({ message: "كمية جلسات الذكاء يجب أن تكون 500 على الأقل ومضاعفاً للرقم 50" });
 
       const { credits, invoiceInfo } = parsed.data;
-      const amountCents = Math.round(credits * 1.15 * 100);
+      const amountCents = Math.round((credits / 10) * 1.15 * 100);
       const userId = req.user.id;
 
       const [user] = await db.select().from(users).where(eq(users.id, userId));
@@ -2051,7 +2123,7 @@ When asking for clarification:
           paymobOrderId: `TEST-CREDITS-${Date.now()}`,
           paymobTransactionId: null,
         });
-        const amountSAR = parseFloat((credits * 1.15).toFixed(2));
+        const amountSAR = parseFloat(((credits / 10) * 1.15).toFixed(2));
         return res.json({ testMode: true, testUrl: `/payment-test?type=credits&credits=${credits}&purchaseId=${purchase.id}&amount=${amountSAR}` });
       }
 
@@ -2079,7 +2151,7 @@ When asking for clarification:
       });
 
       const iframeUrl = await getIframeUrl(paymentToken);
-      res.json({ iframeUrl, orderId, credits, amountSAR: parseFloat((credits * 1.15).toFixed(2)) });
+      res.json({ iframeUrl, orderId, credits, amountSAR: parseFloat(((credits / 10) * 1.15).toFixed(2)) });
     } catch (err: any) {
       console.error("Buy credits error:", err);
       if (err.message === "PAYMOB_AUTH_FAILED") {
@@ -2270,8 +2342,8 @@ When asking for clarification:
           startDate: now,
           endDate,
         });
-        const planCredits: Record<string, number> = { pro: 50, business: 200 };
-        const newCredits = planCredits[sub.plan] || 5;
+        const planCredits: Record<string, number> = { pro: 500, business: 2000 };
+        const newCredits = planCredits[sub.plan] || 50;
         const [existingUser] = await db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, sub.userId));
         // SET credits to plan allocation (not ADD) so free→pro gives exactly 50, not 55
         await db.update(users).set({ plan: sub.plan, credits: newCredits, updatedAt: new Date() }).where(eq(users.id, sub.userId));
@@ -2484,9 +2556,9 @@ When asking for clarification:
       const businessCredits = await storage.getSetting("credits_business");
       const freeCredits = await storage.getSetting("credits_free");
       res.json({
-        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 50 },
-        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 200 },
-        free: { credits: freeCredits ? parseInt(freeCredits) : 5 },
+        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 500 },
+        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 2000 },
+        free: { credits: freeCredits ? parseInt(freeCredits) : 50 },
       });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch pricing" });
@@ -2548,9 +2620,9 @@ When asking for clarification:
         return true;
       });
       res.json({
-        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 50 },
-        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 200 },
-        free: { credits: freeCredits ? parseInt(freeCredits) : 5 },
+        pro: { price: proPrice ? parseInt(proPrice) : 4900, credits: proCredits ? parseInt(proCredits) : 500 },
+        business: { price: businessPrice ? parseInt(businessPrice) : 9900, credits: businessCredits ? parseInt(businessCredits) : 2000 },
+        free: { credits: freeCredits ? parseInt(freeCredits) : 50 },
         promotions: activePromos,
       });
     } catch (err) {
