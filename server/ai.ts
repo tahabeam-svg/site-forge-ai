@@ -1639,6 +1639,7 @@ CSS:
   }
 
   // ── LEGACY PIPELINE (special categories: wedding, freelancer, event) ─────────
+  const t0Legacy = Date.now();
   // Inject randomized images — tries Unsplash Search API first, then Pexels, then IMAGE_BANK
   const imageSection = await buildImagePromptSection(description);
 
@@ -1811,6 +1812,32 @@ CSS:
       colorPalette: { primary: "#7c3aed", secondary: "#4f46e5", accent: "#06b6d4", background: "#050814", text: "#ffffff" },
     };
   }
+
+  // ── Fire-and-forget: log legacy generation insight (minimal — no spec) ─────
+  setImmediate(async () => {
+    try {
+      const legacyIndustry = category === "event" ? "events"
+        : category === "portfolio" ? "freelancer"
+        : category === "romantic" ? "personal"
+        : "general";
+      const insightId = await logGenerationInsight({
+        projectId: options?.projectId,
+        userId: options?.userId,
+        industry: legacyIndustry,
+        language: isArabic ? "ar" : "en",
+        prompt: description,
+        spec: { businessName: extractBusinessName(description) || "", tagline: "", subtitle: "", ctaText: "", navCtaText: "", primaryColor: options?.primaryColor, accentColor: options?.accentColor, services: [], stats: [], testimonials: [], faqItems: [] } as any,
+        primaryColor: options?.primaryColor,
+        accentColor: options?.accentColor,
+        generationMs: Date.now() - t0Legacy,
+      });
+      if (insightId) {
+        console.log(`[Learning] ✅ Legacy insight #${insightId} logged | cat:${category} | industry:${legacyIndustry}`);
+      }
+    } catch (e: any) {
+      console.warn("[Learning] Legacy insight log error:", e?.message);
+    }
+  });
 
   try {
     return parseFullHtmlResponse(content);

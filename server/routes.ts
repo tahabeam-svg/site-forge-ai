@@ -622,7 +622,10 @@ Sitemap: https://arabyweb.net/sitemap.xml
         });
       }
 
-      const generated = await generateWebsite(description, language);
+      const generated = await generateWebsite(description, language, {
+        projectId: project.id,
+        userId: String(userId),
+      });
       const finalHtml = (isFreePlan && !isUserAdmin)
         ? injectFreePlanWatermark(generated.html)
         : removeFreePlanWatermark(generated.html);
@@ -735,7 +738,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
         ...(accentColor ? { accentColor } : {}),
         ...(designStyle !== "dark-modern" ? { designStyle } : {}),
         projectId: project.id,
-        userId: req.user?.id,
+        userId: String(req.user?.id),
       };
       const generated = await generateWebsite(cleanPrompt, websiteLanguage, genColorOptions);
       const genMs = Date.now() - genStartTime;
@@ -1258,7 +1261,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
         [insight] = await database
           .select({ id: generationInsights.id, industry: generationInsights.industry })
           .from(generationInsights)
-          .where(eqOp(generationInsights.userId, req.user.id))
+          .where(eqOp(generationInsights.userId, String(req.user.id)))
           .orderBy(descOrder(generationInsights.createdAt))
           .limit(1);
         if (insight) {

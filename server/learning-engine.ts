@@ -15,7 +15,7 @@
  * produce satisfied users bubble to the top, poor patterns fade away.
  */
 
-import { db } from "./db";
+import { db, pool } from "./db";
 import { industryPatterns, generationInsights } from "@shared/schema";
 import { eq, desc, and, gte, sql, lt } from "drizzle-orm";
 import type { WebsiteContentSpec } from "./website-builder.js";
@@ -426,10 +426,11 @@ export async function getLearningStats(): Promise<{
   qualityDistribution: { excellent: number; good: number; neutral: number; poor: number };
 }> {
   try {
-    const [patternCount] = await db.execute(sql`SELECT COUNT(*) as n FROM industry_patterns`) as any;
-    const [insightCount] = await db.execute(sql`SELECT COUNT(*) as n FROM generation_insights`) as any;
+    // Use pool.query (raw pg) — db.execute returns a QueryResult object, not an array
+    const { rows: [patternCount] } = await pool.query(`SELECT COUNT(*) as n FROM industry_patterns`);
+    const { rows: [insightCount] } = await pool.query(`SELECT COUNT(*) as n FROM generation_insights`);
 
-    const topIndustriesRows = await db.execute(sql`
+    const { rows: topIndustriesRows } = await pool.query(`
       SELECT industry,
              COUNT(*) as count,
              ROUND(AVG(quality_score)) as avg_quality
@@ -437,36 +438,36 @@ export async function getLearningStats(): Promise<{
       GROUP BY industry
       ORDER BY count DESC
       LIMIT 10
-    `) as any;
+    `);
 
-    const recentHighRows = await db.execute(sql`
+    const { rows: recentHighRows } = await pool.query(`
       SELECT industry, pattern_type as type, content, quality_score as score
       FROM industry_patterns
       WHERE quality_score >= 70
       ORDER BY updated_at DESC
       LIMIT 15
-    `) as any;
+    `);
 
-    const qualityRows = await db.execute(sql`
+    const { rows: [qualityRow] } = await pool.query(`
       SELECT
         SUM(CASE WHEN quality_score >= 85 THEN 1 ELSE 0 END) as excellent,
         SUM(CASE WHEN quality_score >= 60 AND quality_score < 85 THEN 1 ELSE 0 END) as good,
         SUM(CASE WHEN quality_score >= 40 AND quality_score < 60 THEN 1 ELSE 0 END) as neutral,
         SUM(CASE WHEN quality_score < 40 THEN 1 ELSE 0 END) as poor
       FROM industry_patterns
-    `) as any;
+    `);
 
-    const qd = qualityRows[0] || {};
+    const qd = qualityRow || {};
 
     return {
-      totalPatterns: parseInt(patternCount[0]?.n || "0"),
-      totalInsights: parseInt(insightCount[0]?.n || "0"),
-      topIndustries: (topIndustriesRows as any[]).map((r: any) => ({
+      totalPatterns: parseInt(patternCount?.n || "0"),
+      totalInsights: parseInt(insightCount?.n || "0"),
+      topIndustries: topIndustriesRows.map((r: any) => ({
         industry: r.industry,
         count: parseInt(r.count),
         avgQuality: parseInt(r.avg_quality),
       })),
-      recentHighQuality: (recentHighRows as any[]).map((r: any) => ({
+      recentHighQuality: recentHighRows.map((r: any) => ({
         industry: r.industry,
         type: r.type,
         content: r.content,
