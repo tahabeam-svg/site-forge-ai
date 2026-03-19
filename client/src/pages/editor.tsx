@@ -589,12 +589,12 @@ export default function EditorPage() {
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => window.open(`/api/projects/${project.id}/export?type=static`, "_blank")} data-testid="button-download-desktop" className="hover:border-blue-400 hover:text-blue-600">
+                  <Button variant="outline" size="sm" onClick={() => navigate("/download-center")} data-testid="button-download-center-desktop" className="hover:border-emerald-400 hover:text-emerald-600">
                     <Download className="w-4 h-4 me-1" />
-                    {lang === "ar" ? "تحميل" : "Download"}
+                    {lang === "ar" ? "مركز التحميل" : "Download Center"}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">{lang === "ar" ? "تحميل كملف HTML" : "Download as HTML file"}</TooltipContent>
+                <TooltipContent side="bottom">{lang === "ar" ? "اذهب إلى مركز التحميل لتحميل ملفات موقعك" : "Go to Download Center to get your website files"}</TooltipContent>
               </Tooltip>
               {project.status !== "published" && (
                 <Tooltip>

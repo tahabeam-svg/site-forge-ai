@@ -28,6 +28,7 @@ const TermsPage            = lazy(() => import("@/pages/terms"));
 const PrivacyPage          = lazy(() => import("@/pages/privacy"));
 const FAQPage              = lazy(() => import("@/pages/faq"));
 const DeployGuidePage      = lazy(() => import("@/pages/deploy-guide"));
+const DownloadCenterPage   = lazy(() => import("@/pages/download-center"));
 const ResetPasswordPage    = lazy(() => import("@/pages/reset-password"));
 const PaymentTestPage      = lazy(() => import("@/pages/payment-test"));
 const IncidentResponsePage = lazy(() => import("@/pages/incident-response"));
@@ -104,6 +105,7 @@ function Router() {
         <Route path="/faq" component={FAQPage} />
         <Route path="/deploy-guide">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
         <Route path="/deploy-guide/:id">{() => <ProtectedRoute component={DeployGuidePage} />}</Route>
+        <Route path="/download-center">{() => <ProtectedRoute component={DownloadCenterPage} />}</Route>
         <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/payment-test">{() => <ProtectedRoute component={PaymentTestPage} />}</Route>
         <Route path="/free-website" component={FreeWebsitePage} />

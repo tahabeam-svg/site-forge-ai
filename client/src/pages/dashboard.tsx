@@ -146,7 +146,7 @@ export default function DashboardPage() {
   const projects = rawProjects.filter((p, i, a) => a.findIndex(x => x.id === p.id) === i);
 
   useEffect(() => {
-    const handler = () => setMySitesOpen(true);
+    const handler = () => navigate("/download-center");
     window.addEventListener("openMySites", handler);
     return () => window.removeEventListener("openMySites", handler);
   }, []);
@@ -523,14 +523,14 @@ export default function DashboardPage() {
               className="mt-6 text-center"
             >
               <button
-                onClick={() => setMySitesOpen(true)}
+                onClick={() => navigate("/download-center")}
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                data-testid="button-open-mysites-hint"
+                data-testid="button-open-download-center-hint"
               >
                 <Globe2 className="w-3.5 h-3.5" />
                 {isAr
-                  ? `لديك ${projects.length} موقع — انقر لعرض مواقعي`
-                  : `You have ${projects.length} site${projects.length !== 1 ? "s" : ""} — click to view My Sites`}
+                  ? `لديك ${projects.length} موقع — اذهب إلى مركز التحميل`
+                  : `You have ${projects.length} site${projects.length !== 1 ? "s" : ""} — go to Download Center`}
               </button>
             </motion.div>
           )}
@@ -662,15 +662,15 @@ export default function DashboardPage() {
                               <MoreHorizontal className="w-3.5 h-3.5" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align={isAr ? "start" : "end"} className="w-44">
+                          <DropdownMenuContent align={isAr ? "start" : "end"} className="w-48">
                             {project.generatedHtml && (
                               <>
                                 <DropdownMenuItem
-                                  onClick={() => window.open(`/api/projects/${project.id}/export?type=static`, "_blank")}
-                                  data-testid={`menu-download-${project.id}`}
+                                  onClick={() => { setMySitesOpen(false); navigate("/download-center"); }}
+                                  data-testid={`menu-download-center-${project.id}`}
                                 >
-                                  <Download className="w-3.5 h-3.5 me-2" />
-                                  {isAr ? "تحميل HTML" : "Download HTML"}
+                                  <Download className="w-3.5 h-3.5 me-2 text-emerald-500" />
+                                  {isAr ? "مركز التحميل" : "Download Center"}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => { setMySitesOpen(false); navigate(`/deploy-guide/${project.id}`); }}

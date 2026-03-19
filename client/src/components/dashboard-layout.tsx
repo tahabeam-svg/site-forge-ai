@@ -121,12 +121,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <SidebarMenu>
                     <SidebarMenuItem>
                       <SidebarMenuButton
-                        onClick={() => window.dispatchEvent(new CustomEvent("openMySites"))}
-                        data-testid="button-sidebar-mysites"
+                        onClick={() => navigate("/download-center")}
+                        data-testid="button-sidebar-download-center"
+                        isActive={location === "/download-center"}
                         className="flex items-center gap-2.5 font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300"
                       >
                         <Globe2 className="w-4 h-4 shrink-0" />
-                        <span>{lang === "ar" ? "مواقعي" : "My Sites"}</span>
+                        <span>{lang === "ar" ? "مركز التحميل" : "Download Center"}</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>

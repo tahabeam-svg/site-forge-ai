@@ -334,8 +334,8 @@ export default function DeployGuidePage() {
         {/* Header */}
         <div className="flex items-center gap-3">
           {projectId && (
-            <Link href="/dashboard">
-              <Button variant="ghost" size="icon" className="shrink-0" data-testid="button-back-dashboard">
+            <Link href="/download-center">
+              <Button variant="ghost" size="icon" className="shrink-0" data-testid="button-back-download-center">
                 <BackArrow className="w-4 h-4" />
               </Button>
             </Link>
@@ -409,12 +409,12 @@ export default function DeployGuidePage() {
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {lang === "ar"
-                    ? 'اذهب إلى لوحة التحكم، واضغط على زر "تحميل" في مشروعك لتحميل ملف ZIP.'
-                    : 'Go to your dashboard and click the "Download" button on your project to get the ZIP file.'}
+                    ? 'اذهب إلى مركز التحميل، واضغط على زر "تحميل ZIP" لتحميل ملفات موقعك.'
+                    : 'Go to the Download Center and click the "Download ZIP" button to get your website files.'}
                 </p>
-                <Link href="/dashboard">
-                  <Button size="sm" className="mt-3" data-testid="button-go-dashboard">
-                    {lang === "ar" ? "اذهب للوحة التحكم" : "Go to Dashboard"}
+                <Link href="/download-center">
+                  <Button size="sm" className="mt-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700" data-testid="button-go-download-center">
+                    {lang === "ar" ? "اذهب لمركز التحميل" : "Go to Download Center"}
                   </Button>
                 </Link>
               </div>
