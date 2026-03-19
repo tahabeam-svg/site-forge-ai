@@ -343,6 +343,14 @@ Disallow: /
       { loc: "/blog/website-design-restaurants-shops-saudi", lastmod: "2026-02-15", changefreq: "monthly", priority: "0.80" },
       { loc: "/blog/whatsapp-marketing-business-saudi", lastmod: "2026-02-10", changefreq: "monthly", priority: "0.78" },
       { loc: "/blog/website-hosting-options-saudi-businesses", lastmod: "2026-02-05", changefreq: "monthly", priority: "0.78" },
+      // New blog posts — Saudi market high-priority keywords
+      { loc: "/blog/website-design-prices-saudi-arabia-2026", lastmod: "2026-03-18", changefreq: "monthly", priority: "0.88" },
+      { loc: "/blog/medical-clinic-website-saudi-arabia", lastmod: "2026-03-15", changefreq: "monthly", priority: "0.86" },
+      { loc: "/blog/beauty-salon-website-saudi-arabia", lastmod: "2026-03-12", changefreq: "monthly", priority: "0.84" },
+      { loc: "/blog/start-online-business-saudi-arabia-2026", lastmod: "2026-03-10", changefreq: "monthly", priority: "0.87" },
+      { loc: "/blog/lawyers-consultants-website-saudi-arabia", lastmod: "2026-03-08", changefreq: "monthly", priority: "0.83" },
+      { loc: "/blog/vision-2030-digital-transformation-business", lastmod: "2026-03-05", changefreq: "monthly", priority: "0.85" },
+      { loc: "/blog/real-estate-website-saudi-arabia", lastmod: "2026-03-02", changefreq: "monthly", priority: "0.85" },
     ];
 
     const urlTags = pages.map(p => `  <url>

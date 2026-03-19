@@ -940,23 +940,26 @@ export default function LandingPage() {
               <ul className="space-y-3 text-sm">
                 <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
                 <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
-                <li><a href="/ai-builder" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-builder">{lang === "ar" ? "منشئ AI" : "AI Builder"}</a></li>
-                <li><a href="/ai-website-builder" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "موقع بالذكاء الاصطناعي" : "AI Website Builder"}</a></li>
-                <li><a href="/digital-marketing-ai" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "تسويق رقمي" : "Digital Marketing"}</a></li>
-                <li><a href="/website-saudi-arabia" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "مواقع السعودية" : "Saudi Arabia"}</a></li>
+                <li><a href="/ai-builder" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-builder">{lang === "ar" ? "أنشئ موقعك الآن" : "AI Builder"}</a></li>
+                <li><a href="/ai-website-builder" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "بناء مواقع بالذكاء الاصطناعي" : "AI Website Builder"}</a></li>
+                <li><a href="/digital-marketing-ai" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "التسويق الرقمي بالذكاء الاصطناعي" : "Digital Marketing AI"}</a></li>
+                <li><a href="/website-saudi-arabia" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "مواقع السعودية والخليج" : "Saudi Arabia Websites"}</a></li>
                 <li><a href="/blog" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-blog">{lang === "ar" ? "المدونة" : "Blog"}</a></li>
                 <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "مواقعي" : "My Sites"}</a></li>
               </ul>
             </div>
 
-            {/* Support & Policies (merged — no "قانوني") */}
+            {/* Support & Policies */}
             <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
               <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
-                {lang === "ar" ? "الدعم" : "Support"}
+                {lang === "ar" ? "الدعم والمقالات" : "Support & Articles"}
               </h4>
               <ul className="space-y-3 text-sm">
                 <li><a href="/faq" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-faq">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a></li>
                 <li><a href="mailto:support@arabyweb.net" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-contact">{lang === "ar" ? "تواصل معنا" : "Contact Us"}</a></li>
+                <li><a href="/blog/website-design-prices-saudi-arabia-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "أسعار تصميم المواقع" : "Website Pricing Guide"}</a></li>
+                <li><a href="/blog/seo-guide-arabic-websites-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "دليل SEO للمواقع العربية" : "Arabic SEO Guide"}</a></li>
+                <li><a href="/blog/start-online-business-saudi-arabia-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "كيف تبدأ مشروعك أونلاين" : "Start Online Business"}</a></li>
                 <li><a href="/terms" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-terms">{lang === "ar" ? "شروط الاستخدام" : "Terms of Service"}</a></li>
                 <li><a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-privacy">{lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}</a></li>
               </ul>
