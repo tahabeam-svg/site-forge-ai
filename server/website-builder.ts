@@ -71,6 +71,8 @@ export interface WebsiteContentSpec {
   seoDescription: string;
   primaryColor: string;
   accentColor: string;
+  projects?: Array<{ title: string; description: string; category: string; location?: string; year?: string }>;
+  clientLogos?: Array<{ name: string; initials: string; color: string }>;
   en?: WebsiteContentSpecEn;
 }
 
@@ -110,6 +112,10 @@ export async function generateContentSpec(
     }
   }
 
+  // Detect if this business type benefits from portfolio/projects + client logos
+  const descLower = description.toLowerCase();
+  const needsPortfolio = /مقاولات|إنشاء|بناء|تشييد|هندسة|ديكور|تصميم داخلي|معماري|تصوير|فيديو|وكالة|ماركتينج|تسويق|برمجة|تطوير|agency|construction|contracting|building|architecture|interior|photography|video|marketing|design|developer/.test(descLower);
+
   const systemPrompt = `You are a professional Arabic website copywriter and business consultant. You generate bilingual (Arabic + English) website content as a structured JSON object. Output ONLY valid JSON — no explanations, no markdown, no code blocks.`;
 
   const userPrompt = `Generate professional bilingual website content for this business:
@@ -132,7 +138,7 @@ Return a JSON object matching this EXACT structure. Primary text fields must be 
   "navLinks": [
     { "text": "من نحن", "href": "#about" },
     { "text": "خدماتنا", "href": "#services" },
-    { "text": "أعمالنا", "href": "#gallery" },
+    { "text": "${needsPortfolio ? 'مشاريعنا' : 'أعمالنا'}", "href": "${needsPortfolio ? '#projects' : '#gallery'}" },
     { "text": "آراء العملاء", "href": "#testimonials" }
   ],
   "aboutTitle": "Section heading for About (e.g. قصتنا / رحلتنا / من نحن)",
@@ -176,7 +182,23 @@ Return a JSON object matching this EXACT structure. Primary text fields must be 
   "seoTitle": "${lang === "Arabic" ? "Arabic" : "English"} SEO title 50-60 chars",
   "seoDescription": "${lang === "Arabic" ? "Arabic" : "English"} meta description 150-160 chars",
   "primaryColor": "${options.primaryColor || "#0f4c81"}",
-  "accentColor": "${options.accentColor || "#06b6d4"}",
+  "accentColor": "${options.accentColor || "#06b6d4"}",${needsPortfolio ? `
+  "projects": [
+    { "title": "اسم المشروع الأول (حقيقي ومحدد)", "description": "وصف قصير 1-2 جملة للمشروع", "category": "سكني", "location": "الرياض", "year": "2024" },
+    { "title": "اسم المشروع الثاني", "description": "وصف قصير", "category": "تجاري", "location": "جدة", "year": "2023" },
+    { "title": "اسم المشروع الثالث", "description": "وصف قصير", "category": "سكني", "location": "الدمام", "year": "2023" },
+    { "title": "اسم المشروع الرابع", "description": "وصف قصير", "category": "صناعي", "location": "الرياض", "year": "2022" },
+    { "title": "اسم المشروع الخامس", "description": "وصف قصير", "category": "تجاري", "location": "مكة", "year": "2022" },
+    { "title": "اسم المشروع السادس", "description": "وصف قصير", "category": "سكني", "location": "المدينة", "year": "2021" }
+  ],
+  "clientLogos": [
+    { "name": "اسم شركة عميل حقيقي", "initials": "حر", "color": "#0f4c81" },
+    { "name": "اسم شركة ثانية", "initials": "سع", "color": "#06b6d4" },
+    { "name": "اسم شركة ثالثة", "initials": "رد", "color": "#7c3aed" },
+    { "name": "اسم شركة رابعة", "initials": "نم", "color": "#0f4c81" },
+    { "name": "اسم شركة خامسة", "initials": "تك", "color": "#059669" },
+    { "name": "اسم شركة سادسة", "initials": "بن", "color": "#dc2626" }
+  ],` : ""}
   "en": {
     "tagline": "English translation of the tagline",
     "subtitle": "English translation of the subtitle",
@@ -233,7 +255,12 @@ IMPORTANT RULES:
 - Choose Font Awesome 6 icons relevant to each service (fa-solid fa-...)
 - Phone format: +966 5X XXX XXXX (Saudi format)
 - The "en" object MUST contain accurate English translations of all text fields
-- Keep the same number of items in arrays (6 services, 4 stats, 3 testimonials, 5 faqItems)`;
+- Keep the same number of items in arrays (6 services, 4 stats, 3 testimonials, 5 faqItems)${needsPortfolio ? `
+- "projects" MUST have 6 real, specific project titles matching this business — NOT generic "مشروع 1". For construction: use real project names like "فيلا سكنية حي النرجس" or "مجمع تجاري طريق الملك".
+- "projects" categories MUST be varied (mix of سكني/تجاري/صناعي for construction, or the equivalent for other fields)
+- "clientLogos" MUST have 6 real company/brand names that this type of business would serve
+- "clientLogos" initials must be 2-3 Arabic letters (first letters of the client name)` : ""}
+- Output ONLY valid JSON with no extra text`;
 
   const response = await openai.chat.completions.create({
     model: "gpt-4o-mini",
@@ -372,6 +399,72 @@ export function buildWebsiteHTML(
           </div>
         </div>`;
   }).join("");
+
+  // ─── Projects & Client Logos (for construction / agency / design businesses) ──
+  const projects = (spec.projects || []).slice(0, 6);
+  const clientLogos = (spec.clientLogos || []).slice(0, 6);
+  const hasProjects = projects.length > 0;
+  const hasClientLogos = clientLogos.length > 0;
+
+  // Collect unique categories for filter buttons
+  const projectCategories = hasProjects
+    ? [isArabic ? 'الكل' : 'All', ...Array.from(new Set(projects.map(p => p.category)))]
+    : [];
+
+  const projectCardsHTML = projects.map((p, i) => `
+        <div class="project-card aw-reveal" data-category="${p.category}" style="animation-delay:${i * 0.08}s">
+          <div class="project-img-wrap">
+            <img src="${galleryImgs[i % galleryImgs.length]}" alt="${p.title}" loading="lazy">
+            <div class="project-overlay">
+              <span class="project-year">${p.year || ''}</span>
+            </div>
+          </div>
+          <div class="project-body">
+            <span class="project-cat-badge">${p.category}</span>
+            <h3 class="project-title">${p.title}</h3>
+            <p class="project-desc">${p.description}</p>
+            ${p.location ? `<div class="project-location"><i class="fa-solid fa-location-dot"></i> ${p.location}</div>` : ''}
+          </div>
+        </div>`).join('');
+
+  const projectFiltersHTML = projectCategories.map((cat, i) =>
+    `<button class="proj-filter-btn${i === 0 ? ' active' : ''}" onclick="filterProjects('${cat}', this)">${cat}</button>`
+  ).join('');
+
+  const projectsSectionHTML = hasProjects ? `
+  <!-- PROJECTS -->
+  <section class="projects-section" id="projects">
+    <div class="section-header aw-reveal">
+      <div class="section-label">${isArabic ? 'أعمالنا المنجزة' : 'Our Projects'}</div>
+      <h2 class="section-title">${isArabic ? 'مشاريع نفخر بها' : 'Projects We Are Proud Of'}</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="proj-filters aw-reveal">
+      ${projectFiltersHTML}
+    </div>
+    <div class="projects-grid">
+      ${projectCardsHTML}
+    </div>
+  </section>` : '';
+
+  const clientLogosHTML = clientLogos.map(cl => `
+      <div class="client-logo-item">
+        <div class="client-logo-badge" style="--cl-color: ${cl.color}">${cl.initials}</div>
+        <span class="client-logo-name">${cl.name}</span>
+      </div>`).join('');
+
+  const clientLogosSectionHTML = hasClientLogos ? `
+  <!-- CLIENT LOGOS -->
+  <section class="clients-section">
+    <div class="section-header aw-reveal">
+      <div class="section-label">${isArabic ? 'شركاؤنا' : 'Our Clients'}</div>
+      <h2 class="section-title">${isArabic ? 'عملاء تشرفنا بخدمتهم' : 'Clients We Are Proud to Serve'}</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="clients-strip aw-reveal">
+      ${clientLogosHTML}
+    </div>
+  </section>` : '';
 
   const navLinksHTML = (spec.navLinks || []).map((l, i) => {
     const enL = enSpec?.navLinks?.[i];
@@ -900,6 +993,158 @@ export function buildWebsiteHTML(
     }
     .gallery-item:hover .gallery-overlay { opacity: 1; }
 
+    /* ── PROJECTS ── */
+    .projects-section {
+      padding: 6rem 5%;
+      background: #f8fafc;
+    }
+    .proj-filters {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .proj-filter-btn {
+      padding: 8px 20px;
+      border-radius: 50px;
+      border: 2px solid rgba(var(--primary-rgb), 0.2);
+      background: #fff;
+      color: var(--primary);
+      font-family: ${headFont};
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .proj-filter-btn:hover, .proj-filter-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .project-card {
+      background: #fff;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .project-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 40px rgba(var(--primary-rgb), 0.15);
+    }
+    .project-card.hidden { display: none; }
+    .project-img-wrap {
+      position: relative;
+      overflow: hidden;
+      height: 220px;
+    }
+    .project-img-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+    .project-card:hover .project-img-wrap img { transform: scale(1.08); }
+    .project-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(var(--primary-rgb),0.7) 0%, transparent 50%);
+      display: flex; align-items: flex-end;
+      padding: 12px 16px;
+    }
+    .project-year {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.9);
+      font-weight: 600;
+    }
+    .project-body { padding: 1.2rem 1.4rem 1.5rem; }
+    .project-cat-badge {
+      display: inline-block;
+      padding: 3px 12px;
+      border-radius: 50px;
+      background: rgba(var(--primary-rgb), 0.1);
+      color: var(--primary);
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+    .project-title {
+      font-family: ${headFont};
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+    .project-desc {
+      color: #64748b;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-bottom: 0.75rem;
+    }
+    .project-location {
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* ── CLIENTS ── */
+    .clients-section {
+      padding: 5rem 5%;
+      background: #fff;
+    }
+    .clients-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .client-logo-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.3s ease;
+    }
+    .client-logo-item:hover { transform: translateY(-4px); }
+    .client-logo-badge {
+      width: 72px; height: 72px;
+      border-radius: 16px;
+      background: var(--cl-color, var(--primary));
+      display: flex; align-items: center; justify-content: center;
+      font-family: ${headFont};
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fff;
+      filter: grayscale(1) opacity(0.5);
+      transition: filter 0.3s ease, box-shadow 0.3s ease;
+    }
+    .client-logo-item:hover .client-logo-badge {
+      filter: grayscale(0) opacity(1);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .client-logo-name {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      font-weight: 600;
+      text-align: center;
+      transition: color 0.3s ease;
+    }
+    .client-logo-item:hover .client-logo-name { color: #0f172a; }
+
     /* ── CTA BAND ── */
     .cta-band {
       padding: 5rem 5%;
@@ -1212,6 +1457,7 @@ export function buildWebsiteHTML(
       .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
       .footer-grid { grid-template-columns: 1fr 1fr; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .projects-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 768px) {
       .nav-links, .nav-cta { display: none; }
@@ -1224,10 +1470,15 @@ export function buildWebsiteHTML(
       .features-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
       .hero-buttons { flex-direction: column; align-items: flex-start; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .clients-strip { gap: 1.2rem; }
+      .client-logo-badge { width: 56px; height: 56px; font-size: 1rem; }
     }
     @media (max-width: 480px) {
       .gallery-grid { grid-template-columns: 1fr; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .proj-filters { gap: 6px; }
+      .proj-filter-btn { padding: 6px 14px; font-size: 0.82rem; }
     }
   </style>
 </head>
@@ -1352,6 +1603,10 @@ export function buildWebsiteHTML(
       ${galleryHTML}
     </div>
   </section>
+
+  ${projectsSectionHTML}
+
+  ${clientLogosSectionHTML}
 
   <!-- CTA BAND -->
   <section class="cta-band">
@@ -1575,6 +1830,20 @@ export function buildWebsiteHTML(
         answer.style.maxHeight = answer.scrollHeight + 'px';
         el.querySelector('.faq-icon').style.transform = 'rotate(45deg)';
       }
+    }
+
+    // Projects filter
+    function filterProjects(category, btn) {
+      document.querySelectorAll('.proj-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const allLabel = '${isArabic ? 'الكل' : 'All'}';
+      document.querySelectorAll('.project-card').forEach(card => {
+        if (category === allLabel || card.dataset.category === category) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
     }
 
     // Gallery lightbox

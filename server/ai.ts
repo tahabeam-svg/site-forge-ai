@@ -971,6 +971,11 @@ Based on the business type you detected, SELECT the relevant BONUS sections from
   B. PROCESS SECTION: 4-step numbered visual process. Each step: number (big gradient), title, description. Connected by dashed line.
   C. CLIENTS LOGO STRIP: 8 well-known brand logos as SVG placeholders with grayscale filter, color on hover
 
+🏗️ CONSTRUCTION / CONTRACTING / ENGINEERING → Add:
+  A. PROJECTS PORTFOLIO (id="projects"): Grid of 6 completed projects with JS filter. Filter buttons: الكل | سكني | تجاري | صناعي. Each card: photo from pre-selected list (one per card), project title (e.g. "مبنى تجاري الراشد - الرياض"), category badge, 1-line scope description, location + year. Filter by onclick toggle class "hidden" on cards. Make cards 3-column on desktop. Add to navbar link "مشاريعنا" → #projects.
+  B. CLIENTS LOGO STRIP (id="clients"): A centered flex-wrap row of 6 client logos. Each logo: a 72×72px rounded square div with the client initials in white text on colored background (use brand palette variations). Apply filter:grayscale(1) opacity(0.5) by default → hover removes filter for full color pop. Below each logo: client name in small text. Label: "عملاء تشرفنا بخدمتهم". DO NOT use <img> tags for logos — use styled SVG or div badges.
+  C. PROCESS TIMELINE: 4-step construction process numbered visual strip: ①تخطيط وتصميم ②إعداد المستندات ③التنفيذ والبناء ④التسليم والضمان. Each step: large gradient number, step title, 1-line description. Connected by a dashed line (CSS pseudo-element or border-top).
+
 🏠 REAL ESTATE → Add:
   A. PROPERTY LISTINGS (id="properties"): Filter bar: نوع (شقة/فيلا/أرض) | المدينة | السعر. Grid of 6 property cards: photo, price, beds/baths/sqm specs, location, "اتصل الآن" + "احجز جولة" buttons
   B. MAP EMBED PLACEHOLDER: Styled div with Google Maps look and "موقعنا في خريطة غوغل" button
@@ -1489,7 +1494,8 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
 • Section ORDER: adapt to what makes sense for this business type. Suggestions:
   - Clinic: navbar → hero → about/team → services → gallery → testimonials → FAQ → contact → footer
   - Restaurant: navbar → hero → about → menu → gallery → testimonials → contact → footer
-  - Agency: navbar → hero → stats → services/portfolio → about → process → testimonials → contact → footer
+  - Agency: navbar → hero → stats → services/portfolio → about → process → clients → testimonials → contact → footer
+  - Construction: navbar → hero → stats → about → services → projects → clients → process → testimonials → contact → footer
   - Default order: navbar → hero → stats → about → services → gallery → testimonials → contact → footer
 • All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
 • Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.
