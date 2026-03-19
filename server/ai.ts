@@ -1764,7 +1764,7 @@ CSS:
         let removeCount = contactMatches - 1;
         const cleaned = navContent.replace(
           /<(?:li[^>]*>\s*)?<a[^>]*href=["']#contact["'][^>]*>[\s\S]*?<\/a>(?:\s*<\/li>)?/gi,
-          (match) => {
+          (match: string) => {
             if (removeCount > 0) { removeCount--; return ""; }
             return match;
           }
@@ -3032,13 +3032,13 @@ export async function generateVideoScript(
 // ─── Trend Generator ─────────────────────────────────────────────────────────
 
 export interface TrendIdea {
-  trendTitle: string;
-  viralHook: string;
+  title: string;
+  hook: string;
   caption: string;
   hashtags: string[];
   contentType: string;
   bestPlatform: string;
-  bestTime: string;
+  bestTimeToPost: string;
   engagementTip: string;
   whyItWorks: string;
 }
@@ -3065,13 +3065,13 @@ export async function generateTrendContent(
 أرجع JSON array بالشكل التالي بالضبط:
 [
   {
-    "trendTitle": "اسم الترند أو الفكرة (جذاب وقصير)",
-    "viralHook": "الـ hook الجملة الأولى — يجب أن تشعل الفضول فوراً (أقل من 15 كلمة)",
+    "title": "اسم الترند أو الفكرة (جذاب وقصير)",
+    "hook": "الـ hook الجملة الأولى — يجب أن تشعل الفضول فوراً (أقل من 15 كلمة)",
     "caption": "كابشن كامل جاهز للنشر مع إيموجي",
     "hashtags": ["#هاشتاق1", "#هاشتاق2", "#هاشتاق3", "EnglishHashtag"],
     "contentType": "نوع المحتوى (فيديو رياكشن / صورة مقارنة / ريلز / استطلاع / قصة)",
     "bestPlatform": "أفضل منصة لهذا الترند",
-    "bestTime": "أفضل وقت للنشر للوصول الأقصى",
+    "bestTimeToPost": "أفضل وقت للنشر للوصول الأقصى",
     "engagementTip": "نصيحة واحدة لزيادة التفاعل",
     "whyItWorks": "لماذا هذا المحتوى سيتصدر الترند في السعودية"
   }
@@ -3092,13 +3092,13 @@ export async function generateTrendContent(
     return JSON.parse(cleaned);
   } catch {
     return [{
-      trendTitle: isArabic ? `ترند ${niche}` : `${niche} Trend`,
-      viralHook: isArabic ? `لن تصدق ما يحدث في ${niche}...` : `You won't believe what's happening in ${niche}...`,
+      title: isArabic ? `ترند ${niche}` : `${niche} Trend`,
+      hook: isArabic ? `لن تصدق ما يحدث في ${niche}...` : `You won't believe what's happening in ${niche}...`,
       caption: content.slice(0, 500),
       hashtags: ["#السعودية", `#${niche}`, "#ترند"],
       contentType: isArabic ? "ريلز" : "Reel",
       bestPlatform: "TikTok",
-      bestTime: isArabic ? "9 مساءً بتوقيت الرياض" : "9 PM Riyadh time",
+      bestTimeToPost: isArabic ? "9 مساءً بتوقيت الرياض" : "9 PM Riyadh time",
       engagementTip: isArabic ? "اسأل سؤالاً في التعليقات" : "Ask a question in comments",
       whyItWorks: isArabic ? "يتناسب مع اهتمامات الجمهور السعودي" : "Resonates with Saudi audience",
     }];

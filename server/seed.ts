@@ -222,7 +222,7 @@ export async function seedDatabase() {
     const [flagRow] = await db.select().from(platformSettings).where(eq(platformSettings.key, "credits_v2_migrated")).limit(1);
     if (!flagRow) {
       await db.execute(sql`UPDATE users SET credits = credits * 10`);
-      await db.execute(sql`INSERT INTO platform_settings (key, value, description) VALUES ('credits_v2_migrated', 'true', 'Credits ×10 migration applied') ON CONFLICT (key) DO UPDATE SET value = 'true'`);
+      await db.execute(sql`INSERT INTO platform_settings (key, value) VALUES ('credits_v2_migrated', 'true') ON CONFLICT (key) DO UPDATE SET value = 'true'`);
       console.log("Migration: credits ×10 applied successfully");
     } else {
       console.log("Migration: credits ×10 already applied, skipping");

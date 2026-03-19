@@ -313,7 +313,7 @@ function ProjectCard({
         {hasHtml ? (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <iframe
-              srcDoc={project.generatedHtml}
+              srcDoc={project.generatedHtml ?? undefined}
               className="absolute top-0 left-0 border-0 bg-white"
               style={{
                 width: "1280px",

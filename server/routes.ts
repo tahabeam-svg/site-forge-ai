@@ -1892,7 +1892,7 @@ When asking for clarification:
       const { isFreePlan, isUserAdmin, planName, credits } = await getUserPlanInfo(req.user.id);
 
       if (!isUserAdmin && planName !== "business") {
-        return res.status(402).json({ message: "business_only", messageAr: "مولد الترند حصري لخطة الأعمال.", messageEn: "Trend Generator is exclusive to the Business plan." });
+        return res.status(402).json({ message: "upgrade_required", messageAr: "مولد الترند حصري لخطة الأعمال. رقِّ إلى Business للوصول.", messageEn: "Trend Generator is exclusive to the Business plan. Upgrade to access." });
       }
 
       if (!isUserAdmin && credits <= 0) {
@@ -1911,7 +1911,7 @@ When asking for clarification:
         });
       }
 
-      res.json({ trends });
+      res.json({ niche, trends, generatedAt: new Date().toISOString() });
     } catch (err) {
       console.error("Trend generation error:", err);
       res.status(500).json({ message: "Failed to generate trends" });
