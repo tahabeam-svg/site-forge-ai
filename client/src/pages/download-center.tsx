@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -287,6 +287,17 @@ function ProjectCard({
   onDelete: () => void;
 }) {
   const hasHtml = !!project.generatedHtml;
+  const thumbRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.28);
+
+  useEffect(() => {
+    if (!thumbRef.current || !hasHtml) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setScale(entry.contentRect.width / 1280);
+    });
+    ro.observe(thumbRef.current);
+    return () => ro.disconnect();
+  }, [hasHtml]);
 
   return (
     <Card
@@ -295,14 +306,21 @@ function ProjectCard({
     >
       {/* Thumbnail */}
       <div
-        className="relative h-40 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 overflow-hidden cursor-pointer shrink-0"
+        ref={thumbRef}
+        className="relative h-44 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 overflow-hidden cursor-pointer shrink-0"
         onClick={hasHtml ? onPreview : onEdit}
       >
         {hasHtml ? (
-          <div className="absolute inset-0 overflow-hidden pointer-events-none transition-transform duration-500 group-hover:scale-105">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <iframe
-              srcDoc={`<!DOCTYPE html><html><head><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;transform:scale(0.38);transform-origin:top left;width:263%;height:263%;overflow:hidden}</style></head><body>${(project.generatedHtml || "").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<style id="aw-[^"]*">[\s\S]*?<\/style>/gi, "")}</body></html>`}
-              className="w-full h-full bg-white border-0"
+              srcDoc={project.generatedHtml}
+              className="absolute top-0 left-0 border-0 bg-white"
+              style={{
+                width: "1280px",
+                height: `${Math.ceil(176 / scale)}px`,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+              }}
               sandbox="allow-same-origin"
               title={project.name}
             />
