@@ -224,13 +224,10 @@ export default function LandingPage() {
           style={{ backgroundImage: "linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px)", backgroundSize: "60px 60px" }} />
         {/* Gradient fade at bottom */}
         <div className="absolute bottom-0 inset-x-0 h-48 bg-gradient-to-b from-transparent to-zinc-950 pointer-events-none z-10" />
-        {/* Glow orbs */}
-        <motion.div className="absolute top-[-100px] start-[10%] w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[130px] pointer-events-none"
-          animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.3, 0.2] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }} />
-        <motion.div className="absolute top-[50px] end-[5%] w-[500px] h-[500px] bg-violet-500/15 rounded-full blur-[120px] pointer-events-none"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.15, 0.25, 0.15] }} transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }} />
-        <motion.div className="absolute bottom-[100px] start-[30%] w-[400px] h-[400px] bg-teal-400/10 rounded-full blur-[100px] pointer-events-none"
-          animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 4 }} />
+        {/* Glow orbs — pure CSS (no JS animation overhead) */}
+        <div className="aw-blob aw-blob-1 absolute top-[-100px] start-[10%]" />
+        <div className="aw-blob aw-blob-2 absolute top-[50px] end-[5%]" />
+        <div className="aw-blob aw-blob-3 absolute bottom-[100px] start-[30%]" />
 
         <div className="relative z-20 max-w-5xl mx-auto px-5 sm:px-6 text-center">
 
@@ -722,7 +719,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="py-14 sm:py-20">
+      <section id="features" className="py-14 sm:py-20 aw-below-fold">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-16">
             <motion.h2 custom={0} variants={fadeUp} className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" data-testid="text-features-title">

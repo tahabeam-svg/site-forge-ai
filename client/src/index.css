@@ -294,3 +294,53 @@
     50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
   }
 }
+
+/* ── Hero blob orbs (CSS-only, no JS overhead) ── */
+.aw-blob {
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.aw-blob-1 {
+  width: 480px; height: 480px;
+  background: rgba(34, 197, 94, 0.18);
+  filter: blur(90px);
+  opacity: 0.2;
+  animation: aw-blob1 8s ease-in-out infinite;
+}
+.aw-blob-2 {
+  width: 400px; height: 400px;
+  background: rgba(139, 92, 246, 0.13);
+  filter: blur(85px);
+  opacity: 0.15;
+  animation: aw-blob2 10s ease-in-out infinite 2s;
+}
+.aw-blob-3 {
+  width: 320px; height: 320px;
+  background: rgba(45, 212, 191, 0.09);
+  filter: blur(70px);
+  animation: aw-blob3 12s ease-in-out infinite 4s;
+}
+@keyframes aw-blob1 {
+  0%, 100% { transform: scale(1);    opacity: 0.20; }
+  50%       { transform: scale(1.1); opacity: 0.28; }
+}
+@keyframes aw-blob2 {
+  0%, 100% { transform: scale(1);    opacity: 0.15; }
+  50%       { transform: scale(1.15); opacity: 0.22; }
+}
+@keyframes aw-blob3 {
+  0%, 100% { transform: scale(1);   }
+  50%       { transform: scale(1.2); }
+}
+@media (max-width: 640px) {
+  .aw-blob-1 { width: 260px; height: 260px; filter: blur(60px); }
+  .aw-blob-2 { display: none; }
+  .aw-blob-3 { display: none; }
+}
+
+/* ── Below-fold paint deferral ── */
+.aw-below-fold {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 600px;
+}
