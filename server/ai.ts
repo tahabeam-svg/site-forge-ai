@@ -905,6 +905,8 @@ export interface GenerateWebsiteOptions {
   primaryColor?: string;
   accentColor?: string;
   designStyle?: string;
+  projectId?: number;
+  userId?: string;
 }
 
 export async function generateWebsite(description: string, language: string = "ar", options: GenerateWebsiteOptions = {}): Promise<GeneratedWebsite> {
@@ -1601,6 +1603,8 @@ CSS:
     setImmediate(async () => {
       try {
         const insightId = await logGenerationInsight({
+          projectId: options.projectId,
+          userId: options.userId,
           industry: imgCatNew,
           language: isArabic ? "ar" : "en",
           prompt: description,
@@ -1610,6 +1614,7 @@ CSS:
           generationMs,
         });
         await learnFromSpec(imgCatNew, spec, description, insightId ?? undefined);
+        console.log(`[Learning] ✅ Insight #${insightId} logged | projectId:${options.projectId} | industry:${imgCatNew} | patterns saved`);
       } catch (e: any) {
         console.warn("[Learning] Post-generation learn error:", e?.message);
       }

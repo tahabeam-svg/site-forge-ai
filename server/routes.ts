@@ -700,6 +700,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
         ...(primaryColor ? { primaryColor } : {}),
         ...(accentColor ? { accentColor } : {}),
         ...(designStyle !== "dark-modern" ? { designStyle } : {}),
+        projectId: project.id,
+        userId: req.user?.id,
       };
       const generated = await generateWebsite(cleanPrompt, websiteLanguage, genColorOptions);
       const genMs = Date.now() - genStartTime;
@@ -1204,22 +1206,43 @@ Sitemap: https://arabyweb.net/sitemap.xml
       const projectId = parseInt(req.params.id);
       const project = await storage.getProject(projectId);
       if (!project || project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
-      // Find the most recent insight for this project
+
       const { db: database } = await import("./db");
       const { generationInsights } = await import("@shared/schema");
       const { desc: descOrder, eq: eqOp } = await import("drizzle-orm");
-      const [insight] = await database
-        .select({ id: generationInsights.id })
+
+      // 1. Try to find insight by projectId (works for new generations)
+      let [insight] = await database
+        .select({ id: generationInsights.id, industry: generationInsights.industry })
         .from(generationInsights)
         .where(eqOp(generationInsights.projectId, projectId))
         .orderBy(descOrder(generationInsights.createdAt))
         .limit(1);
+
+      // 2. Fallback: find most recent insight for this user (for older generations)
+      if (!insight) {
+        [insight] = await database
+          .select({ id: generationInsights.id, industry: generationInsights.industry })
+          .from(generationInsights)
+          .where(eqOp(generationInsights.userId, req.user.id))
+          .orderBy(descOrder(generationInsights.createdAt))
+          .limit(1);
+        if (insight) {
+          console.log(`[Learning] Export signal fallback (userId) → insightId:${insight.id}`);
+        }
+      }
+
       if (insight?.id) {
         await signalSatisfied(insight.id, "export");
-        console.log(`[Learning] Export signal → insightId:${insight.id}`);
+        console.log(`[Learning] ✅ Export signal → insightId:${insight.id} | industry:${insight.industry}`);
+      } else {
+        // 3. No insight at all: still boost any recent patterns for this user's projects
+        console.log(`[Learning] Export signal: no insight found for projectId:${projectId} userId:${req.user.id}`);
       }
-      res.json({ ok: true });
+
+      res.json({ ok: true, insightId: insight?.id ?? null });
     } catch (e: any) {
+      console.error("[Learning] signal-export error:", e?.message);
       res.status(500).json({ message: e?.message });
     }
   });
