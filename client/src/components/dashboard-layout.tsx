@@ -33,9 +33,12 @@ import {
   BrainCircuit,
   User,
   LayoutGrid,
+  HeadphonesIcon,
 } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { SupportDialog } from "@/components/support-dialog";
 
 const sidebarStyle = {
   "--sidebar-width": "15rem",
@@ -46,6 +49,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, language, logout } = useAuth();
   const [location, navigate] = useLocation();
   const lang = language;
+  const [supportOpen, setSupportOpen] = useState(false);
 
   const { data: me } = useQuery<any>({
     queryKey: ["/api/me"],
@@ -210,6 +214,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
               </div>
 
+              {/* Support button */}
+              <button
+                onClick={() => setSupportOpen(true)}
+                data-testid="button-open-support"
+                className="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors"
+              >
+                <HeadphonesIcon className="w-3.5 h-3.5 shrink-0" />
+                <span>{lang === "ar" ? "إبلاغ عن مشكلة" : "Report an Issue"}</span>
+              </button>
+
               {/* User info + logout */}
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shrink-0 overflow-hidden">
@@ -266,6 +280,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </SidebarProvider>
+      <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} lang={lang as "ar" | "en"} />
     </div>
   );
 }

@@ -10,14 +10,14 @@ import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./indu
 import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration } from "./learning-engine";
 import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
-import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData } from "./email";
+import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData, sendSupportTicketToTeam, sendSupportTicketConfirmation } from "./email";
 import { z } from "zod";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import archiver from "archiver";
 import crypto from "crypto";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { users, subscriptions, creditPurchases } from "@shared/schema";
 import { eq, sql, and, gte, desc, lt } from "drizzle-orm";
 
@@ -240,12 +240,38 @@ ${rawHtml}
 </html>`;
 }
 
+// ── Support Tickets: DB migration ─────────────────────────────────────────────
+
+async function ensureSupportTicketsTable() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS support_tickets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        user_name TEXT NOT NULL,
+        user_email TEXT NOT NULL,
+        category TEXT NOT NULL DEFAULT 'general',
+        priority TEXT NOT NULL DEFAULT 'medium',
+        subject TEXT NOT NULL,
+        message TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'open',
+        created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    console.log("Migration: support_tickets table ensured");
+  } catch (e: any) {
+    console.error("[Support] Table init failed:", e?.message);
+  }
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   // ── Self-improving learning system: ensure DB tables on startup ─────────────
   ensureLearningTables().catch(e => console.error("[Learning] Startup table init failed:", e?.message));
+  ensureSupportTicketsTable().catch(e => console.error("[Support] Startup init failed:", e?.message));
 
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok", version: BUILD_VERSION, timestamp: new Date().toISOString() });
@@ -1251,6 +1277,89 @@ Sitemap: https://arabyweb.net/sitemap.xml
       res.json({ ok: true, insightId: insight?.id ?? null });
     } catch (e: any) {
       console.error("[Learning] signal-export error:", e?.message);
+      res.status(500).json({ message: e?.message });
+    }
+  });
+
+  // ── Support Tickets ───────────────────────────────────────────────────────────
+
+  app.post("/api/support", isAuthenticated, async (req: any, res) => {
+    const schema = z.object({
+      category: z.enum(["billing", "technical", "website", "account", "other"]),
+      priority: z.enum(["low", "medium", "high"]),
+      subject: z.string().min(5).max(200),
+      message: z.string().min(20).max(3000),
+    });
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ message: "بيانات غير صحيحة", errors: parsed.error.issues });
+
+    try {
+      const user = req.user;
+      const { category, priority, subject, message } = parsed.data;
+      const userName = user.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : (user.email?.split("@")[0] || "User");
+      const userEmail = user.email || "";
+
+      const result = await pool.query(
+        `INSERT INTO support_tickets (user_id, user_name, user_email, category, priority, subject, message)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+        [user.id, userName, userEmail, category, priority, subject, message]
+      );
+      const ticketId = result.rows[0].id;
+
+      // Send notifications (non-blocking — don't fail the request if email fails)
+      Promise.all([
+        sendSupportTicketToTeam({ ticketId, userName, userEmail, userId: user.id, category, subject, message, priority }),
+        userEmail ? sendSupportTicketConfirmation({ ticketId, to: userEmail, userName, subject, isAr: true }) : Promise.resolve(false),
+      ]).catch(e => console.error("[Support] Email send failed:", e?.message));
+
+      console.log(`[Support] ✅ Ticket #${ticketId} created — user:${user.id} priority:${priority}`);
+      res.json({ ok: true, ticketId, message: "تم استلام بلاغك بنجاح" });
+    } catch (e: any) {
+      console.error("[Support] Create ticket error:", e?.message);
+      res.status(500).json({ message: "حدث خطأ، يرجى المحاولة مجدداً" });
+    }
+  });
+
+  app.get("/api/support/my-tickets", isAuthenticated, async (req: any, res) => {
+    try {
+      const result = await pool.query(
+        `SELECT id, category, priority, subject, status, created_at FROM support_tickets WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20`,
+        [req.user.id]
+      );
+      res.json({ tickets: result.rows });
+    } catch (e: any) {
+      res.status(500).json({ message: e?.message });
+    }
+  });
+
+  // Admin: view all tickets
+  app.get("/api/admin/support-tickets", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const status = req.query.status || "open";
+      const result = await pool.query(
+        `SELECT * FROM support_tickets WHERE ($1 = 'all' OR status = $1) ORDER BY
+         CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
+         created_at DESC LIMIT 100`,
+        [status]
+      );
+      res.json({ tickets: result.rows, total: result.rowCount });
+    } catch (e: any) {
+      res.status(500).json({ message: e?.message });
+    }
+  });
+
+  app.patch("/api/admin/support-tickets/:id/status", isAuthenticated, isAdmin, async (req: any, res) => {
+    const { status } = req.body;
+    if (!["open", "in_progress", "resolved", "closed"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status" });
+    }
+    try {
+      await pool.query(
+        `UPDATE support_tickets SET status = $1, updated_at = NOW() WHERE id = $2`,
+        [status, req.params.id]
+      );
+      res.json({ ok: true });
+    } catch (e: any) {
       res.status(500).json({ message: e?.message });
     }
   });

@@ -792,6 +792,81 @@ export async function sendInvoiceEmail(data: InvoiceData, isAr = true): Promise<
 
 // ─── Test email (for admin panel verification) ────────────────────────────────
 
+// ─── Support Ticket: Notification to support team ─────────────────────────────
+
+export async function sendSupportTicketToTeam(opts: {
+  ticketId: number;
+  userName: string;
+  userEmail: string;
+  userId: number;
+  category: string;
+  subject: string;
+  message: string;
+  priority: string;
+}): Promise<boolean> {
+  const { ticketId, userName, userEmail, userId, category, subject, message, priority } = opts;
+  const priorityColors: Record<string, string> = {
+    high: "#ef4444",
+    medium: "#f59e0b",
+    low: "#10b981",
+  };
+  const priorityLabels: Record<string, string> = {
+    high: "🔴 عالية",
+    medium: "🟡 متوسطة",
+    low: "🟢 منخفضة",
+  };
+  const priorityColor = priorityColors[priority] || "#64748b";
+  const emailSubject = `[#${ticketId}] بلاغ دعم فني جديد — ${subject}`;
+  const html = wrap(
+    `${h1(`📩 بلاغ دعم فني جديد #${ticketId}`)}
+     <table style="width:100%;border-collapse:collapse;margin:16px 0;background:#f8fafc;border-radius:10px;overflow:hidden;">
+       ${statRow("المستخدم", `${userName} &lt;${userEmail}&gt;`)}
+       ${statRow("رقم الحساب", `#${userId}`)}
+       ${statRow("التصنيف", category)}
+       ${statRow("الأولوية", priorityLabels[priority] || priority)}
+       ${statRow("الموضوع", subject)}
+     </table>
+     ${infoBox(`<strong>رسالة المستخدم:</strong><br/><br/>${message.replace(/\n/g, "<br/>")}`, priorityColor)}
+     ${btn(`https://arabyweb.net/admin`, "فتح لوحة الإدارة")}
+     ${p("هذا البلاغ محفوظ في قاعدة البيانات. يُرجى الرد على المستخدم خلال 24 ساعة.", true)}`,
+    true
+  );
+  return sendMail("support@arabyweb.net", emailSubject, html, "support");
+}
+
+// ─── Support Ticket: Auto-reply to customer ────────────────────────────────────
+
+export async function sendSupportTicketConfirmation(opts: {
+  ticketId: number;
+  to: string;
+  userName: string;
+  subject: string;
+  isAr?: boolean;
+}): Promise<boolean> {
+  const { ticketId, to, userName, subject, isAr = true } = opts;
+  const emailSubject = isAr
+    ? `✅ تم استلام بلاغك #${ticketId} — ArabyWeb`
+    : `✅ Support Request #${ticketId} Received — ArabyWeb`;
+  const html = wrap(
+    isAr
+      ? `${h1(`شكراً لك، ${userName}! 🙏`)}
+         ${p(`تم استلام بلاغك "<strong>${subject}</strong>" بنجاح وتم تسجيله برقم <strong>#${ticketId}</strong>.`)}
+         ${infoBox("سيقوم فريق الدعم الفني بمراجعة بلاغك والرد عليك خلال 24 ساعة عمل.", "#10b981")}
+         ${p("إذا كانت مشكلتك عاجلة، يمكنك التواصل معنا مباشرةً عبر:", true)}
+         ${btn("https://wa.me/966500000000", "تواصل عبر واتساب")}
+         ${p(`رقم البلاغ: <strong>#${ticketId}</strong> — احتفظ بهذا الرقم للمتابعة.`, true)}`
+      : `${h1(`Thank you, ${userName}! 🙏`)}
+         ${p(`Your request "<strong>${subject}</strong>" has been received and logged as <strong>#${ticketId}</strong>.`)}
+         ${infoBox("Our support team will review your request and respond within 24 business hours.", "#10b981")}
+         ${btn("https://arabyweb.net/dashboard", "Go to Dashboard")}
+         ${p(`Ticket number: <strong>#${ticketId}</strong> — keep this for follow-up.`, true)}`,
+    isAr
+  );
+  return sendMail(to, emailSubject, html, "support");
+}
+
+// ─── Test Email ────────────────────────────────────────────────────────────────
+
 export async function sendTestEmail(to: string, isAr = true): Promise<boolean> {
   const subject = isAr ? "✅ اختبار إعدادات SMTP — ArabyWeb" : "✅ SMTP Configuration Test — ArabyWeb";
   const html = wrap(
