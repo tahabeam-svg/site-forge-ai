@@ -7,7 +7,7 @@ import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSoci
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
-import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration } from "./learning-engine";
+import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration, logGenerationInsight } from "./learning-engine";
 import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
 import { sendPaymentSuccessEmail, sendLowCreditsEmail, sendInvoiceEmail, type InvoiceData, sendSupportTicketToTeam, sendSupportTicketConfirmation, sendFeedbackNotificationToTeam } from "./email";
@@ -689,6 +689,26 @@ Sitemap: https://arabyweb.net/sitemap.xml
       }
 
       res.json(updated);
+
+      // ─── Learning System: Log insight so signal-export can find it ────────────
+      setImmediate(async () => {
+        try {
+          const { industryId: detectedIndustry } = runIndustryEngine(description, language === "ar", "");
+          await logGenerationInsight({
+            userId: String(userId),
+            projectId: project.id,
+            industry: detectedIndustry || "general",
+            language,
+            prompt: description.slice(0, 500),
+            spec: { tagline: generated.seoTitle, seoTitle: generated.seoTitle, seoDescription: generated.seoDescription } as any,
+            primaryColor: generated.colorPalette?.primary,
+            accentColor: generated.colorPalette?.accent,
+            generationMs: 0,
+          });
+        } catch (e: any) {
+          console.warn("[Learning] /generate insight log warning:", e?.message);
+        }
+      });
     } catch (err: any) {
       console.error("Generation error:", err?.message || err);
       const project = await storage.getProject(parseInt(req.params.id));
@@ -877,6 +897,18 @@ Sitemap: https://arabyweb.net/sitemap.xml
             success: true,
             generationMs: genMs,
             usedCachedBlock: false,
+          });
+          // ─── Log insight so signal-export can find it for learning quality signals ─
+          await logGenerationInsight({
+            userId: String(req.user.id),
+            projectId: project.id,
+            industry: industryId || activityType || "general",
+            language: websiteLanguage,
+            prompt: description.slice(0, 500),
+            spec: { tagline: generated.seoTitle, seoTitle: generated.seoTitle, seoDescription: generated.seoDescription } as any,
+            primaryColor: primaryColor || generated.colorPalette?.primary,
+            accentColor: accentColor || generated.colorPalette?.accent,
+            generationMs: genMs,
           });
         } catch (e: any) {
           console.warn("Learning system save warning:", e?.message);
