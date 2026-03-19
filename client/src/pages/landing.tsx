@@ -642,8 +642,8 @@ export default function LandingPage() {
                     yearly: lang === "ar" ? "470 ر.س/سنوياً" : "470 SAR/yr",
                     popular: true,
                     features: lang === "ar"
-                      ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — منصتان", "50 جلسة ذكاء/شهر", "لوحة تحليلات · دعم 24/7", "بدون شعار عربي ويب"]
-                      : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — 2 platforms", "50 AI sessions/month", "Analytics · 24/7 support", "No ArabyWeb badge"],
+                      ? ["10 مواقع", "5 تعديلات مجانية/موقع", "🚀 تسويق AI — منصتان", "500 جلسة ذكاء/شهر", "لوحة تحليلات · دعم 24/7", "بدون شعار عربي ويب"]
+                      : ["10 websites", "5 free AI edits/site", "🚀 AI Marketing — 2 platforms", "500 AI sessions/month", "Analytics · 24/7 support", "No ArabyWeb badge"],
                     platforms: [
                       { id: "instagram", Icon: SiBrandInstagram, bg: "from-pink-500 to-purple-600", label: "Instagram" },
                       { id: "twitter", Icon: SiX, bg: "from-gray-800 to-gray-950", label: "X / Twitter" },
@@ -657,8 +657,8 @@ export default function LandingPage() {
                     desc: lang === "ar" ? "قوة كاملة — تسويق AI 3 منصات" : "Full power — AI marketing on 3 platforms",
                     yearly: lang === "ar" ? "950 ر.س/سنوياً" : "950 SAR/yr",
                     features: lang === "ar"
-                      ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — 3 منصات", "200 جلسة ذكاء/شهر", "قوالب حصرية · دعم أولوية 24/7", "بدون شعار عربي ويب"]
-                      : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — 3 platforms", "200 AI sessions/month", "Premium templates · Priority 24/7", "No ArabyWeb badge"],
+                      ? ["30 موقعاً", "10 تعديلات مجانية/موقع", "🚀 تسويق AI — 3 منصات", "🔥 مولّد الترند السعودي", "2000 جلسة ذكاء/شهر", "قوالب حصرية · دعم أولوية 24/7", "بدون شعار عربي ويب"]
+                      : ["30 websites", "10 free AI edits/site", "🚀 AI Marketing — 3 platforms", "🔥 Saudi Trend Generator", "2000 AI sessions/month", "Premium templates · Priority 24/7", "No ArabyWeb badge"],
                     platforms: [
                       { id: "instagram", Icon: SiBrandInstagram, bg: "from-pink-500 to-purple-600", label: "Instagram" },
                       { id: "twitter", Icon: SiX, bg: "from-gray-800 to-gray-950", label: "X / Twitter" },
@@ -696,10 +696,13 @@ export default function LandingPage() {
                         {plan.features.map((f, j) => {
                           const isMarketing = f.startsWith("🚀") && plan.platforms && plan.platforms.length > 0;
                           const isBad = f.startsWith("❌");
+                          const isTrend = f.startsWith("🔥");
                           return (
-                            <div key={j} className="flex items-start gap-2.5 text-sm">
+                            <div key={j} className={`flex items-start gap-2.5 text-sm ${isTrend ? "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg px-2.5 py-1.5 -mx-0.5" : ""}`}>
                               {isBad ? (
                                 <span className="w-4 h-4 shrink-0 mt-0.5 text-xs flex items-center justify-center text-red-500 font-bold">✕</span>
+                              ) : isTrend ? (
+                                <span className="shrink-0 mt-0.5 text-sm leading-none">🔥</span>
                               ) : (
                                 <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                               )}
@@ -714,6 +717,8 @@ export default function LandingPage() {
                                     ))}
                                   </div>
                                 </div>
+                              ) : isTrend ? (
+                                <span className="font-semibold text-amber-700 dark:text-amber-300">{f.replace("🔥 ", "")}</span>
                               ) : (
                                 <span className={isBad ? "text-muted-foreground" : ""}>{f.replace("❌ ", "")}</span>
                               )}
