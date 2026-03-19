@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { runQualityCheck, validateAndCorrectColors, validatePageStructure } from "./design-system.js";
+import { generateContentSpec, buildWebsiteHTML, type WebsiteImages } from "./website-builder.js";
 
 let _openai: OpenAI | null = null;
 function getOpenAI(): OpenAI {
@@ -702,6 +703,57 @@ CRITICAL IMAGE RULES:
 • For gallery: use each image ONCE — NEVER repeat the same URL
 • DO NOT use any other images, stock photos, or placeholder gradients instead of real images
 • The images are already cropped and sized correctly — use them directly`;
+}
+
+/** Fetch real images as structured data (hero URL + gallery URLs). Used by the new two-stage builder. */
+async function buildImageData(description: string): Promise<WebsiteImages> {
+  const cat = detectImageCategory(description);
+  const pool = IMAGE_BANK[cat] || DEFAULT_IMAGES;
+  const bankImages = shuffleAndPick(pool, 10);
+  const bankUrls = bankImages.map(id =>
+    `https://images.unsplash.com/${id}?w=1200&h=800&fit=crop&q=85&auto=format`
+  );
+
+  const terms = UNSPLASH_SEARCH_TERMS[cat] || UNSPLASH_SEARCH_TERMS["agency"];
+  const heroQuery = terms[0];
+  const galleryQueries = shuffleAndPick(
+    terms.length > 1 ? terms.slice(1) : terms,
+    Math.min(3, terms.length)
+  );
+
+  const [heroUrls, ...galleryBatches] = await Promise.all([
+    fetchUnsplashImages(heroQuery, 2),
+    ...galleryQueries.map(q => fetchUnsplashImages(q, 3)),
+  ]);
+
+  const combinedGallery = Array.from(new Set(galleryBatches.flat()));
+  let liveHeroBase = heroUrls[0] || null;
+  let liveGalleryBases: string[] = combinedGallery.length >= 4 ? combinedGallery : [];
+
+  if (!liveHeroBase) {
+    const fallbackGalleryQuery = galleryQueries[0] || terms[0];
+    const [pexHero, pexGallery] = await Promise.all([
+      fetchPexelsImages(heroQuery, 2),
+      fetchPexelsImages(fallbackGalleryQuery, 6),
+    ]);
+    if (pexHero[0]) {
+      liveHeroBase = pexHero[0];
+      liveGalleryBases = pexGallery.length >= 4 ? pexGallery : [];
+    }
+  }
+
+  const fmt = (base: string, w: number, h: number) => {
+    const isUnsplashRaw = base.includes("unsplash.com") && !base.includes("?");
+    return isUnsplashRaw ? `${base}?w=${w}&h=${h}&fit=crop&q=85&auto=format` : base;
+  };
+
+  const hero = liveHeroBase ? fmt(liveHeroBase, 1920, 1080) : bankUrls[0];
+  const galleryBase = liveGalleryBases.length >= 4 ? liveGalleryBases : bankUrls;
+  const gallery = galleryBase.slice(0, 6).map(u => fmt(u, 800, 600));
+  const about = gallery[1] || gallery[0];
+
+  console.log(`[ImageData] cat:${cat} hero:${hero.slice(0, 60)}... gallery:${gallery.length}`);
+  return { hero, gallery, about };
 }
 
 /**
@@ -1493,6 +1545,72 @@ CSS:
 □ #aw-lightbox when open: display:flex
 □ All hover states and transitions defined`;
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // NEW TWO-STAGE PIPELINE (non-special categories — all business types)
+  // Stage 1: AI generates structured content JSON (fast, focused, GPT-4o-mini)
+  // Stage 2: TypeScript builds premium HTML (guaranteed correct CSS Grid, RTL, etc.)
+  // ══════════════════════════════════════════════════════════════════════════
+  if (!isSpecialCategory) {
+    const imgCatNew = detectImageCategory(description);
+    const businessNameNew = extractBusinessName(description);
+    const locationQueryNew = extractLocationQuery(description, businessNameNew);
+
+    console.log(`[Builder] Two-stage pipeline | cat:${category} | imgCat:${imgCatNew}`);
+
+    // Parallel: fetch images + generate content spec simultaneously
+    const [images, spec] = await Promise.all([
+      buildImageData(description),
+      generateContentSpec(description, {
+        primaryColor: options.primaryColor,
+        accentColor: options.accentColor,
+        designStyle: options.designStyle,
+      }),
+    ]);
+
+    // Optionally enrich spec with verified Google Places data
+    if (LOCATION_CATEGORIES.has(imgCatNew) && locationQueryNew) {
+      try {
+        const placesData = await fetchGooglePlacesData(locationQueryNew);
+        if (placesData) {
+          if (placesData.phone) spec.phone = placesData.phone;
+          if (placesData.address) spec.address = placesData.address;
+          if (placesData.name) spec.businessName = spec.businessName || placesData.name;
+          if (placesData.hours?.length) spec.workingHours = placesData.hours.slice(0, 2).join(" | ");
+          console.log(`[Places] ✓ Enriched spec: ${placesData.name} | ${placesData.address}`);
+        }
+      } catch (e) {
+        console.warn("[Places] Enrich failed:", e);
+      }
+    }
+
+    // Force brand colors from options into spec (user selection takes priority over AI)
+    if (options.primaryColor) spec.primaryColor = options.primaryColor;
+    if (options.accentColor)  spec.accentColor  = options.accentColor;
+
+    // Build guaranteed premium HTML from spec + verified images
+    const html = buildWebsiteHTML(spec, images, { isArabic });
+
+    console.log(`[Builder] ✅ HTML built: ${html.length} chars | ${spec.businessName}`);
+
+    return {
+      html,
+      css: "",
+      seoTitle: spec.seoTitle || spec.businessName,
+      seoDescription: spec.seoDescription || spec.subtitle,
+      sections: isArabic
+        ? ["الرئيسية", "من نحن", "خدماتنا", "أعمالنا", "آراء العملاء", "تواصل معنا"]
+        : ["Hero", "About", "Services", "Gallery", "Testimonials", "Contact"],
+      colorPalette: {
+        primary: spec.primaryColor || "#0f4c81",
+        secondary: "#1e293b",
+        accent: spec.accentColor || "#06b6d4",
+        background: "#050814",
+        text: "#ffffff",
+      },
+    };
+  }
+
+  // ── LEGACY PIPELINE (special categories: wedding, freelancer, event) ─────────
   // Inject randomized images — tries Unsplash Search API first, then Pexels, then IMAGE_BANK
   const imageSection = await buildImagePromptSection(description);
 
@@ -1522,30 +1640,11 @@ CSS:
   const variationToken = `\n[Variation seed: ${Date.now()}-${Math.random().toString(36).slice(2,7)}]`;
 
   // ── Mandatory brand color injection ─────────────────────────────────────────
-  // When primaryColor/accentColor are supplied (from ai-builder parse-prompt),
-  // inject them at the very top of the user prompt so the AI cannot deviate.
   let colorOverride = "";
   if (options.primaryColor || options.accentColor) {
     const pc = options.primaryColor || "#1e293b";
     const ac = options.accentColor || "#6366f1";
-    colorOverride = `
-⛔⛔⛔ MANDATORY BRAND COLORS — HIGHEST PRIORITY — DO NOT CHANGE ⛔⛔⛔
-The following colors have been selected for this brand. You MUST use them throughout the ENTIRE website.
-PRIMARY COLOR: ${pc}
-ACCENT COLOR: ${ac}
-
-Usage rules (MANDATORY):
-• All gradient buttons → linear-gradient(135deg, ${pc}, ${ac}) — no exceptions
-• All icon boxes, gradient borders, and brand highlights → use ${pc} and ${ac}
-• Hero headline gradient text → from ${pc} to ${ac}
-• Stats numbers gradient text → ${pc} to ${ac}
-• Navbar brand name gradient → ${pc} to ${ac}
-• Service card hover gradient border → ${pc} to ${ac}
-• CTA band gradient background → derived from ${pc} darkened + ${ac}
-• Do NOT replace ${pc} with a different primary. Do NOT replace ${ac} with a different accent.
-⛔⛔⛔ END MANDATORY COLOR BLOCK ⛔⛔⛔
-
-`;
+    colorOverride = `⛔⛔⛔ MANDATORY BRAND COLORS ⛔⛔⛔\nPRIMARY: ${pc}\nACCENT: ${ac}\nUse these EVERYWHERE — buttons, icons, gradients, text highlights.\n⛔⛔⛔ END ⛔⛔⛔\n\n`;
   }
 
   let prompt = colorOverride + basePrompt.replace("USE_IMAGES_PLACEHOLDER", imageSection);
@@ -1554,13 +1653,13 @@ Usage rules (MANDATORY):
   prompt += variationToken;
 
   const model = getModel();
-  console.log("Using AI model:", model, "| Category:", category, "| ImgCat:", imgCat, "| Maps:", !!mapsSection, "| Places:", !!placesSection);
+  console.log("[Legacy AI] model:", model, "| cat:", category, "| imgCat:", imgCat);
   const response = await openai.chat.completions.create({
     model,
     messages: [
       {
         role: "system",
-        content: "You are a professional web developer. Your ONLY output must be raw HTML code starting with <!DOCTYPE html> and ending with </html>. NEVER output markdown, planning text, explanations, or any text outside the HTML document. Do not write any introductory sentences. Begin your response immediately with <!DOCTYPE html>.",
+        content: "You are a professional web developer. Output ONLY raw HTML starting with <!DOCTYPE html>. No markdown, no explanations.",
       },
       { role: "user", content: prompt },
     ],
@@ -1568,8 +1667,6 @@ Usage rules (MANDATORY):
     temperature: 0.85,
   });
 
-  // Some models (e.g. reasoning models) may prepend thinking text before HTML.
-  // Extract only the HTML portion from the response.
   const rawContent = response.choices[0]?.message?.content || "";
   const htmlStartIndex = rawContent.indexOf("<!DOCTYPE");
   const htmlAltIndex = rawContent.indexOf("<html");
@@ -1577,9 +1674,6 @@ Usage rules (MANDATORY):
                   : htmlAltIndex !== -1 ? htmlAltIndex
                   : -1;
   const content = htmlBegin !== -1 ? rawContent.slice(htmlBegin) : rawContent;
-  if (htmlBegin > 0) {
-    console.log(`[AI] Trimmed ${htmlBegin} chars of non-HTML prefix from response`);
-  }
 
   // Sanitize nav links: replace path-based hrefs with anchor hrefs
   function sanitizeNavLinks(html: string): string {
