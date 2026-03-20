@@ -255,7 +255,10 @@ IMPORTANT RULES:
 - Choose Font Awesome 6 icons relevant to each service (fa-solid fa-...)
 - Phone format: +966 5X XXX XXXX (Saudi format)
 - The "en" object MUST contain accurate English translations of all text fields
-- Keep the same number of items in arrays (6 services, 4 stats, 3 testimonials, 5 faqItems)${needsPortfolio ? `
+- Keep the same number of items in arrays (6 services, 4 stats, 3 testimonials, 5 faqItems)
+- Stats "number" field MUST use Western digits only (0-9) — NEVER Arabic-Indic digits (٠-٩). Example: use "5000" not "٥٠٠٠", use "95" not "٩٥"
+- Stats "suffix" for years (e.g. number:"2018") MUST be empty string "" — NEVER "+" — years don't need a plus sign
+- Stats "suffix" for counts: use "+" (e.g. number:"5000", suffix:"+"), for percentages: use "%" (e.g. number:"95", suffix:"%"), for ratios keep in number field (e.g. number:"24/7", suffix:"")${needsPortfolio ? `
 - "projects" MUST have 6 real, specific project titles matching this business — NOT generic "مشروع 1". For construction: use real project names like "فيلا سكنية حي النرجس" or "مجمع تجاري طريق الملك".
 - "projects" categories MUST be varied (mix of سكني/تجاري/صناعي for construction, or the equivalent for other fields)
 - "clientLogos" MUST have 6 real company/brand names that this type of business would serve
@@ -299,6 +302,17 @@ function darken(hex: string, amount = 40): string {
   const g = Math.max(0, parseInt(hex.slice(3, 5), 16) - amount);
   const b = Math.max(0, parseInt(hex.slice(5, 7), 16) - amount);
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
+}
+
+// ─── Number helpers ───────────────────────────────────────────────────────────
+/** Convert Arabic-Indic digits (٠-٩) to Western digits (0-9) */
+function toWesternNumerals(s: string): string {
+  return s.replace(/[٠١٢٣٤٥٦٧٨٩]/g, d => String(d.charCodeAt(0) - 0x0660));
+}
+/** Detect if a number string looks like a calendar year (1900–2099) — should not get a + suffix */
+function isYearNumber(s: string): boolean {
+  const n = parseInt(toWesternNumerals(s), 10);
+  return !isNaN(n) && n >= 1900 && n <= 2099;
 }
 
 // ─── Arabic Font Selector ─────────────────────────────────────────────────────
@@ -439,9 +453,16 @@ export function buildWebsiteHTML(
 
   const statsHTML = stats.map((s, i) => {
     const enS = enSpec?.stats?.[i];
+    // Normalize to Western numerals; suppress + on years
+    const rawNum  = toWesternNumerals(s.number || "0");
+    const suffix  = isYearNumber(rawNum) ? "" : (s.suffix || "");
+    // In RTL the + sign gets pulled left by BiDi — wrap in dir=ltr to keep it right
+    const numStyle = isArabic ? `direction:ltr;display:inline-block` : ``;
     return `
         <div class="stat-item aw-reveal">
-          <div class="stat-number"><span class="aw-counter" data-target="${s.number}" data-suffix="${s.suffix || ''}">${s.number}</span>${s.suffix || ''}</div>
+          <div class="stat-number" style="unicode-bidi:isolate">
+            <span style="${numStyle}"><span class="aw-counter" data-target="${rawNum}" data-suffix="${suffix}">${rawNum}</span>${suffix}</span>
+          </div>
           <div class="stat-label"${da(s.label, enS?.label)}>${s.label}</div>
         </div>`;
   }).join("");
@@ -1644,7 +1665,7 @@ export function buildWebsiteHTML(
         <img src="${aboutImg}" alt="${spec.businessName}" class="about-image" loading="lazy">
         <div class="about-image-badge">
           <div style="font-size:0.75rem;opacity:0.85;margin-bottom:2px">${isArabic ? 'منذ' : 'Since'}</div>
-          <div>${new Date().getFullYear() - 8}+</div>
+          <div style="direction:ltr;display:inline-block">${new Date().getFullYear() - 8}</div>
         </div>
       </div>
       <div class="about-content aw-reveal">
