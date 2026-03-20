@@ -2369,6 +2369,22 @@ Transform the entire design into a luxury, high-end look:
   }
 
   // ── Font change handler ────────────────────────────────────────────────────
+
+  // Known font name aliases (Arabic pronunciation → canonical name)
+  const fontAliasMap: Record<string, string> = {
+    "كايرو": "Cairo", "cairo": "Cairo",
+    "تجول": "Tajawal", "تاجول": "Tajawal", "tajawal": "Tajawal",
+    "الماراي": "Almarai", "المراعي": "Almarai", "almarai": "Almarai",
+    "ibm": "IBM Plex Arabic", "ibm plex": "IBM Plex Arabic", "بلكس": "IBM Plex Arabic",
+    "نوتو كوفي": "Noto Kufi Arabic", "كوفي": "Noto Kufi Arabic",
+    "نوتو نسخ": "Noto Naskh Arabic", "نسخ": "Noto Naskh Arabic",
+    "شهرزاد": "Scheherazade New", "scheherazade": "Scheherazade New",
+    "لطيف": "Lateef", "lateef": "Lateef",
+    "رقعة": "Aref Ruqaa Ink", "رقعه": "Aref Ruqaa Ink",
+    "ريدكس": "Readex Pro", "readex": "Readex Pro",
+    "الميسري": "El Messiri", "messiri": "El Messiri",
+  };
+
   const fontChangePatterns = [
     /غيّ?ر\s*(نوع\s*)?(الخط|الفونت|الكتابة|الطباعة)/i,
     /بدّ?ل\s*(نوع\s*)?(الخط|الفونت|الكتابة)/i,
@@ -2377,13 +2393,33 @@ Transform the entire design into a luxury, high-end look:
     /switch\s+(the\s+)?font/i,
     /استخدم\s+(خط|فونت)\s+(\S+)/i,
     /use\s+(font|typeface)\s+(\S+)/i,
+    // "أريد كايرو فونت" / "أريد فونت كايرو" / "خليه كايرو فونت"
+    /[أا]ري?د\s+\S+\s+(فونت|خط)/i,
+    /[أا]ري?د\s+(فونت|خط)\s+\S+/i,
+    /خلّ?يه?\s+\S+\s+(فونت|خط)/i,
+    /خلّ?يه?\s+(فونت|خط)\s+\S+/i,
+    /عطني?\s+\S+\s+(فونت|خط)/i,
+    /عطني?\s+(فونت|خط)\s+\S+/i,
+    // bare "cairo font" / "كايرو فونت" anywhere in command
+    /\b(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)\b.*\b(font|فونت|خط)\b/i,
+    /\b(فونت|خط)\b.*\b(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)\b/i,
+    /\b(كايرو|تجول|تاجول|الماراي|المراعي|شهرزاد|لطيف|ريدكس|الميسري|كوفي|نسخ|رقعة|رقعه)\b/i,
   ];
   const isFontChange = fontChangePatterns.some(p => p.test(command));
   if (isFontChange) {
-    // Extract requested font name if mentioned
-    const fontNameAr = command.match(/(?:خط|فونت)\s+([^\s،,]+)/i)?.[1] || "";
-    const fontNameEn = command.match(/(?:font|typeface)\s+([A-Za-z][A-Za-z\s]+)/i)?.[1]?.trim() || "";
-    const requestedFont = fontNameAr || fontNameEn;
+    // Extract requested font name — handle both "فونت كايرو" and "كايرو فونت" orders
+    const rawFontToken =
+      // "فونت X" or "خط X" → word after keyword
+      command.match(/(?:فونت|خط)\s+([^\s،,.!؟]+)/i)?.[1]
+      // "X فونت" or "X خط" → word before keyword
+      || command.match(/([^\s،,.!؟]+)\s+(?:فونت|خط)/i)?.[1]
+      // English: "font X" → word after
+      || command.match(/(?:font|typeface)\s+([A-Za-z][A-Za-z\s]+)/i)?.[1]?.trim()
+      || "";
+
+    // Resolve alias
+    const resolvedAlias = fontAliasMap[rawFontToken.toLowerCase().trim()] || rawFontToken;
+    const requestedFont = resolvedAlias;
 
     const availableFonts = [
       { name: "Cairo", import: "Cairo:wght@400;500;600;700;800;900", head: "'Cairo', sans-serif", body: "'Cairo', sans-serif" },
@@ -2684,6 +2720,27 @@ No markdown, no code blocks, no explanation outside the JSON.`;
       "/contact": "#contact", "/contact-us": "#contact",
     };
     let html = parsed.html || currentHtml;
+
+    // ── Direct font injection (post-processing) ──────────────────────────────
+    // If the command was a font change, enforce it at code-level regardless of GPT output
+    // These keys only appear inside the INTERNAL font-change block
+    const _directFontImport = enhancedCommand.match(/رابط الاستيراد: (https:\/\/[^\n\r]+)/)?.[1]?.trim()
+      || enhancedCommand.match(/Target font import URL: (https:\/\/[^\n\r]+)/)?.[1]?.trim();
+    const _directFontHead = enhancedCommand.match(/للعناوين: ([^\n\r]+)/)?.[1]?.trim()
+      || enhancedCommand.match(/Headings: ([^\n\r|]+)/)?.[1]?.trim();
+    const _directFontBody = enhancedCommand.match(/للنص: ([^\n\r]+)/)?.[1]?.trim()
+      || enhancedCommand.match(/Body: ([^\n\r]+)/)?.[1]?.trim();
+    if (_directFontImport && _directFontHead && _directFontBody) {
+      // 1. Replace Google Fonts link
+      html = html.replace(
+        /<link[^>]+fonts\.googleapis\.com\/css2[^>]+>/gi,
+        `<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link href="${_directFontImport}" rel="stylesheet">`
+      );
+      // 2. Inject override at end of last </style>
+      const fontOverride = `\n/* ── Font override (direct) ── */\nbody, *, html, p, span, a, button, input, textarea, select { font-family: ${_directFontBody} !important; }\nh1, h2, h3, h4, h5, h6, .hero-title, .section-title { font-family: ${_directFontHead} !important; }\n`;
+      html = html.replace(/<\/style>/i, `${fontOverride}</style>`);
+      console.log(`[FontChange] Direct font injection applied: ${_directFontHead}`);
+    }
     for (const [path, anchor] of Object.entries(navMap)) {
       html = html.replace(new RegExp(`href=["']${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}["']`, "gi"), `href="${anchor}"`);
     }
