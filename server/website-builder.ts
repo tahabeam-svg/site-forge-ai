@@ -301,6 +301,79 @@ function darken(hex: string, amount = 40): string {
   return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }
 
+// ─── Arabic Font Selector ─────────────────────────────────────────────────────
+interface ArabicFontConfig {
+  head: string;
+  body: string;
+  importUrl: string;
+}
+
+function selectArabicFont(spec: WebsiteContentSpec): ArabicFontConfig {
+  const haystack = [
+    spec.seoTitle || "",
+    spec.seoDescription || "",
+    spec.tagline || "",
+    ...(spec.services || []).map(s => s.title),
+  ].join(" ").toLowerCase();
+
+  const is = (...kw: string[]) => kw.some(k => haystack.includes(k));
+
+  // Luxury / فاخر
+  if (is("فاخر", "راقي", "luxury", "vip", "gold", "ذهب", "عطر", "perfume", "مجوهر", "jewelry", "jewel")) {
+    return {
+      head: "'Scheherazade New', serif",
+      body: "'Tajawal', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=Scheherazade+New:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap",
+    };
+  }
+  // Construction / مقاولات / بناء
+  if (is("مقاول", "إنشاء", "بناء", "هندسة", "معمار", "construct", "engineer", "build", "contracting")) {
+    return {
+      head: "'Almarai', sans-serif",
+      body: "'Almarai', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap",
+    };
+  }
+  // Medical / clinic / pharmacy
+  if (is("عيادة", "طبي", "صحة", "مستشفى", "دواء", "صيدل", "clinic", "medical", "health", "pharmacy", "doctor")) {
+    return {
+      head: "'Noto Kufi Arabic', sans-serif",
+      body: "'Cairo', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700;800&family=Cairo:wght@400;500;600;700&display=swap",
+    };
+  }
+  // Restaurant / food / café
+  if (is("مطعم", "كافيه", "قهوة", "أكل", "طعام", "وجبة", "restaurant", "cafe", "coffee", "food", "kitchen")) {
+    return {
+      head: "'Tajawal', sans-serif",
+      body: "'Tajawal', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap",
+    };
+  }
+  // Corporate / consulting / finance / legal
+  if (is("شركة", "مؤسسة", "استشارات", "قانوني", "محاسب", "مالي", "consulting", "corporate", "legal", "finance", "accounting")) {
+    return {
+      head: "'IBM Plex Arabic', sans-serif",
+      body: "'IBM Plex Arabic', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=IBM+Plex+Arabic:wght@300;400;500;600;700&display=swap",
+    };
+  }
+  // Tech / software / digital / agency
+  if (is("تقنية", "برمجة", "تطبيق", "ذكاء", "رقمي", "تطوير", "tech", "software", "app", "digital", "agency", "saas")) {
+    return {
+      head: "'Cairo', sans-serif",
+      body: "'Cairo', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap",
+    };
+  }
+  // Default: Cairo (headings) + Tajawal (body)
+  return {
+    head: "'Cairo', sans-serif",
+    body: "'Tajawal', sans-serif",
+    importUrl: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap",
+  };
+}
+
 export function buildWebsiteHTML(
   spec: WebsiteContentSpec,
   images: WebsiteImages,
@@ -309,11 +382,21 @@ export function buildWebsiteHTML(
   const isArabic = options.isArabic !== false;
   const dir = isArabic ? 'rtl' : 'ltr';
   const lang = isArabic ? 'ar' : 'en';
-  const fontImport = isArabic
-    ? "https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700&display=swap"
+
+  const arabicFont = isArabic ? selectArabicFont(spec) : null;
+  const fontImport = arabicFont
+    ? arabicFont.importUrl
     : "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap";
-  const bodyFont = isArabic ? "'Tajawal', sans-serif" : "'Inter', sans-serif";
-  const headFont = isArabic ? "'Cairo', sans-serif" : "'Montserrat', sans-serif";
+  const bodyFont = arabicFont ? arabicFont.body : "'Inter', sans-serif";
+  const headFont = arabicFont ? arabicFont.head : "'Montserrat', sans-serif";
+
+  // Google Maps embed
+  const mapsApiKey = process.env.GOOGLE_API_KEY || "";
+  const mapsAddress = encodeURIComponent(spec.address || (isArabic ? "السعودية" : "Saudi Arabia"));
+  const mapsLang = isArabic ? "ar" : "en";
+  const mapsEmbedUrl = mapsApiKey
+    ? `https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${mapsAddress}&language=${mapsLang}&region=SA`
+    : "";
 
   const pc = spec.primaryColor || "#0f4c81";
   const ac = spec.accentColor || "#06b6d4";
@@ -1715,6 +1798,19 @@ export function buildWebsiteHTML(
         </div>
       </div>
     </div>
+    ${mapsEmbedUrl ? `
+    <div class="aw-reveal" style="max-width:1200px;margin:3rem auto 0;border-radius:20px;overflow:hidden;border:1.5px solid rgba(255,255,255,0.1);box-shadow:0 8px 32px rgba(0,0,0,0.3)">
+      <iframe
+        src="${mapsEmbedUrl}"
+        width="100%"
+        height="380"
+        style="border:0;display:block"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        title="${isArabic ? 'موقعنا على الخريطة' : 'Our Location on Map'}"
+      ></iframe>
+    </div>` : ""}
   </section>
 
   <!-- FOOTER -->
@@ -1903,7 +1999,7 @@ export function buildWebsiteHTML(
       var AW_LANG_ORDER = ['${isArabic ? "ar" : "en"}', '${isArabic ? "en" : "ar"}'];
       var awLangIdx = 0;
       var FONTS = {
-        ar: { body: "${bodyFont}", head: "'Cairo', sans-serif" },
+        ar: { body: "${bodyFont}", head: "${headFont}" },
         en: { body: "'Inter', sans-serif", head: "'Montserrat', sans-serif" }
       };
       function awApplyLang(lang) {
