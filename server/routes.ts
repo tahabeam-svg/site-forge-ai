@@ -7,6 +7,7 @@ import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSoci
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
+import { deployToVercel, isVercelConfigured } from "./vercel-deploy";
 import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration, logGenerationInsight } from "./learning-engine";
 import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
@@ -1217,7 +1218,38 @@ Sitemap: https://arabyweb.net/sitemap.xml
       if (!project) return res.status(404).json({ message: "Project not found" });
       const userId = getEffectiveUserId(req);
       if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
-      const updated = await storage.updateProject(project.id, { status: "published" });
+
+      if (!project.generatedHtml) {
+        return res.status(400).json({ message: "لا يوجد محتوى للنشر. قم بتوليد الموقع أولاً." });
+      }
+
+      // ── Deploy to Vercel if configured ────────────────────────────────────
+      let publishedUrl: string | undefined = (project as any).publishedUrl || undefined;
+      let vercelDeploymentId: string | undefined = (project as any).vercelDeploymentId || undefined;
+
+      if (isVercelConfigured()) {
+        try {
+          const result = await deployToVercel({
+            projectId: project.id,
+            projectName: project.name,
+            html: project.generatedHtml,
+            existingDeploymentId: vercelDeploymentId,
+          });
+          publishedUrl = result.url;
+          vercelDeploymentId = result.deploymentId;
+          console.log(`[Publish] Vercel URL: ${publishedUrl}`);
+        } catch (vercelErr: any) {
+          console.error("[Publish] Vercel error:", vercelErr?.message);
+          // Fall through — still mark as published without external URL
+        }
+      }
+
+      const updated = await storage.updateProject(project.id, {
+        status: "published",
+        ...(publishedUrl ? { publishedUrl } : {}),
+        ...(vercelDeploymentId ? { vercelDeploymentId } : {}),
+      });
+
       res.json(updated);
     } catch (err) {
       res.status(500).json({ message: "Failed to publish project" });

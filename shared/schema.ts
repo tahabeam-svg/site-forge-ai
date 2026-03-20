@@ -23,6 +23,8 @@ export const projects = pgTable("projects", {
   htmlHistory: jsonb("html_history").default(sql`'[]'::jsonb`),
   websiteLanguage: varchar("website_language").default("ar"),
   websiteLanguages: text("website_languages").array().default(sql`ARRAY['ar']::text[]`),
+  publishedUrl: text("published_url"),
+  vercelDeploymentId: text("vercel_deployment_id"),
   createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
   updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
