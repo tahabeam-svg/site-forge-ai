@@ -3384,21 +3384,29 @@ export function tryDirectFontChange(command: string, html: string): { html: stri
   const isFontChange = FONT_CHANGE_PATTERNS.some(p => p.test(command));
   if (!isFontChange) return null;
 
-  // Extract font token
-  const rawFontToken =
-    command.match(/(?:فونت|خط)\s+([^\s،,.!؟\[\]]+)/i)?.[1]
-    || command.match(/([^\s،,.!؟\[\]]+)\s+(?:فونت|خط)/i)?.[1]
-    || command.match(/(?:font|typeface)\s+([A-Za-z][A-Za-z\s]+)/i)?.[1]?.trim()
-    || "";
+  const cmdLower = command.toLowerCase();
 
-  const resolved = FONT_ALIAS_MAP[rawFontToken.toLowerCase().trim()] || rawFontToken;
+  // ── Step 1: Scan for known aliases/names directly in the command (most reliable) ──
+  let targetFont: typeof AVAILABLE_FONTS[0] | undefined;
 
-  let targetFont = AVAILABLE_FONTS.find(f =>
-    resolved && (
-      f.name.toLowerCase().includes(resolved.toLowerCase()) ||
-      resolved.toLowerCase().includes(f.name.toLowerCase().split(" ")[0])
-    )
-  );
+  // Check alias map keys first (Arabic aliases like كايرو, تجول, etc.)
+  for (const [alias, fontName] of Object.entries(FONT_ALIAS_MAP)) {
+    if (cmdLower.includes(alias.toLowerCase())) {
+      targetFont = AVAILABLE_FONTS.find(f => f.name === fontName);
+      if (targetFont) break;
+    }
+  }
+
+  // Check font names directly (Cairo, Tajawal, Almarai, etc.)
+  if (!targetFont) {
+    for (const f of AVAILABLE_FONTS) {
+      const firstName = f.name.split(" ")[0].toLowerCase();
+      if (cmdLower.includes(firstName)) {
+        targetFont = f;
+        break;
+      }
+    }
+  }
 
   if (!targetFont) {
     const currentFont = html.match(/family=([^&"'\s<>]+)/)?.[1]?.replace(/\+/g, " ") || "Cairo";
