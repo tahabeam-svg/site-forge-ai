@@ -628,66 +628,70 @@ async function buildImagePromptSection(description: string): Promise<string> {
     `https://images.unsplash.com/${id}?w=1600&h=900&fit=crop&q=85&auto=format`
   );
 
-  // ── Live Unsplash fetch: hero + gallery images ─────────────────────────────
   const terms = UNSPLASH_SEARCH_TERMS[cat] || UNSPLASH_SEARCH_TERMS["agency"];
-  const heroQuery = terms[0]; // most specific query for hero
-
-  // Use UP TO 3 different gallery queries to ensure diverse images
-  // Each query fetches 2 images → total 6 gallery images from 3 distinct search contexts
+  const heroQuery = terms[0];
   const galleryQueries = shuffleAndPick(
-    terms.length > 1 ? terms.slice(1) : terms, // skip hero query if possible
+    terms.length > 1 ? terms.slice(1) : terms,
     Math.min(3, terms.length)
   );
+  const pexGalleryQuery = galleryQueries[1] || galleryQueries[0] || terms[0];
 
-  const [heroUrls, ...galleryBatches] = await Promise.all([
+  // ── Unsplash + Pexels run in PARALLEL ──────────────────────────────────────
+  const [heroUrls, ...rest] = await Promise.all([
     fetchUnsplashImages(heroQuery, 2),
     ...galleryQueries.map(q => fetchUnsplashImages(q, 3)),
+    fetchPexelsImages(heroQuery, 2),          // pexels hero — index: galleryQueries.length
+    fetchPexelsImages(pexGalleryQuery, 6),    // pexels gallery — index: galleryQueries.length + 1
   ]);
 
-  // Combine gallery results, deduplicate, take first 6
-  const combinedGallery = Array.from(new Set(galleryBatches.flat()));
+  const galleryBatches = rest.slice(0, galleryQueries.length);
+  const pexHero: string[]    = rest[galleryQueries.length]     as string[] ?? [];
+  const pexGallery: string[] = rest[galleryQueries.length + 1] as string[] ?? [];
 
-  // ── Pexels fallback if Unsplash returned nothing ────────────────────────────
-  let liveHeroBase = heroUrls[0] || null;
-  let liveGalleryBases = combinedGallery.length >= 4 ? combinedGallery : [];
-  let imageSource = "Unsplash";
+  const combinedUnsplashGallery = Array.from(new Set(galleryBatches.flat()));
 
-  if (!liveHeroBase) {
-    const fallbackGalleryQuery = galleryQueries[0] || terms[0];
-    const [pexHero, pexGallery] = await Promise.all([
-      fetchPexelsImages(heroQuery, 2),
-      fetchPexelsImages(fallbackGalleryQuery, 6),
-    ]);
-    if (pexHero[0]) {
-      liveHeroBase = pexHero[0];
-      liveGalleryBases = pexGallery.length >= 4 ? pexGallery : [];
-      imageSource = "Pexels";
-    }
-  }
+  // Hero: prefer Unsplash, fallback to Pexels
+  const liveHeroBase = heroUrls[0] || pexHero[0] || null;
+  const heroSource   = heroUrls[0] ? "Unsplash" : pexHero[0] ? "Pexels" : "bank";
+
+  // Gallery: merge Unsplash + Pexels, deduplicate, take first 6 for gallery + 2 for about/projects
+  const mergedGallery = Array.from(new Set([...combinedUnsplashGallery, ...pexGallery]));
+  const liveGalleryBases = mergedGallery.length >= 4 ? mergedGallery : [];
+
+  // About image: prefer a Pexels result for variety
+  const aboutBase = pexGallery[0] || combinedUnsplashGallery[0] || null;
+
+  const fmt = (base: string, w: number, h: number) => {
+    const isUnsplashRaw = base.includes("unsplash.com") && !base.includes("?");
+    return isUnsplashRaw ? `${base}?w=${w}&h=${h}&fit=crop&q=85&auto=format` : base;
+  };
 
   let lines: string;
 
   if (liveHeroBase) {
-    const isUnsplashUrl = liveHeroBase.includes("unsplash.com");
-    const heroUrl = isUnsplashUrl
-      ? `${liveHeroBase}?w=1920&h=1080&fit=crop&q=90&auto=format`
-      : liveHeroBase;
-    const heroLine = `  1. ${heroUrl}  ← USE THIS AS HERO BACKGROUND (category:${cat})`;
+    const heroUrl  = fmt(liveHeroBase, 1920, 1080);
+    const heroLine = `  1. ${heroUrl}  ← HERO BACKGROUND (category:${cat}, source:${heroSource})`;
+
+    const aboutLine = aboutBase
+      ? `  2. ${fmt(aboutBase, 800, 600)}  ← ABOUT section image (Pexels)`
+      : "";
 
     let galleryLines: string;
     if (liveGalleryBases.length >= 4) {
-      galleryLines = liveGalleryBases.map((base, i) => {
-        const isUnsplash = base.includes("unsplash.com") && !base.includes("?");
-        const url = isUnsplash ? `${base}?w=700&h=500&fit=crop&q=85&auto=format` : base;
-        return `  ${i + 2}. ${url}  ← GALLERY image ${i + 1}`;
+      // skip aboutBase from gallery to avoid duplicates
+      const galleryPool = liveGalleryBases.filter(u => u !== (aboutBase || "")).slice(0, 8);
+      galleryLines = galleryPool.map((base, i) => {
+        const url = fmt(base, 700, 500);
+        return `  ${i + (aboutLine ? 3 : 2)}. ${url}  ← GALLERY image ${i + 1}`;
       }).join("\n");
     } else {
       galleryLines = bankUrls.slice(0, 8).map((url, i) =>
-        `  ${i + 2}. ${url}`
+        `  ${i + (aboutLine ? 3 : 2)}. ${url}`
       ).join("\n");
     }
-    lines = `${heroLine}\n${galleryLines}`;
-    console.log(`[${imageSource}] ✓ cat:${cat} hero+gallery fetched. gallery:${liveGalleryBases.length} imgs`);
+
+    lines = [heroLine, aboutLine, galleryLines].filter(Boolean).join("\n");
+    console.log(`[Images] ✓ cat:${cat} hero:${heroSource} gallery:${liveGalleryBases.length} pexels_gallery:${pexGallery.length}`);
   } else {
     lines = bankUrls.map((url, i) => `  ${i + 1}. ${url}`).join("\n");
     console.log(`[Images] Fallback IMAGE_BANK for cat:${cat}`);
@@ -700,8 +704,8 @@ ${lines}
 
 CRITICAL IMAGE RULES:
 • Image #1 (marked HERO) → use ONLY as hero section background-image CSS
-• Images #2-7 (marked GALLERY) → use ONLY in gallery/portfolio section
-• For gallery: use each image ONCE — NEVER repeat the same URL
+• Image #2 (marked ABOUT) → use ONLY in the About section <img> tag
+• Images #3+ (marked GALLERY) → use ONLY in gallery/portfolio section, each image ONCE
 • DO NOT use any other images, stock photos, or placeholder gradients instead of real images
 • The images are already cropped and sized correctly — use them directly`;
 }
@@ -721,27 +725,32 @@ async function buildImageData(description: string): Promise<WebsiteImages> {
     terms.length > 1 ? terms.slice(1) : terms,
     Math.min(3, terms.length)
   );
+  const pexGalleryQuery = galleryQueries[1] || galleryQueries[0] || terms[0];
 
-  const [heroUrls, ...galleryBatches] = await Promise.all([
+  // ── Unsplash + Pexels run in PARALLEL ──────────────────────────────────────
+  const [heroUrls, ...rest] = await Promise.all([
     fetchUnsplashImages(heroQuery, 2),
     ...galleryQueries.map(q => fetchUnsplashImages(q, 3)),
+    fetchPexelsImages(heroQuery, 2),        // pexels hero
+    fetchPexelsImages(pexGalleryQuery, 6),  // pexels gallery
   ]);
 
-  const combinedGallery = Array.from(new Set(galleryBatches.flat()));
-  let liveHeroBase = heroUrls[0] || null;
-  let liveGalleryBases: string[] = combinedGallery.length >= 4 ? combinedGallery : [];
+  const galleryBatches = rest.slice(0, galleryQueries.length);
+  const pexHero: string[]    = rest[galleryQueries.length]     as string[] ?? [];
+  const pexGallery: string[] = rest[galleryQueries.length + 1] as string[] ?? [];
 
-  if (!liveHeroBase) {
-    const fallbackGalleryQuery = galleryQueries[0] || terms[0];
-    const [pexHero, pexGallery] = await Promise.all([
-      fetchPexelsImages(heroQuery, 2),
-      fetchPexelsImages(fallbackGalleryQuery, 6),
-    ]);
-    if (pexHero[0]) {
-      liveHeroBase = pexHero[0];
-      liveGalleryBases = pexGallery.length >= 4 ? pexGallery : [];
-    }
-  }
+  const combinedUnsplashGallery = Array.from(new Set(galleryBatches.flat()));
+
+  // Hero: prefer Unsplash, fallback Pexels
+  const liveHeroBase = heroUrls[0] || pexHero[0] || null;
+  const heroSource   = heroUrls[0] ? "Unsplash" : pexHero[0] ? "Pexels" : "bank";
+
+  // Gallery: merge both sources, deduplicate
+  const mergedGallery = Array.from(new Set([...combinedUnsplashGallery, ...pexGallery]));
+  const liveGalleryBases: string[] = mergedGallery.length >= 4 ? mergedGallery : [];
+
+  // About image: prefer Pexels for visual variety
+  const aboutBase = pexGallery[0] || combinedUnsplashGallery[0] || null;
 
   const fmt = (base: string, w: number, h: number) => {
     const isUnsplashRaw = base.includes("unsplash.com") && !base.includes("?");
@@ -749,11 +758,14 @@ async function buildImageData(description: string): Promise<WebsiteImages> {
   };
 
   const hero = liveHeroBase ? fmt(liveHeroBase, 1920, 1080) : bankUrls[0];
-  const galleryBase = liveGalleryBases.length >= 4 ? liveGalleryBases : bankUrls;
-  const gallery = galleryBase.slice(0, 6).map(u => fmt(u, 800, 600));
-  const about = gallery[1] || gallery[0];
+  const about = aboutBase ? fmt(aboutBase, 800, 600) : (bankUrls[1] || bankUrls[0]);
 
-  console.log(`[ImageData] cat:${cat} hero:${hero.slice(0, 60)}... gallery:${gallery.length}`);
+  const galleryPool = liveGalleryBases.length >= 4
+    ? liveGalleryBases.filter(u => u !== (aboutBase || ""))
+    : bankUrls;
+  const gallery = galleryPool.slice(0, 8).map(u => fmt(u, 800, 600));
+
+  console.log(`[ImageData] cat:${cat} hero:${heroSource} unsplash_gallery:${combinedUnsplashGallery.length} pexels_gallery:${pexGallery.length} total:${gallery.length}`);
   return { hero, gallery, about };
 }
 
