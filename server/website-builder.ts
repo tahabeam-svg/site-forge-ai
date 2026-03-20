@@ -332,6 +332,14 @@ function selectArabicFont(spec: WebsiteContentSpec): ArabicFontConfig {
 
   const is = (...kw: string[]) => kw.some(k => haystack.includes(k));
 
+  // Nightclub / Lounge / ملهى ليلي
+  if (is("نايت كليب", "ملهى", "كلوب", "لاونج", "nightclub", "lounge", "night club", "dj", "vibe", "نادي ليلي")) {
+    return {
+      head: "'Cairo', sans-serif",
+      body: "'Tajawal', sans-serif",
+      importUrl: "https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@300;400;500;700;800&display=swap",
+    };
+  }
   // Luxury / فاخر
   if (is("فاخر", "راقي", "luxury", "vip", "gold", "ذهب", "عطر", "perfume", "مجوهر", "jewelry", "jewel")) {
     return {

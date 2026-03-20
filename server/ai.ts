@@ -538,6 +538,7 @@ function detectImageCategory(description: string): string {
   if (/جيم|رياضة|لياقة|gym|fitness|sport/.test(d)) return "gym";
   if (/فاخر|ساعة|عطر|مجوهر|luxury|perfume|jewelry|watch/.test(d)) return "luxury";
   if (/مصور|تصوير|photography|photo|studio/.test(d)) return "photography";
+  if (/نايت كليب|ملهى|كلوب ليلي|نادي ليلي|night club|nightclub|lounge bar|bar club|دي جي|dj night|حفلة موسيقية ليلية|after party/.test(d)) return "nightclub";
   if (/فعالية|حفل|مؤتمر|event|wedding|conference|party/.test(d)) return "events";
   if (/زراعة|مزرعة|agriculture|farm|crops/.test(d)) return "agriculture";
   return "agency";
@@ -586,6 +587,7 @@ const UNSPLASH_SEARCH_TERMS: Record<string, string[]> = {
   tailoring:       ["fashion boutique elegant clothes display","tailor shop fabric rolls","clothing boutique interior","sewing workshop professional","fashion design studio","textile fabric elegant"],
   plastic:         ["plastic factory manufacturing clean","plastic products industrial","polymer manufacturing plant","industrial plastic molding","plastic packaging production","factory quality control"],
   pharmacy:        ["pharmacy store interior organized","medicine shelves clean modern","drugstore professional","pharmacy counter service","medical supplies display","health products store"],
+  nightclub:       ["nightclub interior dark neon lights","luxury lounge bar glowing neon","nightlife dance floor lights","vip lounge luxury dark interior","club stage dj lighting setup","nightclub bottle service vip"],
 };
 
 /** Fetch multiple Unsplash images for a given query. Returns base URLs (without params). */
@@ -1483,6 +1485,12 @@ GYM / FITNESS (pick ONE variety):
   B: Pitch black + neon green (#0a0a0a primary, #22c55e accent) — CrossFit/performance
   C: Dark stone + electric orange (#1c1917 primary, #f97316 accent) — lifestyle fitness
 
+NIGHTCLUB / LOUNGE (pick ONE variety):
+  A: Pitch black + electric purple (#0a0a0f primary, #a855f7 accent) — luxury nightclub
+  B: Deep midnight + neon cyan (#07091a primary, #22d3ee accent) — futuristic club
+  C: Near-black + hot pink (#0d0010 primary, #f472b6 accent) — glamour lounge
+  D: Obsidian + gold (#0a0700 primary, #eab308 accent) — VIP black-tie lounge
+
 ⚠️ SECTION CONTRAST RULE (for readability and visual rhythm):
 • Alternate between dark and light sections to create visual breathing room
 • Typical pattern: dark hero → light about/services → dark testimonials/CTA → light FAQ → dark footer
@@ -1508,6 +1516,7 @@ Output a COMPLETE, production-ready <!DOCTYPE html> document. Rules:
   - Restaurant: navbar → hero → about → menu → gallery → testimonials → contact → footer
   - Agency: navbar → hero → stats → services/portfolio → about → process → clients → testimonials → contact → footer
   - Construction: navbar → hero → stats → about → services → projects → clients → process → testimonials → contact → footer
+  - Nightclub/Lounge: navbar → cinematic hero (fullscreen dark with neon glow) → atmosphere/vibe section → nights/events lineup → gallery → VIP packages → testimonials → contact/reservation → footer
   - Default order: navbar → hero → stats → about → services → gallery → testimonials → contact → footer
 • All animations in a <script> tag at the END of <body> — IntersectionObserver for scroll reveals, counter animation for stats, navbar scroll effect
 • Do NOT output JSON. Do NOT use markdown code blocks. Output ONLY pure HTML starting with <!DOCTYPE html> and ending with </html>.
@@ -1522,7 +1531,8 @@ Use your knowledge of this specific business type to write expert-level, realist
 • HERO HEADLINE: Write a desire-triggering headline that speaks to the customer's deepest want. For a grills restaurant: "أشهى المشاوي الحجازية — بنكهة البيت وجودة المطاعم الفاخرة". NEVER use a generic tagline.
 • STATS: Research-calibrated numbers. A local café won't have "500 عميل يومياً". Think realistically.
 • CTA: Write the specific action relevant to THIS business. Restaurant = "اطلب الآن", Clinic = "احجز موعدك", Agency = "احصل على عرض مجاني".
-• WORKING HOURS: Adapt realistically. Restaurant = till 2AM. Clinic = 8AM-8PM. Gym = 5AM-12AM.
+• WORKING HOURS: Adapt realistically. Restaurant = till 2AM. Clinic = 8AM-8PM. Gym = 5AM-12AM. Nightclub = 10PM-5AM.
+• NIGHTCLUB SPECIFICS: For nightclub/lounge, services = real offerings like (ليالي DJ حية، حجز طاولات VIP، بوتل سيرفيس، حفلات خاصة، ليلة كوكتيلات، عروض فنية حية). Hero = dark cinematic fullscreen with glowing neon. Atmosphere section = describe the vibe, music genre, crowd. Gallery = dance floor, VIP tables, lighting. CTA = "احجز طاولتك الآن". NEVER generate agency/production company content for a nightclub.
 • PRICING HINTS: Mention price tier signals (لا تكشف أسعاراً محددة بالضرورة) that match the business positioning.
 
 ═══════════════════════════════════════
@@ -2746,6 +2756,7 @@ The prompt starts with "نوع النشاط: X" — this is the PRIMARY signal f
   محاماة واستشارات    → "legal" or "consulting"
   موقع شخصي          → "portfolio"
   رومانسي / هدية      → "general"
+  نايت كليب / ملهى ليلي / لاونج → "nightclub"
 
 NEVER use the business NAME to determine its type. "نور" could be a clinic, restaurant, or tech company.
 
@@ -2808,7 +2819,7 @@ Generate complete, professional, conversion-optimized website content. Return th
 {
   "business_name_ar": "brand name in Arabic (keep original if given)",
   "business_name_en": "brand name in English",${extraLangBlock}
-  "business_type": "EXACT match from: restaurant|agency|startup|portfolio|medical|general|legal|beauty|realestate|education|events|automotive|luxury|gym|ecommerce|tech|consulting|logistics|cleaning|photography|finance|hotel|charity|freelance",
+  "business_type": "EXACT match from: restaurant|agency|startup|portfolio|medical|general|legal|beauty|realestate|education|events|automotive|luxury|gym|ecommerce|tech|consulting|logistics|cleaning|photography|finance|hotel|charity|freelance|nightclub",
   "ar": {
     "hero_title": "POWERFUL value-proposition headline in Arabic, max 8 words — what the customer GETS",
     "hero_subtitle": "1-2 compelling Arabic sentences that build desire and trust",
