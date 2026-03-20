@@ -919,18 +919,15 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t bg-muted/30">
-        {/* ── Main footer body ── */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
 
-          {/* 3-col symmetric grid: Brand | Product | Support */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+          {/* ── Brand row (full width on mobile, left col on desktop) ── */}
+          <div className="flex flex-col sm:flex-row sm:items-start gap-8 sm:gap-12 mb-8 sm:mb-12">
 
-            {/* Brand */}
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
-              <div className="flex items-center gap-2.5 mb-3">
-                <BrandName lang={lang} className="text-xl" logoSize={66} />
-              </div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-5">
+            {/* Brand: logo + tagline + socials */}
+            <div className="flex-shrink-0 flex flex-col items-center sm:items-start text-center sm:text-start sm:w-64">
+              <BrandName lang={lang} className="text-xl mb-2" logoSize={56} />
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-xs">
                 {lang === "ar"
                   ? "المنصة الأولى لبناء المواقع بالذكاء الاصطناعي في العالم العربي"
                   : "The #1 AI website builder for the Arab world"}
@@ -966,45 +963,49 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Product */}
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
-              <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
-                {lang === "ar" ? "المنتج" : "Product"}
-              </h4>
-              <ul className="space-y-3 text-sm">
-                <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
-                <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
-                <li><a href="/ai-builder" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-builder">{lang === "ar" ? "أنشئ موقعك الآن" : "AI Builder"}</a></li>
-                <li><a href="/ai-website-builder" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "بناء مواقع بالذكاء الاصطناعي" : "AI Website Builder"}</a></li>
-                <li><a href="/digital-marketing-ai" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "التسويق الرقمي بالذكاء الاصطناعي" : "Digital Marketing AI"}</a></li>
-                <li><a href="/website-saudi-arabia" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "مواقع السعودية والخليج" : "Saudi Arabia Websites"}</a></li>
-                <li><a href="/blog" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-blog">{lang === "ar" ? "المدونة" : "Blog"}</a></li>
-                <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "مواقعي" : "My Sites"}</a></li>
-              </ul>
-            </div>
+            {/* Links: 2-col grid on mobile, flex row on desktop */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-8 flex-1 sm:flex sm:flex-row sm:gap-12">
 
-            {/* Support & Policies */}
-            <div className="flex flex-col items-center sm:items-start text-center sm:text-start">
-              <h4 className="font-semibold mb-4 text-xs uppercase tracking-widest text-muted-foreground">
-                {lang === "ar" ? "الدعم والمقالات" : "Support & Articles"}
-              </h4>
-              <ul className="space-y-3 text-sm">
-                <li><a href="/faq" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-faq">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a></li>
-                <li><a href="mailto:support@arabyweb.net" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-contact">{lang === "ar" ? "تواصل معنا" : "Contact Us"}</a></li>
-                <li><a href="/blog/website-design-prices-saudi-arabia-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "أسعار تصميم المواقع" : "Website Pricing Guide"}</a></li>
-                <li><a href="/blog/seo-guide-arabic-websites-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "دليل SEO للمواقع العربية" : "Arabic SEO Guide"}</a></li>
-                <li><a href="/blog/start-online-business-saudi-arabia-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "كيف تبدأ مشروعك أونلاين" : "Start Online Business"}</a></li>
-                <li><a href="/terms" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-terms">{lang === "ar" ? "شروط الاستخدام" : "Terms of Service"}</a></li>
-                <li><a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-privacy">{lang === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}</a></li>
-              </ul>
-            </div>
+              {/* Product */}
+              <div>
+                <h4 className="font-semibold mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+                  {lang === "ar" ? "المنتج" : "Product"}
+                </h4>
+                <ul className="space-y-2.5 text-sm">
+                  <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-features">{lang === "ar" ? "المميزات" : "Features"}</a></li>
+                  <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-pricing">{lang === "ar" ? "الأسعار" : "Pricing"}</a></li>
+                  <li><a href="/ai-builder" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-builder">{lang === "ar" ? "أنشئ موقعك" : "AI Builder"}</a></li>
+                  <li><a href="/ai-website-builder" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "بناء مواقع AI" : "AI Websites"}</a></li>
+                  <li><a href="/digital-marketing-ai" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "التسويق الرقمي" : "Digital Marketing"}</a></li>
+                  <li><a href="/website-saudi-arabia" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "مواقع الخليج" : "Gulf Websites"}</a></li>
+                  <li><a href="/blog" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-blog">{lang === "ar" ? "المدونة" : "Blog"}</a></li>
+                  <li><a href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-dashboard">{lang === "ar" ? "مواقعي" : "My Sites"}</a></li>
+                </ul>
+              </div>
 
+              {/* Support & Policies */}
+              <div>
+                <h4 className="font-semibold mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+                  {lang === "ar" ? "الدعم" : "Support"}
+                </h4>
+                <ul className="space-y-2.5 text-sm">
+                  <li><a href="/faq" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-faq">{lang === "ar" ? "الأسئلة الشائعة" : "FAQ"}</a></li>
+                  <li><a href="mailto:support@arabyweb.net" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-contact">{lang === "ar" ? "تواصل معنا" : "Contact"}</a></li>
+                  <li><a href="/blog/website-design-prices-saudi-arabia-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "أسعار التصميم" : "Pricing Guide"}</a></li>
+                  <li><a href="/blog/seo-guide-arabic-websites-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "دليل SEO" : "SEO Guide"}</a></li>
+                  <li><a href="/blog/start-online-business-saudi-arabia-2026" className="text-muted-foreground hover:text-foreground transition-colors">{lang === "ar" ? "ابدأ مشروعك" : "Start Business"}</a></li>
+                  <li><a href="/terms" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-terms">{lang === "ar" ? "شروط الاستخدام" : "Terms"}</a></li>
+                  <li><a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-footer-privacy">{lang === "ar" ? "سياسة الخصوصية" : "Privacy"}</a></li>
+                </ul>
+              </div>
+
+            </div>
           </div>
         </div>
 
         {/* ── Bottom bar ── */}
         <div className="border-t bg-muted/50">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-1.5">
             <p className="text-xs text-muted-foreground">
               &copy; 2026 {t("brand", lang)}. {lang === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
             </p>
