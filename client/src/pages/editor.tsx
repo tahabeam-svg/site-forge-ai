@@ -591,6 +591,21 @@ export default function EditorPage() {
         <h1 className="flex-1 min-w-0 text-sm font-semibold truncate" data-testid="text-project-name">{project.name}</h1>
         {project.generatedHtml && (
           <>
+            {/* Regenerate — icon only on mobile */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-violet-600"
+              onClick={() => regenerateMutation.mutate()}
+              disabled={isRegenerating || editMutation.isPending}
+              data-testid="button-regenerate-mobile"
+              title={lang === "ar" ? "إعادة توليد" : "Regenerate"}
+            >
+              {isRegenerating
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <RefreshCw className="w-4 h-4" />}
+            </Button>
+            {/* Toggle chat/preview */}
             <Button
               variant="ghost"
               size="icon"
