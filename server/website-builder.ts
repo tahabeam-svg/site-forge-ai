@@ -1916,9 +1916,9 @@ export function buildWebsiteHTML(
               const elapsed = now - startTime;
               const progress = Math.min(elapsed / duration, 1);
               const eased = 1 - Math.pow(1 - progress, 3);
-              counter.textContent = Math.floor(eased * target).toLocaleString('ar-SA');
+              counter.textContent = Math.floor(eased * target).toLocaleString('en-US');
               if (progress < 1) requestAnimationFrame(update);
-              else counter.textContent = target.toLocaleString('ar-SA');
+              else counter.textContent = target.toLocaleString('en-US');
             }
             requestAnimationFrame(update);
           });

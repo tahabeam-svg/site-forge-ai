@@ -551,8 +551,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).send("Not found");
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).send("Forbidden");
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).send("Forbidden");
       if (!project.generatedHtml) return res.status(404).send("No preview available");
       const html = buildPreviewHtml(project);
       res.setHeader("Content-Type", "text/html; charset=utf-8");
@@ -732,7 +732,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      if (project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+      const instantUserId = getEffectiveUserId(req);
+      if (project.userId !== instantUserId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       // If stuck in "generating" for > 5 minutes, auto-reset and allow re-generation
       if (project.status === "generating") {
         const stuckMs = Date.now() - new Date(project.updatedAt ?? project.createdAt).getTime();
@@ -1155,8 +1156,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       const messages = await storage.getChatMessages(project.id);
       res.json(messages);
     } catch (err) {
@@ -1176,8 +1177,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       const parsed = updateProjectSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
       const data = { ...parsed.data };
@@ -1201,8 +1202,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       await storage.deleteProject(project.id);
       res.status(204).send();
     } catch (err) {
@@ -1214,8 +1215,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       const updated = await storage.updateProject(project.id, { status: "published" });
       res.json(updated);
     } catch (err) {
@@ -1310,7 +1311,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const projectId = parseInt(req.params.id);
       const project = await storage.getProject(projectId);
-      if (!project || project.userId !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+      if (!project || (project.userId !== getEffectiveUserId(req) && !isAdminActingForUser(req))) return res.status(403).json({ message: "Forbidden" });
 
       const { db: database } = await import("./db");
       const { generationInsights } = await import("@shared/schema");
@@ -2033,20 +2034,24 @@ When asking for clarification:
   });
 
   // /api/me — quick user info for sidebar (credits, plan)
+  // When admin is impersonating, returns the impersonated user's data so dashboard reflects their account
   app.get("/api/me", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
-      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      const effectiveId = getEffectiveUserId(req);
+      const [user] = await db.select().from(users).where(eq(users.id, effectiveId));
       if (!user) return res.status(404).json({ message: "User not found" });
+      const isImpersonating = isAdminActingForUser(req);
       res.json({
         id: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
         profileImageUrl: user.profileImageUrl,
-        plan: user.isAdmin ? "business" : (user.plan || "free"),
-        credits: user.isAdmin ? 999999 : (user.credits ?? 0),
+        // When impersonating, show the target user's real plan/credits so admin sees accurate data
+        plan: (!isImpersonating && user.isAdmin) ? "business" : (user.plan || "free"),
+        credits: (!isImpersonating && user.isAdmin) ? 999999 : (user.credits ?? 0),
         isAdmin: user.isAdmin ?? false,
+        isImpersonating,
       });
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch user info" });

@@ -196,6 +196,7 @@ export default function AdminPage() {
     onSuccess: (_data, userId) => {
       queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/impersonation-status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
       window.location.href = "/dashboard";
     },
     onError: (err: any) => {
