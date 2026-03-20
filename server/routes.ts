@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { registerAiBuilderRoutes } from "./ai-builder";
 import { storage } from "./storage";
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
-import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage, generateVideoScript, generateTrendContent, GenerateWebsiteOptions } from "./ai";
+import { generateWebsite, editWebsiteWithAI, generateSocialContent, generateSocialPostImage, generateVideoScript, generateTrendContent, GenerateWebsiteOptions, tryDirectFontChange } from "./ai";
 import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, detectLanguageAndDialect, getConversationHistory } from "./chatbot";
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
@@ -1079,6 +1079,22 @@ Sitemap: https://arabyweb.net/sitemap.xml
         .replace(/<script id="aw-mobile-nav">[\s\S]*?<\/script>/gi, "")
         .replace(/<div id="aw-free-badge"[\s\S]*?<\/div>/gi, "")
         .trim();
+
+      // ── Font change shortcut: apply directly in code, skip GPT entirely ─────
+      const fontResult = tryDirectFontChange(command, cleanHtmlForAI);
+      if (fontResult) {
+        console.log("[Font] Direct font change applied:", fontResult.summary);
+        const finalFontHtml = isFreePlanEdit && !isAdminEdit
+          ? injectFreePlanWatermark(fontResult.html)
+          : removeFreePlanWatermark(fontResult.html);
+        await storage.updateProject(project.id, { generatedHtml: finalFontHtml, generatedCss: project.generatedCss || "" });
+        const currentHistoryFont = (project.htmlHistory as any[]) || [];
+        const fontHistoryEntry = { html: finalFontHtml, css: project.generatedCss || "", summary: fontResult.summary, ts: Date.now() };
+        await storage.updateProject(project.id, { htmlHistory: [...currentHistoryFont.slice(-9), fontHistoryEntry] });
+        await storage.addChatMessage({ projectId: project.id, role: "assistant", content: fontResult.summary });
+        return res.json({ html: finalFontHtml, css: project.generatedCss || "", summary: fontResult.summary });
+      }
+      // ────────────────────────────────────────────────────────────────────────
 
       const result = await editWebsiteWithAI(
         cleanHtmlForAI,

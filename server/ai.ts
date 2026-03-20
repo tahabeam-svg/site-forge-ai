@@ -3330,3 +3330,121 @@ export async function generateTrendContent(
     }];
   }
 }
+
+// ── Direct font change — applied in code, no GPT needed ──────────────────────
+const FONT_ALIAS_MAP: Record<string, string> = {
+  "كايرو": "Cairo", "cairo": "Cairo",
+  "تجول": "Tajawal", "تاجول": "Tajawal", "tajawal": "Tajawal",
+  "الماراي": "Almarai", "المراعي": "Almarai", "almarai": "Almarai",
+  "ibm": "IBM Plex Arabic", "بلكس": "IBM Plex Arabic",
+  "كوفي": "Noto Kufi Arabic", "نسخ": "Noto Naskh Arabic",
+  "شهرزاد": "Scheherazade New", "scheherazade": "Scheherazade New",
+  "لطيف": "Lateef", "lateef": "Lateef",
+  "رقعة": "Aref Ruqaa Ink", "رقعه": "Aref Ruqaa Ink",
+  "ريدكس": "Readex Pro", "readex": "Readex Pro",
+  "الميسري": "El Messiri", "messiri": "El Messiri",
+};
+
+const AVAILABLE_FONTS = [
+  { name: "Cairo",            import: "Cairo:wght@400;500;600;700;800;900",          family: "'Cairo', sans-serif" },
+  { name: "Tajawal",          import: "Tajawal:wght@300;400;500;700;800;900",        family: "'Tajawal', sans-serif" },
+  { name: "Almarai",          import: "Almarai:wght@300;400;700;800",                family: "'Almarai', sans-serif" },
+  { name: "IBM Plex Arabic",  import: "IBM+Plex+Arabic:wght@300;400;500;600;700",   family: "'IBM Plex Arabic', sans-serif" },
+  { name: "Noto Kufi Arabic", import: "Noto+Kufi+Arabic:wght@400;500;600;700;800",  family: "'Noto Kufi Arabic', sans-serif" },
+  { name: "Noto Naskh Arabic",import: "Noto+Naskh+Arabic:wght@400;500;600;700",    family: "'Noto Naskh Arabic', serif" },
+  { name: "Scheherazade New", import: "Scheherazade+New:wght@400;500;600;700",      family: "'Scheherazade New', serif" },
+  { name: "Lateef",           import: "Lateef:wght@300;400;500;600;700;800",        family: "'Lateef', serif" },
+  { name: "Aref Ruqaa Ink",   import: "Aref+Ruqaa+Ink:wght@400;700",               family: "'Aref Ruqaa Ink', serif" },
+  { name: "Readex Pro",       import: "Readex+Pro:wght@300;400;500;600;700",        family: "'Readex Pro', sans-serif" },
+  { name: "El Messiri",       import: "El+Messiri:wght@400;500;600;700",            family: "'El Messiri', sans-serif" },
+];
+
+const FONT_CHANGE_PATTERNS = [
+  /غيّ?ر\s*(نوع\s*)?(الخط|الفونت|الكتابة|الطباعة)/i,
+  /بدّ?ل\s*(نوع\s*)?(الخط|الفونت|الكتابة)/i,
+  /تغيير\s*(نوع\s*)?(الخط|الفونت)/i,
+  /change\s+(the\s+)?(font|typeface|typography)/i,
+  /switch\s+(the\s+)?font/i,
+  /استخدم\s+(خط|فونت)\s+(\S+)/i,
+  /use\s+(font|typeface)\s+(\S+)/i,
+  /[أا]ري?د\s+\S+\s+(فونت|خط)/i,
+  /[أا]ري?د\s+(فونت|خط)\s+\S+/i,
+  /خلّ?يه?\s+\S+\s+(فونت|خط)/i,
+  /خلّ?يه?\s+(فونت|خط)\s+\S+/i,
+  /عطني?\s+\S+\s+(فونت|خط)/i,
+  /عطني?\s+(فونت|خط)\s+\S+/i,
+  /\b(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)\b.*\b(font|فونت|خط)\b/i,
+  /\b(فونت|خط)\b.*\b(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)\b/i,
+  /\b(كايرو|تجول|تاجول|الماراي|المراعي|شهرزاد|لطيف|ريدكس|الميسري|كوفي|نسخ|رقعة|رقعه)\b/i,
+  /\b(cairo|tajawal|almarai|readex|messiri|scheherazade|lateef)\s+font\b/i,
+  /font\s+(cairo|tajawal|almarai|readex|messiri|scheherazade|lateef)\b/i,
+];
+
+export function tryDirectFontChange(command: string, html: string): { html: string; summary: string } | null {
+  const isFontChange = FONT_CHANGE_PATTERNS.some(p => p.test(command));
+  if (!isFontChange) return null;
+
+  // Extract font token
+  const rawFontToken =
+    command.match(/(?:فونت|خط)\s+([^\s،,.!؟\[\]]+)/i)?.[1]
+    || command.match(/([^\s،,.!؟\[\]]+)\s+(?:فونت|خط)/i)?.[1]
+    || command.match(/(?:font|typeface)\s+([A-Za-z][A-Za-z\s]+)/i)?.[1]?.trim()
+    || "";
+
+  const resolved = FONT_ALIAS_MAP[rawFontToken.toLowerCase().trim()] || rawFontToken;
+
+  let targetFont = AVAILABLE_FONTS.find(f =>
+    resolved && (
+      f.name.toLowerCase().includes(resolved.toLowerCase()) ||
+      resolved.toLowerCase().includes(f.name.toLowerCase().split(" ")[0])
+    )
+  );
+
+  if (!targetFont) {
+    const currentFont = html.match(/family=([^&"'\s<>]+)/)?.[1]?.replace(/\+/g, " ") || "Cairo";
+    const others = AVAILABLE_FONTS.filter(f => !currentFont.toLowerCase().includes(f.name.split(" ")[0].toLowerCase()));
+    targetFont = others[Math.floor(Math.random() * others.length)] || AVAILABLE_FONTS[1];
+  }
+
+  let newHtml = html;
+
+  // 1. Remove ALL existing Google Fonts link tags
+  newHtml = newHtml.replace(/<link[^>]+fonts\.googleapis\.com[^>]*>/gi, "");
+  newHtml = newHtml.replace(/<link[^>]+fonts\.gstatic\.com[^>]*>/gi, "");
+
+  // 2. Inject new font link before </head>
+  const fontLinks = `  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=${targetFont.import}&display=swap" rel="stylesheet">`;
+
+  if (newHtml.includes("</head>")) {
+    newHtml = newHtml.replace("</head>", `${fontLinks}\n</head>`);
+  } else {
+    newHtml = fontLinks + "\n" + newHtml;
+  }
+
+  // 3. Inject override CSS at end of LAST <style> block (highest precedence)
+  const overrideCss = `
+/* ── ArabyWeb Direct Font Override ── */
+html, body, * {
+  font-family: ${targetFont.family} !important;
+}
+h1, h2, h3, h4, h5, h6,
+.hero-title, .section-title, .card-title,
+[class*="title"], [class*="heading"] {
+  font-family: ${targetFont.family} !important;
+}
+`;
+
+  const lastStyleClose = newHtml.lastIndexOf("</style>");
+  if (lastStyleClose !== -1) {
+    newHtml = newHtml.slice(0, lastStyleClose) + overrideCss + newHtml.slice(lastStyleClose);
+  } else {
+    newHtml = `<style>${overrideCss}</style>\n` + newHtml;
+  }
+
+  return {
+    html: newHtml,
+    summary: `تم تغيير الخط إلى ${targetFont.name} ✓`,
+  };
+}
