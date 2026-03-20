@@ -2710,6 +2710,55 @@ No markdown, no code blocks, no explanation outside the JSON.`;
 
 import { buildInstantWebsite, type BilingualBusinessContent, type ExtraLang } from "./instant-templates";
 
+// ─── Prompt Enrichment — fixes the "short/ambiguous prompt → wrong content" problem ──
+// When the user's description is too short (< 20 words) or vague, the main AI has
+// nothing to work with and defaults to generic agency content.
+// This step uses a fast model call to classify + expand the prompt before generation.
+async function enrichPromptForGeneration(rawPrompt: string): Promise<string> {
+  const wordCount = rawPrompt.trim().split(/\s+/).length;
+  // Only enrich if prompt is short — detailed prompts are passed as-is
+  if (wordCount >= 20) return rawPrompt;
+
+  try {
+    const openai = (await import("openai")).default;
+    const client = new openai({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL || undefined,
+    });
+
+    const res = await client.chat.completions.create({
+      model: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ? "gpt-4.1-mini" : "gpt-4o-mini",
+      max_tokens: 200,
+      temperature: 0.3,
+      messages: [{
+        role: "system",
+        content: `You are a business classifier for an Arabic website builder. Given a short business description, output ONE enriched Arabic sentence (30-50 words) that clarifies:
+1. The exact business type (e.g. نايت كليب/مطعم/عيادة — be specific, do NOT change it)
+2. The main services/offerings (realistic guesses based on the type)
+3. The target audience
+
+CRITICAL rules:
+- NEVER change or reinterpret the business type — if user says نايت كليب, output نايت كليب
+- NEVER use the business NAME to guess the type — the name is irrelevant
+- Output Arabic only
+- Output just the enriched description, nothing else`
+      }, {
+        role: "user",
+        content: `Short description: "${rawPrompt}"\n\nWrite ONE enriched Arabic sentence:`
+      }],
+    });
+
+    const enriched = res.choices?.[0]?.message?.content?.trim();
+    if (enriched && enriched.length > rawPrompt.length) {
+      console.log(`[Enrichment] "${rawPrompt}" → "${enriched}"`);
+      return enriched;
+    }
+  } catch (err) {
+    console.warn("[Enrichment] Failed, using raw prompt:", err);
+  }
+  return rawPrompt;
+}
+
 const EXTRA_LANG_NAMES: Record<string, string> = {
   fr: "French",
   tr: "Turkish",
@@ -2725,7 +2774,12 @@ export async function generateInstantWebsite(
   primaryWebsiteLang: string = "ar"
 ): Promise<GeneratedWebsite> {
   const isArabic = language === "ar";
-  const emailSlug = prompt.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10) || "business";
+
+  // ── Prompt enrichment: expand short/vague prompts before main generation ──
+  // This prevents "نايت كليب اسمه ليلة حب" → wrongly generating agency content
+  const enrichedPrompt = await enrichPromptForGeneration(prompt);
+
+  const emailSlug = (enrichedPrompt || prompt).toLowerCase().replace(/[^a-z]/g, "").slice(0, 10) || "business";
 
   // Find extra language (first non-ar, non-en in languages array)
   const extraLangCode = languages.find(l => l !== "ar" && l !== "en");
@@ -2813,7 +2867,7 @@ QUALITY STANDARDS — NON-NEGOTIABLE
     "seo_description": "${extraLangName} meta description 150-155 chars"
   },` : "";
 
-  const userPrompt = `Business request: "${prompt}"
+  const userPrompt = `Business request: "${enrichedPrompt}"${enrichedPrompt !== prompt ? `\n(Original user input: "${prompt}")` : ""}
 
 Generate complete, professional, conversion-optimized website content. Return this EXACT JSON:
 {
