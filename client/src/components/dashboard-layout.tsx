@@ -35,9 +35,13 @@ import {
   LayoutGrid,
   HeadphonesIcon,
   TrendingUp,
+  ShieldAlert,
+  X,
 } from "lucide-react";
 import LanguageToggle from "@/components/language-toggle";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { SupportDialog } from "@/components/support-dialog";
 
@@ -50,11 +54,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, language, logout } = useAuth();
   const [location, navigate] = useLocation();
   const lang = language;
+  const { toast } = useToast();
   const [supportOpen, setSupportOpen] = useState(false);
 
   const { data: me } = useQuery<any>({
     queryKey: ["/api/me"],
     staleTime: 60 * 1000,
+  });
+
+  const { data: impStatus } = useQuery<{ active: boolean; targetUserId?: string; targetUserEmail?: string }>({
+    queryKey: ["/api/admin/impersonation-status"],
+    staleTime: 30 * 1000,
+    retry: false,
+  });
+
+  const stopImpersonateMutation = useMutation({
+    mutationFn: () => apiRequest("DELETE", "/api/admin/impersonate"),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/impersonation-status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/me"] });
+      toast({ title: lang === "ar" ? "تم الخروج من حساب المستخدم" : "Exited user account" });
+      navigate("/admin");
+    },
   });
 
   const credits = me?.credits ?? user?.credits ?? 0;
@@ -276,6 +298,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
               <LanguageToggle />
             </header>
+            {impStatus?.active && (
+              <div className="flex items-center justify-between gap-3 px-4 py-2 bg-amber-500/10 border-b border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs shrink-0" data-testid="banner-admin-impersonation">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
+                  <span>
+                    {lang === "ar"
+                      ? `أنت تدير الآن حساب: ${impStatus.targetUserEmail || impStatus.targetUserId} — الرصيد لن يُخصم من المستخدم`
+                      : `Managing account: ${impStatus.targetUserEmail || impStatus.targetUserId} — No credits will be deducted`}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 shrink-0"
+                  onClick={() => stopImpersonateMutation.mutate()}
+                  disabled={stopImpersonateMutation.isPending}
+                  data-testid="button-stop-impersonation"
+                >
+                  <X className="w-3 h-3 me-1" />
+                  {lang === "ar" ? "خروج" : "Exit"}
+                </Button>
+              </div>
+            )}
             <main className="flex-1 overflow-y-auto">
               {children}
             </main>

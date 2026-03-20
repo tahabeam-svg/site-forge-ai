@@ -96,6 +96,11 @@ export default function AdminPage() {
 
   const [showAddCoupon, setShowAddCoupon] = useState(false);
   const [couponCode, setCouponCode] = useState("");
+
+  const [creditsTargetUserId, setCreditsTargetUserId] = useState<string | null>(null);
+  const [creditsTargetEmail, setCreditsTargetEmail] = useState<string>("");
+  const [creditsAmount, setCreditsAmount] = useState("50");
+  const [creditsReason, setCreditsReason] = useState("");
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
   const [discountValue, setDiscountValue] = useState("");
   const [maxUses, setMaxUses] = useState("");
@@ -184,6 +189,31 @@ export default function AdminPage() {
   const toggleCouponMutation = useMutation({
     mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => { await apiRequest("PATCH", `/api/admin/coupons/${id}`, { isActive }); },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/admin/coupons"] }); },
+  });
+
+  const impersonateMutation = useMutation({
+    mutationFn: async (userId: string) => apiRequest("POST", `/api/admin/impersonate/${userId}`),
+    onSuccess: (_data, userId) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/projects"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/impersonation-status"] });
+      window.location.href = "/dashboard";
+    },
+    onError: (err: any) => {
+      toast({ title: lang === "ar" ? "فشل الدخول" : "Access failed", description: err?.message, variant: "destructive" });
+    },
+  });
+
+  const addCreditsMutation = useMutation({
+    mutationFn: async ({ userId, amount, reason }: { userId: string; amount: number; reason?: string }) =>
+      apiRequest("POST", `/api/admin/users/${userId}/credits`, { amount, reason }),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setCreditsTargetUserId(null);
+      setCreditsAmount("50");
+      setCreditsReason("");
+      toast({ title: lang === "ar" ? `تم إضافة ${data?.added} جلسة` : `Added ${data?.added} credits`, description: lang === "ar" ? `الرصيد الجديد: ${data?.newBalance}` : `New balance: ${data?.newBalance}` });
+    },
+    onError: () => { toast({ title: lang === "ar" ? "فشل إضافة الرصيد" : "Failed to add credits", variant: "destructive" }); },
   });
 
   const suspendUserMutation = useMutation({
@@ -612,10 +642,34 @@ export default function AdminPage() {
                               {user.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : (user.email || user.id.slice(0, 8))}
                             </p>
                             <p className="text-[10px] sm:text-xs text-zinc-500 truncate">{user.email || "—"}</p>
+                            {user.credits !== undefined && (
+                              <p className="text-[10px] text-amber-400">{lang === "ar" ? `${user.credits} جلسة` : `${user.credits} credits`}</p>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 sm:gap-3 shrink-0 ms-2">
+                        <div className="flex items-center gap-1 sm:gap-2 shrink-0 ms-2">
                           <span className="text-[10px] sm:text-xs text-zinc-500 hidden sm:inline">{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "—"}</span>
+                          <Button
+                            variant="ghost" size="sm"
+                            className="text-amber-400 h-7 px-1.5 sm:h-8 sm:px-2 text-[10px] sm:text-xs gap-1"
+                            onClick={() => { setCreditsTargetUserId(user.id); setCreditsTargetEmail(user.email || user.id.slice(0, 8)); }}
+                            data-testid={`button-add-credits-user-${i}`}
+                            title={lang === "ar" ? "إضافة رصيد" : "Add credits"}
+                          >
+                            <Coins className="w-3 h-3" />
+                            <span className="hidden sm:inline">{lang === "ar" ? "رصيد" : "Credits"}</span>
+                          </Button>
+                          <Button
+                            variant="ghost" size="sm"
+                            className="text-blue-400 h-7 px-1.5 sm:h-8 sm:px-2 text-[10px] sm:text-xs gap-1"
+                            onClick={() => impersonateMutation.mutate(user.id)}
+                            disabled={impersonateMutation.isPending}
+                            data-testid={`button-impersonate-user-${i}`}
+                            title={lang === "ar" ? "دخول الحساب" : "Access account"}
+                          >
+                            <LogOut className="w-3 h-3 rotate-180" />
+                            <span className="hidden sm:inline">{lang === "ar" ? "دخول" : "Enter"}</span>
+                          </Button>
                           {user.isSuspended ? (
                             <Button variant="ghost" size="sm" className="text-emerald-400 h-7 w-7 sm:h-8 sm:w-8 p-0" onClick={() => unsuspendUserMutation.mutate(user.id)} data-testid={`button-unsuspend-user-${i}`} title={lang === "ar" ? "رفع التعليق" : "Unsuspend"}>
                               <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1387,6 +1441,60 @@ export default function AdminPage() {
           </div>
         </main>
       </div>
+
+      {/* ── Add Credits Dialog ── */}
+      {creditsTargetUserId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setCreditsTargetUserId(null)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full max-w-sm mx-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <h3 className="font-semibold text-white text-base mb-1">
+              {lang === "ar" ? "إضافة رصيد" : "Add Credits"}
+            </h3>
+            <p className="text-xs text-zinc-400 mb-4 truncate" dir="ltr">{creditsTargetEmail}</p>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs text-zinc-400 mb-1 block">{lang === "ar" ? "الكمية (جلسات ذكاء)" : "Amount (AI sessions)"}</label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100000"
+                  value={creditsAmount}
+                  onChange={e => setCreditsAmount(e.target.value)}
+                  className="bg-zinc-800 border-zinc-700 text-white"
+                  data-testid="input-credits-amount"
+                />
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  {[10, 50, 100, 500, 1000].map(n => (
+                    <button key={n} onClick={() => setCreditsAmount(String(n))} className={`text-[10px] px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors`}>+{n}</button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-zinc-400 mb-1 block">{lang === "ar" ? "السبب (اختياري)" : "Reason (optional)"}</label>
+                <Input
+                  value={creditsReason}
+                  onChange={e => setCreditsReason(e.target.value)}
+                  placeholder={lang === "ar" ? "هدية / تعويض / ترقية..." : "Gift / Compensation / Upgrade..."}
+                  className="bg-zinc-800 border-zinc-700 text-white"
+                  data-testid="input-credits-reason"
+                />
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Button
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-black font-semibold"
+                  onClick={() => addCreditsMutation.mutate({ userId: creditsTargetUserId, amount: parseInt(creditsAmount) || 0, reason: creditsReason || undefined })}
+                  disabled={addCreditsMutation.isPending || !creditsAmount || parseInt(creditsAmount) <= 0}
+                  data-testid="button-confirm-add-credits"
+                >
+                  {addCreditsMutation.isPending ? (lang === "ar" ? "جارٍ الإضافة..." : "Adding...") : (lang === "ar" ? "إضافة الرصيد" : "Add Credits")}
+                </Button>
+                <Button variant="ghost" className="text-zinc-400" onClick={() => setCreditsTargetUserId(null)} data-testid="button-cancel-add-credits">
+                  {lang === "ar" ? "إلغاء" : "Cancel"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

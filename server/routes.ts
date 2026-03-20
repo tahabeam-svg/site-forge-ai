@@ -30,10 +30,10 @@ const ENCRYPTION_KEY = process.env.SESSION_SECRET
 const IV_LENGTH = 16;
 
 // Per-user AI rate limiter: max 8 requests per minute per user
-const _aiRateLimiter = new Map<number, { count: number; resetAt: number }>();
+const _aiRateLimiter = new Map<string, { count: number; resetAt: number }>();
 const AI_RATE_LIMIT_MAX = 8;
 const AI_RATE_LIMIT_WINDOW_MS = 60 * 1000;
-function checkAiRateLimit(userId: number): boolean {
+function checkAiRateLimit(userId: string): boolean {
   const now = Date.now();
   const rec = _aiRateLimiter.get(userId);
   if (!rec || now > rec.resetAt) {
@@ -73,6 +73,16 @@ function decryptToken(text: string): string {
 }
 
 const BUILD_VERSION = Date.now().toString(36);
+
+// ─── Admin Impersonation Helpers ─────────────────────────────────────────────
+/** Returns the target user ID: impersonated user when admin is acting, else own ID */
+function getEffectiveUserId(req: any): string {
+  return req.session?.impersonatingUserId || req.user?.id;
+}
+/** True when an admin has activated impersonation for another user */
+function isAdminActingForUser(req: any): boolean {
+  return !!(req.session?.impersonatingUserId && req.session.impersonatingUserId !== req.user?.id);
+}
 
 async function isAdmin(req: any, res: Response, next: NextFunction) {
   try {
@@ -516,7 +526,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
   app.get("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = getEffectiveUserId(req);
       const userProjects = await storage.getProjectsByUser(userId);
       res.json(userProjects);
     } catch (err) {
@@ -528,8 +538,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       res.json(project);
     } catch (err) {
       res.status(500).json({ message: "Failed to fetch project" });
@@ -573,7 +583,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
 
   app.post("/api/projects", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.id;
+      const userId = getEffectiveUserId(req);
       const parsed = createProjectSchema.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid input" });
 
@@ -614,8 +624,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       // If stuck in "generating" for > 5 minutes, auto-reset and allow re-generation
       if (project.status === "generating") {
         const stuckMs = Date.now() - new Date(project.updatedAt ?? project.createdAt).getTime();
@@ -680,7 +690,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
         htmlHistory: [] as any,
       });
 
-      if (!isUserAdmin) {
+      if (!isUserAdmin && !isAdminActingForUser(req)) {
         await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, userId));
         // Fire-and-forget: notify user if credits hit 0
         db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, userId)).then(([u]) => {
@@ -868,10 +878,11 @@ Sitemap: https://arabyweb.net/sitemap.xml
         websiteLanguages,
       });
 
-      if (!isUserAdmin2) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+      if (!isUserAdmin2 && !isAdminActingForUser(req)) {
+        const creditUserId2 = getEffectiveUserId(req);
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, creditUserId2));
         // Fire-and-forget: notify user if credits hit 0
-        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, creditUserId2)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         }).catch(() => {});
       }
@@ -937,8 +948,8 @@ Sitemap: https://arabyweb.net/sitemap.xml
     try {
       const project = await storage.getProject(parseInt(req.params.id));
       if (!project) return res.status(404).json({ message: "Project not found" });
-      const userId = req.user.id;
-      if (project.userId !== userId) return res.status(403).json({ message: "Forbidden" });
+      const userId = getEffectiveUserId(req);
+      if (project.userId !== userId && !isAdminActingForUser(req)) return res.status(403).json({ message: "Forbidden" });
       if (!checkAiRateLimit(userId)) {
         return res.status(429).json({ message: "rate_limit_exceeded", messageAr: "تجاوزت الحد المسموح به من الطلبات. انتظر دقيقة ثم أعد المحاولة.", messageEn: "Too many requests. Please wait a moment and try again." });
       }
@@ -1094,7 +1105,7 @@ Sitemap: https://arabyweb.net/sitemap.xml
       // Increment edit count for this project
       const newEditCount = currentEditCount + 1;
       const remainingFree = Math.max(0, editLimit - newEditCount);
-      const creditDeducted = isOverLimit && !isAdminEdit;
+      const creditDeducted = isOverLimit && !isAdminEdit && !isAdminActingForUser(req);
 
       // Build informative remaining-edits note
       let remainingNote = "";
@@ -1658,6 +1669,71 @@ When asking for clarification:
     }
   });
 
+  // ── Admin: Add credits to a user ─────────────────────────────────────────────
+  app.post("/api/admin/users/:id/credits", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const targetUserId = req.params.id;
+      const amount = parseInt(req.body.amount);
+      if (!amount || isNaN(amount) || amount <= 0 || amount > 100000) {
+        return res.status(400).json({ message: "Invalid amount. Must be 1–100000." });
+      }
+      const [user] = await db.select().from(users).where(eq(users.id, targetUserId));
+      if (!user) return res.status(404).json({ message: "User not found" });
+      const [updated] = await db.update(users)
+        .set({ credits: sql`credits + ${amount}`, updatedAt: new Date() })
+        .where(eq(users.id, targetUserId))
+        .returning({ credits: users.credits });
+      const reason = req.body.reason || "Admin grant";
+      console.log(`[ADMIN] Added ${amount} credits to ${user.email} (${targetUserId}). Reason: ${reason}. New balance: ${updated?.credits}`);
+      res.json({ message: "Credits added", newBalance: updated?.credits, added: amount });
+    } catch (err) {
+      console.error("Add credits error:", err);
+      res.status(500).json({ message: "Failed to add credits" });
+    }
+  });
+
+  // ── Admin: Start impersonating a user ─────────────────────────────────────────
+  app.post("/api/admin/impersonate/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const targetUserId = req.params.id;
+      if (targetUserId === req.user.id) {
+        return res.status(400).json({ message: "Cannot impersonate yourself" });
+      }
+      const [targetUser] = await db.select().from(users).where(eq(users.id, targetUserId));
+      if (!targetUser) return res.status(404).json({ message: "User not found" });
+      if (targetUser.isAdmin) return res.status(403).json({ message: "Cannot impersonate another admin" });
+
+      req.session.impersonatingUserId = targetUserId;
+      req.session.impersonatingUserEmail = targetUser.email;
+      console.log(`[ADMIN] ${req.user?.id} started impersonating ${targetUser.email} (${targetUserId})`);
+      res.json({
+        message: "Impersonation started",
+        targetUser: { id: targetUser.id, email: targetUser.email, firstName: targetUser.firstName, lastName: targetUser.lastName },
+      });
+    } catch (err) {
+      res.status(500).json({ message: "Failed to start impersonation" });
+    }
+  });
+
+  // ── Admin: Stop impersonating ─────────────────────────────────────────────────
+  app.delete("/api/admin/impersonate", isAuthenticated, isAdmin, async (req: any, res) => {
+    const was = req.session.impersonatingUserEmail;
+    req.session.impersonatingUserId = undefined;
+    req.session.impersonatingUserEmail = undefined;
+    console.log(`[ADMIN] ${req.user?.id} stopped impersonating ${was}`);
+    res.json({ message: "Impersonation stopped" });
+  });
+
+  // ── Admin: Get current impersonation status ───────────────────────────────────
+  app.get("/api/admin/impersonation-status", isAuthenticated, async (req: any, res) => {
+    if (!isAdminActingForUser(req)) return res.json({ active: false });
+    res.json({
+      active: true,
+      targetUserId: req.session.impersonatingUserId,
+      targetUserEmail: req.session.impersonatingUserEmail,
+    });
+  });
+
   // ── Fraud detection: accounts sharing the same registration IP ──────────────
   app.get("/api/admin/fraud/suspicious", isAuthenticated, isAdmin, async (_req: any, res) => {
     try {
@@ -1795,9 +1871,10 @@ When asking for clarification:
       const { topic, platform, language, tone } = parsed.data;
       const content = await generateSocialContent(topic, platform, language || "ar", tone || "professional");
 
-      if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
-        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+      if (!isUserAdmin && !isAdminActingForUser(req)) {
+        const cu = getEffectiveUserId(req);
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, cu));
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, cu)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         });
       }
@@ -1831,8 +1908,8 @@ When asking for clarification:
 
       const result = await generateSocialPostImage(topic, platform, language || "ar", postContent);
 
-      if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 20, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
+      if (!isUserAdmin && !isAdminActingForUser(req)) {
+        await db.update(users).set({ credits: sql`GREATEST(credits - 20, 0)`, updatedAt: new Date() }).where(eq(users.id, getEffectiveUserId(req)));
       }
 
       res.json(result);
@@ -1868,9 +1945,10 @@ When asking for clarification:
 
       const script = await generateVideoScript(topic, platform, language || "ar", tone || "casual");
 
-      if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
-        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+      if (!isUserAdmin && !isAdminActingForUser(req)) {
+        const cu2 = getEffectiveUserId(req);
+        await db.update(users).set({ credits: sql`GREATEST(credits - 10, 0)`, updatedAt: new Date() }).where(eq(users.id, cu2));
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, cu2)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         });
       }
@@ -1904,9 +1982,10 @@ When asking for clarification:
 
       const trends = await generateTrendContent(niche, language || "ar");
 
-      if (!isUserAdmin) {
-        await db.update(users).set({ credits: sql`GREATEST(credits - 2, 0)`, updatedAt: new Date() }).where(eq(users.id, req.user.id));
-        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, req.user.id)).then(([u]) => {
+      if (!isUserAdmin && !isAdminActingForUser(req)) {
+        const cu3 = getEffectiveUserId(req);
+        await db.update(users).set({ credits: sql`GREATEST(credits - 2, 0)`, updatedAt: new Date() }).where(eq(users.id, cu3));
+        db.select({ credits: users.credits, email: users.email }).from(users).where(eq(users.id, cu3)).then(([u]) => {
           if (u?.credits === 0 && u?.email) sendLowCreditsEmail(u.email, 0, true).catch(() => {});
         });
       }
