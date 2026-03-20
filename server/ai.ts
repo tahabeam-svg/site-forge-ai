@@ -2358,6 +2358,92 @@ Transform the entire design into a luxury, high-end look:
 [[[END INTERNAL]]]`;
   }
 
+  // ── Font change handler ────────────────────────────────────────────────────
+  const fontChangePatterns = [
+    /غيّ?ر\s*(نوع\s*)?(الخط|الفونت|الكتابة|الطباعة)/i,
+    /بدّ?ل\s*(نوع\s*)?(الخط|الفونت|الكتابة)/i,
+    /تغيير\s*(نوع\s*)?(الخط|الفونت)/i,
+    /change\s+(the\s+)?(font|typeface|typography)/i,
+    /switch\s+(the\s+)?font/i,
+    /استخدم\s+(خط|فونت)\s+(\S+)/i,
+    /use\s+(font|typeface)\s+(\S+)/i,
+  ];
+  const isFontChange = fontChangePatterns.some(p => p.test(command));
+  if (isFontChange) {
+    // Extract requested font name if mentioned
+    const fontNameAr = command.match(/(?:خط|فونت)\s+([^\s،,]+)/i)?.[1] || "";
+    const fontNameEn = command.match(/(?:font|typeface)\s+([A-Za-z][A-Za-z\s]+)/i)?.[1]?.trim() || "";
+    const requestedFont = fontNameAr || fontNameEn;
+
+    const availableFonts = [
+      { name: "Cairo", import: "Cairo:wght@400;500;600;700;800;900", head: "'Cairo', sans-serif", body: "'Cairo', sans-serif" },
+      { name: "Tajawal", import: "Tajawal:wght@300;400;500;700;800;900", head: "'Tajawal', sans-serif", body: "'Tajawal', sans-serif" },
+      { name: "Almarai", import: "Almarai:wght@300;400;700;800", head: "'Almarai', sans-serif", body: "'Almarai', sans-serif" },
+      { name: "IBM Plex Arabic", import: "IBM+Plex+Arabic:wght@300;400;500;600;700", head: "'IBM Plex Arabic', sans-serif", body: "'IBM Plex Arabic', sans-serif" },
+      { name: "Noto Kufi Arabic", import: "Noto+Kufi+Arabic:wght@400;500;600;700;800", head: "'Noto Kufi Arabic', sans-serif", body: "'Noto Kufi Arabic', sans-serif" },
+      { name: "Noto Naskh Arabic", import: "Noto+Naskh+Arabic:wght@400;500;600;700", head: "'Noto Naskh Arabic', serif", body: "'Noto Naskh Arabic', serif" },
+      { name: "Scheherazade New", import: "Scheherazade+New:wght@400;500;600;700", head: "'Scheherazade New', serif", body: "'Scheherazade New', serif" },
+      { name: "Lateef", import: "Lateef:wght@300;400;500;600;700;800", head: "'Lateef', serif", body: "'Lateef', serif" },
+      { name: "Aref Ruqaa Ink", import: "Aref+Ruqaa+Ink:wght@400;700", head: "'Aref Ruqaa Ink', serif", body: "'Aref Ruqaa Ink', serif" },
+    ];
+
+    // Find requested font or pick a different one from current
+    let targetFont = availableFonts.find(f =>
+      requestedFont && (f.name.toLowerCase().includes(requestedFont.toLowerCase()) || requestedFont.toLowerCase().includes(f.name.toLowerCase()))
+    );
+    if (!targetFont) {
+      // Pick a random font different from Cairo (most common default)
+      const currentFont = html.match(/family=([^&"']+)/)?.[1]?.replace(/\+/g, " ") || "Cairo";
+      const others = availableFonts.filter(f => !currentFont.includes(f.name.split(" ")[0]));
+      targetFont = others[Math.floor(Math.random() * others.length)] || availableFonts[1];
+    }
+
+    return lang === "ar"
+      ? `${command}
+[[[INTERNAL — MANDATORY FONT CHANGE — DO NOT SHOW TO USER]]]
+المطلوب: تغيير الخط إلى "${targetFont.name}" بشكل كامل وحقيقي في جميع أنحاء الموقع.
+
+الخطوات الإلزامية (يجب تنفيذها كلها):
+1. في <head>: ابحث عن الـ <link> الذي يحتوي على "fonts.googleapis.com" واستبدله بالكامل بهذا:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=${targetFont.import}&display=swap" rel="stylesheet">
+
+2. في <style>: ابحث عن كل السطور التي تحتوي على font-family في الـ CSS الرئيسي (body, *, html, h1, h2, h3, h4) وغيّرها إلى:
+   - body, *, html, p, span, a, button, input, textarea: font-family: ${targetFont.body};
+   - h1, h2, h3, h4, .hero-title, .section-title: font-family: ${targetFont.head};
+
+3. تأكد من عدم وجود أي font-family قديم يُطغى على الجديد (أضف !important إذا لزم على المستوى الأعلى فقط)
+
+4. احتفظ بجميع المحتوى والأقسام كما هي — غيّر الخط فقط.
+
+الخط المطلوب:
+- اسمه: ${targetFont.name}
+- للعناوين: ${targetFont.head}
+- للنص: ${targetFont.body}
+- رابط الاستيراد: https://fonts.googleapis.com/css2?family=${targetFont.import}&display=swap
+[[[END INTERNAL]]]`
+      : `${command}
+[[[INTERNAL — MANDATORY FONT CHANGE — DO NOT SHOW TO USER]]]
+Task: Change font to "${targetFont.name}" across the entire website.
+
+Required steps (ALL must be done):
+1. In <head>: Find the <link> containing "fonts.googleapis.com" and replace it entirely with:
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+   <link href="https://fonts.googleapis.com/css2?family=${targetFont.import}&display=swap" rel="stylesheet">
+
+2. In <style>: Find all font-family declarations for body/html/* and headings and change to:
+   - body, *, html: font-family: ${targetFont.body};
+   - h1, h2, h3, h4: font-family: ${targetFont.head};
+
+3. Add !important at body level if needed to override any conflicting declarations.
+4. Preserve all content and sections — change ONLY the font.
+
+Target font: ${targetFont.name} | Headings: ${targetFont.head} | Body: ${targetFont.body}
+[[[END INTERNAL]]]`;
+  }
+
   const vaguePatterns = [
     /[أا]ر?يدك?\s*([أا]ن\s*)?ت?ضيف?\s*(من\s*)?(محتوى|قسم|كونتنت)/i,
     /[أا]ضف?\s*محتوى\s*(احتراف|مميز|جيد)/i,
@@ -2482,7 +2568,7 @@ CONTENT RULES (NEVER VIOLATE):
 
 TECHNICAL GUIDELINES:
 - Maintain existing design quality and style UNLESS the command is asking for a full redesign (luxury/elegant/premium/better design) — in that case, apply full visual transformation
-- Use professional fonts: ${isArabic ? "Cairo (headings), Tajawal (body)" : "Inter/Poppins (headings), Inter (body)"}
+- Fonts: ${isArabic ? "default Arabic fonts are Cairo (headings) and Tajawal (body) — BUT if the edit command explicitly requests a font change, you MUST change both the <link> import tag in <head> AND all font-family declarations in CSS to the requested/specified font. Never say 'done' without actually changing the font." : "Inter/Poppins (headings), Inter (body)"}
 - Use Unsplash: https://images.unsplash.com/photo-{ID}?w=800&h=600&fit=crop
 - Use inline SVG Lucide-style icons when adding icons
 - Preserve responsive design (add @media queries for new content)
