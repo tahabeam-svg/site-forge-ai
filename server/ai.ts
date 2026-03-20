@@ -3335,9 +3335,9 @@ export async function generateTrendContent(
 const FONT_ALIAS_MAP: Record<string, string> = {
   "كايرو": "Cairo", "cairo": "Cairo",
   "تجول": "Tajawal", "تاجول": "Tajawal", "tajawal": "Tajawal",
-  "الماراي": "Almarai", "المراعي": "Almarai", "almarai": "Almarai",
+  "الماراي": "Almarai", "المراعي": "Almarai", "ماراي": "Almarai", "almarai": "Almarai",
   "ibm": "IBM Plex Arabic", "بلكس": "IBM Plex Arabic",
-  "كوفي": "Noto Kufi Arabic", "نسخ": "Noto Naskh Arabic",
+  "كوفي": "Noto Kufi Arabic", "الكوفي": "Noto Kufi Arabic", "نسخ": "Noto Naskh Arabic", "النسخ": "Noto Naskh Arabic",
   "شهرزاد": "Scheherazade New", "scheherazade": "Scheherazade New",
   "لطيف": "Lateef", "lateef": "Lateef",
   "رقعة": "Aref Ruqaa Ink", "رقعه": "Aref Ruqaa Ink",
@@ -3360,24 +3360,28 @@ const AVAILABLE_FONTS = [
 ];
 
 const FONT_CHANGE_PATTERNS = [
-  /غيّ?ر\s*(نوع\s*)?(الخط|الفونت|الكتابة|الطباعة)/i,
-  /بدّ?ل\s*(نوع\s*)?(الخط|الفونت|الكتابة)/i,
-  /تغيير\s*(نوع\s*)?(الخط|الفونت)/i,
+  // Arabic verb forms: غيّر / يغير / بدّل / تغيير + خط/فونت
+  /[يت]?غيّ?ر\s*(نوع\s*)?(الخط|خط|الفونت|فونت|الكتابة|الطباعة)/i,
+  /بدّ?ل\s*(نوع\s*)?(الخط|خط|الفونت|فونت|الكتابة)/i,
+  /تغيير\s*(نوع\s*)?(الخط|خط|الفونت|فونت)/i,
+  // "يغير لخط X" / "غير لخط X"
+  /[يت]?غيّ?ر\s+ل?(خط|فونت)/i,
+  // English
   /change\s+(the\s+)?(font|typeface|typography)/i,
   /switch\s+(the\s+)?font/i,
-  /استخدم\s+(خط|فونت)\s+(\S+)/i,
-  /use\s+(font|typeface)\s+(\S+)/i,
+  /استخدم\s+(خط|فونت)/i,
+  /use\s+(font|typeface)/i,
+  // "أريد X فونت" / "أريد فونت X"
   /[أا]ري?د\s+\S+\s+(فونت|خط)/i,
   /[أا]ري?د\s+(فونت|خط)\s+\S+/i,
-  /خلّ?يه?\s+\S+\s+(فونت|خط)/i,
-  /خلّ?يه?\s+(فونت|خط)\s+\S+/i,
-  /عطني?\s+\S+\s+(فونت|خط)/i,
-  /عطني?\s+(فونت|خط)\s+\S+/i,
-  /\b(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)\b.*\b(font|فونت|خط)\b/i,
-  /\b(فونت|خط)\b.*\b(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)\b/i,
-  /\b(كايرو|تجول|تاجول|الماراي|المراعي|شهرزاد|لطيف|ريدكس|الميسري|كوفي|نسخ|رقعة|رقعه)\b/i,
-  /\b(cairo|tajawal|almarai|readex|messiri|scheherazade|lateef)\s+font\b/i,
-  /font\s+(cairo|tajawal|almarai|readex|messiri|scheherazade|lateef)\b/i,
+  // "خليه/عطني X فونت"
+  /خلّ?يه?\s+\S*\s*(فونت|خط)/i,
+  /عطني?\s+\S*\s*(فونت|خط)/i,
+  // English font name + keyword
+  /(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri).*(font|فونت|خط)/i,
+  /(font|فونت|خط).*(cairo|tajawal|almarai|scheherazade|lateef|readex|messiri)/i,
+  // Arabic font aliases anywhere in command (no \b — works with Arabic)
+  /(كايرو|تجول|تاجول|الماراي|المراعي|شهرزاد|لطيف|ريدكس|الميسري|كوفي|الكوفي|نسخ|رقعة|رقعه)/i,
 ];
 
 export function tryDirectFontChange(command: string, html: string): { html: string; summary: string } | null {
