@@ -537,6 +537,38 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
+      {/* ── DOMAIN & HOSTING PROMO BANNER ── */}
+      <div className="px-4 pb-6 max-w-2xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+          <div
+            className="rounded-2xl border-2 border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 flex items-center justify-between gap-4 cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all"
+            onClick={() => navigate("/domains")}
+            data-testid="banner-domains-hosting"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
+                <Globe2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground text-sm">
+                  {isAr ? "🌐 دومينات واستضافة احترافية" : "🌐 Professional Domains & Hosting"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {isAr
+                    ? "احجز دومينك من 29 ر.س وربطه بموقعك تلقائياً"
+                    : "Register your domain from 29 SAR and auto-link to your site"}
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0">
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-3 py-1.5 rounded-full border border-blue-200 dark:border-blue-700 whitespace-nowrap">
+                {isAr ? "احجز الآن ←" : "Book Now →"}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
       {/* ── MY SITES SHEET ── */}
       <Sheet open={mySitesOpen} onOpenChange={setMySitesOpen}>
         <SheetContent

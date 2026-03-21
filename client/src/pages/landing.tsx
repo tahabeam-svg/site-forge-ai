@@ -532,6 +532,108 @@ export default function LandingPage() {
       {/* Color transition to light page */}
       <div className="h-20 bg-gradient-to-b from-zinc-900 to-background" />
 
+      {/* ─── Domains & Hosting Section ──────────────────────────────────── */}
+      <section id="domains-hosting" className="py-14 sm:py-20 bg-gradient-to-br from-blue-50/50 via-indigo-50/30 to-background dark:from-blue-950/20 dark:via-indigo-950/10 dark:to-background">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-14">
+            <motion.div custom={0} variants={fadeUp}>
+              <Badge variant="secondary" className="mb-4 px-3 py-1 text-sm border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800">
+                <Globe2 className="w-3.5 h-3.5 me-1.5" />
+                {lang === "ar" ? "جديد" : "NEW"}
+              </Badge>
+            </motion.div>
+            <motion.h2 custom={1} variants={fadeUp} className="text-xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4" data-testid="text-domains-landing-title">
+              {lang === "ar" ? "دومين واستضافة احترافية لموقعك" : "Professional Domain & Hosting for Your Site"}
+            </motion.h2>
+            <motion.p custom={2} variants={fadeUp} className="text-muted-foreground text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
+              {lang === "ar"
+                ? "احجز دومينك المميز واختر خطة الاستضافة المناسبة وربطها تلقائياً بموقعك الذي أنشأته بعرابي ويب"
+                : "Register your domain, choose a hosting plan, and automatically link it to your ArabyWeb site"}
+            </motion.p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center mb-12">
+            {/* Left: Domain search preview */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}>
+              <Card className="p-6 border-2 border-blue-100 dark:border-blue-900 shadow-lg">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <Globe2 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">{lang === "ar" ? "احجز دومينك الآن" : "Register Your Domain"}</p>
+                    <p className="text-xs text-muted-foreground">{lang === "ar" ? "أسعار تنافسية بالريال السعودي" : "Competitive SAR pricing"}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {[
+                    { tld: ".com", price: "49" },
+                    { tld: ".sa", price: "299" },
+                    { tld: ".store", price: "39" },
+                    { tld: ".net", price: "55" },
+                    { tld: ".online", price: "29" },
+                    { tld: ".tech", price: "59" },
+                  ].map(({ tld, price }) => (
+                    <div key={tld} className="text-center p-3 rounded-lg border border-border hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all">
+                      <p className="font-bold text-primary text-base">{tld}</p>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">{price} ر.س</p>
+                      <p className="text-[10px] text-muted-foreground">{lang === "ar" ? "سنوياً" : "/yr"}</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Right: Features */}
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="space-y-4" custom={1} variants={fadeUp}>
+              {[
+                { icon: CheckCircle2, color: "text-green-500", title: lang === "ar" ? "ربط تلقائي بموقعك" : "Auto-link to your site", desc: lang === "ar" ? "بعد الشراء، اربط دومينك بموقعك بنقرة واحدة من لوحة التحكم" : "After purchase, link your domain to your site with one click from the dashboard" },
+                { icon: Server, color: "text-blue-500", title: lang === "ar" ? "استضافة سريعة في السعودية" : "Fast Hosting in Saudi Arabia", desc: lang === "ar" ? "سيرفرات عالية الأداء مع SSL مجاني لكل خطة" : "High-performance servers with free SSL included" },
+                { icon: Zap, color: "text-amber-500", title: lang === "ar" ? "تفعيل فوري بعد الدفع" : "Instant Activation After Payment", desc: lang === "ar" ? "فريقنا يتواصل معك لإتمام الطلب وتفعيل خدماتك بأسرع وقت" : "Our team contacts you to complete your order and activate your services quickly" },
+                { icon: Star, color: "text-violet-500", title: lang === "ar" ? "أسعار منافسة بالريال السعودي" : "Competitive SAR Pricing", desc: lang === "ar" ? "لا رسوم مخفية، جميع الأسعار واضحة بالريال السعودي" : "No hidden fees, all prices transparent in Saudi Riyals" },
+              ].map(({ icon: Icon, color, title, desc }) => (
+                <div key={title} className="flex gap-4 p-4 rounded-xl border border-border hover:border-primary/30 hover:bg-primary/5 transition-all">
+                  <div className={`shrink-0 mt-0.5 ${color}`}><Icon className="w-5 h-5" /></div>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Hosting plans summary */}
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={fadeUp}>
+            <p className="text-center text-sm font-semibold text-muted-foreground mb-6 uppercase tracking-wider">
+              {lang === "ar" ? "خطط الاستضافة" : "Hosting Plans"}
+            </p>
+            <div className="grid sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
+              {[
+                { nameAr: "ستارتر", nameEn: "Starter", price: "29", icon: "🚀", featAr: "1 موقع · 10GB · SSL مجاني", featEn: "1 Site · 10GB · Free SSL" },
+                { nameAr: "بيزنس", nameEn: "Business", price: "59", icon: "⚡", featAr: "5 مواقع · 50GB · بريد مهني", featEn: "5 Sites · 50GB · Professional Email", popular: true },
+                { nameAr: "برو", nameEn: "Pro", price: "99", icon: "💎", featAr: "مواقع غير محدودة · 200GB", featEn: "Unlimited Sites · 200GB" },
+              ].map(({ nameAr, nameEn, price, icon, featAr, featEn, popular }) => (
+                <div key={nameEn} className={`relative text-center p-5 rounded-xl border-2 transition-all ${popular ? "border-primary bg-primary/5 shadow-lg" : "border-border hover:border-primary/40"}`}>
+                  {popular && <Badge className="absolute -top-3 inset-x-0 mx-auto w-fit bg-primary text-primary-foreground text-xs">{lang === "ar" ? "الأكثر طلباً" : "Popular"}</Badge>}
+                  <p className="text-2xl mb-1">{icon}</p>
+                  <p className="font-bold text-foreground">{lang === "ar" ? nameAr : nameEn}</p>
+                  <p className="text-2xl font-bold text-primary mt-1">{price} <span className="text-sm text-muted-foreground font-normal">{lang === "ar" ? "ر.س/شهر" : "SAR/mo"}</span></p>
+                  <p className="text-xs text-muted-foreground mt-2">{lang === "ar" ? featAr : featEn}</p>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <Button size="lg" onClick={() => { window.location.href = "/domains"; }} className="px-8 gap-2" data-testid="button-domains-cta">
+                <Globe2 className="w-4 h-4" />
+                {lang === "ar" ? "احجز دومينك الآن" : "Register Your Domain Now"}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">{lang === "ar" ? "تواصل مع فريقنا لإتمام الطلب" : "Our team will contact you to complete the order"}</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <section id="marketing" className="py-14 sm:py-20 bg-gradient-to-br from-green-50/50 via-green-50/30 to-green-50/20 dark:from-green-950/20 dark:via-green-950/10 dark:to-green-950/10">
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} className="text-center mb-10 sm:mb-12">

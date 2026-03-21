@@ -83,7 +83,7 @@ interface SuspiciousIp { ip: string; account_count: number; accounts: FraudAccou
 interface FraudData { suspiciousIps: SuspiciousIp[]; recentFreeUsers: (FraudAccount & { registration_ip: string | null; project_count: number })[]; }
 interface UserFeedbackItem { id: number; userId: string | null; userName: string | null; userEmail: string | null; type: string; message: string; page: string | null; status: string; adminNote: string | null; createdAt: string; }
 
-type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "smtp" | "chatbot" | "fraud" | "feedback" | "learning";
+type AdminSection = "overview" | "users" | "projects" | "coupons" | "pricing" | "promotions" | "payments" | "gateway" | "smtp" | "chatbot" | "fraud" | "feedback" | "learning" | "domains";
 
 export default function AdminPage() {
   const { language, logout, user } = useAuth();
@@ -165,6 +165,18 @@ export default function AdminPage() {
     staleTime: 60000,
   });
 
+  const { data: adminDomainOrders, isLoading: domainOrdersLoading, refetch: refetchDomainOrders } = useQuery<{ domains: any[]; hosting: any[] }>({
+    queryKey: ["/api/admin/domain-orders"],
+    enabled: activeSection === "domains" && !statsError,
+  });
+  const { data: domainPricing } = useQuery<{ tlds: Record<string, any>; hosting: Record<string, any> }>({
+    queryKey: ["/api/admin/settings/domains"],
+    enabled: activeSection === "domains" && !statsError,
+  });
+  const [editingTldPrices, setEditingTldPrices] = useState<Record<string, { register: string; renew: string; transfer: string }>>({});
+  const [editingHostingPrices, setEditingHostingPrices] = useState<Record<string, { monthly: string; yearly: string }>>({});
+  const [domainPricingEdited, setDomainPricingEdited] = useState(false);
+
   useEffect(() => {
     if (pricingData) {
       setProPrice(String(pricingData.pro.price / 100));
@@ -174,6 +186,49 @@ export default function AdminPage() {
       setFreeCredits(String(pricingData.free.credits));
     }
   }, [pricingData]);
+
+  useEffect(() => {
+    if (domainPricing) {
+      const tldEdit: Record<string, { register: string; renew: string; transfer: string }> = {};
+      for (const [tld, p] of Object.entries(domainPricing.tlds || {})) {
+        tldEdit[tld] = { register: String(p.register), renew: String(p.renew), transfer: String(p.transfer) };
+      }
+      setEditingTldPrices(tldEdit);
+      const hostingEdit: Record<string, { monthly: string; yearly: string }> = {};
+      for (const [pid, p] of Object.entries(domainPricing.hosting || {})) {
+        hostingEdit[pid] = { monthly: String((p as any).monthly), yearly: String((p as any).yearly) };
+      }
+      setEditingHostingPrices(hostingEdit);
+    }
+  }, [domainPricing]);
+
+  const saveDomainPricingMutation = useMutation({
+    mutationFn: async () => {
+      const tlds: Record<string, any> = {};
+      for (const [tld, p] of Object.entries(editingTldPrices)) {
+        tlds[tld] = { register: parseInt(p.register) || 0, renew: parseInt(p.renew) || 0, transfer: parseInt(p.transfer) || 0 };
+      }
+      const hosting: Record<string, any> = {};
+      for (const [pid, p] of Object.entries(editingHostingPrices)) {
+        hosting[pid] = { monthly: parseInt(p.monthly) || 0, yearly: parseInt(p.yearly) || 0 };
+      }
+      await apiRequest("PUT", "/api/admin/settings/domains", { tlds, hosting });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/settings/domains"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/domains/catalog"] });
+      setDomainPricingEdited(false);
+      toast({ title: lang === "ar" ? "✅ تم حفظ الأسعار" : "✅ Prices saved" });
+    },
+    onError: () => toast({ title: lang === "ar" ? "فشل حفظ الأسعار" : "Failed to save prices", variant: "destructive" }),
+  });
+
+  const updateDomainOrderMutation = useMutation({
+    mutationFn: async ({ id, type, status }: { id: number; type: string; status: string }) => {
+      await apiRequest("PATCH", `/api/admin/domain-orders/${id}?type=${type}`, { status });
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["/api/admin/domain-orders"] }); refetchDomainOrders(); toast({ title: lang === "ar" ? "تم تحديث الطلب" : "Order updated" }); },
+  });
 
   const createCouponMutation = useMutation({
     mutationFn: async () => { await apiRequest("POST", "/api/admin/coupons", { code: couponCode, discountType, discountValue: parseInt(discountValue), maxUses: maxUses ? parseInt(maxUses) : 0, expiresAt: expiresAt || undefined }); },
@@ -358,6 +413,7 @@ export default function AdminPage() {
     { key: "fraud", icon: AlertTriangle, label: "Anti-Fraud", labelAr: "مكافحة الاحتيال" },
     { key: "feedback", icon: MessageSquarePlus, label: "Feedback", labelAr: "بلاغات المستخدمين" },
     { key: "learning", icon: Brain, label: "AI Learning", labelAr: "التعلم الذكي" },
+    { key: "domains", icon: Globe2, label: "Domains", labelAr: "الدومينات" },
   ];
 
   const statusLabel = (s: string) => lang === "ar" ? ({ draft: "مسودة", generating: "قيد الإنشاء", generated: "مُنشأ", published: "منشور", error: "خطأ" }[s] || s) : s;
@@ -1292,6 +1348,194 @@ export default function AdminPage() {
                 lang={lang}
                 onRefresh={() => refetchLearning()}
               />
+            )}
+
+            {/* ─── Domains & Hosting Section ────────────────────────────────── */}
+            {activeSection === "domains" && (
+              <div className="space-y-6 p-4 sm:p-6">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                    <Globe2 className="w-5 h-5 text-emerald-400" />
+                    {isRTL ? "إدارة الدومينات والاستضافة" : "Domains & Hosting Management"}
+                  </h2>
+                  <Button size="sm" variant="outline" className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 gap-2"
+                    onClick={() => refetchDomainOrders()} disabled={domainOrdersLoading} data-testid="button-refresh-domain-orders">
+                    <RefreshCw className={`w-4 h-4 ${domainOrdersLoading ? "animate-spin" : ""}`} />
+                    {isRTL ? "تحديث" : "Refresh"}
+                  </Button>
+                </div>
+
+                {/* ── TLD Pricing ── */}
+                <Card className="bg-zinc-900 border-zinc-800">
+                  <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-blue-400" />
+                      {isRTL ? "أسعار الدومينات (ر.س)" : "Domain Prices (SAR)"}
+                    </h3>
+                    {domainPricingEdited && (
+                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+                        onClick={() => saveDomainPricingMutation.mutate()} disabled={saveDomainPricingMutation.isPending} data-testid="button-save-domain-pricing">
+                        {saveDomainPricingMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        {isRTL ? "حفظ الأسعار" : "Save Prices"}
+                      </Button>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-zinc-800 text-zinc-400">
+                            <th className="text-start py-2 px-2">{isRTL ? "الامتداد" : "TLD"}</th>
+                            <th className="text-center py-2 px-2">{isRTL ? "التسجيل" : "Register"}</th>
+                            <th className="text-center py-2 px-2">{isRTL ? "التجديد" : "Renew"}</th>
+                            <th className="text-center py-2 px-2">{isRTL ? "النقل" : "Transfer"}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(editingTldPrices).map(([tld, prices]) => (
+                            <tr key={tld} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                              <td className="py-2 px-2 font-bold text-emerald-400">{tld}</td>
+                              {(["register", "renew", "transfer"] as const).map(field => (
+                                <td key={field} className="py-2 px-2 text-center">
+                                  <Input
+                                    type="number"
+                                    value={prices[field]}
+                                    onChange={e => {
+                                      setEditingTldPrices(prev => ({ ...prev, [tld]: { ...prev[tld], [field]: e.target.value } }));
+                                      setDomainPricingEdited(true);
+                                    }}
+                                    className="h-8 w-20 text-center bg-zinc-800 border-zinc-700 text-white mx-auto"
+                                    data-testid={`input-tld-${tld.replace(".", "")}-${field}`}
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* ── Hosting Plan Pricing ── */}
+                <Card className="bg-zinc-900 border-zinc-800">
+                  <div className="p-4 border-b border-zinc-800">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-400" />
+                      {isRTL ? "أسعار خطط الاستضافة (ر.س)" : "Hosting Plan Prices (SAR)"}
+                    </h3>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      {Object.entries(editingHostingPrices).map(([planId, prices]) => (
+                        <div key={planId} className="bg-zinc-800/50 rounded-lg p-4 space-y-3">
+                          <p className="font-semibold text-white capitalize">{planId}</p>
+                          <div className="space-y-2">
+                            <div>
+                              <label className="text-xs text-zinc-400 block mb-1">{isRTL ? "الشهري (ر.س)" : "Monthly (SAR)"}</label>
+                              <Input type="number" value={prices.monthly}
+                                onChange={e => { setEditingHostingPrices(prev => ({ ...prev, [planId]: { ...prev[planId], monthly: e.target.value } })); setDomainPricingEdited(true); }}
+                                className="h-8 bg-zinc-800 border-zinc-700 text-white" data-testid={`input-hosting-${planId}-monthly`} />
+                            </div>
+                            <div>
+                              <label className="text-xs text-zinc-400 block mb-1">{isRTL ? "السنوي (ر.س)" : "Yearly (SAR)"}</label>
+                              <Input type="number" value={prices.yearly}
+                                onChange={e => { setEditingHostingPrices(prev => ({ ...prev, [planId]: { ...prev[planId], yearly: e.target.value } })); setDomainPricingEdited(true); }}
+                                className="h-8 bg-zinc-800 border-zinc-700 text-white" data-testid={`input-hosting-${planId}-yearly`} />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {domainPricingEdited && (
+                      <div className="mt-4 flex justify-end">
+                        <Button className="bg-emerald-600 hover:bg-emerald-700 gap-2"
+                          onClick={() => saveDomainPricingMutation.mutate()} disabled={saveDomainPricingMutation.isPending}>
+                          {saveDomainPricingMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                          {isRTL ? "حفظ جميع الأسعار" : "Save All Prices"}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+
+                {/* ── Domain Orders ── */}
+                <Card className="bg-zinc-900 border-zinc-800">
+                  <div className="p-4 border-b border-zinc-800">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <Globe2 className="w-4 h-4 text-blue-400" />
+                      {isRTL ? `طلبات الدومينات (${adminDomainOrders?.domains?.length ?? 0})` : `Domain Orders (${adminDomainOrders?.domains?.length ?? 0})`}
+                    </h3>
+                  </div>
+                  <div className="divide-y divide-zinc-800">
+                    {domainOrdersLoading ? (
+                      <div className="p-6 text-center text-zinc-500"><Loader2 className="w-5 h-5 animate-spin mx-auto" /></div>
+                    ) : !adminDomainOrders?.domains?.length ? (
+                      <div className="p-6 text-center text-zinc-500 text-sm">{isRTL ? "لا توجد طلبات دومينات" : "No domain orders yet"}</div>
+                    ) : adminDomainOrders.domains.map((order: any) => (
+                      <div key={order.id} className="p-4 flex flex-wrap items-center justify-between gap-3" data-testid={`admin-domain-order-${order.id}`}>
+                        <div>
+                          <p className="font-semibold text-white">{order.domain}</p>
+                          <p className="text-xs text-zinc-400">{order.customerEmail} · {order.type} · {order.years}yr · {order.priceAr} SAR</p>
+                          <p className="text-xs text-zinc-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${{ pending: "bg-yellow-500/20 text-yellow-400", paid: "bg-blue-500/20 text-blue-400", active: "bg-emerald-500/20 text-emerald-400", failed: "bg-red-500/20 text-red-400" }[order.status] || "bg-zinc-500/20 text-zinc-400"}`}>
+                            {order.status}
+                          </span>
+                          <select
+                            className="text-xs bg-zinc-800 border border-zinc-700 text-white rounded px-2 py-1 cursor-pointer"
+                            value={order.status}
+                            onChange={e => updateDomainOrderMutation.mutate({ id: order.id, type: "domain", status: e.target.value })}
+                            data-testid={`select-domain-status-${order.id}`}
+                          >
+                            {["pending", "paid", "active", "failed", "cancelled"].map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* ── Hosting Orders ── */}
+                <Card className="bg-zinc-900 border-zinc-800">
+                  <div className="p-4 border-b border-zinc-800">
+                    <h3 className="font-semibold text-white flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-violet-400" />
+                      {isRTL ? `طلبات الاستضافة (${adminDomainOrders?.hosting?.length ?? 0})` : `Hosting Orders (${adminDomainOrders?.hosting?.length ?? 0})`}
+                    </h3>
+                  </div>
+                  <div className="divide-y divide-zinc-800">
+                    {domainOrdersLoading ? (
+                      <div className="p-6 text-center text-zinc-500"><Loader2 className="w-5 h-5 animate-spin mx-auto" /></div>
+                    ) : !adminDomainOrders?.hosting?.length ? (
+                      <div className="p-6 text-center text-zinc-500 text-sm">{isRTL ? "لا توجد طلبات استضافة" : "No hosting orders yet"}</div>
+                    ) : adminDomainOrders.hosting.map((order: any) => (
+                      <div key={order.id} className="p-4 flex flex-wrap items-center justify-between gap-3" data-testid={`admin-hosting-order-${order.id}`}>
+                        <div>
+                          <p className="font-semibold text-white capitalize">{order.planId} Plan</p>
+                          <p className="text-xs text-zinc-400">{order.customerEmail} · {order.billingCycle} · {order.domainName || "—"} · {order.priceAr} SAR</p>
+                          <p className="text-xs text-zinc-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${{ pending: "bg-yellow-500/20 text-yellow-400", paid: "bg-blue-500/20 text-blue-400", active: "bg-emerald-500/20 text-emerald-400", failed: "bg-red-500/20 text-red-400" }[order.status] || "bg-zinc-500/20 text-zinc-400"}`}>
+                            {order.status}
+                          </span>
+                          <select
+                            className="text-xs bg-zinc-800 border border-zinc-700 text-white rounded px-2 py-1 cursor-pointer"
+                            value={order.status}
+                            onChange={e => updateDomainOrderMutation.mutate({ id: order.id, type: "hosting", status: e.target.value })}
+                            data-testid={`select-hosting-status-${order.id}`}
+                          >
+                            {["pending", "paid", "active", "failed", "cancelled"].map(s => <option key={s} value={s}>{s}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
             )}
 
             {/* ─── Anti-Fraud Section ───────────────────────────────────────── */}

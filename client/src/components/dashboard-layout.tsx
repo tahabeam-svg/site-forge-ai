@@ -92,6 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { title: lang === "ar" ? "مولّد الترند 🔥" : "Trend Generator 🔥", url: "/trend-generator", icon: TrendingUp, group: "tools" },
     { title: lang === "ar" ? "نشر GitHub" : "GitHub Deploy", url: "/github-deploy", icon: Github, group: "tools" },
     { title: lang === "ar" ? "انشر موقعك" : "Deploy Site", url: "/deploy-guide", icon: Upload, group: "tools" },
+    { title: lang === "ar" ? "دومينات واستضافة" : "Domains & Hosting", url: "/domains", icon: Globe2, group: "tools" },
     { title: t("billing", lang), url: "/billing", icon: CreditCard, group: "account" },
     { title: lang === "ar" ? "طرق الدفع" : "Payment Methods", url: "/payment-methods", icon: Wallet, group: "account" },
     { title: t("settings", lang), url: "/settings", icon: Settings, group: "account" },

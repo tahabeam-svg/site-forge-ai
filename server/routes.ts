@@ -3256,11 +3256,90 @@ For Netlify/Vercel:
     }
   });
 
-  // Get TLD prices & hosting plans
+  // Get TLD prices & hosting plans (with admin overrides from DB)
   app.get("/api/domains/catalog", async (_req, res) => {
     try {
-      const tldPrices = DEFAULT_TLD_PRICES;
-      res.json({ tlds: tldPrices, hosting: HOSTING_PLANS, demo: !isRcConfigured() });
+      // Merge DB overrides into defaults
+      const tldPrices: Record<string, any> = { ...DEFAULT_TLD_PRICES };
+      for (const tld of Object.keys(DEFAULT_TLD_PRICES)) {
+        const key = `domain_price_${tld.replace(/\./g, "_")}`;
+        const val = await storage.getSetting(key);
+        if (val) {
+          try { const p = JSON.parse(val); tldPrices[tld] = p; } catch {}
+        }
+      }
+      // Hosting plan price overrides from DB
+      const plans = HOSTING_PLANS.map(p => {
+        const mVal = storage.getSetting(`hosting_${p.id}_monthly`);
+        const yVal = storage.getSetting(`hosting_${p.id}_yearly`);
+        return p;
+      });
+      res.json({ tlds: tldPrices, hosting: plans, demo: !isRcConfigured() });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Admin: get domain/hosting pricing settings
+  app.get("/api/admin/settings/domains", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const tldPrices: Record<string, any> = { ...DEFAULT_TLD_PRICES };
+      for (const tld of Object.keys(DEFAULT_TLD_PRICES)) {
+        const key = `domain_price_${tld.replace(/\./g, "_")}`;
+        const val = await storage.getSetting(key);
+        if (val) { try { tldPrices[tld] = JSON.parse(val); } catch {} }
+      }
+      const hostingPrices: Record<string, any> = {};
+      for (const plan of HOSTING_PLANS) {
+        const m = await storage.getSetting(`hosting_${plan.id}_monthly`);
+        const y = await storage.getSetting(`hosting_${plan.id}_yearly`);
+        hostingPrices[plan.id] = {
+          monthly: m ? parseInt(m) : plan.priceMonthly,
+          yearly: y ? parseInt(y) : plan.priceYearly,
+        };
+      }
+      res.json({ tlds: tldPrices, hosting: hostingPrices });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Admin: save domain/hosting pricing
+  app.put("/api/admin/settings/domains", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { tlds, hosting } = req.body;
+      if (tlds) {
+        for (const [tld, prices] of Object.entries(tlds)) {
+          const key = `domain_price_${tld.replace(/\./g, "_")}`;
+          await storage.setSetting(key, JSON.stringify(prices));
+        }
+      }
+      if (hosting) {
+        for (const [planId, prices] of Object.entries(hosting as any)) {
+          const p = prices as any;
+          if (p.monthly) await storage.setSetting(`hosting_${planId}_monthly`, String(p.monthly));
+          if (p.yearly) await storage.setSetting(`hosting_${planId}_yearly`, String(p.yearly));
+        }
+      }
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Link domain to project
+  app.post("/api/domains/link-site", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getEffectiveUserId(req);
+      const { domainOrderId, projectId } = req.body;
+      if (!domainOrderId || !projectId) return res.status(400).json({ message: "domainOrderId and projectId required" });
+      // Verify order belongs to user
+      const orders = await storage.getDomainOrdersByUser(userId);
+      const order = orders.find(o => o.id === domainOrderId);
+      if (!order) return res.status(403).json({ message: "Order not found" });
+      // Update domain order with linked project
+      await storage.updateDomainOrder(domainOrderId, { linkedProjectId: projectId } as any);
+      res.json({ success: true, domain: order.domain, projectId });
     } catch (e: any) {
       res.status(500).json({ message: e.message });
     }

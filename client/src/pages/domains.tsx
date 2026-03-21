@@ -12,8 +12,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Globe, Search, Server, CheckCircle2, XCircle, Loader2,
   ShoppingCart, Star, Zap, Shield, Clock, Package,
-  AlertCircle, ChevronDown, ChevronUp,
+  AlertCircle, ChevronDown, ChevronUp, Link2, CheckCheck,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DomainResult {
   domain: string;
@@ -84,6 +85,8 @@ export default function DomainsPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
   const [showAllTlds, setShowAllTlds] = useState(false);
   const [selectedTlds, setSelectedTlds] = useState<string[]>(POPULAR_TLDS);
+  const [linkingDomainId, setLinkingDomainId] = useState<number | null>(null);
+  const [linkProjectId, setLinkProjectId] = useState<string>("");
 
   const { data: catalog } = useQuery<CatalogData>({
     queryKey: ["/api/domains/catalog"],
@@ -91,6 +94,27 @@ export default function DomainsPage() {
 
   const { data: myOrders, refetch: refetchOrders } = useQuery<MyOrdersData>({
     queryKey: ["/api/domains/my-orders"],
+  });
+
+  const { data: myProjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/projects"],
+  });
+
+  const linkSiteMutation = useMutation({
+    mutationFn: (data: { domainOrderId: number; projectId: string }) =>
+      apiRequest("POST", "/api/domains/link-site", data).then(r => r.json()),
+    onSuccess: (data) => {
+      refetchOrders();
+      setLinkingDomainId(null);
+      setLinkProjectId("");
+      toast({
+        title: isAr ? "✅ تم الربط بنجاح" : "✅ Linked successfully",
+        description: isAr
+          ? `الدومين ${data.domain} مرتبط بموقعك — فريقنا سيطبق إعدادات DNS قريباً`
+          : `Domain ${data.domain} linked to your site — our team will apply DNS settings soon`,
+      });
+    },
+    onError: () => toast({ title: isAr ? "فشل الربط" : "Link failed", variant: "destructive" }),
   });
 
   const checkMutation = useMutation({
@@ -470,19 +494,75 @@ export default function DomainsPage() {
                     </h3>
                     {(myOrders?.domains || []).map((order: any) => (
                       <Card key={order.id} data-testid={`order-domain-${order.id}`}>
-                        <CardContent className="py-4 flex items-center justify-between gap-4 flex-wrap">
-                          <div>
-                            <p className="font-bold text-foreground">{order.domain}</p>
-                            <p className="text-xs text-muted-foreground capitalize">
-                              {order.type} · {order.years} {isAr ? "سنة" : "yr"} · {new Date(order.createdAt).toLocaleDateString(isAr ? "ar-SA" : "en-US")}
-                            </p>
+                        <CardContent className="py-4 space-y-3">
+                          <div className="flex items-center justify-between gap-4 flex-wrap">
+                            <div>
+                              <p className="font-bold text-foreground">{order.domain}</p>
+                              <p className="text-xs text-muted-foreground capitalize">
+                                {order.type} · {order.years} {isAr ? "سنة" : "yr"} · {new Date(order.createdAt).toLocaleDateString(isAr ? "ar-SA" : "en-US")}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <span className="font-semibold">{order.priceAr} ر.س</span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[order.status] || STATUS_COLORS.pending}`}>
+                                {isAr ? STATUS_LABELS[order.status]?.ar || order.status : STATUS_LABELS[order.status]?.en || order.status}
+                              </span>
+                              {order.status === "active" && (
+                                <Button
+                                  size="sm"
+                                  variant={order.linkedProjectId ? "secondary" : "outline"}
+                                  className="gap-1 text-xs"
+                                  onClick={() => setLinkingDomainId(linkingDomainId === order.id ? null : order.id)}
+                                  data-testid={`button-link-domain-${order.id}`}
+                                >
+                                  {order.linkedProjectId ? <CheckCheck className="w-3 h-3 text-green-500" /> : <Link2 className="w-3 h-3" />}
+                                  {order.linkedProjectId
+                                    ? (isAr ? "مرتبط" : "Linked")
+                                    : (isAr ? "ربط بموقع" : "Link Site")}
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-semibold">{order.priceAr} ر.س</span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[order.status] || STATUS_COLORS.pending}`}>
-                              {isAr ? STATUS_LABELS[order.status]?.ar || order.status : STATUS_LABELS[order.status]?.en || order.status}
-                            </span>
-                          </div>
+                          {/* Link site panel */}
+                          {linkingDomainId === order.id && (
+                            <div className="bg-muted/50 rounded-lg p-4 space-y-3 border border-border">
+                              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Link2 className="w-4 h-4 text-primary" />
+                                {isAr ? "اختر الموقع الذي تريد ربطه بالدومين" : "Choose the site to link with this domain"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {isAr
+                                  ? "بعد الربط، سيقوم فريقنا بضبط إعدادات DNS تلقائياً خلال 24 ساعة"
+                                  : "After linking, our team will configure DNS settings automatically within 24 hours"}
+                              </p>
+                              <div className="flex gap-2">
+                                <Select value={linkProjectId} onValueChange={setLinkProjectId}>
+                                  <SelectTrigger className="flex-1" data-testid="select-link-project">
+                                    <SelectValue placeholder={isAr ? "اختر موقعاً..." : "Select a site..."} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {myProjects.filter((p: any) => p.status === "published" || p.publishedUrl).map((p: any) => (
+                                      <SelectItem key={p.id} value={String(p.id)} data-testid={`option-project-${p.id}`}>
+                                        {p.name} {p.publishedUrl ? `— ${p.publishedUrl}` : ""}
+                                      </SelectItem>
+                                    ))}
+                                    {myProjects.filter((p: any) => p.status !== "published" && !p.publishedUrl).map((p: any) => (
+                                      <SelectItem key={p.id} value={String(p.id)} disabled>
+                                        {p.name} ({isAr ? "غير منشور" : "not published"})
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button
+                                  disabled={!linkProjectId || linkSiteMutation.isPending}
+                                  onClick={() => linkSiteMutation.mutate({ domainOrderId: order.id, projectId: linkProjectId })}
+                                  data-testid="button-confirm-link"
+                                >
+                                  {linkSiteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : (isAr ? "ربط" : "Link")}
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     ))}
