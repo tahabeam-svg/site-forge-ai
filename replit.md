@@ -38,3 +38,28 @@ The platform follows a modern web architecture:
 -   **Google OAuth**: For user authentication.
 -   **Paymob Accept**: Payment gateway for handling subscriptions and credit purchases.
 -   **GitHub API**: For connecting user GitHub accounts and deploying websites to repositories.
+## SEO Landing Pages — Domains & Hosting
+
+Three new SEO pages added for Saudi/Arab domain+hosting market:
+
+| URL | Target Keywords |
+|-----|----------------|
+| `/domain-registration-saudi` | تسجيل دومين السعودية, domain registration saudi arabia |
+| `/web-hosting-saudi` | استضافة مواقع السعودية, web hosting saudi arabia |
+| `/domains-hosting-saudi` | دومين واستضافة, domain and hosting saudi arabia |
+
+Each page includes:
+- Arabic-first content with RTL support
+- Full SEO (title, description, keywords, canonical, structured data/JSON-LD)
+- FAQPage schema for Google rich results
+- AggregateRating schema
+- Internal cross-linking between pages
+- CTA buttons linking to `/domains`
+
+These are added to `sitemap.xml` (priority 0.96–0.97), `robots.txt` (Allow), and `App.tsx` routes.
+
+### Bug Fix
+- Fixed missing `await` on `storage.getSetting()` calls in `/api/domains/catalog` endpoint — hosting plan price overrides now apply correctly.
+
+### Landing Page
+- Added internal links below domains CTA to the 3 new SEO pages.
