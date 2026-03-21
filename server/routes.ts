@@ -332,6 +332,9 @@ Allow: /blog/
 Allow: /ai-website-builder
 Allow: /digital-marketing-ai
 Allow: /website-saudi-arabia
+Allow: /domain-registration-saudi
+Allow: /web-hosting-saudi
+Allow: /domains-hosting-saudi
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /auth
@@ -395,6 +398,10 @@ Disallow: /
       { loc: "/ai-website-builder", lastmod: now, changefreq: "weekly", priority: "0.98" },
       { loc: "/digital-marketing-ai", lastmod: now, changefreq: "weekly", priority: "0.97" },
       { loc: "/website-saudi-arabia", lastmod: now, changefreq: "weekly", priority: "0.97" },
+      // Domain & Hosting SEO pages
+      { loc: "/domain-registration-saudi", lastmod: now, changefreq: "weekly", priority: "0.97" },
+      { loc: "/web-hosting-saudi", lastmod: now, changefreq: "weekly", priority: "0.97" },
+      { loc: "/domains-hosting-saudi", lastmod: now, changefreq: "weekly", priority: "0.96" },
       // Blog
       { loc: "/blog", lastmod: now, changefreq: "weekly", priority: "0.90" },
       { loc: "/blog/how-to-create-website-with-ai-free", lastmod: "2026-03-10", changefreq: "monthly", priority: "0.85" },
@@ -3269,11 +3276,15 @@ For Netlify/Vercel:
         }
       }
       // Hosting plan price overrides from DB
-      const plans = HOSTING_PLANS.map(p => {
-        const mVal = storage.getSetting(`hosting_${p.id}_monthly`);
-        const yVal = storage.getSetting(`hosting_${p.id}_yearly`);
-        return p;
-      });
+      const plans = await Promise.all(HOSTING_PLANS.map(async p => {
+        const mVal = await storage.getSetting(`hosting_${p.id}_monthly`);
+        const yVal = await storage.getSetting(`hosting_${p.id}_yearly`);
+        return {
+          ...p,
+          priceMonthly: mVal ? parseInt(mVal) : p.priceMonthly,
+          priceYearly: yVal ? parseInt(yVal) : p.priceYearly,
+        };
+      }));
       res.json({ tlds: tldPrices, hosting: plans, demo: !isRcConfigured() });
     } catch (e: any) {
       res.status(500).json({ message: e.message });

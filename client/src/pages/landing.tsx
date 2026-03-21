@@ -629,6 +629,19 @@ export default function LandingPage() {
                 {lang === "ar" ? "احجز دومينك الآن" : "Register Your Domain Now"}
               </Button>
               <p className="text-xs text-muted-foreground mt-2">{lang === "ar" ? "تواصل مع فريقنا لإتمام الطلب" : "Our team will contact you to complete the order"}</p>
+              <div className="flex flex-wrap justify-center gap-3 mt-4 text-xs text-muted-foreground">
+                <a href="/domain-registration-saudi" className="hover:text-primary underline underline-offset-2">
+                  {lang === "ar" ? "تسجيل دومين في السعودية" : "Domain Registration Saudi"}
+                </a>
+                <span>·</span>
+                <a href="/web-hosting-saudi" className="hover:text-primary underline underline-offset-2">
+                  {lang === "ar" ? "استضافة مواقع السعودية" : "Web Hosting Saudi"}
+                </a>
+                <span>·</span>
+                <a href="/domains-hosting-saudi" className="hover:text-primary underline underline-offset-2">
+                  {lang === "ar" ? "باقات الدومين والاستضافة" : "Domain & Hosting Packages"}
+                </a>
+              </div>
             </div>
           </motion.div>
         </div>

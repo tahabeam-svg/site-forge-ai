@@ -41,6 +41,9 @@ const BlogPostPage         = lazy(() => import("@/pages/blog-post"));
 const SeoAiWebsiteBuilderPage     = lazy(() => import("@/pages/seo-ai-website-builder"));
 const SeoDigitalMarketingPage     = lazy(() => import("@/pages/seo-digital-marketing"));
 const SeoWebsiteSaudiArabiaPage   = lazy(() => import("@/pages/seo-website-saudi-arabia"));
+const SeoDomainRegistrationPage   = lazy(() => import("@/pages/seo-domain-registration"));
+const SeoWebHostingPage           = lazy(() => import("@/pages/seo-web-hosting"));
+const SeoDomainsHostingPage       = lazy(() => import("@/pages/seo-domains-hosting"));
 const TrendGeneratorPage   = lazy(() => import("@/pages/trend-generator"));
 const ChatWidget           = lazy(() => import("@/components/chat-widget"));
 
@@ -119,6 +122,9 @@ function Router() {
         <Route path="/ai-website-builder" component={SeoAiWebsiteBuilderPage} />
         <Route path="/digital-marketing-ai" component={SeoDigitalMarketingPage} />
         <Route path="/website-saudi-arabia" component={SeoWebsiteSaudiArabiaPage} />
+        <Route path="/domain-registration-saudi" component={SeoDomainRegistrationPage} />
+        <Route path="/web-hosting-saudi" component={SeoWebHostingPage} />
+        <Route path="/domains-hosting-saudi" component={SeoDomainsHostingPage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
