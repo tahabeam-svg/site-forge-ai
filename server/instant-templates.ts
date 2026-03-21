@@ -1208,8 +1208,12 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="nor
     var root = document.getElementById('aw-root');
     var btn = document.getElementById('aw-lang-btn');
     var isAr = lang === 'ar';
-    root.setAttribute('dir', isAr ? 'rtl' : 'ltr');
-    root.setAttribute('lang', lang);
+    var dirVal = isAr ? 'rtl' : 'ltr';
+    // Apply dir & lang to ALL root levels so CSS, bidi & layout all update
+    document.documentElement.setAttribute('dir', dirVal);
+    document.documentElement.setAttribute('lang', lang);
+    document.body.setAttribute('dir', dirVal);
+    if(root){ root.setAttribute('dir', dirVal); root.setAttribute('lang', lang); }
     var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
     if(btn) btn.textContent = awGetNextLabel(nextCode);
     // Switch all translatable text elements
@@ -1227,6 +1231,9 @@ ${whatsappNum ? `<a href="https://wa.me/${whatsappNum}" target="_blank" rel="nor
     document.querySelectorAll('.hero-h1,.sec-title,.cta-h2,.form-title,.aw-brand,.footer-logo,.service-card h3,.stat-num').forEach(function(el){
       el.style.fontFamily = isAr ? "${fontHeadingAr}" : "${fontHeadingEn}";
     });
+    // Fix WhatsApp float button position for LTR/RTL
+    var waBtn = document.getElementById('aw-whatsapp-btn');
+    if(waBtn){ waBtn.style.left = isAr ? '1.75rem' : ''; waBtn.style.right = isAr ? '' : '1.75rem'; }
   }
   window.awCycleLang = function(){
     awLangIdx = (awLangIdx + 1) % AW_LANG_ORDER.length;

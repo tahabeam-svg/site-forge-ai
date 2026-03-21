@@ -1253,13 +1253,13 @@ Font: ${isArabic ? "Import Cairo (headings, weight 700-900) + Tajawal (body) fro
 SAUDI MARKET SPECIFICS — MANDATORY
 ═══════════════════════════════════════
 - WhatsApp is the #1 contact method in Saudi Arabia — feature it prominently in hero, contact, and as a floating button
-- Use SAR (ريال سعودي) for any prices mentioned, not USD or generic currency
-- Working hours common pattern: السبت-الخميس 8ص-10م، الجمعة 2م-12م (adapt to business type)
+- Use SAR for any prices mentioned, not USD or generic currency
 - Use realistic Saudi phone numbers format: +966 5X XXX XXXX
-- Cities commonly referenced: الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة
-- If it's a restaurant: mention "متاح التوصيل" and delivery platforms (مرسول، هنقرستيشن، كريم)
-- If it's a business: optionally mention VAT number "الرقم الضريبي" and CR "السجل التجاري" in footer
-- Payment: MADA (مدى) is the most popular, followed by Apple Pay and credit cards
+- Working hours common pattern: ${isArabic ? "السبت-الخميس 8ص-10م، الجمعة 2م-12م" : "Sat-Thu 8AM-10PM, Fri 2PM-12AM"} (adapt to business type)
+- Cities commonly referenced: ${isArabic ? "الرياض، جدة، الدمام، مكة المكرمة، المدينة المنورة" : "Riyadh, Jeddah, Dammam, Makkah, Madinah"}
+- If it's a restaurant: mention delivery availability and platforms (Mrsool, HungerStation, Careem)
+- If it's a business: optionally mention VAT number and Commercial Registration in footer
+- Payment: MADA is the most popular, followed by Apple Pay and credit cards
 
 ═══════════════════════════════════════
 NAVIGATION — SINGLE-PAGE ANCHORS ONLY
@@ -1303,7 +1303,7 @@ STEP A — Add this CSS rule (NO inline style on the button, only CSS controls v
 }
 
 STEP B — Inside the <nav>, add EXACTLY:
-<button class="aw-hamburger" aria-label="القائمة" onclick="var m=document.getElementById('aw-mobile-menu');m.classList.toggle('open')">
+<button class="aw-hamburger" aria-label="${isArabic ? 'القائمة' : 'Menu'}" onclick="var m=document.getElementById('aw-mobile-menu');m.classList.toggle('open')">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 </button>
 <div id="aw-mobile-menu">
@@ -1354,7 +1354,7 @@ Include ONE <script> tag at end of body with ALL of these features:
      if (valid) { document.getElementById(formId).style.display='none'; document.getElementById(formId+'-success').style.display='flex'; }
      return false; // prevent real submit
    }
-   Success message div (hidden by default): <div id="FORMID-success" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:3rem;text-align:center;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:#22c55e;"></i><h3>شكراً! سنتواصل معك خلال 24 ساعة</h3></div>
+   Success message div (hidden by default): <div id="FORMID-success" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:3rem;text-align:center;"><i class="fa-solid fa-circle-check" style="font-size:3rem;color:#22c55e;"></i><h3 data-ar="شكراً! سنتواصل معك خلال 24 ساعة" data-en="Thank you! We will contact you within 24 hours">${isArabic ? 'شكراً! سنتواصل معك خلال 24 ساعة' : 'Thank you! We will contact you within 24 hours'}</h3></div>
 
 7. TABS SYSTEM (for restaurant menu, packages, etc.):
    function switchTab(tabGroup, tabId) {
@@ -1532,7 +1532,7 @@ Use your knowledge of this specific business type to write expert-level, realist
 • STATS: Research-calibrated numbers. A local café won't have "500 عميل يومياً". Think realistically.
 • CTA: Write the specific action relevant to THIS business. Restaurant = "اطلب الآن", Clinic = "احجز موعدك", Agency = "احصل على عرض مجاني".
 • WORKING HOURS: Adapt realistically. Restaurant = till 2AM. Clinic = 8AM-8PM. Gym = 5AM-12AM. Nightclub = 10PM-5AM.
-• NIGHTCLUB SPECIFICS: For nightclub/lounge, services = real offerings like (ليالي DJ حية، حجز طاولات VIP، بوتل سيرفيس، حفلات خاصة، ليلة كوكتيلات، عروض فنية حية). Hero = dark cinematic fullscreen with glowing neon. Atmosphere section = describe the vibe, music genre, crowd. Gallery = dance floor, VIP tables, lighting. CTA = "احجز طاولتك الآن". NEVER generate agency/production company content for a nightclub.
+• NIGHTCLUB SPECIFICS: For nightclub/lounge, services = real offerings like (${isArabic ? 'ليالي DJ حية، حجز طاولات VIP، بوتل سيرفيس، حفلات خاصة، ليلة كوكتيلات، عروض فنية حية' : 'Live DJ Nights, VIP Table Booking, Bottle Service, Private Parties, Cocktail Nights, Live Performances'}). Hero = dark cinematic fullscreen with glowing neon. Atmosphere section = describe the vibe, music genre, crowd. Gallery = dance floor, VIP tables, lighting. CTA = "${isArabic ? 'احجز طاولتك الآن' : 'Book Your Table Now'}". NEVER generate agency/production company content for a nightclub.
 • PRICING HINTS: Mention price tier signals (لا تكشف أسعاراً محددة بالضرورة) that match the business positioning.
 
 ═══════════════════════════════════════
@@ -1541,8 +1541,8 @@ Use your knowledge of this specific business type to write expert-level, realist
 Before ending the HTML, confirm ALL of these exist in your output:
 
 STRUCTURE:
-□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links (EXACTLY 4 links: من نحن, خدماتنا, أعمالنا, آراء العملاء) + ONE CTA contact button + .aw-hamburger button + #aw-mobile-menu div
-  ↳ VERIFY: "تواصل معنا" / "Contact" appears ONLY as the CTA button — NOT as a 5th item inside .aw-nav-links
+□ <nav> with SVG logo (id="aw-ai-logo") + business name + .aw-nav-links (EXACTLY 4 links: ${isArabic ? 'من نحن, خدماتنا, أعمالنا, آراء العملاء' : 'About Us, Our Services, Our Work, Testimonials'}) + ONE CTA contact button + .aw-hamburger button + #aw-mobile-menu div
+  ↳ VERIFY: "${isArabic ? 'تواصل معنا' : 'Contact Us'}" appears ONLY as the CTA button — NOT as a 5th item inside .aw-nav-links
 □ <section id="hero"> with background-image, dark overlay, animated orbs, large hero text, 2 CTA buttons
 □ Stats bar/section with 4 animated counters using data-target + data-suffix attributes
 □ NO bare image section exists anywhere — every section between hero and footer has both an image AND text content

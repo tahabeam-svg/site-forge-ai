@@ -547,8 +547,8 @@ export function buildWebsiteHTML(
   <!-- PROJECTS -->
   <section class="projects-section" id="projects">
     <div class="section-header aw-reveal">
-      <div class="section-label">${isArabic ? 'أعمالنا المنجزة' : 'Our Projects'}</div>
-      <h2 class="section-title">${isArabic ? 'مشاريع نفخر بها' : 'Projects We Are Proud Of'}</h2>
+      <div class="section-label" data-ar="أعمالنا المنجزة" data-en="Our Projects">${isArabic ? 'أعمالنا المنجزة' : 'Our Projects'}</div>
+      <h2 class="section-title" data-ar="مشاريع نفخر بها" data-en="Projects We Are Proud Of">${isArabic ? 'مشاريع نفخر بها' : 'Projects We Are Proud Of'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="proj-filters aw-reveal">
@@ -569,8 +569,8 @@ export function buildWebsiteHTML(
   <!-- CLIENT LOGOS -->
   <section class="clients-section">
     <div class="section-header aw-reveal">
-      <div class="section-label">${isArabic ? 'شركاؤنا' : 'Our Clients'}</div>
-      <h2 class="section-title">${isArabic ? 'عملاء تشرفنا بخدمتهم' : 'Clients We Are Proud to Serve'}</h2>
+      <div class="section-label" data-ar="شركاؤنا" data-en="Our Clients">${isArabic ? 'شركاؤنا' : 'Our Clients'}</div>
+      <h2 class="section-title" data-ar="عملاء تشرفنا بخدمتهم" data-en="Clients We Are Proud to Serve">${isArabic ? 'عملاء تشرفنا بخدمتهم' : 'Clients We Are Proud to Serve'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="clients-strip aw-reveal">
@@ -1672,12 +1672,12 @@ export function buildWebsiteHTML(
       <div class="about-image-wrapper aw-reveal">
         <img src="${aboutImg}" alt="${spec.businessName}" class="about-image" loading="lazy">
         <div class="about-image-badge">
-          <div style="font-size:0.75rem;opacity:0.85;margin-bottom:2px">${isArabic ? 'منذ' : 'Since'}</div>
+          <div style="font-size:0.75rem;opacity:0.85;margin-bottom:2px" data-ar="منذ" data-en="Since">${isArabic ? 'منذ' : 'Since'}</div>
           <div style="direction:ltr;display:inline-block">${new Date().getFullYear() - 8}</div>
         </div>
       </div>
       <div class="about-content aw-reveal">
-        <div class="section-label">${isArabic ? 'من نحن' : 'About Us'}</div>
+        <div class="section-label" data-ar="من نحن" data-en="About Us">${isArabic ? 'من نحن' : 'About Us'}</div>
         <h2 class="section-title" style="text-align:${isArabic ? 'right' : 'left'};margin-bottom:1.5rem"${da(spec.aboutTitle, enSpec?.aboutTitle)}>${spec.aboutTitle}</h2>
         <div class="section-divider right"></div>
         <p class="about-text" style="margin-top:1.5rem"${da(spec.aboutParagraph1, enSpec?.aboutParagraph1)}>${spec.aboutParagraph1}</p>
@@ -1695,8 +1695,8 @@ export function buildWebsiteHTML(
   <!-- SERVICES -->
   <section class="services-section" id="services">
     <div class="section-header aw-reveal">
-      <div class="section-label">${isArabic ? 'خدماتنا' : 'Our Services'}</div>
-      <h2 class="section-title">${isArabic ? 'ما نقدمه لك' : 'What We Offer'}</h2>
+      <div class="section-label" data-ar="خدماتنا" data-en="Our Services">${isArabic ? 'خدماتنا' : 'Our Services'}</div>
+      <h2 class="section-title" data-ar="ما نقدمه لك" data-en="What We Offer">${isArabic ? 'ما نقدمه لك' : 'What We Offer'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="services-grid">
@@ -1707,8 +1707,8 @@ export function buildWebsiteHTML(
   <!-- GALLERY -->
   <section class="gallery-section" id="gallery">
     <div class="section-header aw-reveal">
-      <div class="section-label">${isArabic ? 'معرضنا' : 'Our Gallery'}</div>
-      <h2 class="section-title">${isArabic ? 'لقطات من عالمنا' : 'From Our World'}</h2>
+      <div class="section-label" data-ar="معرضنا" data-en="Our Gallery">${isArabic ? 'معرضنا' : 'Our Gallery'}</div>
+      <h2 class="section-title" data-ar="لقطات من عالمنا" data-en="From Our World">${isArabic ? 'لقطات من عالمنا' : 'From Our World'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="gallery-grid">
@@ -1735,8 +1735,8 @@ export function buildWebsiteHTML(
   <!-- TESTIMONIALS -->
   <section class="testimonials-section" id="testimonials">
     <div class="section-header aw-reveal">
-      <div class="section-label" style="color:rgba(var(--accent-rgb),0.9)">${isArabic ? 'آراء العملاء' : 'Testimonials'}</div>
-      <h2 class="section-title light">${isArabic ? 'ماذا يقول عملاؤنا' : 'What Our Clients Say'}</h2>
+      <div class="section-label" style="color:rgba(var(--accent-rgb),0.9)" data-ar="آراء العملاء" data-en="Testimonials">${isArabic ? 'آراء العملاء' : 'Testimonials'}</div>
+      <h2 class="section-title light" data-ar="ماذا يقول عملاؤنا" data-en="What Our Clients Say">${isArabic ? 'ماذا يقول عملاؤنا' : 'What Our Clients Say'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="testimonials-grid">
@@ -1747,8 +1747,8 @@ export function buildWebsiteHTML(
   <!-- FAQ -->
   <section class="faq-section" id="faq">
     <div class="section-header aw-reveal">
-      <div class="section-label">${isArabic ? 'الأسئلة الشائعة' : 'FAQ'}</div>
-      <h2 class="section-title">${isArabic ? 'أسئلة يسألها عملاؤنا' : 'Frequently Asked Questions'}</h2>
+      <div class="section-label" data-ar="الأسئلة الشائعة" data-en="FAQ">${isArabic ? 'الأسئلة الشائعة' : 'FAQ'}</div>
+      <h2 class="section-title" data-ar="أسئلة يسألها عملاؤنا" data-en="Frequently Asked Questions">${isArabic ? 'أسئلة يسألها عملاؤنا' : 'Frequently Asked Questions'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="faq-list">
@@ -1759,8 +1759,8 @@ export function buildWebsiteHTML(
   <!-- CONTACT -->
   <section class="contact-section" id="contact">
     <div class="section-header aw-reveal">
-      <div class="section-label" style="color:rgba(var(--accent-rgb),0.9)">${isArabic ? 'تواصل معنا' : 'Contact Us'}</div>
-      <h2 class="section-title light">${isArabic ? 'نحن هنا لخدمتك' : 'We Are Here For You'}</h2>
+      <div class="section-label" style="color:rgba(var(--accent-rgb),0.9)" data-ar="تواصل معنا" data-en="Contact Us">${isArabic ? 'تواصل معنا' : 'Contact Us'}</div>
+      <h2 class="section-title light" data-ar="نحن هنا لخدمتك" data-en="We Are Here For You">${isArabic ? 'نحن هنا لخدمتك' : 'We Are Here For You'}</h2>
       <div class="section-divider"></div>
     </div>
     <div class="contact-grid">
@@ -1768,61 +1768,61 @@ export function buildWebsiteHTML(
         <div class="contact-info-item">
           <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
           <div class="contact-info-text">
-            <h4>${isArabic ? 'هاتف' : 'Phone'}</h4>
+            <h4 data-ar="هاتف" data-en="Phone">${isArabic ? 'هاتف' : 'Phone'}</h4>
             <a href="tel:${spec.phone}">${spec.phone}</a>
           </div>
         </div>
         <div class="contact-info-item">
           <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
           <div class="contact-info-text">
-            <h4>${isArabic ? 'بريد إلكتروني' : 'Email'}</h4>
+            <h4 data-ar="بريد إلكتروني" data-en="Email">${isArabic ? 'بريد إلكتروني' : 'Email'}</h4>
             <a href="mailto:${spec.email}">${spec.email}</a>
           </div>
         </div>
         <div class="contact-info-item">
           <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
           <div class="contact-info-text">
-            <h4>${isArabic ? 'الموقع' : 'Location'}</h4>
+            <h4 data-ar="الموقع" data-en="Location">${isArabic ? 'الموقع' : 'Location'}</h4>
             <p>${spec.address}</p>
           </div>
         </div>
         <div class="contact-info-item">
           <div class="contact-icon"><i class="fa-solid fa-clock"></i></div>
           <div class="contact-info-text">
-            <h4>${isArabic ? 'ساعات العمل' : 'Working Hours'}</h4>
+            <h4 data-ar="ساعات العمل" data-en="Working Hours">${isArabic ? 'ساعات العمل' : 'Working Hours'}</h4>
             <p${da(spec.workingHours, enSpec?.workingHours)}>${spec.workingHours}</p>
           </div>
         </div>
         <a href="https://wa.me/${whatsappNum}" target="_blank" class="whatsapp-btn">
           <i class="fa-brands fa-whatsapp" style="font-size:1.4rem"></i>
-          ${isArabic ? 'تواصل عبر واتساب الآن' : 'Chat on WhatsApp Now'}
+          <span data-ar="تواصل عبر واتساب الآن" data-en="Chat on WhatsApp Now">${isArabic ? 'تواصل عبر واتساب الآن' : 'Chat on WhatsApp Now'}</span>
         </a>
       </div>
       <div class="aw-reveal">
         <div class="contact-form">
-          <h3 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:1.5rem">${isArabic ? 'أرسل لنا رسالة' : 'Send Us a Message'}</h3>
+          <h3 style="font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:1.5rem" data-ar="أرسل لنا رسالة" data-en="Send Us a Message">${isArabic ? 'أرسل لنا رسالة' : 'Send Us a Message'}</h3>
           <form id="contact-form" onsubmit="submitForm(event)">
             <div class="form-group">
-              <label>${isArabic ? 'الاسم الكامل' : 'Full Name'}</label>
-              <input type="text" placeholder="${isArabic ? 'أدخل اسمك' : 'Enter your name'}" required>
+              <label data-ar="الاسم الكامل" data-en="Full Name">${isArabic ? 'الاسم الكامل' : 'Full Name'}</label>
+              <input type="text" data-placeholder-ar="أدخل اسمك" data-placeholder-en="Enter your name" placeholder="${isArabic ? 'أدخل اسمك' : 'Enter your name'}" required>
             </div>
             <div class="form-group">
-              <label>${isArabic ? 'رقم الهاتف' : 'Phone Number'}</label>
-              <input type="tel" placeholder="${isArabic ? '+966 5X XXX XXXX' : '+1 (555) 000-0000'}" required>
+              <label data-ar="رقم الهاتف" data-en="Phone Number">${isArabic ? 'رقم الهاتف' : 'Phone Number'}</label>
+              <input type="tel" data-placeholder-ar="+966 5X XXX XXXX" data-placeholder-en="+1 (555) 000-0000" placeholder="${isArabic ? '+966 5X XXX XXXX' : '+1 (555) 000-0000'}" required>
             </div>
             <div class="form-group">
-              <label>${isArabic ? 'رسالتك' : 'Your Message'}</label>
-              <textarea placeholder="${isArabic ? 'كيف يمكننا مساعدتك؟' : 'How can we help you?'}" required></textarea>
+              <label data-ar="رسالتك" data-en="Your Message">${isArabic ? 'رسالتك' : 'Your Message'}</label>
+              <textarea data-placeholder-ar="كيف يمكننا مساعدتك؟" data-placeholder-en="How can we help you?" placeholder="${isArabic ? 'كيف يمكننا مساعدتك؟' : 'How can we help you?'}" required></textarea>
             </div>
             <button type="submit" class="btn-primary" style="width:100%;justify-content:center">
               <i class="fa-solid fa-paper-plane"></i>
-              ${isArabic ? 'إرسال الرسالة' : 'Send Message'}
+              <span data-ar="إرسال الرسالة" data-en="Send Message">${isArabic ? 'إرسال الرسالة' : 'Send Message'}</span>
             </button>
           </form>
           <div class="form-success" id="contact-form-success">
             <i class="fa-solid fa-circle-check"></i>
-            <h3 style="color:#0f172a;margin-bottom:0.5rem">${isArabic ? 'شكراً لتواصلك!' : 'Thank you!'}</h3>
-            <p style="color:#64748b">${isArabic ? 'سنتواصل معك خلال 24 ساعة' : 'We will contact you within 24 hours'}</p>
+            <h3 style="color:#0f172a;margin-bottom:0.5rem" data-ar="شكراً لتواصلك!" data-en="Thank you!">${isArabic ? 'شكراً لتواصلك!' : 'Thank you!'}</h3>
+            <p style="color:#64748b" data-ar="سنتواصل معك خلال 24 ساعة" data-en="We will contact you within 24 hours">${isArabic ? 'سنتواصل معك خلال 24 ساعة' : 'We will contact you within 24 hours'}</p>
           </div>
         </div>
       </div>
@@ -1865,13 +1865,13 @@ export function buildWebsiteHTML(
         </div>
       </div>
       <div>
-        <h4 class="footer-heading">${isArabic ? 'روابط سريعة' : 'Quick Links'}</h4>
+        <h4 class="footer-heading" data-ar="روابط سريعة" data-en="Quick Links">${isArabic ? 'روابط سريعة' : 'Quick Links'}</h4>
         <div class="footer-links">
           ${(spec.navLinks || []).map((l, i) => { const enL = enSpec?.navLinks?.[i]; return `<a href="${l.href}" class="footer-link"${da(l.text, enL?.text)}>${l.text}</a>`; }).join('')}
         </div>
       </div>
       <div>
-        <h4 class="footer-heading">${isArabic ? 'معلومات التواصل' : 'Contact Info'}</h4>
+        <h4 class="footer-heading" data-ar="معلومات التواصل" data-en="Contact Info">${isArabic ? 'معلومات التواصل' : 'Contact Info'}</h4>
         <div class="footer-contact-item"><i class="fa-solid fa-phone"></i>${spec.phone}</div>
         <div class="footer-contact-item"><i class="fa-solid fa-envelope"></i>${spec.email}</div>
         <div class="footer-contact-item"><i class="fa-solid fa-location-dot"></i>${spec.address}</div>
@@ -1879,12 +1879,12 @@ export function buildWebsiteHTML(
       </div>
     </div>
     <div class="footer-bottom">
-      جميع الحقوق محفوظة &copy; ${year} ${spec.businessName} | Powered by <a href="https://arabyweb.net" style="color:var(--accent)">ArabyWeb.net</a>
+      <span data-ar="جميع الحقوق محفوظة" data-en="All Rights Reserved">${isArabic ? 'جميع الحقوق محفوظة' : 'All Rights Reserved'}</span> &copy; ${year} ${spec.businessName} | Powered by <a href="https://arabyweb.net" style="color:var(--accent)">ArabyWeb.net</a>
     </div>
   </footer>
 
   <!-- WhatsApp Float -->
-  <a href="https://wa.me/${whatsappNum}" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
+  <a id="aw-whatsapp-btn" href="https://wa.me/${whatsappNum}" target="_blank" class="whatsapp-float" aria-label="WhatsApp">
     <i class="fa-brands fa-whatsapp"></i>
   </a>
 
@@ -2033,8 +2033,10 @@ export function buildWebsiteHTML(
       };
       function awApplyLang(lang) {
         var isAr = lang === 'ar';
-        document.documentElement.setAttribute('dir', isAr ? 'rtl' : 'ltr');
+        var dirVal = isAr ? 'rtl' : 'ltr';
+        document.documentElement.setAttribute('dir', dirVal);
         document.documentElement.setAttribute('lang', lang);
+        document.body.setAttribute('dir', dirVal);
         var btn = document.getElementById('aw-lang-btn');
         var nextCode = AW_LANG_ORDER[(awLangIdx + 1) % AW_LANG_ORDER.length];
         if (btn) btn.textContent = nextCode.toUpperCase();
@@ -2042,10 +2044,16 @@ export function buildWebsiteHTML(
           var val = el.getAttribute('data-' + lang) || el.getAttribute('data-ar');
           if (val !== null) el.textContent = val;
         });
+        document.querySelectorAll('[data-placeholder-ar]').forEach(function(el) {
+          var val = el.getAttribute('data-placeholder-' + lang) || el.getAttribute('data-placeholder-en');
+          if (val) el.placeholder = val;
+        });
         document.body.style.fontFamily = FONTS[lang].body;
         document.querySelectorAll('h1,h2,h3,h4,.hero-title,.section-title,.cta-band-title,.aw-brand').forEach(function(el) {
           el.style.fontFamily = FONTS[lang].head;
         });
+        var waBtn = document.getElementById('aw-whatsapp-btn');
+        if (waBtn) { waBtn.style.left = isAr ? '1.75rem' : ''; waBtn.style.right = isAr ? '' : '1.75rem'; }
       }
       window.awToggleLang = function() {
         awLangIdx = (awLangIdx + 1) % AW_LANG_ORDER.length;
