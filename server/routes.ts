@@ -174,11 +174,16 @@ const MOBILE_NAV_SCRIPT = `<script id="aw-mobile-nav">(function(){if(window.inne
 
 const FA_CDN = `<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W==" crossorigin="anonymous" referrerpolicy="no-referrer"/>`;
 
+// Universal RTL/LTR direction fix — injected into every generated website.
+// Works regardless of how the AI implemented the language toggle.
+const DIR_FIX_SCRIPT = `<script id="aw-dir-fix">(function(){var H=document.documentElement;function toDir(l){return(l&&l.startsWith('ar'))?'rtl':'ltr';}function syncDir(l){var d=toDir(l);if(H.getAttribute('dir')!==d)H.setAttribute('dir',d);if(document.body&&document.body.getAttribute('dir')!==d)document.body.setAttribute('dir',d);var r=document.getElementById('aw-root');if(r&&r.getAttribute('dir')!==d)r.setAttribute('dir',d);}function patchApplyLang(){if(window.awApplyLang&&!window.awApplyLang._awP){var o=window.awApplyLang;window.awApplyLang=function(l){o.call(this,l);syncDir(l);};window.awApplyLang._awP=1;}}new MutationObserver(function(ms){ms.forEach(function(m){if(m.attributeName==='lang'&&m.oldValue!==H.lang)syncDir(H.lang||'');});}).observe(H,{attributes:true,attributeFilter:['lang'],attributeOldValue:true});document.addEventListener('click',function(e){var b=e.target;if(!b)return;var id=(b.id||'').toLowerCase(),t=(b.textContent||'').trim().toUpperCase();if(id.indexOf('lang')>-1||t==='AR'||t==='EN'||t==='عربي'||t==='ENGLISH'||t==='ARABIC'){setTimeout(function(){patchApplyLang();var l=H.getAttribute('lang');if(l){syncDir(l);}else{var nt=(b.textContent||'').trim().toUpperCase();if(nt==='AR')syncDir('en');else if(nt==='EN')syncDir('ar');}},60);}},true);if(document.readyState!=='loading')patchApplyLang();else document.addEventListener('DOMContentLoaded',patchApplyLang);})();</script>`;
+
 function injectAwScripts(html: string): string {
   let result = html;
   result = result.replace(/<style id="aw-overflow-fix">[\s\S]*?<\/style>/gi, "");
   result = result.replace(/<script id="aw-mobile-nav">[\s\S]*?<\/script>/gi, "");
-  const inject = `${OVERFLOW_FIX_CSS}\n${MOBILE_NAV_SCRIPT}`;
+  result = result.replace(/<script id="aw-dir-fix">[\s\S]*?<\/script>/gi, "");
+  const inject = `${OVERFLOW_FIX_CSS}\n${MOBILE_NAV_SCRIPT}\n${DIR_FIX_SCRIPT}`;
   if (result.includes("</head>")) {
     // Add Font Awesome if not already present
     if (!result.includes("font-awesome")) {
