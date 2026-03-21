@@ -306,6 +306,52 @@ export async function seedDatabase() {
     console.error("AI learning tables migration warning:", e.message);
   }
 
+  // ── Domain & Hosting Orders tables ────────────────────────────────────────
+  try {
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS domain_orders (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR NOT NULL,
+        domain VARCHAR(255) NOT NULL,
+        tld VARCHAR(20) NOT NULL,
+        years INTEGER NOT NULL DEFAULT 1,
+        type VARCHAR(20) NOT NULL DEFAULT 'register',
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        price_sar INTEGER NOT NULL,
+        paymob_order_id VARCHAR,
+        paymob_transaction_id VARCHAR,
+        rc_order_id VARCHAR,
+        customer_email VARCHAR,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS hosting_orders (
+        id SERIAL PRIMARY KEY,
+        user_id VARCHAR NOT NULL,
+        plan_id VARCHAR(50) NOT NULL,
+        billing_cycle VARCHAR(10) NOT NULL DEFAULT 'yearly',
+        status VARCHAR(30) NOT NULL DEFAULT 'pending',
+        price_sar INTEGER NOT NULL,
+        domain_name VARCHAR(255),
+        paymob_order_id VARCHAR,
+        paymob_transaction_id VARCHAR,
+        rc_order_id VARCHAR,
+        customer_email VARCHAR,
+        notes TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+      )
+    `);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_domain_orders_user ON domain_orders(user_id)`);
+    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_hosting_orders_user ON hosting_orders(user_id)`);
+    console.log("Migration: domain_orders & hosting_orders tables ensured");
+  } catch (e: any) {
+    console.error("Domain/Hosting migration warning:", e.message);
+  }
+
   // Template versioning — bump TEMPLATE_VERSION to force regeneration
   const TEMPLATE_VERSION = "v3-gulf-avatars";
   try {

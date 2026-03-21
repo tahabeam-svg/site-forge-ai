@@ -8,6 +8,7 @@ import { processChat, getChatbotStats, getCacheStats, runSelfImprovementCycle, d
 import { validateToken, getGitHubUser, listUserRepos, createRepo, pushWebsiteToRepo } from "./github";
 import { runIndustryEngine, detectIndustry, mapActivityToIndustry } from "./industry-engine";
 import { deployToVercel, isVercelConfigured } from "./vercel-deploy";
+import { checkDomainAvailability, HOSTING_PLANS, DEFAULT_TLD_PRICES, isConfigured as isRcConfigured } from "./resellerclub";
 import { ensureLearningTables, getLearningStats, getPatternsByIndustry, signalSatisfied, signalRegeneration, logGenerationInsight } from "./learning-engine";
 import { detectDesignStyle } from "./image-system";
 import { createPaymobOrder, getPaymentKey, getIframeUrl, verifyHmac, isPaymobConfigured, PLAN_PRICES } from "./paymob";
@@ -3233,6 +3234,125 @@ For Netlify/Vercel:
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ message: "Failed to update feedback" });
+    }
+  });
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Domain & Hosting Store (ResellerClub)
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Check domain availability
+  app.post("/api/domains/check", isAuthenticated, async (req: any, res) => {
+    try {
+      const { name, tlds } = req.body;
+      if (!name) return res.status(400).json({ message: "Domain name required" });
+      const validTlds = Array.isArray(tlds) && tlds.length > 0
+        ? tlds.filter((t: string) => Object.keys(DEFAULT_TLD_PRICES).includes(t))
+        : [".com", ".net", ".sa", ".store", ".online", ".site"];
+      const results = await checkDomainAvailability(name.trim(), validTlds);
+      res.json({ results, demo: !isRcConfigured() });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Get TLD prices & hosting plans
+  app.get("/api/domains/catalog", async (_req, res) => {
+    try {
+      const tldPrices = DEFAULT_TLD_PRICES;
+      res.json({ tlds: tldPrices, hosting: HOSTING_PLANS, demo: !isRcConfigured() });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Create domain order
+  app.post("/api/domains/order", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getEffectiveUserId(req);
+      const { domain, tld, years = 1, type = "register" } = req.body;
+      if (!domain || !tld) return res.status(400).json({ message: "domain and tld required" });
+      const prices = DEFAULT_TLD_PRICES[tld] || { register: 49, renew: 49 };
+      const priceAr = type === "renew" ? prices.renew * years : prices.register * years;
+      const order = await storage.createDomainOrder({
+        userId,
+        domain,
+        tld,
+        years,
+        type,
+        status: "pending",
+        priceAr,
+        customerEmail: req.user?.email || null,
+      });
+      res.json({ order });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Create hosting order
+  app.post("/api/hosting/order", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getEffectiveUserId(req);
+      const { planId, billingCycle = "yearly", domainName } = req.body;
+      const plan = HOSTING_PLANS.find(p => p.id === planId);
+      if (!plan) return res.status(400).json({ message: "Invalid plan" });
+      const priceAr = billingCycle === "monthly" ? plan.priceMonthly : plan.priceYearly;
+      const order = await storage.createHostingOrder({
+        userId,
+        planId,
+        billingCycle,
+        status: "pending",
+        priceAr,
+        domainName: domainName || null,
+        customerEmail: req.user?.email || null,
+      });
+      res.json({ order });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // My domain orders
+  app.get("/api/domains/my-orders", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getEffectiveUserId(req);
+      const [domOrders, hostOrders] = await Promise.all([
+        storage.getDomainOrdersByUser(userId),
+        storage.getHostingOrdersByUser(userId),
+      ]);
+      res.json({ domains: domOrders, hosting: hostOrders });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Admin: all orders
+  app.get("/api/admin/domain-orders", isAuthenticated, isAdmin, async (_req, res) => {
+    try {
+      const [domOrders, hostOrders] = await Promise.all([
+        storage.getAllDomainOrders(),
+        storage.getAllHostingOrders(),
+      ]);
+      res.json({ domains: domOrders, hosting: hostOrders });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
+    }
+  });
+
+  // Admin: update order status
+  app.patch("/api/admin/domain-orders/:id", isAuthenticated, isAdmin, async (req: any, res) => {
+    try {
+      const { type } = req.query; // type=domain|hosting
+      const id = parseInt(req.params.id);
+      if (type === "hosting") {
+        await storage.updateHostingOrder(id, req.body);
+      } else {
+        await storage.updateDomainOrder(id, req.body);
+      }
+      res.json({ success: true });
+    } catch (e: any) {
+      res.status(500).json({ message: e.message });
     }
   });
 

@@ -331,3 +331,47 @@ export type PlatformSetting = typeof platformSettings.$inferSelect;
 export type InsertPlatformSetting = z.infer<typeof insertPlatformSettingSchema>;
 export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+
+// ── Domain & Hosting Orders ───────────────────────────────────────────────────
+export const domainOrders = pgTable("domain_orders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  domain: varchar("domain", { length: 255 }).notNull(),
+  tld: varchar("tld", { length: 20 }).notNull(),
+  years: integer("years").default(1).notNull(),
+  type: varchar("type", { length: 20 }).default("register").notNull(), // register | renew | transfer
+  status: varchar("status", { length: 30 }).default("pending").notNull(), // pending | paid | active | failed | cancelled
+  priceAr: integer("price_sar").notNull(),
+  paymobOrderId: varchar("paymob_order_id"),
+  paymobTransactionId: varchar("paymob_transaction_id"),
+  rcOrderId: varchar("rc_order_id"),
+  customerEmail: varchar("customer_email"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const hostingOrders = pgTable("hosting_orders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull(),
+  planId: varchar("plan_id", { length: 50 }).notNull(), // starter | business | pro
+  billingCycle: varchar("billing_cycle", { length: 10 }).default("yearly").notNull(), // monthly | yearly
+  status: varchar("status", { length: 30 }).default("pending").notNull(),
+  priceAr: integer("price_sar").notNull(),
+  domainName: varchar("domain_name", { length: 255 }),
+  paymobOrderId: varchar("paymob_order_id"),
+  paymobTransactionId: varchar("paymob_transaction_id"),
+  rcOrderId: varchar("rc_order_id"),
+  customerEmail: varchar("customer_email"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: timestamp("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+});
+
+export const insertDomainOrderSchema = createInsertSchema(domainOrders).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertHostingOrderSchema = createInsertSchema(hostingOrders).omit({ id: true, createdAt: true, updatedAt: true });
+
+export type DomainOrder = typeof domainOrders.$inferSelect;
+export type InsertDomainOrder = z.infer<typeof insertDomainOrderSchema>;
+export type HostingOrder = typeof hostingOrders.$inferSelect;
+export type InsertHostingOrder = z.infer<typeof insertHostingOrderSchema>;

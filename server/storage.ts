@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback, creditPurchases, aiGeneratedBlocks, generationLogs } from "@shared/schema";
-import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback, CreditPurchase, InsertCreditPurchase, AiGeneratedBlock, GenerationLog } from "@shared/schema";
+import { projects, templates, chatMessages, users, coupons, platformSettings, subscriptions, knowledgeBase, leads, autoLearnedKnowledge, visitorQuestions, userFeedback, creditPurchases, aiGeneratedBlocks, generationLogs, domainOrders, hostingOrders } from "@shared/schema";
+import type { Project, InsertProject, Template, InsertTemplate, ChatMessage, InsertChatMessage, Coupon, InsertCoupon, PlatformSetting, Subscription, InsertSubscription, KnowledgeBase, InsertKnowledgeBase, Lead, InsertLead, AutoLearnedKnowledge, UserFeedback, InsertUserFeedback, CreditPurchase, InsertCreditPurchase, AiGeneratedBlock, GenerationLog, DomainOrder, InsertDomainOrder, HostingOrder, InsertHostingOrder } from "@shared/schema";
 import { eq, desc, sql, count, like, and, gte } from "drizzle-orm";
 
 export interface IStorage {
@@ -66,6 +66,18 @@ export interface IStorage {
   updateCreditPurchase(id: number, data: Partial<CreditPurchase>): Promise<CreditPurchase | undefined>;
   getCreditPurchasesByUser(userId: string): Promise<CreditPurchase[]>;
   getAllCreditPurchases(): Promise<CreditPurchase[]>;
+
+  // Domain & Hosting Orders
+  createDomainOrder(order: InsertDomainOrder): Promise<DomainOrder>;
+  getDomainOrder(id: number): Promise<DomainOrder | undefined>;
+  getDomainOrdersByUser(userId: string): Promise<DomainOrder[]>;
+  getAllDomainOrders(): Promise<DomainOrder[]>;
+  updateDomainOrder(id: number, data: Partial<DomainOrder>): Promise<void>;
+  createHostingOrder(order: InsertHostingOrder): Promise<HostingOrder>;
+  getHostingOrder(id: number): Promise<HostingOrder | undefined>;
+  getHostingOrdersByUser(userId: string): Promise<HostingOrder[]>;
+  getAllHostingOrders(): Promise<HostingOrder[]>;
+  updateHostingOrder(id: number, data: Partial<HostingOrder>): Promise<void>;
 
   // Component Library & Learning System
   saveGeneratedBlock(block: { businessType: string; designStyle?: string; websiteLanguage?: string; prompt: string; htmlContent: string; seoTitle?: string; colorPalette?: any }): Promise<AiGeneratedBlock>;
@@ -441,6 +453,44 @@ export class DatabaseStorage implements IStorage {
       avgGenerationMs: totals?.avgMs ?? 0,
       cacheHitRate: total > 0 ? Math.round((cached / total) * 100) : 0,
     };
+  }
+
+  // ── Domain Orders ────────────────────────────────────────────────────────────
+  async createDomainOrder(order: InsertDomainOrder): Promise<DomainOrder> {
+    const [row] = await db.insert(domainOrders).values(order).returning();
+    return row;
+  }
+  async getDomainOrder(id: number): Promise<DomainOrder | undefined> {
+    const [row] = await db.select().from(domainOrders).where(eq(domainOrders.id, id));
+    return row;
+  }
+  async getDomainOrdersByUser(userId: string): Promise<DomainOrder[]> {
+    return db.select().from(domainOrders).where(eq(domainOrders.userId, userId)).orderBy(desc(domainOrders.createdAt));
+  }
+  async getAllDomainOrders(): Promise<DomainOrder[]> {
+    return db.select().from(domainOrders).orderBy(desc(domainOrders.createdAt));
+  }
+  async updateDomainOrder(id: number, data: Partial<DomainOrder>): Promise<void> {
+    await db.update(domainOrders).set({ ...data, updatedAt: new Date() }).where(eq(domainOrders.id, id));
+  }
+
+  // ── Hosting Orders ───────────────────────────────────────────────────────────
+  async createHostingOrder(order: InsertHostingOrder): Promise<HostingOrder> {
+    const [row] = await db.insert(hostingOrders).values(order).returning();
+    return row;
+  }
+  async getHostingOrder(id: number): Promise<HostingOrder | undefined> {
+    const [row] = await db.select().from(hostingOrders).where(eq(hostingOrders.id, id));
+    return row;
+  }
+  async getHostingOrdersByUser(userId: string): Promise<HostingOrder[]> {
+    return db.select().from(hostingOrders).where(eq(hostingOrders.userId, userId)).orderBy(desc(hostingOrders.createdAt));
+  }
+  async getAllHostingOrders(): Promise<HostingOrder[]> {
+    return db.select().from(hostingOrders).orderBy(desc(hostingOrders.createdAt));
+  }
+  async updateHostingOrder(id: number, data: Partial<HostingOrder>): Promise<void> {
+    await db.update(hostingOrders).set({ ...data, updatedAt: new Date() }).where(eq(hostingOrders.id, id));
   }
 }
 
